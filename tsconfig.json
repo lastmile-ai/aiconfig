@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "noImplicitAny": true,
+        "outDir": "dist",
+        "resolveJsonModule": true,
+        "rootDir": ".",
+        "strict": true,
+        "target": "es6",
+    },
+    "exclude": [
+        "dist",
+        "docs",
+        "node_modules",
+    ],
+}
