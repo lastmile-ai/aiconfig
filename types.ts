@@ -1,3 +1,5 @@
+import { JSONObject } from "./common";
+
 /**
  * AIConfig schema, latest version. For older versions, see AIConfigV*.
  */
@@ -77,7 +79,9 @@ export type Prompt = {
         /**
          * Any additional inputs to the model.
          */
-        data: any;
+        data?: any;
+
+        [k: string]: any;
       }
     | string;
 
@@ -116,13 +120,7 @@ export type Prompt = {
   outputs?: Output[];
 };
 
-export type JSONValue = string | number | boolean | JSONObject | JSONArray;
-
-export type JSONArray = JSONValue[];
-
-export interface JSONObject {
-  [x: string]: JSONValue;
-}
+//#region Prompt Outputs (Work-in-progress)
 
 /**
  * Model inference result.
@@ -233,3 +231,5 @@ export interface Error {
    */
   traceback: string[];
 }
+
+//#endregion
