@@ -15,13 +15,7 @@ export type AIConfig = {
   /**
    * The version of the AIConfig schema.
    */
-  schema_version:
-    | {
-        major: number;
-        minor: number;
-      }
-    | "v1"
-    | "latest";
+  schema_version: SchemaVersion;
 
   /**
    * Root-level metadata that applies to the entire AIConfig.
@@ -38,9 +32,7 @@ export type AIConfig = {
      * Globally defined model settings. Any prompts that use these models will have these settings applied by default,
      * unless they override them with their own model settings.
      */
-    models?: {
-      [model_name: string]: InferenceSettings;
-    };
+    models?: GlobalModelMetadata;
 
     [k: string]: any;
   };
@@ -58,7 +50,23 @@ export type AIConfig = {
  */
 export type AIConfigV1 = AIConfig;
 
+export type SchemaVersion =
+  | {
+      major: number;
+      minor: number;
+    }
+  | "v1"
+  | "latest";
+
 export type InferenceSettings = JSONObject;
+export type GlobalModelMetadata = {
+  [model_name: string]: InferenceSettings;
+};
+
+export type ModelMetadata = {
+  name: string;
+  settings?: InferenceSettings;
+};
 
 export type Prompt = {
   /**
@@ -98,12 +106,7 @@ export type Prompt = {
      * These settings override any global model settings that may have been defined in the AIConfig metadata.
      *
      */
-    model:
-      | {
-          name: string;
-          settings?: InferenceSettings;
-        }
-      | string;
+    model: ModelMetadata | string;
 
     /**
      * Tags for this prompt. Tags must be unique, and must not contain commas.
