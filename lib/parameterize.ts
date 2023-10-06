@@ -1,6 +1,7 @@
 import { set } from "lodash";
 import { compile } from "handlebars";
 import { AIConfig, Output, Prompt } from "../types";
+import { JSONObject } from "../common";
 
 export function getPromptTemplate(prompt: Prompt) {
   if (typeof prompt.input === "string") {
@@ -32,7 +33,11 @@ export function getSystemPromptTemplate(prompt: Prompt, aiConfig: AIConfig) {
 /**
  * Takes the prompt string containing possible handlebars syntax, and returns the resolved prompt string with all the parameters filled in.
  */
-export function resolvePrompt(prompt: Prompt, aiConfig: AIConfig) {
+export function resolvePrompt(
+  prompt: Prompt,
+  aiConfig: AIConfig,
+  params?: JSONObject
+) {
   const promptTemplate = getPromptTemplate(prompt);
   const template = compile(promptTemplate);
 
@@ -42,6 +47,7 @@ export function resolvePrompt(prompt: Prompt, aiConfig: AIConfig) {
   let data = {
     ...(configParameters || {}),
     ...(promptParameters || {}),
+    ...(params || {}),
   };
 
   // Add named cells above the current cell to the parameters to allow references to them
