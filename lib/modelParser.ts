@@ -6,7 +6,7 @@ import { AIConfigRuntime } from "./config";
  * This is an abstract class that defines how to deserialize a prompt and run inference for it using a model.
  * This is meant to be highly extensible to allow any kind of model to be used with the AIConfig.
  */
-export abstract class ModelParser {
+export abstract class ModelParser<T = JSONObject, R = JSONObject> {
   /**
    * The name of the model. This is used as the key in the model registry for this ModelParser, and specified as the model ID in the AIConfig.
    */
@@ -28,7 +28,7 @@ export abstract class ModelParser {
    * @see Prompt
    * @example data: {prompt: "Hello {{name}}", parameters: {name: "World"}, inferenceSettings: {temperature: 0.5, systemPrompt:"Be a friendly assistant"}}
    */
-  public abstract serialize<T = JSONObject>(
+  public abstract serialize(
     promptName: string,
     data: T,
     aiConfig: AIConfigRuntime
@@ -38,11 +38,13 @@ export abstract class ModelParser {
    * Deserialize a Prompt object loaded from an AIConfig into a structure that can be used for model inference.
    * @param prompt The Prompt object from an AIConfig to deserialize into a structure that can be used for model inference.
    * @param aiConfig The AIConfig that the prompt belongs to.
+   * @param params Optional parameters to override the prompt's parameters with.
    * @returns Completion params that can be used for model inference.
    */
-  public abstract deserialize<R = JSONObject>(
+  public abstract deserialize(
     prompt: Prompt,
-    aiConfig: AIConfigRuntime
+    aiConfig: AIConfigRuntime,
+    params?: JSONObject
   ): R;
 
   /**
@@ -51,7 +53,7 @@ export abstract class ModelParser {
    * @param data The completion data to use for inference. This may include parameter overrides, settings, etc.
    * @param aiConfig
    */
-  public abstract run<T = JSONObject>(
+  public abstract run(
     prompt: Prompt,
     data: T,
     aiConfig: AIConfigRuntime

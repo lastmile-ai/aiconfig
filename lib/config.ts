@@ -8,6 +8,7 @@ import {
   SchemaVersion,
 } from "../types";
 import { ModelParser } from "./modelParser";
+import { ModelParserRegistry } from "./modelParserRegistry";
 
 export type PromptWithOutputs = Prompt & { outputs?: Output[] };
 
@@ -100,13 +101,17 @@ export class AIConfigRuntime implements AIConfig {
    * @param modelParser The model parser to add to the registry.
    * @param ids Optional list of model IDs to register the model parser for. If unspecified, the model parser will be registered for modelParser.id.
    */
-  public static registerModelParser(modelParser: ModelParser, ids?: string[]) {}
+  public static registerModelParser(modelParser: ModelParser, ids?: string[]) {
+    ModelParserRegistry.registerModelParser(modelParser, ids);
+  }
 
   /**
    * Retrieves a model parser from the registry.
    * @param id The ID of the model parser to get.
    */
-  public static getModelParser(id: string) {}
+  public static getModelParser(id: string) {
+    ModelParserRegistry.getModelParser(id);
+  }
 
   //#endregion
 
