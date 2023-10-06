@@ -28,6 +28,7 @@ export class AIConfigRuntime implements AIConfig {
     models?: GlobalModelMetadata | undefined;
   };
   prompts: PromptWithOutputs[];
+  promptsByName: Map<string, PromptWithOutputs>;
 
   public constructor(
     name: string,
@@ -39,6 +40,7 @@ export class AIConfigRuntime implements AIConfig {
     this.schema_version = schemaVersion;
     this.metadata = {};
     this.prompts = [];
+    this.promptsByName = new Map<string, PromptWithOutputs>();
   }
 
   //#region Create/Load/Save
@@ -153,6 +155,14 @@ export class AIConfigRuntime implements AIConfig {
 
   public setName(name: string) {}
   public setDescription(description: string) {}
+
+  /**
+   * Gets a prompt by name from the AIConfig.
+   * @param promptName The name of the prompt to get.
+   */
+  public getPrompt(promptName: string) {
+    return this.promptsByName.get(promptName);
+  }
 
   /**
    * Add a prompt to the AIConfig.
