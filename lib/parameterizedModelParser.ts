@@ -2,7 +2,7 @@ import { JSONObject } from "../common";
 import { Prompt, Output } from "../types";
 import { AIConfigRuntime } from "./config";
 import { ModelParser } from "./modelParser";
-import { resolvePrompt } from "./parameterize";
+import { PromptNode, getDependencyGraph, resolvePrompt } from "./parameterize";
 
 /**
  * An abstract ModelParser that handles parameterized prompts that contain Handlebars templates.
@@ -16,5 +16,87 @@ export abstract class ParameterizedModelParser<
 > extends ModelParser<T, string> {
   public deserialize(prompt: Prompt, aiConfig: AIConfigRuntime) {
     return resolvePrompt(prompt, aiConfig);
+  }
+
+  /**
+   * Re-runs all prompt dependencies. Dependencies are determined using parameter references in the prompt.
+   * @param promptName The name of the prompt to run, along with its dependencies.
+   * @example "If you have a prompt P2 that depends on another prompt P1's output, this function will run P1 first,\
+   * then use the output of P1 to resolve P2 and run it. Concretely, it executes inference on the DAG of prompt dependencies."
+   */
+  public async runWithDependencies(
+    promptName: string,
+    aiConfig: AIConfigRuntime,
+    params: JSONObject = {}
+  ) {
+    const dependencyGraph = getDependencyGraph(aiConfig);
+
+    return await this.runWithDependenciesInternal(
+      promptName,
+      aiConfig,
+      params,
+      dependencyGraph,
+      /*alreadyExecutedPrompts*/ new Set<string>()
+    );
+  }
+
+  private async runWithDependenciesInternal(
+    promptName: string,
+    aiConfig: AIConfigRuntime,
+    params: JSONObject = {},
+    dependencyGraph: {
+      graph: Map<string, PromptNode>;
+      graphObj: {
+        [x: string]: {
+          promptName: string;
+          parents: string[];
+          children: string[];
+        };
+      };
+      start: PromptNode[];
+    },
+    alreadyExecutedPrompts: Set<string>
+  ) {
+    if (alreadyExecutedPrompts.has(promptName)) {
+      // It is possible to visit the same node multiple times dependending on the graph.
+      // In that case we don't want to re-execute the same node multiple times.
+      return;
+    }
+
+    const promptNode = dependencyGraph.graph.get(promptName);
+    if (promptNode == null) {
+      throw new Error(`Prompt ${promptName} not found in dependency graph`);
+    }
+
+    const promises = [];
+    for (var parentPromptName of Array.from(promptNode.parents.values())) {
+      const parentPrompt = aiConfig.getPrompt(parentPromptName);
+      promises.push(
+        this.runWithDependenciesInternal(
+          parentPromptName,
+          aiConfig,
+          params,
+          dependencyGraph,
+          alreadyExecutedPrompts
+        )
+      );
+    }
+
+    // First execute all the parent dependencies recursively...
+
+    // TODO: saqadri - switch to Promise.all
+    for (const promptExecutionPromise of promises) {
+      await promptExecutionPromise;
+    }
+
+    // Next execute self...
+    const prompt = aiConfig.getPrompt(promptName);
+    if (prompt == null) {
+      throw new Error(`Prompt ${promptName} not found in AIConfig`);
+    }
+    const result = await this.run(prompt, aiConfig, params);
+    alreadyExecutedPrompts.add(promptName);
+
+    return result;
   }
 }

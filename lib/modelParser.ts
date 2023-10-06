@@ -50,12 +50,12 @@ export abstract class ModelParser<T = JSONObject, R = JSONObject> {
   /**
    * Executes model inference for the given prompt based on the provided completion data.
    * @param prompt The Prompt to run inference for.
-   * @param data The completion data to use for inference. This may include parameter overrides, settings, etc.
-   * @param aiConfig
+   * @param aiConfig The AIConfig that the prompt belongs to.
+   * @param params Optional parameters to override the prompt's parameters with.
    */
   public abstract run(
     prompt: Prompt,
-    data: T,
-    aiConfig: AIConfigRuntime
+    aiConfig: AIConfigRuntime,
+    params?: JSONObject
   ): Promise<Output>;
 }
