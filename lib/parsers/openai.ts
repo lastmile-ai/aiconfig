@@ -1,12 +1,24 @@
 import { JSONObject, JSONValue } from "../../common";
-import { Prompt, Output, PromptInput, ModelMetadata } from "../../types";
+import {
+  Prompt,
+  Output,
+  PromptInput,
+  ModelMetadata,
+  ExecuteResult,
+} from "../../types";
 import { AIConfigRuntime } from "../config";
 import { ParameterizedModelParser } from "../parameterizedModelParser";
 import OpenAI, { ClientOptions } from "openai";
 import { getAPIKeyFromEnv } from "../utils";
 import { encode as gpt3Encode, decode as gpt3Decode } from "gpt-3-encoder";
-import { CompletionCreateParams, Chat } from "openai/resources";
+import {
+  CompletionCreateParams,
+  Chat,
+  CompletionCreateParamsNonStreaming,
+  CompletionCreateParamsStreaming,
+} from "openai/resources";
 import _ from "lodash";
+import { InferenceOptions } from "../modelParser";
 
 export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreateParams> {
   private openai: OpenAI;
@@ -132,12 +144,92 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
     return completionParams;
   }
 
-  public run(
+  public async run(
     prompt: Prompt,
     aiConfig: AIConfigRuntime,
+    options?: InferenceOptions,
     params?: JSONObject | undefined
-  ): Promise<Output> {
-    throw new Error("Method not implemented.");
+  ): Promise<Output | Output[]> {
+    const completionParams = this.deserialize(prompt, aiConfig, params);
+    const stream = options?.stream ?? completionParams.stream ?? true;
+
+    if (!stream) {
+      // If we aren't streaming, then we can just run the prompt as a simple completion
+      const response = await this.openai.completions.create(
+        completionParams as CompletionCreateParamsNonStreaming,
+        {
+          stream,
+        }
+      );
+
+      // Save response as Output(s) in the Prompt
+      const outputs: ExecuteResult[] = [];
+      const responseWithoutChoices = _.omit(response, "choices");
+      for (const choice of response.choices) {
+        const output: ExecuteResult = {
+          output_type: "execute_result",
+          data: choice.text,
+          execution_count: choice.index,
+          metadata: {
+            finish_reason: choice.finish_reason,
+            logprobs: choice.logprobs,
+            ...responseWithoutChoices,
+          },
+        };
+        outputs.push(output);
+      }
+
+      return outputs;
+    } else {
+      // For streaming, then we can just run the prompt as a simple completion
+      const responseStream = await this.openai.completions.create(
+        completionParams as CompletionCreateParamsStreaming,
+        {
+          stream,
+        }
+      );
+
+      // These maps are keyed by the choice index
+      let outputs: Map<number, ExecuteResult> = new Map<
+        number,
+        ExecuteResult
+      >();
+      let completions: Map<number, string> = new Map<number, string>();
+      for await (const chunk of responseStream) {
+        for (let i = 0; i < chunk.choices.length; i++) {
+          const choice = chunk.choices[i];
+
+          const completionText = completions.get(choice.index);
+          const accumulatedText = (completionText ?? "") + choice.text;
+          completions.set(choice.index, accumulatedText);
+
+          // Send the stream callback for each choice
+          options?.callbacks?.streamCallback(
+            /*data*/ choice.text,
+            /*accumulatedData*/ accumulatedText,
+            /*index*/ choice.index
+          );
+
+          const chunkWithoutChoices = _.omit(chunk, "choices");
+          const output: ExecuteResult = {
+            output_type: "execute_result",
+            data: accumulatedText,
+            execution_count: choice.index,
+            metadata: {
+              finish_reason: choice.finish_reason,
+              logprobs: choice.logprobs,
+              ...chunkWithoutChoices,
+            },
+          };
+
+          outputs.set(choice.index, output);
+        }
+      }
+
+      // TODO: saqadri - determine if we want to append the new outputs to the previous ones. For now we overwrite them.
+      prompt.outputs = Array.from(outputs.values());
+      return prompt.outputs;
+    }
   }
 }
 
@@ -243,7 +335,14 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
             remember_chat_context: true,
           },
           outputs:
-            assistantResponse != null ? [{ ...assistantResponse }] : undefined,
+            assistantResponse != null
+              ? [
+                  {
+                    output_type: "execute_result",
+                    data: { ...assistantResponse },
+                  },
+                ]
+              : undefined,
         };
 
         prompts.push(prompt);
@@ -251,6 +350,9 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
 
       i++;
     }
+
+    // Rename the last prompt to the requested prompt name
+    prompts[prompts.length - 1].name = promptName;
 
     return prompts;
   }
@@ -304,11 +406,11 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
             );
 
             this.addPromptAsMessage(currentPrompt, aiConfig, messages, params);
+          }
 
-            if (currentPrompt.name === prompt.name) {
-              // If this is the current prompt, then we have reached the end of the chat history
-              break;
-            }
+          if (currentPrompt.name === prompt.name) {
+            // If this is the current prompt, then we have reached the end of the chat history
+            break;
           }
         }
 
@@ -316,8 +418,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
         completionParams.messages = messages;
       }
     } else {
-      // If messages are already specified, then just resolve the prompt template with the given parameters and append the latest message
-
+      // If messages are already specified in the model settings, then just resolve each message with the given parameters and append the latest message
       for (let i = 0; i < completionParams.messages.length; i++) {
         completionParams.messages[i].content = this.resolvePromptTemplate(
           completionParams.messages[i].content ?? "",
@@ -340,12 +441,87 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     return completionParams;
   }
 
-  public run(
+  public async run(
     prompt: Prompt,
     aiConfig: AIConfigRuntime,
+    options?: InferenceOptions,
     params?: JSONObject | undefined
-  ): Promise<Output> {
-    throw new Error("Method not implemented.");
+  ): Promise<Output | Output[]> {
+    const completionParams = this.deserialize(prompt, aiConfig, params);
+    const stream = options?.stream ?? completionParams.stream ?? true;
+
+    if (!stream) {
+      // If we aren't streaming, then we can just run the prompt as a simple completion
+      const response = await this.openai.chat.completions.create(
+        completionParams as Chat.ChatCompletionCreateParamsNonStreaming,
+        {
+          stream,
+        }
+      );
+
+      // Save response as Output(s) in the Prompt
+      const outputs: ExecuteResult[] = [];
+      const responseWithoutChoices = _.omit(response, "choices");
+      for (const choice of response.choices) {
+        const output: ExecuteResult = {
+          output_type: "execute_result",
+          data: { ...choice.message },
+          execution_count: choice.index,
+          metadata: {
+            finish_reason: choice.finish_reason,
+            ...responseWithoutChoices,
+          },
+        };
+
+        outputs.push(output);
+      }
+
+      // TODO: saqadri - determine if we want to append the new outputs to the previous ones. For now we overwrite them.
+      prompt.outputs = outputs;
+      return outputs;
+    } else {
+      // For streaming, then we can just run the prompt as a simple completion
+      const responseStream = await this.openai.chat.completions.create(
+        completionParams as Chat.ChatCompletionCreateParamsStreaming,
+        {
+          stream,
+        }
+      );
+
+      let outputs = new Map<number, ExecuteResult>();
+      let messages: Map<number, Chat.ChatCompletionMessage> | null = null;
+      for await (const chunk of responseStream) {
+        messages = multiChoiceMessageReducer(messages, chunk);
+
+        for (let i = 0; i < chunk.choices.length; i++) {
+          const choice = chunk.choices[i];
+          const message = messages.get(choice.index);
+
+          // Send the stream callback for each choice
+          options?.callbacks?.streamCallback(
+            /*data*/ {
+              ...choice.delta,
+            },
+            /*accumulatedData*/ message,
+            /*index*/ choice.index
+          );
+
+          const output: ExecuteResult = {
+            output_type: "execute_result",
+            data: { ...message },
+            execution_count: choice.index,
+            metadata: {
+              finish_reason: choice.finish_reason,
+            },
+          };
+          outputs.set(choice.index, output);
+        }
+      }
+
+      // TODO: saqadri - determine if we want to append the new outputs to the previous ones. For now we overwrite them.
+      prompt.outputs = Array.from(outputs.values());
+      return prompt.outputs;
+    }
   }
 
   private addPromptAsMessage(
@@ -380,11 +556,13 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
 
     const output = OpenAIChatModelParser.getLatestOutput(prompt);
     if (output != null) {
-      const outputMessage =
-        output as unknown as Chat.ChatCompletionMessageParam;
-      // If the prompt has output saved, add it to the messages array
-      if (outputMessage.role === "assistant") {
-        messages.push(outputMessage);
+      if (output.output_type === "execute_result") {
+        const outputMessage =
+          output.data as unknown as Chat.ChatCompletionMessageParam;
+        // If the prompt has output saved, add it to the messages array
+        if (outputMessage.role === "assistant") {
+          messages.push(outputMessage);
+        }
       }
     }
 
@@ -470,6 +648,45 @@ export function refineChatCompletionParams(
         : undefined,
     user: params.user as string,
   };
+}
+
+const reduce = (acc: any, delta: any) => {
+  acc = { ...acc };
+  for (const [key, value] of Object.entries(delta)) {
+    if (acc[key] === undefined || acc[key] === null) {
+      acc[key] = value;
+    } else if (typeof acc[key] === "string" && typeof value === "string") {
+      (acc[key] as string) += value;
+    } else if (typeof acc[key] === "object" && !Array.isArray(acc[key])) {
+      acc[key] = reduce(acc[key], value);
+    }
+  }
+  return acc;
+};
+
+function multiChoiceMessageReducer(
+  messages: Map<number, Chat.ChatCompletionMessage> | null,
+  chunk: Chat.ChatCompletionChunk
+): Map<number, Chat.ChatCompletionMessage> {
+  if (messages == null) {
+    messages = new Map<number, Chat.ChatCompletionMessage>();
+  } else if (messages.size !== chunk.choices.length) {
+    throw new Error(
+      "Invalid number of previous choices -- it should match the incoming number of choices"
+    );
+  }
+
+  for (let i = 0; i < chunk.choices.length; i++) {
+    const choice = chunk.choices[i];
+    const previousMessage = messages.get(choice.index);
+    const updatedMessage = reduce(
+      previousMessage ?? [],
+      choice.delta
+    ) as Chat.ChatCompletionMessage;
+    messages.set(choice.index, updatedMessage);
+  }
+
+  return messages;
 }
 
 export function countTokens(text: string): number {

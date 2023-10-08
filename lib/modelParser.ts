@@ -3,6 +3,34 @@ import { Output, Prompt } from "../types";
 import { AIConfigRuntime } from "./config";
 
 /**
+ * Options that determine how to run inference for the prompt (e.g. whether to stream the output or not, callbacks, etc.)
+ */
+export type InferenceOptions = JSONObject & {
+  /**
+   * Whether to stream the output of the model or not. Defaults to true when possible
+   */
+  stream?: boolean;
+
+  callbacks?: InferenceCallbackHandlers;
+};
+
+export type InferenceCallbackHandlers = {
+  /**
+   * Called when a model is in streaming mode and an update is available
+   * @param data The new data chunk from the stream.
+   * @param accumulatedData The running sum of all data chunks received so far.
+   * @param index The index of the choice that the data chunk belongs to (by default this will be 0, but if the model generates multiple choices, this will be the index of the choice that the data chunk belongs to)
+   */
+  streamCallback(
+    data: any,
+    accumulatedData: any,
+    index: number
+  ): Promise<any> | any;
+
+  [k: string]: any;
+};
+
+/**
  * This is an abstract class that defines how to deserialize a prompt and run inference for it using a model.
  * This is meant to be highly extensible to allow any kind of model to be used with the AIConfig.
  */
@@ -53,13 +81,15 @@ export abstract class ModelParser<T = JSONObject, R = T> {
    * Executes model inference for the given prompt based on the provided completion data.
    * @param prompt The Prompt to run inference for.
    * @param aiConfig The AIConfig that the prompt belongs to.
+   * @param options Options that determine how to run inference for the prompt (e.g. whether to stream the output or not)
    * @param params Optional parameters to override the prompt's parameters with.
    */
   public abstract run(
     prompt: Prompt,
     aiConfig: AIConfigRuntime,
+    options?: InferenceOptions,
     params?: JSONObject
-  ): Promise<Output>;
+  ): Promise<Output | Output[]>;
 
   /**
    * Get the model settings for a given prompt, merging any global model settings with the prompt's model settings.
