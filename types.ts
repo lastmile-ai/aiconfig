@@ -120,18 +120,17 @@ export type Prompt = {
   outputs?: Output[];
 };
 
-//#region Prompt Outputs (Work-in-progress)
+//#region Prompt Outputs
 
 /**
  * Model inference result.
- * Ignore: this is a work-in-progress
  */
-export type Output = JSONObject | ExecuteResult | DisplayData | Stream | Error;
+export type Output = ExecuteResult | Error;
 
 /**
  * Result of executing a prompt.
  */
-export interface ExecuteResult {
+export type ExecuteResult = {
   /**
    * Type of output.
    */
@@ -140,30 +139,26 @@ export interface ExecuteResult {
   /**
    * A result's prompt number.
    */
-  execution_count: number | null;
+  execution_count?: number;
 
   /**
    * A mime-type keyed dictionary of data
    */
-  data: {
-    /**
-     * mimetype output (e.g. text/plain), represented as either an array of strings or a string.
-     */
-    [k: string]: string | string[];
-  };
+  data: JSONValue;
 
   /**
    * Output metadata.
    */
-  metadata: {
+  metadata?: {
     [k: string]: any;
   };
-}
+};
 
 /**
  * Data displayed as a result of inference.
+ * Ignore: this is a work-in-progress
  */
-export interface DisplayData {
+export type DisplayData = {
   /**
    * Type of output.
    */
@@ -185,12 +180,13 @@ export interface DisplayData {
   metadata: {
     [k: string]: any;
   };
-}
+};
 
 /**
  * Stream output from inference.
+ * Ignore: this is a work-in-progress
  */
-export interface Stream {
+export type Stream = {
   /**
    * Type of output.
    */
@@ -205,12 +201,12 @@ export interface Stream {
    * The stream's text output, represented as an array of strings.
    */
   text: string | string[];
-}
+};
 
 /**
  * Output of an error that occurred during inference.
  */
-export interface Error {
+export type Error = {
   /**
    * Type of output.
    */
@@ -230,6 +226,6 @@ export interface Error {
    * The error's traceback, represented as an array of strings.
    */
   traceback: string[];
-}
+};
 
 //#endregion

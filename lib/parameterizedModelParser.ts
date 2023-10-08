@@ -1,7 +1,7 @@
 import { JSONObject } from "../common";
 import { Prompt, Output } from "../types";
 import { AIConfigRuntime } from "./config";
-import { ModelParser } from "./modelParser";
+import { InferenceOptions, ModelParser } from "./modelParser";
 import {
   PromptNode,
   getDependencyGraph,
@@ -74,6 +74,7 @@ export abstract class ParameterizedModelParser<
   public async runWithDependencies(
     promptName: string,
     aiConfig: AIConfigRuntime,
+    options?: InferenceOptions,
     params: JSONObject = {}
   ) {
     const dependencyGraph = getDependencyGraph(aiConfig);
