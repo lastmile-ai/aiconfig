@@ -6,7 +6,7 @@ import { AIConfigRuntime } from "./config";
  * This is an abstract class that defines how to deserialize a prompt and run inference for it using a model.
  * This is meant to be highly extensible to allow any kind of model to be used with the AIConfig.
  */
-export abstract class ModelParser<T = JSONObject, R = JSONObject> {
+export abstract class ModelParser<T = JSONObject, R = T> {
   /**
    * The name of the model. This is used as the key in the model registry for this ModelParser, and specified as the model ID in the AIConfig.
    */
@@ -25,14 +25,16 @@ export abstract class ModelParser<T = JSONObject, R = JSONObject> {
    * @param promptName The name to save the prompt as.
    * @param data The prompt data to serialize into the Prompt object.
    * @param aiConfig The AIConfig that the prompt belongs to.
+   * @param params Optional parameters to save alongside the prompt.
    * @see Prompt
    * @example data: {prompt: "Hello {{name}}", parameters: {name: "World"}, inferenceSettings: {temperature: 0.5, systemPrompt:"Be a friendly assistant"}}
    */
   public abstract serialize(
     promptName: string,
     data: T,
-    aiConfig: AIConfigRuntime
-  ): Prompt;
+    aiConfig: AIConfigRuntime,
+    params?: JSONObject
+  ): Prompt | Prompt[];
 
   /**
    * Deserialize a Prompt object loaded from an AIConfig into a structure that can be used for model inference.
@@ -58,4 +60,54 @@ export abstract class ModelParser<T = JSONObject, R = JSONObject> {
     aiConfig: AIConfigRuntime,
     params?: JSONObject
   ): Promise<Output>;
+
+  /**
+   * Get the model settings for a given prompt, merging any global model settings with the prompt's model settings.
+   * @param prompt The prompt to get the model settings for.
+   * @param aiConfig The AIConfig that the prompt belongs to.
+   * @returns The merged model settings for the prompt.
+   */
+  public getModelSettings(
+    prompt: Prompt,
+    aiConfig: AIConfigRuntime
+  ): JSONObject | undefined {
+    if (prompt == null) {
+      return aiConfig.metadata.models?.[this.id];
+    }
+
+    const modelMetadata = prompt.metadata.model;
+    if (typeof modelMetadata === "string") {
+      return aiConfig.metadata.models?.[modelMetadata];
+    } else {
+      const globalModelMetadata =
+        aiConfig.metadata.models?.[modelMetadata.name];
+
+      return {
+        ...(globalModelMetadata || {}),
+        ...(modelMetadata.settings || {}),
+      };
+    }
+  }
+
+  /**
+   * Gets the latest output associated with a Prompt (if any)
+   */
+  static getLatestOutput(prompt: Prompt): Output | undefined {
+    if (prompt.outputs == null || prompt.outputs.length === 0) {
+      return undefined;
+    }
+
+    return prompt.outputs[prompt.outputs.length - 1];
+  }
+
+  /**
+   * Extracts the model ID from the Prompt object.
+   */
+  static getModelName(prompt: Prompt) {
+    if (typeof prompt.metadata.model === "string") {
+      return prompt.metadata.model;
+    } else {
+      return prompt.metadata.model?.name;
+    }
+  }
 }
