@@ -1,3 +1,4 @@
+import { Prompt } from "../types";
 import { ModelParser } from "./modelParser";
 
 export class ModelParserRegistry {
@@ -27,5 +28,10 @@ export class ModelParserRegistry {
    */
   public static getModelParser(id: string) {
     return this.parsers.get(id);
+  }
+
+  public static getModelParserForPrompt(prompt: Prompt) {
+    const id = ModelParser.getModelName(prompt);
+    return this.getModelParser(id);
   }
 }

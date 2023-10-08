@@ -2,19 +2,36 @@ import { set } from "lodash";
 import { compile } from "handlebars";
 import { AIConfig, Output, Prompt } from "../types";
 import { JSONObject } from "../common";
+import { ModelParserRegistry } from "./modelParserRegistry";
+import { ParameterizedModelParser } from "./parameterizedModelParser";
+import { AIConfigRuntime } from "./config";
 
-export function getPromptTemplate(prompt: Prompt) {
+export function getPromptTemplate(prompt: Prompt, aiConfig: AIConfigRuntime) {
+  const modelParser = ModelParserRegistry.getModelParserForPrompt(prompt);
+  if (modelParser instanceof ParameterizedModelParser) {
+    return modelParser.getPromptTemplate(prompt, aiConfig);
+  }
+
   if (typeof prompt.input === "string") {
     return prompt.input;
+  } else if (typeof prompt.input?.data === "string") {
+    return prompt.input?.data;
   } else {
-    return prompt.input?.prompt;
+    throw new Error(
+      `Cannot get prompt template string from prompt: ${JSON.stringify(
+        prompt.input
+      )}`
+    );
   }
 }
 
 // TODO: saqadri - this function should be implemented in conjunction with the model registry in order to
 // generalize its implementation and let different model providers define the serialization format for
 // system prompts.
-export function getSystemPromptTemplate(prompt: Prompt, aiConfig: AIConfig) {
+export function getSystemPromptTemplate(
+  prompt: Prompt,
+  aiConfig: AIConfigRuntime
+) {
   // TODO: saqadri - create a getModelSettings abstraction as well
   let modelSettings;
   if (typeof prompt.metadata?.model === "string") {
@@ -31,18 +48,38 @@ export function getSystemPromptTemplate(prompt: Prompt, aiConfig: AIConfig) {
 }
 
 /**
- * Takes the prompt string containing possible handlebars syntax, and returns the resolved prompt string with all the parameters filled in.
+ * Takes the Prompt object and returns the resolved prompt string with all the parameters filled in.
  */
 export function resolvePrompt(
   prompt: Prompt,
-  aiConfig: AIConfig,
+  aiConfig: AIConfigRuntime,
   params?: JSONObject
 ) {
-  const promptTemplate = getPromptTemplate(prompt);
+  const promptTemplate = getPromptTemplate(prompt, aiConfig);
+
+  const resolvedPrompt = resolvePromptString(
+    promptTemplate,
+    prompt,
+    aiConfig,
+    params
+  );
+
+  return resolvedPrompt;
+}
+
+/**
+ * Takes the prompt string containing possible handlebars syntax, and returns the resolved prompt string with all the parameters filled in.
+ */
+export function resolvePromptString(
+  promptTemplate: string,
+  prompt?: Prompt,
+  aiConfig?: AIConfigRuntime,
+  params?: JSONObject
+) {
   const template = compile(promptTemplate);
 
-  const configParameters = aiConfig.metadata?.parameters;
-  const promptParameters = prompt.metadata?.parameters;
+  const configParameters = aiConfig?.metadata?.parameters;
+  const promptParameters = prompt?.metadata?.parameters;
 
   let data = {
     ...(configParameters || {}),
@@ -51,20 +88,22 @@ export function resolvePrompt(
   };
 
   // Add named cells above the current cell to the parameters to allow references to them
-  for (let i = 0; i < aiConfig.prompts.length; i++) {
-    const currentPrompt = aiConfig.prompts[i];
-    if (prompt.name === currentPrompt.name) {
-      // We only allow references to prompts above the current prompt to prevent cycles by design
-      // TODO: saqadri - revisit this restriction in the future.
-      break;
-    }
+  if (prompt != null && aiConfig != null) {
+    for (let i = 0; i < aiConfig.prompts.length; i++) {
+      const currentPrompt = aiConfig.prompts[i];
+      if (prompt.name === currentPrompt.name) {
+        // We only allow references to prompts above the current prompt to prevent cycles by design
+        // TODO: saqadri - revisit this restriction in the future.
+        break;
+      }
 
-    const resolvedParameter = resolvePromptReference(currentPrompt, aiConfig);
-    if (resolvedParameter != null) {
-      data = {
-        ...data,
-        ...resolvedParameter,
-      };
+      const resolvedParameter = resolvePromptReference(currentPrompt, aiConfig);
+      if (resolvedParameter != null) {
+        data = {
+          ...data,
+          ...resolvedParameter,
+        };
+      }
     }
   }
 
@@ -77,12 +116,14 @@ export function resolvePrompt(
  * Get the default prompt name in format "prompt_#" where # is the 1-indexed number of the new prompt inserted
  * below previous prompt.
  */
-export function getDefaultNewPromptName(
+export function createPromptName(
   previousPromptName: string | null,
-  aiConfig: AIConfig
+  promptPrefix: string | null,
+  aiConfig: AIConfigRuntime
 ) {
+  const prefix = promptPrefix || "prompt_";
   if (previousPromptName == null) {
-    return "prompt_1";
+    return `${prefix}1`;
   }
   const existingPromptNames = new Set<string>();
   let newPromptNumber = 1;
@@ -104,12 +145,12 @@ export function getDefaultNewPromptName(
     }
   }
 
-  let newPromptName = `prompt_${newPromptNumber}`;
+  let newPromptName = `${prefix}${newPromptNumber}`;
 
   // Make sure we have a unique prompt name. Increment the # if needed until we find one
   while (existingPromptNames.has(newPromptName)) {
     newPromptNumber++;
-    newPromptName = `prompt_${newPromptNumber}`;
+    newPromptName = `${prefix}${newPromptNumber}`;
   }
 
   return newPromptName;
@@ -119,7 +160,7 @@ export function getDefaultNewPromptName(
 export function getPromptDependencies(
   promptTemplate: string,
   promptName: string,
-  aiConfig: AIConfig
+  aiConfig: AIConfigRuntime
 ) {
   // This will contain the parameters referenced, as well as their specific sub-properties
   // We only care about top-level references, so object.keys would give us all root variables referenced.
@@ -186,7 +227,10 @@ function graphToObject(
   return graphObj;
 }
 
-export function getDependencyGraph(aiConfig: AIConfig, promptName?: string) {
+export function getDependencyGraph(
+  aiConfig: AIConfigRuntime,
+  promptName?: string
+) {
   const graph = new Map<string, PromptNode>();
   const promptsMap = new Map<string, Prompt>();
 
@@ -245,7 +289,7 @@ export function getDependencyGraph(aiConfig: AIConfig, promptName?: string) {
 
 function updateDependencyGraph(
   promptName: string,
-  aiConfig: AIConfig,
+  aiConfig: AIConfigRuntime,
   promptsMap: Map<string, Prompt>,
   nodes: Map<string, PromptNode>
 ) {
@@ -266,7 +310,7 @@ function updateDependencyGraph(
 
   let promptDependencies = new Set<string>();
 
-  const promptTemplate = getPromptTemplate(prompt);
+  const promptTemplate = getPromptTemplate(prompt, aiConfig);
   if (promptTemplate) {
     promptDependencies = getPromptDependencies(
       promptTemplate,
@@ -311,13 +355,16 @@ export function getOutputText(output: Output | null): string | null {
   throw new Error("Not yet implemented");
 }
 
-export function resolvePromptReference(prompt: Prompt, aiConfig: AIConfig) {
+export function resolvePromptReference(
+  prompt: Prompt,
+  aiConfig: AIConfigRuntime
+) {
   const parameterName = prompt.name;
   if (!parameterName) {
     return null;
   }
 
-  const input = getPromptTemplate(prompt);
+  const input = getPromptTemplate(prompt, aiConfig);
   const output =
     prompt.outputs != null && prompt.outputs.length > 0
       ? prompt.outputs[prompt.outputs.length - 1]

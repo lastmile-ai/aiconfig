@@ -2,7 +2,12 @@ import { JSONObject } from "../common";
 import { Prompt, Output } from "../types";
 import { AIConfigRuntime } from "./config";
 import { ModelParser } from "./modelParser";
-import { PromptNode, getDependencyGraph, resolvePrompt } from "./parameterize";
+import {
+  PromptNode,
+  getDependencyGraph,
+  resolvePrompt,
+  resolvePromptString,
+} from "./parameterize";
 
 /**
  * An abstract ModelParser that handles parameterized prompts that contain Handlebars templates.
@@ -12,10 +17,52 @@ import { PromptNode, getDependencyGraph, resolvePrompt } from "./parameterize";
  */
 export abstract class ParameterizedModelParser<
   T = JSONObject,
-  R = JSONObject
-> extends ModelParser<T, string> {
-  public deserialize(prompt: Prompt, aiConfig: AIConfigRuntime) {
-    return resolvePrompt(prompt, aiConfig);
+  R = T
+> extends ModelParser<T, R | string> {
+  /**
+   * Resolves a given prompt with the provided parameters (applied from the AIConfig as well as passed in params).
+   * Use this function to resolve a prompt string before passing it to the model.
+   */
+  public deserialize(
+    prompt: Prompt,
+    aiConfig: AIConfigRuntime,
+    params?: JSONObject
+  ): R | string {
+    return resolvePrompt(prompt, aiConfig, params);
+  }
+
+  /**
+   * Resolves a templated string with the provided parameters (applied from the AIConfig as well as passed in params).
+   * @param promptTemplate The template string to resolve.
+   * @param prompt The prompt object that the template string belongs to (if any).
+   * @param aiConfig The AIConfig that the template string belongs to (if any).
+   * @param params Optional parameters resolve the template string with.
+   * @returns The resolved string.
+   */
+  public resolvePromptTemplate(
+    promptTemplate: string,
+    prompt?: Prompt,
+    aiConfig?: AIConfigRuntime,
+    params?: JSONObject
+  ): string {
+    return resolvePromptString(promptTemplate, prompt, aiConfig, params);
+  }
+
+  /**
+   * Get the prompt template string from a prompt.
+   */
+  public getPromptTemplate(prompt: Prompt, aiConfig: AIConfigRuntime): string {
+    if (typeof prompt.input === "string") {
+      return prompt.input;
+    } else if (typeof prompt.input?.data === "string") {
+      return prompt.input?.data;
+    } else {
+      throw new Error(
+        `Cannot get prompt template string from prompt: ${JSON.stringify(
+          prompt.input
+        )}`
+      );
+    }
   }
 
   /**

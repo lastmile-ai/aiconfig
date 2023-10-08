@@ -1,4 +1,4 @@
-import { JSONObject } from "./common";
+import { JSONObject, JSONValue } from "./common";
 
 /**
  * AIConfig schema, latest version. For older versions, see AIConfigV*.
@@ -58,6 +58,17 @@ export type SchemaVersion =
   | "v1"
   | "latest";
 
+export type PromptInput =
+  | {
+      /**
+       * Any additional inputs to the model.
+       */
+      data?: JSONValue;
+
+      [k: string]: any;
+    }
+  | string;
+
 export type InferenceSettings = JSONObject;
 export type GlobalModelMetadata = {
   [model_name: string]: InferenceSettings;
@@ -77,21 +88,7 @@ export type Prompt = {
   /**
    * The prompt string, or a more complex prompt object.
    */
-  input:
-    | {
-        /**
-         * The prompt string, which may be a handlebars template.
-         */
-        prompt: string;
-
-        /**
-         * Any additional inputs to the model.
-         */
-        data?: any;
-
-        [k: string]: any;
-      }
-    | string;
+  input: PromptInput;
 
   metadata: {
     /**
@@ -129,7 +126,7 @@ export type Prompt = {
  * Model inference result.
  * Ignore: this is a work-in-progress
  */
-export type Output = ExecuteResult | DisplayData | Stream | Error;
+export type Output = JSONObject | ExecuteResult | DisplayData | Stream | Error;
 
 /**
  * Result of executing a prompt.
