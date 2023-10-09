@@ -220,7 +220,7 @@ export class AIConfigRuntime implements AIConfig {
       throw new Error(`E1011: Prompt ${promptName} does not exist in AIConfig`);
     }
 
-    const modelName = ModelParser.getModelName(prompt);
+    const modelName = this.getModelName(prompt);
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
       throw new Error(
@@ -250,7 +250,7 @@ export class AIConfigRuntime implements AIConfig {
       throw new Error(`E1013: Prompt ${promptName} does not exist in AIConfig`);
     }
 
-    const modelName = ModelParser.getModelName(prompt);
+    const modelName = this.getModelName(prompt);
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
       throw new Error(
@@ -288,7 +288,7 @@ export class AIConfigRuntime implements AIConfig {
       throw new Error(`E1015: Prompt ${promptName} does not exist in AIConfig`);
     }
 
-    const modelName = ModelParser.getModelName(prompt);
+    const modelName = this.getModelName(prompt);
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
       throw new Error(
@@ -564,7 +564,7 @@ export class AIConfigRuntime implements AIConfig {
       }
 
       const globalMetadata = this.metadata;
-      const modelName = ModelParser.getModelName(prompt);
+      const modelName = this.getModelName(prompt);
       const globalModelMetadata: { model: ModelMetadata } = {
         model: {
           name: modelName,
@@ -581,6 +581,114 @@ export class AIConfigRuntime implements AIConfig {
     } else {
       return this.metadata;
     }
+  }
+
+  /**
+   * Add an output to the prompt with the given name in the AIConfig.
+   * @param promptName The name of the prompt to add the output to.
+   * @param output The output to add.
+   * @param overwrite Whether to overwrite the existing outputs for the prompt, or append to the end (defaults to false).
+   */
+  public addOutput(
+    promptName: string,
+    output: Output,
+    overwrite: boolean = false
+  ) {
+    const prompt = this.getPrompt(promptName);
+    if (!prompt) {
+      throw new Error(
+        `E1028: Cannot add output. Prompt ${promptName} not found in AIConfig.`
+      );
+    }
+
+    if (overwrite || prompt.outputs == null) {
+      prompt.outputs = [output];
+    } else {
+      prompt.outputs.push(output);
+    }
+
+    return prompt.outputs;
+  }
+
+  /**
+   * Delete the outputs for the prompt with the given name.
+   * @param promptName The name of the prompt whose outputs to delete.
+   * @returns The outputs that were deleted from the prompt.
+   */
+  public deleteOutput(promptName: string) {
+    const prompt = this.getPrompt(promptName);
+    if (!prompt) {
+      throw new Error(
+        `E1029: Cannot delete outputs. Prompt ${promptName} not found in AIConfig.`
+      );
+    }
+
+    const existingOutputs = [...(prompt.outputs || [])];
+    prompt.outputs = [];
+
+    return existingOutputs;
+  }
+
+  /**
+   * Gets the latest output associated with a Prompt (if any)
+   */
+  public getLatestOutput(prompt: string | Prompt): Output | undefined {
+    if (typeof prompt === "string") {
+      prompt = this.getPrompt(prompt)!;
+      if (!prompt) {
+        throw new Error(
+          `E1029: Cannot delete outputs. Prompt ${prompt} not found in AIConfig.`
+        );
+      }
+    }
+
+    if (prompt.outputs == null || prompt.outputs.length === 0) {
+      return undefined;
+    }
+
+    return prompt.outputs[prompt.outputs.length - 1];
+  }
+
+  /**
+   * Extracts the model ID from the Prompt object.
+   */
+  public getModelName(prompt: string | Prompt) {
+    if (typeof prompt === "string") {
+      prompt = this.getPrompt(prompt)!;
+      if (!prompt) {
+        throw new Error(
+          `E1030: Cannot delete outputs. Prompt ${prompt} not found in AIConfig.`
+        );
+      }
+    }
+
+    if (typeof prompt.metadata.model === "string") {
+      return prompt.metadata.model;
+    } else {
+      return prompt.metadata.model?.name;
+    }
+  }
+
+  /**
+   * Get the string representing the output from a prompt (if any).
+   */
+  public getOutputText(prompt: string | Prompt, output?: Output): string {
+    if (typeof prompt === "string") {
+      prompt = this.getPrompt(prompt)!;
+      if (!prompt) {
+        throw new Error(
+          `E1031: Cannot delete outputs. Prompt ${prompt} not found in AIConfig.`
+        );
+      }
+    }
+
+    const modelParser = ModelParserRegistry.getModelParserForPrompt(prompt);
+    if (modelParser != null) {
+      return modelParser.getOutputText(prompt, this, output);
+    }
+
+    // TODO: saqadri - log a warning if the model parser isn't parameterized
+    return "";
   }
 
   //#endregion
