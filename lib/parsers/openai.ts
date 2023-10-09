@@ -239,7 +239,7 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
     output?: Output
   ): string {
     if (output == null) {
-      output = OpenAIModelParser.getLatestOutput(prompt);
+      output = aiConfig.getLatestOutput(prompt);
     }
 
     if (output == null) {
@@ -417,8 +417,8 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
           const currentPrompt = aiConfig.prompts[i];
 
           if (
-            OpenAIChatModelParser.getModelName(currentPrompt) ===
-            OpenAIChatModelParser.getModelName(prompt)
+            aiConfig.getModelName(currentPrompt) ===
+            aiConfig.getModelName(prompt)
           ) {
             // Get the prompt template string
             let promptTemplate: string = this.getPromptTemplate(
@@ -551,7 +551,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     output?: Output
   ): string {
     if (output == null) {
-      output = OpenAIChatModelParser.getLatestOutput(prompt);
+      output = aiConfig.getLatestOutput(prompt);
     }
 
     if (output == null) {
@@ -602,7 +602,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
       });
     }
 
-    const output = OpenAIChatModelParser.getLatestOutput(prompt);
+    const output = aiConfig.getLatestOutput(prompt);
     if (output != null) {
       if (output.output_type === "execute_result") {
         const outputMessage =

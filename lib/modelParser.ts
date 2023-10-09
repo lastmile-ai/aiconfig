@@ -92,6 +92,15 @@ export abstract class ModelParser<T = JSONObject, R = T> {
   ): Promise<Output | Output[]>;
 
   /**
+   * Get the string representing the output from a prompt.
+   */
+  public abstract getOutputText(
+    prompt: Prompt,
+    aiConfig: AIConfigRuntime,
+    output?: Output
+  ): string;
+
+  /**
    * Get the model settings for a given prompt, merging any global model settings with the prompt's model settings.
    * @param prompt The prompt to get the model settings for.
    * @param aiConfig The AIConfig that the prompt belongs to.
@@ -116,28 +125,6 @@ export abstract class ModelParser<T = JSONObject, R = T> {
         ...(globalModelMetadata || {}),
         ...(modelMetadata.settings || {}),
       };
-    }
-  }
-
-  /**
-   * Gets the latest output associated with a Prompt (if any)
-   */
-  static getLatestOutput(prompt: Prompt): Output | undefined {
-    if (prompt.outputs == null || prompt.outputs.length === 0) {
-      return undefined;
-    }
-
-    return prompt.outputs[prompt.outputs.length - 1];
-  }
-
-  /**
-   * Extracts the model ID from the Prompt object.
-   */
-  static getModelName(prompt: Prompt) {
-    if (typeof prompt.metadata.model === "string") {
-      return prompt.metadata.model;
-    } else {
-      return prompt.metadata.model?.name;
     }
   }
 }

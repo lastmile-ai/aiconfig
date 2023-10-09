@@ -31,7 +31,11 @@ export class ModelParserRegistry {
   }
 
   public static getModelParserForPrompt(prompt: Prompt) {
-    const id = ModelParser.getModelName(prompt);
+    const id =
+      typeof prompt.metadata.model === "string"
+        ? prompt.metadata.model
+        : prompt.metadata.model?.name;
+
     return this.getModelParser(id);
   }
 }
