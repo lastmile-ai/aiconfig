@@ -115,7 +115,6 @@ export type Prompt = {
 
   /**
    * Execution, display, or stream outputs.
-   * Ignore: this is a work-in-progress
    */
   outputs?: Output[];
 };

@@ -84,7 +84,8 @@ export abstract class ParameterizedModelParser<
       aiConfig,
       params,
       dependencyGraph,
-      /*alreadyExecutedPrompts*/ new Set<string>()
+      /*alreadyExecutedPrompts*/ new Set<string>(),
+      options
     );
   }
 
@@ -103,7 +104,8 @@ export abstract class ParameterizedModelParser<
       };
       start: PromptNode[];
     },
-    alreadyExecutedPrompts: Set<string>
+    alreadyExecutedPrompts: Set<string>,
+    options?: InferenceOptions
   ) {
     if (alreadyExecutedPrompts.has(promptName)) {
       // It is possible to visit the same node multiple times dependending on the graph.
@@ -125,7 +127,8 @@ export abstract class ParameterizedModelParser<
           aiConfig,
           params,
           dependencyGraph,
-          alreadyExecutedPrompts
+          alreadyExecutedPrompts,
+          options
         )
       );
     }
@@ -142,7 +145,7 @@ export abstract class ParameterizedModelParser<
     if (prompt == null) {
       throw new Error(`Prompt ${promptName} not found in AIConfig`);
     }
-    const result = await this.run(prompt, aiConfig, params);
+    const result = await this.run(prompt, aiConfig, options, params);
     alreadyExecutedPrompts.add(promptName);
 
     return result;
