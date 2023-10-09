@@ -179,6 +179,7 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
         outputs.push(output);
       }
 
+      prompt.outputs = outputs;
       return outputs;
     } else {
       // For streaming, then we can just run the prompt as a simple completion
