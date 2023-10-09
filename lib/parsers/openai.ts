@@ -232,6 +232,26 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
       return prompt.outputs;
     }
   }
+
+  public getOutputText(
+    prompt: Prompt,
+    aiConfig: AIConfigRuntime,
+    output?: Output
+  ): string {
+    if (output == null) {
+      output = OpenAIModelParser.getLatestOutput(prompt);
+    }
+
+    if (output == null) {
+      return "";
+    }
+
+    if (output.output_type === "execute_result") {
+      return output.data as string;
+    } else {
+      return "";
+    }
+  }
 }
 
 export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCompletionCreateParams> {
@@ -522,6 +542,33 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
       // TODO: saqadri - determine if we want to append the new outputs to the previous ones. For now we overwrite them.
       prompt.outputs = Array.from(outputs.values());
       return prompt.outputs;
+    }
+  }
+
+  public getOutputText(
+    prompt: Prompt,
+    aiConfig: AIConfigRuntime,
+    output?: Output
+  ): string {
+    if (output == null) {
+      output = OpenAIChatModelParser.getLatestOutput(prompt);
+    }
+
+    if (output == null) {
+      return "";
+    }
+
+    if (output.output_type === "execute_result") {
+      const message = output.data as Chat.ChatCompletionMessageParam;
+      if (message.content != null) {
+        return message.content;
+      } else if (message.function_call) {
+        return JSON.stringify(message.function_call);
+      } else {
+        return "";
+      }
+    } else {
+      return "";
     }
   }
 

@@ -47,6 +47,20 @@ export function getSystemPromptTemplate(
   return systemPrompt as string;
 }
 
+export function getOutputText(
+  prompt: Prompt,
+  aiConfig: AIConfigRuntime,
+  output?: Output
+): string | null {
+  const modelParser = ModelParserRegistry.getModelParserForPrompt(prompt);
+  if (modelParser instanceof ParameterizedModelParser) {
+    return modelParser.getOutputText(prompt, aiConfig, output);
+  }
+
+  // TODO: saqadri - log a warning if the model parser isn't parameterized
+  return "";
+}
+
 /**
  * Takes the Prompt object and returns the resolved prompt string with all the parameters filled in.
  */
@@ -346,15 +360,6 @@ function updateDependencyGraph(
   );
 }
 
-export function getOutputText(output: Output | null): string | null {
-  if (!output) {
-    return null;
-  }
-
-  // TODO: saqadri - implement
-  throw new Error("Not yet implemented");
-}
-
 export function resolvePromptReference(
   prompt: Prompt,
   aiConfig: AIConfigRuntime
@@ -369,7 +374,8 @@ export function resolvePromptReference(
     prompt.outputs != null && prompt.outputs.length > 0
       ? prompt.outputs[prompt.outputs.length - 1]
       : null;
-  const outputText = output != null ? getOutputText(output) : null;
+  const outputText =
+    output != null ? getOutputText(prompt, aiConfig, output) : null;
 
   return {
     [parameterName]: {

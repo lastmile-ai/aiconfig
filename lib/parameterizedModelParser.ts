@@ -66,6 +66,15 @@ export abstract class ParameterizedModelParser<
   }
 
   /**
+   * Get the string representing the output from a prompt.
+   */
+  public abstract getOutputText(
+    prompt: Prompt,
+    aiConfig: AIConfigRuntime,
+    output?: Output
+  ): string;
+
+  /**
    * Re-runs all prompt dependencies. Dependencies are determined using parameter references in the prompt.
    * @param promptName The name of the prompt to run, along with its dependencies.
    * @example "If you have a prompt P2 that depends on another prompt P1's output, this function will run P1 first,\
