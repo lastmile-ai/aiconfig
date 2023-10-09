@@ -52,9 +52,8 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
     delete promptModelMetadata.prompt;
 
     // Check if AIConfig already has the model settings in its metadata
-    // TODO: saqadri - can the model ID be the data.model?
-    // (i.e. should globalModelMetada = aiConfig.metadata.models?.[data.model] ?? aiConfig.metadata.models?.[this.id];)
-    const globalModelMetadata = aiConfig.metadata.models?.[this.id];
+    const modelName = data.model ?? this.id;
+    const globalModelMetadata = aiConfig.metadata.models?.[modelName];
 
     if (globalModelMetadata != null) {
       // Check if the model settings from the input data are the same as the global model settings
@@ -78,15 +77,15 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
 
       if (Object.keys(overrides).length > 0) {
         modelMetadata = {
-          name: this.id,
+          name: modelName,
           settings: overrides,
         };
       } else {
-        modelMetadata = this.id;
+        modelMetadata = modelName;
       }
     } else {
       modelMetadata = {
-        name: this.id,
+        name: modelName,
         settings: promptModelMetadata,
       };
     }
@@ -294,9 +293,8 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     promptModelMetadata.system_prompt = systemPrompt;
 
     // Check if AIConfig already has the model settings in its metadata
-    // TODO: saqadri - can the model ID be the data.model?
-    // (i.e. should globalModelMetada = aiConfig.metadata.models?.[data.model] ?? aiConfig.metadata.models?.[this.id];)
-    const globalModelMetadata = aiConfig.metadata.models?.[this.id];
+    const modelName = data.model ?? this.id;
+    const globalModelMetadata = aiConfig.metadata.models?.[modelName];
 
     if (globalModelMetadata != null) {
       // Check if the model settings from the input data are the same as the global model settings
@@ -320,15 +318,15 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
 
       if (Object.keys(overrides).length > 0) {
         modelMetadata = {
-          name: this.id,
+          name: modelName,
           settings: overrides,
         };
       } else {
-        modelMetadata = this.id;
+        modelMetadata = modelName;
       }
     } else {
       modelMetadata = {
-        name: this.id,
+        name: modelName,
         settings: promptModelMetadata,
       };
     }
