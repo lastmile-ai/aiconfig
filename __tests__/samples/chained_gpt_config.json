@@ -1,38 +1,49 @@
 {
-    "name": "json helper config",
-    "description": "",
-    "schema_version": "latest",
-    "metadata": {
-        "parameters": {},
-        "models": {
-            "gpt-3.5-turbo": {
-                "model": "gpt-3.5-turbo",
-                "top_p": 1,
-                "max_tokens": 3000,
-                "temperature": 1
-            }
-        }
-    },
-    "prompts": [
-        {
-            "name": "prompt1",
-            "input": "I need to create a JSON representation of a list of products for our e-commerce website. Please provide the JSON structure with placeholders for product details.",
-            "metadata": {
-                "model": {
-                    "name": "gpt-3.5-turbo"
-                },
-                "remember_chat_context": true
-            }
+  "name": "json helper config",
+  "description": "",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {
+      "gpt-3.5-turbo": {
+        "model": "gpt-3.5-turbo",
+        "top_p": 1,
+        "max_tokens": 3000,
+        "temperature": 1
+      }
+    }
+  },
+  "prompts": [
+    {
+      "name": "prompt1",
+      "input": "I need to create a JSON representation of a list of products for our e-commerce website. Please provide the JSON structure with placeholders for product details. Product names: {{products}}",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo"
         },
-        {
-            "name": "prompt2",
-            "input": "Now, fill in the placeholders with the details of three products, including their names, prices, and descriptions.",
-            "metadata": {
-                "model": {
-                    "name": "gpt-3.5-turbo"
-                },
-                "remember_chat_context": true
-            }
+        "parameters": {
+          "products": "iPhone, MacBook, iPad"
         }
-    ]
+      }
+    },
+    {
+      "name": "prompt2",
+      "input": "Now, fill in the placeholders with the details of three products, including their names, prices, and descriptions.",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo"
+        }
+      }
+    },
+    {
+      "name": "prompt3",
+      "input": "Let's talk about something completely irrelevant to the previous discussion.",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo"
+        },
+        "remember_chat_context": false
+      }
+    }
+  ]
 }

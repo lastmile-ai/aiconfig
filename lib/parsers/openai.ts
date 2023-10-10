@@ -21,12 +21,10 @@ import _ from "lodash";
 import { InferenceOptions } from "../modelParser";
 
 export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreateParams> {
-  private openai: OpenAI;
+  private openai: OpenAI | null = null;
 
   public constructor(options?: ClientOptions) {
     super();
-    const apiKey = getAPIKeyFromEnv("OPENAI_API_KEY");
-    this.openai = new OpenAI({ apiKey, ...(options || {}) });
   }
 
   public serialize(
@@ -149,6 +147,11 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
     options?: InferenceOptions,
     params?: JSONObject | undefined
   ): Promise<Output | Output[]> {
+    if (!this.openai) {
+      const apiKey = getAPIKeyFromEnv("OPENAI_API_KEY");
+      this.openai = new OpenAI({ apiKey, ...(options || {}) });
+    }
+
     const completionParams = this.deserialize(prompt, aiConfig, params);
     const stream = options?.stream ?? completionParams.stream ?? true;
 
@@ -254,12 +257,10 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
 }
 
 export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCompletionCreateParams> {
-  private openai: OpenAI;
+  private openai: OpenAI | null = null;
 
   public constructor(options?: ClientOptions) {
     super();
-    const apiKey = getAPIKeyFromEnv("OPENAI_API_KEY");
-    this.openai = new OpenAI({ apiKey, ...(options || {}) });
   }
 
   public getPromptTemplate(prompt: Prompt, aiConfig: AIConfigRuntime): string {
@@ -408,7 +409,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
         messages.push(systemPrompt);
       }
 
-      if (modelMetadata?.remember_chat_context === true) {
+      if (prompt.metadata.remember_chat_context !== false) {
         // Loop through the prompts in the AIConfig and add the user messages to the messages array
 
         for (let i = 0; i < aiConfig.prompts.length; i++) {
@@ -418,12 +419,6 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
             aiConfig.getModelName(currentPrompt) ===
             aiConfig.getModelName(prompt)
           ) {
-            // Get the prompt template string
-            let promptTemplate: string = this.getPromptTemplate(
-              currentPrompt,
-              aiConfig
-            );
-
             this.addPromptAsMessage(currentPrompt, aiConfig, messages, params);
           }
 
@@ -432,10 +427,12 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
             break;
           }
         }
-
-        // Update the completion params with the resolved messages
-        completionParams.messages = messages;
+      } else {
+        this.addPromptAsMessage(prompt, aiConfig, messages, params);
       }
+
+      // Update the completion params with the resolved messages
+      completionParams.messages = messages;
     } else {
       // If messages are already specified in the model settings, then just resolve each message with the given parameters and append the latest message
       for (let i = 0; i < completionParams.messages.length; i++) {
@@ -466,6 +463,11 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     options?: InferenceOptions,
     params?: JSONObject | undefined
   ): Promise<Output | Output[]> {
+    if (!this.openai) {
+      const apiKey = getAPIKeyFromEnv("OPENAI_API_KEY");
+      this.openai = new OpenAI({ apiKey, ...(options || {}) });
+    }
+
     const completionParams = this.deserialize(prompt, aiConfig, params);
     const stream = options?.stream ?? completionParams.stream ?? true;
 

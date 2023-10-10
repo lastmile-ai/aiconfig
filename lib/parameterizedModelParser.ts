@@ -18,19 +18,7 @@ import {
 export abstract class ParameterizedModelParser<
   T = JSONObject,
   R = T
-> extends ModelParser<T, R | string> {
-  /**
-   * Resolves a given prompt with the provided parameters (applied from the AIConfig as well as passed in params).
-   * Use this function to resolve a prompt string before passing it to the model.
-   */
-  public deserialize(
-    prompt: Prompt,
-    aiConfig: AIConfigRuntime,
-    params?: JSONObject
-  ): R | string {
-    return resolvePrompt(prompt, aiConfig, params);
-  }
-
+> extends ModelParser<T, R> {
   /**
    * Resolves a templated string with the provided parameters (applied from the AIConfig as well as passed in params).
    * @param promptTemplate The template string to resolve.
