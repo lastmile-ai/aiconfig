@@ -13,6 +13,7 @@ import * as fs from "fs";
 import _ from "lodash";
 import { getAPIKeyFromEnv } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
+import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
 
 export type PromptWithOutputs = Prompt & { outputs?: Output[] };
 
@@ -25,6 +26,33 @@ export type SaveOptions = {
    */
   serializeOutputs?: boolean;
 };
+
+ModelParserRegistry.registerModelParser(new OpenAIModelParser(), [
+  "babbage-002",
+  "davinci-002",
+  "gpt-3.5-turbo-instruct",
+  "text-davinci-003",
+  "text-davinci-002",
+  "text-davinci-001",
+  "code-davinci-002",
+  "text-curie-001",
+  "text-babbage-001",
+  "text-ada-001",
+]);
+
+ModelParserRegistry.registerModelParser(new OpenAIChatModelParser(), [
+  "gpt-4",
+  "gpt-4-0314",
+  "gpt-4-0613",
+  "gpt-4-32k",
+  "gpt-4-32k-0314",
+  "gpt-4-32k-0613",
+  "gpt-3.5-turbo",
+  "gpt-3.5-turbo-16k",
+  "gpt-3.5-turbo-0301",
+  "gpt-3.5-turbo-0613",
+  "gpt-3.5-turbo-16k-0613",
+]);
 
 /**
  * Represents an AIConfig. This is the main class for interacting with AIConfig files.
@@ -230,6 +258,31 @@ export class AIConfigRuntime implements AIConfig {
 
     const resolvedPrompt = modelParser.deserialize(prompt, this, params);
     return resolvedPrompt;
+  }
+
+  /**
+   * Serializes the completion params into a Prompt object. Inverse of the `resolve` function.
+   * @param modelName The model name to create a Prompt object for.
+   * @param data The data to save as a Prompt object.
+   * @param params Optional parameters to save alongside the Prompt.
+   * @returns A Prompt or list of Prompts representing the input data.
+   */
+  public async serialize(
+    modelName: string,
+    data: JSONObject,
+    params?: JSONObject
+  ): Promise<Prompt | Prompt[]> {
+    const modelParser = ModelParserRegistry.getModelParser(modelName);
+    if (!modelParser) {
+      throw new Error(
+        `E1012: Unable to serialize data ${JSON.stringify(
+          data
+        )}: ModelParser for model ${modelName} does not exist`
+      );
+    }
+
+    const prompts = modelParser.serialize("prompt2", data, this, params);
+    return prompts;
   }
 
   /**

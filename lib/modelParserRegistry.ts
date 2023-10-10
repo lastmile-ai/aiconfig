@@ -12,7 +12,10 @@ export class ModelParserRegistry {
    * @param modelParser The model parser to add to the registry.
    * @param ids Optional list of model IDs to register the model parser for. If unspecified, the model parser will be registered for modelParser.id.
    */
-  public static registerModelParser(modelParser: ModelParser, ids?: string[]) {
+  public static registerModelParser(
+    modelParser: ModelParser<any, any>,
+    ids?: string[]
+  ) {
     if (ids) {
       for (const id of ids) {
         this.parsers.set(id, modelParser);
@@ -37,5 +40,20 @@ export class ModelParserRegistry {
         : prompt.metadata.model?.name;
 
     return this.getModelParser(id);
+  }
+
+  /**
+   * Removes a model parser from the registry.
+   * @param id The ID of the model parser to remove.
+   */
+  public static removeModelParser(id: string) {
+    this.parsers.delete(id);
+  }
+
+  /**
+   * Removes all model parsers from the registry.
+   */
+  public static clearRegistry() {
+    this.parsers.clear();
   }
 }
