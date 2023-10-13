@@ -1,3 +1,5 @@
+import { JSONObject, JSONValue } from "./common";
+
 /**
  * AIConfig schema, latest version. For older versions, see AIConfigV*.
  */
@@ -13,13 +15,7 @@ export type AIConfig = {
   /**
    * The version of the AIConfig schema.
    */
-  schema_version:
-    | {
-        major: number;
-        minor: number;
-      }
-    | "v1"
-    | "latest";
+  schema_version: SchemaVersion;
 
   /**
    * Root-level metadata that applies to the entire AIConfig.
@@ -36,9 +32,7 @@ export type AIConfig = {
      * Globally defined model settings. Any prompts that use these models will have these settings applied by default,
      * unless they override them with their own model settings.
      */
-    models?: {
-      [model_name: string]: InferenceSettings;
-    };
+    models?: GlobalModelMetadata;
 
     [k: string]: any;
   };
@@ -56,7 +50,34 @@ export type AIConfig = {
  */
 export type AIConfigV1 = AIConfig;
 
+export type SchemaVersion =
+  | {
+      major: number;
+      minor: number;
+    }
+  | "v1"
+  | "latest";
+
+export type PromptInput =
+  | {
+      /**
+       * Any additional inputs to the model.
+       */
+      data?: JSONValue;
+
+      [k: string]: any;
+    }
+  | string;
+
 export type InferenceSettings = JSONObject;
+export type GlobalModelMetadata = {
+  [model_name: string]: InferenceSettings;
+};
+
+export type ModelMetadata = {
+  name: string;
+  settings?: InferenceSettings;
+};
 
 export type Prompt = {
   /**
@@ -67,19 +88,7 @@ export type Prompt = {
   /**
    * The prompt string, or a more complex prompt object.
    */
-  input:
-    | {
-        /**
-         * The prompt string, which may be a handlebars template.
-         */
-        prompt: string;
-
-        /**
-         * Any additional inputs to the model.
-         */
-        data: any;
-      }
-    | string;
+  input: PromptInput;
 
   metadata: {
     /**
@@ -94,12 +103,7 @@ export type Prompt = {
      * These settings override any global model settings that may have been defined in the AIConfig metadata.
      *
      */
-    model:
-      | {
-          name: string;
-          settings?: InferenceSettings;
-        }
-      | string;
+    model: ModelMetadata | string;
 
     /**
      * Tags for this prompt. Tags must be unique, and must not contain commas.
@@ -111,29 +115,21 @@ export type Prompt = {
 
   /**
    * Execution, display, or stream outputs.
-   * Ignore: this is a work-in-progress
    */
   outputs?: Output[];
 };
 
-export type JSONValue = string | number | boolean | JSONObject | JSONArray;
-
-export type JSONArray = JSONValue[];
-
-export interface JSONObject {
-  [x: string]: JSONValue;
-}
+//#region Prompt Outputs
 
 /**
  * Model inference result.
- * Ignore: this is a work-in-progress
  */
-export type Output = ExecuteResult | DisplayData | Stream | Error;
+export type Output = ExecuteResult | Error;
 
 /**
  * Result of executing a prompt.
  */
-export interface ExecuteResult {
+export type ExecuteResult = {
   /**
    * Type of output.
    */
@@ -142,30 +138,26 @@ export interface ExecuteResult {
   /**
    * A result's prompt number.
    */
-  execution_count: number | null;
+  execution_count?: number;
 
   /**
    * A mime-type keyed dictionary of data
    */
-  data: {
-    /**
-     * mimetype output (e.g. text/plain), represented as either an array of strings or a string.
-     */
-    [k: string]: string | string[];
-  };
+  data: JSONValue;
 
   /**
    * Output metadata.
    */
-  metadata: {
+  metadata?: {
     [k: string]: any;
   };
-}
+};
 
 /**
  * Data displayed as a result of inference.
+ * Ignore: this is a work-in-progress
  */
-export interface DisplayData {
+export type DisplayData = {
   /**
    * Type of output.
    */
@@ -187,12 +179,13 @@ export interface DisplayData {
   metadata: {
     [k: string]: any;
   };
-}
+};
 
 /**
  * Stream output from inference.
+ * Ignore: this is a work-in-progress
  */
-export interface Stream {
+export type Stream = {
   /**
    * Type of output.
    */
@@ -207,12 +200,12 @@ export interface Stream {
    * The stream's text output, represented as an array of strings.
    */
   text: string | string[];
-}
+};
 
 /**
  * Output of an error that occurred during inference.
  */
-export interface Error {
+export type Error = {
   /**
    * Type of output.
    */
@@ -232,4 +225,6 @@ export interface Error {
    * The error's traceback, represented as an array of strings.
    */
   traceback: string[];
-}
+};
+
+//#endregion

@@ -1,0 +1,34 @@
+{
+  "name": "demo",
+  "description": "this is a demo AIConfig",
+  "schema_version": "latest",
+  "metadata": {},
+  "prompts": [
+    {
+      "name": "demoPrompt",
+      "input": {
+        "role": "user",
+        "content": "Say this is a {{name}} test"
+      },
+      "metadata": {
+        "model": {
+          "name": "gpt-4-0613",
+          "settings": {
+            "model": "gpt-4-0613"
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "role": "assistant",
+            "content": "This is a test."
+          }
+        }
+      ]
+    }
+  ]
+}

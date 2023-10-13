@@ -1,0 +1,27 @@
+{
+  "name": "exploring nyc through chatgpt config",
+  "description": "",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {
+      "palm-chat": {
+        "model": "chat-bison",
+        "maxOutputTokens": 1024,
+        "topK": 40,
+        "topP": 0.95
+      }
+    }
+  },
+  "prompts": [
+    {
+      "name": "prompt1",
+      "input": "Hi! Tell me 10 cool things to do in NYC.",
+      "metadata": {
+        "model": {
+          "name": "palm-chat"
+        }
+      }
+    }
+  ]
+}
