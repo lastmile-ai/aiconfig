@@ -1,0 +1,16 @@
+name: aiconfig
+channels:
+  - defaults
+dependencies:
+  - pip
+  - pip:
+      - black
+      - flake8
+      - pytest
+      - pydantic>=2.1
+      - pybars3
+      - google-generativeai
+      - openai
+      - python-dotenv
+      - jupyterlab
+      - notebook
