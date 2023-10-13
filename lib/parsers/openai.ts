@@ -22,9 +22,11 @@ import { InferenceOptions } from "../modelParser";
 
 export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreateParams> {
   private openai: OpenAI | null = null;
+  private openaiOptions: ClientOptions | undefined;
 
   public constructor(options?: ClientOptions) {
     super();
+    this.openaiOptions = options;
   }
 
   public serialize(
@@ -149,7 +151,7 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
   ): Promise<Output | Output[]> {
     if (!this.openai) {
       const apiKey = getAPIKeyFromEnv("OPENAI_API_KEY");
-      this.openai = new OpenAI({ apiKey, ...(options || {}) });
+      this.openai = new OpenAI({ apiKey, ...(this.openaiOptions || {}) });
     }
 
     const completionParams = this.deserialize(prompt, aiConfig, params);
@@ -236,11 +238,11 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
   }
 
   public getOutputText(
-    prompt: Prompt,
     aiConfig: AIConfigRuntime,
-    output?: Output
+    output?: Output,
+    prompt?: Prompt
   ): string {
-    if (output == null) {
+    if (output == null && prompt != null) {
       output = aiConfig.getLatestOutput(prompt);
     }
 
@@ -258,9 +260,11 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
 
 export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCompletionCreateParams> {
   private openai: OpenAI | null = null;
+  private openaiOptions: ClientOptions | undefined;
 
   public constructor(options?: ClientOptions) {
     super();
+    this.openaiOptions = options;
   }
 
   public getPromptTemplate(prompt: Prompt, aiConfig: AIConfigRuntime): string {
@@ -283,9 +287,9 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     // Chat completion comes as an array of messages. We can serialize each message as a Prompt.
 
     // Get the system prompt from the messages
-    const systemPrompt = data.messages.find((message) => {
-      message.role === "system";
-    });
+    const systemPrompt = data.messages.find(
+      (message) => message.role === "system"
+    );
 
     // Serialize model metadata
     let modelMetadata: ModelMetadata | string;
@@ -465,19 +469,18 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
   ): Promise<Output | Output[]> {
     if (!this.openai) {
       const apiKey = getAPIKeyFromEnv("OPENAI_API_KEY");
-      this.openai = new OpenAI({ apiKey, ...(options || {}) });
+      this.openai = new OpenAI({ apiKey, ...(this.openaiOptions || {}) });
     }
 
     const completionParams = this.deserialize(prompt, aiConfig, params);
+
     const stream = options?.stream ?? completionParams.stream ?? true;
 
     if (!stream) {
       // If we aren't streaming, then we can just run the prompt as a simple completion
+      completionParams.stream = false;
       const response = await this.openai.chat.completions.create(
-        completionParams as Chat.ChatCompletionCreateParamsNonStreaming,
-        {
-          stream,
-        }
+        completionParams as Chat.ChatCompletionCreateParamsNonStreaming
       );
 
       // Save response as Output(s) in the Prompt
@@ -502,11 +505,9 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
       return outputs;
     } else {
       // For streaming, then we can just run the prompt as a simple completion
+      completionParams.stream = true;
       const responseStream = await this.openai.chat.completions.create(
-        completionParams as Chat.ChatCompletionCreateParamsStreaming,
-        {
-          stream,
-        }
+        completionParams as Chat.ChatCompletionCreateParamsStreaming
       );
 
       let outputs = new Map<number, ExecuteResult>();
@@ -546,11 +547,11 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
   }
 
   public getOutputText(
-    prompt: Prompt,
     aiConfig: AIConfigRuntime,
-    output?: Output
+    output?: Output,
+    prompt?: Prompt
   ): string {
-    if (output == null) {
+    if (output == null && prompt != null) {
       output = aiConfig.getLatestOutput(prompt);
     }
 
