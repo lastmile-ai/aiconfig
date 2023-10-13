@@ -14,7 +14,7 @@ const compilerOptions: TJS.CompilerOptions = {
 };
 
 // optionally pass a base path
-const basePath = join(__dirname, "..");
+const basePath = join(__dirname, "..", "..");
 
 const program = TJS.getProgramFromFiles(
   [resolve("types.ts")],
