@@ -23,6 +23,8 @@
   "scripts": {
     "build": "tsc",
     "test": "jest --runInBand",
+    "tsn": "ts-node -r tsconfig-paths/register",
+    "fix": "eslint --fix --ext ts,js .",
     "genSchema": "ts-node ./scripts/genJSONSchema.ts"
   },
   "devDependencies": {

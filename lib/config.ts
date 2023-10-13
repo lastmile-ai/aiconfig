@@ -184,7 +184,11 @@ export class AIConfigRuntime implements AIConfig {
     try {
       let aiConfigObj: AIConfigRuntime = _.cloneDeep(this);
       if (!saveOptions?.serializeOutputs) {
-        aiConfigObj.prompts = _.omit(aiConfigObj.prompts, "outputs");
+        const prompts = [];
+        for (const prompt of aiConfigObj.prompts) {
+          prompts.push(_.omit(prompt, "outputs"));
+        }
+        aiConfigObj.prompts = prompts;
       }
 
       // TODO: saqadri - make sure that the object satisfies the AIConfig schema
@@ -737,7 +741,7 @@ export class AIConfigRuntime implements AIConfig {
 
     const modelParser = ModelParserRegistry.getModelParserForPrompt(prompt);
     if (modelParser != null) {
-      return modelParser.getOutputText(prompt, this, output);
+      return modelParser.getOutputText(this, output, prompt);
     }
 
     // TODO: saqadri - log a warning if the model parser isn't parameterized
