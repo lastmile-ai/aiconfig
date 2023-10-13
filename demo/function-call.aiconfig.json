@@ -1,0 +1,74 @@
+{
+  "name": "function-call-demo",
+  "description": "this is a demo AIConfig to show function calling using OpenAI",
+  "schema_version": "latest",
+  "metadata": {},
+  "prompts": [
+    {
+      "name": "recommendBook",
+      "input": {
+        "role": "user",
+        "content": "I really enjoyed reading To Kill a Mockingbird, could you recommend me a book that is similar and tell me why?"
+      },
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo",
+          "settings": {
+            "model": "gpt-3.5-turbo",
+            "functions": [
+              {
+                "name": "list",
+                "description": "list queries books by genre, and returns a list of names of books",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "genre": {
+                      "type": "string",
+                      "enum": [
+                        "mystery",
+                        "nonfiction",
+                        "memoir",
+                        "romance",
+                        "historical"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "name": "search",
+                "description": "search queries books by their name and returns a list of book names and their ids",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "get",
+                "description": "get returns a book's detailed information based on the id of the book. Note that this does not accept names, and only IDs, which you can get by using search.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            ],
+            "system_prompt": {
+              "role": "system",
+              "content": "Please use our book database, which you can access using functions to answer the following questions."
+            }
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      }
+    }
+  ]
+}

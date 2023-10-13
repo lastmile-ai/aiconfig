@@ -95,9 +95,9 @@ export abstract class ModelParser<T = JSONObject, R = T> {
    * Get the string representing the output from a prompt.
    */
   public abstract getOutputText(
-    prompt: Prompt,
     aiConfig: AIConfigRuntime,
-    output?: Output
+    output?: Output,
+    prompt?: Prompt
   ): string;
 
   /**
