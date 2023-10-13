@@ -8,7 +8,8 @@ import { AIConfigRuntime } from "../lib/config";
 // and modified to show the same functionality using AIConfig.
 
 // gets API Key from environment variable OPENAI_API_KEY
-// process.env.OPENAI_API_KEY =
+process.env.OPENAI_API_KEY =
+  "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";
 
 async function openAIWithoutAIConfig() {
   // gets API Key from environment variable OPENAI_API_KEY
