@@ -5,3 +5,4 @@ pydantic>=2.1
 pybars3
 google-generativeai
 openai
+python-dotenv
