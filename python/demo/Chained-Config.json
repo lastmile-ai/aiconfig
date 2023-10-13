@@ -1,0 +1,39 @@
+{
+    "name": "gpt4 as your data engineer",
+    "description": "",
+    "schema_version": "latest",
+    "metadata": {},
+    "prompts": [
+        {
+            "name": "prompt1",
+            "input": "What are Transformers",
+            "metadata": {
+                "model": {
+                    "name": "PaLM Chat",
+                    "settings": {
+                        "top_k": 40,
+                        "top_p": 0.95,
+                        "model": "models/chat-bison-001",
+                        "temperature": 0.9
+                    }
+                },
+                "remember_chat_context": true
+            }
+        },
+        {
+            "name": "prompt1",
+            "input": "My friend PaLM, told me about Transformers. Analyze my friend's response: {{prompt1.output}}",
+            "metadata": {
+                "model": {
+                    "name": "gpt-3.5-turbo",
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "max_tokens": 3000,
+                        "temperature": 1
+                    }
+                }
+            }
+        }
+    ]
+}

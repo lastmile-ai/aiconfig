@@ -1,0 +1,118 @@
+from openai import ChatCompletion
+import pytest
+import os
+
+
+# pytest patch side effect for mocking openai calls. Use as a decorator on a test function. `@patch.object(openai.ChatCompletion, "create", side_effect=mock_openai_chat_completion)`
+def mock_openai_chat_completion(**kwargs):
+    response_map_list = [
+        # Define the response for each set of input parameters. Format: [[input_params, response]]
+        # Example 1
+        [
+            {
+                "model": "gpt-3.5-turbo",
+                "top_p": 1,
+                "max_tokens": 3000,
+                "temperature": 1,
+                "messages": [
+                    {
+                        "content": "Write me a MySQL query to get this final output: total revenue from sales for each product category. Use the tables relationships defined here: Employees are related to Departments through the &#x27;DepartmentID&#x27; field..",
+                        "role": "user",
+                    }
+                ],
+            },
+            {
+                "id": "chatcmpl-83QllETSF5TG8iextTqCoiFTjhEmO",
+                "object": "chat.completion",
+                "created": 1695828577,
+                "model": "gpt-3.5-turbo-0613",
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {
+                            "role": "assistant",
+                            "content": "To calculate the total revenue from sales for each product category, we need to join multiple tables and perform aggregation. Assuming you have the following tables:\n\n1. Employees (with DepartmentID)\n2. Departments (with DepartmentID)\n3. Products (with ProductID)\n4. Sales (with EmployeeID, ProductID, and Revenue)\n\nHere is the MySQL query to obtain the desired output:\n\n```sql\nSELECT d.Category, SUM(s.Revenue) AS TotalRevenue\nFROM Sales s\nJOIN Employees e ON s.EmployeeID = e.EmployeeID\nJOIN Departments d ON e.DepartmentID = d.DepartmentID\nJOIN Products p ON s.ProductID = p.ProductID\nGROUP BY d.Category;\n```\n\nIn this query, we are joining the `Sales` table with the `Employees` table based on the `EmployeeID` column, then joining that result with the `Departments` table based on the `DepartmentID` column. Finally, we join this intermediate result with the `Products` table based on the `ProductID` column.\n\nThe `SUM(s.Revenue)` function calculates the total revenue for each group. We use the `GROUP BY` clause to group the results by the `Category` column from the `Departments` table.\n\nThis query will provide you with the final output of the total revenue from sales for each product category.",
+                        },
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {"prompt_tokens": 53, "completion_tokens": 272, "total_tokens": 325},
+            },
+        ],
+        # Example 2
+        [
+            {
+                "model": "gpt-3.5-turbo",
+                "temperature": 1,
+                "top_p": 1,
+                "messages": [
+                    {"content": "Hi! Tell me 10 cool things to do in NYC.", "role": "user"}
+                ],
+            },
+            {
+                "id": "chatcmpl-88rDqSrETv8WgfNNwwB31FRhJZcwT",
+                "object": "chat.completion",
+                "created": 1697121902,
+                "model": "gpt-3.5-turbo-0613",
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {
+                            "role": "assistant",
+                            "content": "1. Visit Times Square: Experience the bright lights and bustling atmosphere of this iconic NYC landmark. Enjoy shopping, dining, and various entertainment options.\n\n2. Explore Central Park: Take a leisurely stroll or rent a bike to explore the beautiful landscapes, visit the Central Park Zoo, have a picnic, or even go horseback riding.\n\n3. Walk the High Line: This elevated park built on a historic freight rail line offers stunning views of the city skyline, beautiful gardens, art installations, and a unique perspective of NYC.\n\n4. Take a ferry to the Statue of Liberty: Visit the iconic Statue of Liberty on Liberty Island and enjoy breathtaking views of the city from the Crown or the pedestal. You can also explore Ellis Island's immigration museum nearby.\n\n5. Visit the Metropolitan Museum of Art: Explore the vast collections of art and artifacts from around the world at the Met and immerse yourself in the rich cultural history.\n\n6. Discover the vibrant neighborhoods: Explore the diverse neighborhoods of NYC, such as Chinatown, Little Italy, Greenwich Village, and Williamsburg. Enjoy authentic cuisine, unique shops, and immerse yourself in different cultures.\n\n7. Catch a Broadway show: Experience the magic of Broadway by watching a world-class performance at one of the many theaters in the Theater District.\n\n8. Walk across the Brooklyn Bridge: Enjoy panoramic views of the city as you walk or bike across the iconic Brooklyn Bridge, connecting Manhattan and Brooklyn.\n\n9. Explore the Museum of Modern Art (MoMA): Discover modern and contemporary art at MoMA, featuring masterpieces by artists like Van Gogh, Picasso, Warhol, and many more.\n\n10. Enjoy the food scene: NYC is a food lover's paradise. Indulge in diverse culinary experiences, from street food to Michelin-starred restaurants. Don't forget to try New York-style pizza, bagels, and the famous cronut.",
+                        },
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {"prompt_tokens": 20, "completion_tokens": 379, "total_tokens": 399},
+            },
+        ]
+    ]
+
+    for input_params, response in response_map_list:
+        if kwargs == input_params:
+            return response
+    raise Exception("Unexpected arguments:\n {}".format(kwargs))
+
+
+@pytest.fixture
+def set_temporary_env_vars():
+    """
+    A pytest fixture to set fake values for specific environment variables
+    and restore their original values after the test.
+
+    Usage:
+        Use this fixture by adding it as an argument to your test function.
+
+    Example:
+        def test_something(set_temporary_env_vars):
+            # Your test code here
+
+    This fixture sets fake values for the following environment variables:
+    - OPENAI_API_KEY
+
+    It restores the original values (if they existed) after the test is complete.
+    """
+    # Define the environment variables to be manipulated
+    env_vars_to_set = {"OPENAI_API_KEY"}
+
+    # Store the original values of the environment variables
+    original_env_values = {}
+    for env_var in env_vars_to_set:
+        original_env_values[env_var] = os.environ.get(env_var)
+
+    try:
+        # Set fake values for the environment variables
+        for env_var in env_vars_to_set:
+            os.environ[env_var] = "fakekey"
+
+        # Yield control to the test function
+        yield
+    finally:
+        # Clean up: Restore the original values of the environment variables
+        for env_var in env_vars_to_set:
+            original_value = original_env_values.get(env_var)
+            if original_value is not None:
+                os.environ[env_var] = original_value
+            else:
+                del os.environ[env_var]
