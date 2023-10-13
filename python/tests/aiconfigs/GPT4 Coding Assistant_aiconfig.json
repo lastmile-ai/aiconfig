@@ -1,0 +1,115 @@
+{
+    "name": "GPT4 Coding Assistant",
+    "schema_version": "latest",
+    "metadata": {},
+    "prompts": [
+        {
+            "name": "code_gen",
+            "input": "Write me a function to do {{business_logic}} in {{language}}. ",
+            "metadata": {
+                "model": {
+                    "name": "gpt-4",
+                    "settings": {
+                        "model": "gpt-4",
+                        "top_p": 1,
+                        "max_tokens": 4096,
+                        "temperature": 0,
+                        "system_prompt": "You will only output a code block. No text explanation unless specified in the prompt. ",
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0
+                    }
+                },
+                "remember_chat_context": true
+            }
+        },
+        {
+            "name": "refactor_cell",
+            "input": "Refactor {{code_gen.output}} and add comments",
+            "metadata": {
+                "model": {
+                    "name": "GPT-4",
+                    "settings": {
+                        "model": "gpt-4",
+                        "top_p": 1,
+                        "max_tokens": 4096,
+                        "temperature": 0,
+                        "system_prompt": "You are a senior software engineer working on enterprise software. You have impeccable documentation and coding skills. ",
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0
+                    }
+                },
+                "remember_chat_context": false
+            }
+        },
+        {
+            "name": "refine_code_cell",
+            "input": "Refine {{refactor_cell.output}} to clean it up with proper error handling and add appropriate typing if applicable? If there is anything missing, explain and show the updated code.",
+            "metadata": {
+                "model": {
+                    "name": "GPT-4",
+                    "settings": {
+                        "model": "gpt-4",
+                        "top_p": 1,
+                        "max_tokens": 4096,
+                        "temperature": 0,
+                        "system_prompt": null,
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0
+                    }
+                },
+                "remember_chat_context": true
+            }
+        },
+        {
+            "name": "cell_4",
+            "input": "Convert from {{refine_code_cell.output}} into {{language}}. Maintain modern programming standards for that new language and equivalent standards of commenting, documentation. ",
+            "metadata": {
+                "model": {
+                    "name": "GPT-4",
+                    "settings": {
+                        "model": "gpt-4",
+                        "top_p": 1,
+                        "max_tokens": 4096,
+                        "temperature": 1
+                    }
+                },
+                "remember_chat_context": true
+            }
+        },
+        {
+            "name": "cell_5",
+            "input": "Give me a concise explanation of what a function does. Use bullet points and headings so the summary is organized and readable. Here is the function: {{code}}",
+            "metadata": {
+                "model": {
+                    "name": "GPT-4",
+                    "settings": {
+                        "model": "gpt-4",
+                        "top_p": 1,
+                        "max_tokens": 4096,
+                        "temperature": 1
+                    }
+                },
+                "remember_chat_context": true
+            }
+        },
+        {
+            "name": "cell_6",
+            "input": "{{code}}",
+            "metadata": {
+                "model": {
+                    "name": "GPT-4",
+                    "settings": {
+                        "model": "gpt-4",
+                        "top_p": 1,
+                        "max_tokens": 4096,
+                        "temperature": 0,
+                        "system_prompt": "You are a senior software engineer. Debug the function given. Use bullet points and headings so it is readable and organized. Make the error(s) succinct. Return the fixed code as well. Bold the line(s) of code that were replaced by you. ",
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0
+                    }
+                },
+                "remember_chat_context": true
+            }
+        }
+    ]
+}

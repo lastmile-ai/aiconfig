@@ -1,0 +1,50 @@
+{
+    "name": "gpt4 as your data engineer",
+    "description": "",
+    "schema_version": "latest",
+    "metadata": {
+        "parameters": {},
+        "models": {
+            "gpt-3.5-turbo": {
+                "model": "gpt-3.5-turbo",
+                "top_p": 1,
+                "max_tokens": 3000,
+                "temperature": 1,
+                "stream": true
+            },
+            "gpt-4": {
+                "model": "gpt-4",
+                "top_p": 1,
+                "max_tokens": 3000,
+                "temperature": 1,
+                "system_prompt": "You are an expert at SQL. You will output nicely formatted SQL code with labels on columns. You will provide a short 1-2 sentence summary on the code. Name columns as one word using underscore and lowercase. Format Output in markdown ### SQL Query code block with SQL Query &nbsp; ### Summary short summary on code"
+            }
+        }
+    },
+    "prompts": [
+        {
+            "name": "prompt1",
+            "input": "Write me a {{sql_language}} query to get this final output: {{output_data}}. Use the tables relationships defined here: {{table_relationships}}.",
+            "metadata": {
+                "model": {
+                    "name": "gpt-3.5-turbo"
+                }
+            }
+        },
+        {
+            "name": "prompt2",
+            "input": "Translate the following into PostgreSQL code:\n {{prompt1.output}}",
+            "metadata": {
+                "model": {
+                    "name": "gpt-4",
+                    "settings": {
+                        "model": "gpt-4",
+                        "top_p": 1,
+                        "max_tokens": 3000,
+                        "temperature": 1
+                    }
+                }
+            }
+        }
+    ]
+}
