@@ -54,6 +54,9 @@ import _ from "lodash";
  * 9. getOutputText can probably just have a default implementation that handles execute_result outputs by default
  *
  * 10. Can we have a .run() for the aiconfig to run all cells from top to bottom sequentially?
+ *
+ * 11. In https://github.com/lastmile-ai/aiconfig/pull/24/commits/cfd0cda2f823609b4366e3747efebb81574b58a1 I want to run the prompt
+ * I added but the config doesn't have it despite me specying the name on add. Serialized config has name as prompt2
  */
 
 class HuggingFaceTextGenerationModelParser extends ParameterizedModelParser<TextGenerationArgs> {
@@ -249,16 +252,16 @@ async function addModelParser() {
     data
   )) as Prompt;
 
-  aiConfig.addPrompt(result, "test_prompt");
+  aiConfig.addPrompt(result, "prompt2");
 
   aiConfig.save("demo/addModelParserDemo.aiconfig.json", {
     serializeOutputs: true,
   });
 
-  await aiConfig.run("test_prompt");
+  await aiConfig.run("prompt2");
 
   // This is a Demo test.
-  console.log(aiConfig.getOutputText("test_prompt"));
+  console.log(aiConfig.getOutputText("prompt2"));
 }
 
 addModelParser();
