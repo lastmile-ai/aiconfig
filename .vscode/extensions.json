@@ -2,8 +2,10 @@
   "recommendations": [
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "Prisma.prisma",
+    "prisma.prisma",
     "github.copilot",
-    "meta.sapling-scm"
+    "meta.sapling-scm",
+    "ms-python.python",
+    "ms-toolsai.jupyter"
   ]
 }

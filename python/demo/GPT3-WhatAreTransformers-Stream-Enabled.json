@@ -1,0 +1,40 @@
+{
+    "name": "gpt4 as your data engineer",
+    "description": "",
+    "schema_version": "latest",
+    "metadata": {},
+    "prompts": [
+        {
+            "name": "prompt1",
+            "input": "What are transformers?",
+            "metadata": {
+                "model": {
+                    "name": "gpt-3.5-turbo",
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "max_tokens": 3000,
+                        "temperature": 1,
+                        "stream": true
+                    }
+                }
+            }
+        },
+        {
+            "name": "prompt2",
+            "input": "How does this differ from a recurrent neural network?",
+            "metadata": {
+                "model": {
+                    "name": "gpt-3.5-turbo",
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "max_tokens": 3000,
+                        "temperature": 1,
+                        "stream": true
+                    }
+                }
+            }
+        }
+    ]
+}
