@@ -1,0 +1,19 @@
+{
+  "name": "addModelParserDemo",
+  "description": "this is a demo AIConfig with a new model parser added",
+  "schema_version": "latest",
+  "metadata": {},
+  "prompts": [
+    {
+      "name": "prompt2",
+      "input": "This is a test HF run",
+      "metadata": {
+        "model": {
+          "name": "mistralai/Mistral-7B-v0.1",
+          "settings": {}
+        },
+        "parameters": {}
+      }
+    }
+  ]
+}
