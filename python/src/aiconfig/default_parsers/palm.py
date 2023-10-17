@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import copy
 from typing import TYPE_CHECKING, Dict, Optional
-from aiconfig_tools.AIConfigSettings import (
+from aiconfig.AIConfigSettings import (
     AIConfig,
     ExecuteResult,
     InferenceResponse,
@@ -10,13 +10,13 @@ from aiconfig_tools.AIConfigSettings import (
     Prompt,
     PromptMetadata,
 )
-from aiconfig_tools.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig_tools.util.config_utils import get_api_key_from_environment
-from aiconfig_tools.util.params import resolve_parameters, resolve_prompt, resolve_system_prompt
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.util.params import resolve_parameters, resolve_prompt, resolve_system_prompt
 import google.generativeai as palm
 
 if TYPE_CHECKING:
-    from aiconfig_tools.Config import AIConfigRuntime
+    from aiconfig.Config import AIConfigRuntime
 
 
 class PaLMTextParser(ParameterizedModelParser):

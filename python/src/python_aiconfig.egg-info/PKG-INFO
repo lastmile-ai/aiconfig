@@ -1,3 +1,25 @@
+Metadata-Version: 2.1
+Name: python-aiconfig
+Version: 1.0.3
+Summary: Python library for LastMile AI API
+Author-email: Sarmad Qadri <sarmad@lastmileai.dev>
+Project-URL: Homepage, https://github.com/lastmile-ai/aiconfig
+Project-URL: Bug Tracker, https://github.com/lastmile-ai/aiconfig/issues
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests==2.30.0
+Requires-Dist: black
+Requires-Dist: flake8
+Requires-Dist: pytest
+Requires-Dist: pydantic>=2.1
+Requires-Dist: pybars3
+Requires-Dist: google-generativeai
+Requires-Dist: openai
+Requires-Dist: python-dotenv
+
 # AIConfig Tools: Configuring and Interacting AIConfigs
 
 ## Overview
@@ -28,14 +50,14 @@ pip install python-aiconfig
 To start using AIConfig Tools, create an AIConfig Runtime instance. This runtime will allow you to manage prompts, model settings, and execute AI tasks. Here's how you can create it:
 
 ```python
-from aiconfig.Config import AIConfigRuntime
+from aiconfig import AIConfigRuntime
 aiconfig = AIConfigRuntime.create("demo", "this is a demo AIConfig")
 ```
 
 ###### Loading an existing config is easy too.
 
 ```python
-from aiconfig.Config import AIConfigRuntime
+from aiconfig import AIConfigRuntime
 aiconfig = AIConfigRuntime.from_config("/path/to/config")
 ```
 

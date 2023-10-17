@@ -1,5 +1,5 @@
 {
-  "name": "@lastmileai/aiconfig",
+  "name": "aiconfig",
   "version": "1.0.0",
   "description": "Library to help manage AI configs (i.e. prompts, models and parameters) using the .aiconfig file format.",
   "repository": {

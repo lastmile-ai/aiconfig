@@ -1,14 +1,14 @@
 import re
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Set
-from aiconfig_tools.AIConfigSettings import AIConfig, Prompt
+from aiconfig.AIConfigSettings import AIConfig, Prompt
 
 import cachetools
 
 from pybars import Compiler
 
 if TYPE_CHECKING:
-    from aiconfig_tools.Config import AIConfigRuntime
+    from aiconfig.Config import AIConfigRuntime
 
 
 def get_parameters_in_template(template) -> dict:

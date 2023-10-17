@@ -1,5 +1,5 @@
-from aiconfig_tools.Config import AIConfigRuntime
-from aiconfig_tools.default_parsers.openai import refine_chat_completion_params
+from aiconfig.Config import AIConfigRuntime
+from aiconfig.default_parsers.openai import refine_chat_completion_params
 from mock import patch
 import openai
 import pytest

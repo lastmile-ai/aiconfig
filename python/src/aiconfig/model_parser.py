@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Optional, Callable
 
-from aiconfig_tools.AIConfigSettings import AIConfig, InferenceResponse, Output, Prompt
+from aiconfig.AIConfigSettings import AIConfig, InferenceResponse, Output, Prompt
 
 
 if TYPE_CHECKING:
-    from aiconfig_tools.Config import AIConfigRuntime
+    from aiconfig.Config import AIConfigRuntime
 
 
 class ModelParser(ABC):

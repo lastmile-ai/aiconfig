@@ -1,6 +1,6 @@
 import pytest
-from aiconfig_tools.Config import AIConfigRuntime
-from aiconfig_tools.AIConfigSettings import (
+from aiconfig.Config import AIConfigRuntime
+from aiconfig.AIConfigSettings import (
     AIConfig,
     ConfigMetadata,
     ExecuteResult,
