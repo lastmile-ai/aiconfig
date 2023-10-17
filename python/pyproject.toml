@@ -1,6 +1,17 @@
 [build-system]
 requires = ["setuptools", "wheel"]
 
+dependencies = [
+    "black",
+    "flake8",
+    "pytest",
+    "pydantic>=2.1",
+    "pybars3",
+    "google-generativeai",
+    "openai",
+    "python-dotenv",
+]
+
 # Black formatting
 [tool.black]
 line-length = 99
