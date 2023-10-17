@@ -4,14 +4,14 @@ import os
 import requests
 from typing import ClassVar, Dict, List, Optional
 
-from aiconfig_tools.default_parsers.openai import (
+from aiconfig.default_parsers.openai import (
     ChatGPTParser,
     DefaultOpenAIParser,
     GPT3TurboParser,
     GPT4Parser,
 )
-from aiconfig_tools.default_parsers.palm import PaLMChatParser, PaLMTextParser
-from aiconfig_tools.model_parser import InferenceOptions, ModelParser
+from aiconfig.default_parsers.palm import PaLMChatParser, PaLMTextParser
+from aiconfig.model_parser import InferenceOptions, ModelParser
 from .AIConfigSettings import AIConfig, ConfigMetadata, Prompt
 from .registry import ModelParserRegistry
 

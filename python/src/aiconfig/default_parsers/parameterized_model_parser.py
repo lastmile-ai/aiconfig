@@ -3,12 +3,12 @@
 
 from abc import abstractmethod
 from typing import Dict, Optional
-from aiconfig_tools.AIConfigSettings import AIConfig, InferenceResponse, Prompt
+from aiconfig.AIConfigSettings import AIConfig, InferenceResponse, Prompt
 
-from aiconfig_tools.model_parser import InferenceOptions, ModelParser
-from aiconfig_tools.util.params import resolve_parameters, resolve_parametrized_prompt
-from aiconfig_tools.util.params import get_dependency_graph, resolve_parametrized_prompt
-from aiconfig_tools.registry import ModelParserRegistry
+from aiconfig.model_parser import InferenceOptions, ModelParser
+from aiconfig.util.params import resolve_parameters, resolve_parametrized_prompt
+from aiconfig.util.params import get_dependency_graph, resolve_parametrized_prompt
+from aiconfig.registry import ModelParserRegistry
 
 
 class ParameterizedModelParser(ModelParser):

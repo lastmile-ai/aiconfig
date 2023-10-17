@@ -1,5 +1,5 @@
 
-from aiconfig_tools.AIConfigSettings import ModelMetadata, Prompt, PromptInput, PromptMetadata
+from aiconfig.AIConfigSettings import ModelMetadata, Prompt, PromptInput, PromptMetadata
 
 
 def test_get_raw_prompt_from_prompt_object_string_input():

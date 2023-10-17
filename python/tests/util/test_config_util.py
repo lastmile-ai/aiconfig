@@ -1,4 +1,4 @@
-from aiconfig_tools.util.config_utils import get_api_key_from_environment
+from aiconfig.util.config_utils import get_api_key_from_environment
 
 
 def test_get_api_key_from_environment():

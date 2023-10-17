@@ -1,7 +1,7 @@
-from aiconfig_tools.AIConfigSettings import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
-from aiconfig_tools.Config import AIConfigRuntime
+from aiconfig.AIConfigSettings import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
+from aiconfig.Config import AIConfigRuntime
 import pytest
-from aiconfig_tools.util.params import collect_prompt_references
+from aiconfig.util.params import collect_prompt_references
 
 """
 The tests in this file are intended to test the functionality of the class methods of the AIConfig and related clases (prompt, etc).

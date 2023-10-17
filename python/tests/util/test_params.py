@@ -1,5 +1,5 @@
-from aiconfig_tools.AIConfigSettings import Prompt, PromptMetadata
-from aiconfig_tools.util.params import find_dependencies_in_prompt, get_dependency_graph, get_parameters_in_template
+from aiconfig.AIConfigSettings import Prompt, PromptMetadata
+from aiconfig.util.params import find_dependencies_in_prompt, get_dependency_graph, get_parameters_in_template
 import pytest
 
 """ Test cases for the get_parameters_in_template function."""

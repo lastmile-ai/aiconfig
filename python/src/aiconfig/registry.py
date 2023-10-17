@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from aiconfig_tools.AIConfigSettings import Prompt
+from aiconfig.AIConfigSettings import Prompt
 from .model_parser import ModelParser
 
 
