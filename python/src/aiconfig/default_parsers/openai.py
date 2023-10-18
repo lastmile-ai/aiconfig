@@ -2,8 +2,8 @@ from abc import abstractmethod
 import copy
 from typing import Dict, Optional, Union
 from typing import TYPE_CHECKING, Any, Dict, Optional
-from aiconfig_tools import AIConfigSettings
-from aiconfig_tools.AIConfigSettings import (
+from aiconfig import AIConfigSettings
+from aiconfig.AIConfigSettings import (
     AIConfig,
     ExecuteResult,
     InferenceResponse,
@@ -12,14 +12,14 @@ from aiconfig_tools.AIConfigSettings import (
     PromptMetadata,
     Stream,
 )
-from aiconfig_tools.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig_tools.util.config_utils import get_api_key_from_environment
-from aiconfig_tools.util.params import resolve_parameters, resolve_prompt, resolve_system_prompt
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.util.params import resolve_parameters, resolve_prompt, resolve_system_prompt
 
 import openai
 
 if TYPE_CHECKING:
-    from aiconfig_tools.Config import AIConfigRuntime
+    from aiconfig.Config import AIConfigRuntime
 
 
 class OpenAIInference(ParameterizedModelParser):

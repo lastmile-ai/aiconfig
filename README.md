@@ -2,7 +2,7 @@
 
 ## Overview
 
-AIConfig Tools is a  package that simplifies Prompt, Model, and Parameter Management by allowing you to create and manage AIConfigs.
+AIConfig Tools is a package that simplifies Prompt, Model, and Parameter Management by allowing you to create and manage AIConfigs.
 
 ### Table of Contents
 
@@ -18,9 +18,9 @@ AIConfig Tools is a  package that simplifies Prompt, Model, and Parameter Manage
 First, you need to install the AIConfig Tools package and any required dependencies. Use the following command to install it. :
 
 Python
+
 ```bash
-pip install -r /path/to/package/requirements.txt
-pip install -e /path/to/package
+pip install python-aiconfig
 ```
 
 ## 2) Creating AIConfig Runtime
@@ -28,8 +28,9 @@ pip install -e /path/to/package
 To start using AIConfig Tools, create an AIConfig Runtime instance. This runtime will allow you to manage prompts, model settings, and execute AI tasks. Here's how you can create it:
 
 Python
+
 ```python
-from aiconfig_tools import AIConfigRuntime
+from aiconfig.Config import AIConfigRuntime
 aiconfig = AIConfigRuntime.create("demo", "this is a demo AIConfig")
 ```
 
@@ -48,7 +49,7 @@ const aiConfig = AIConfigRuntime.create("demo", "this is a demo AIConfig");
 Python
 
 ```python
-from aiconfig_tools import AIConfigRuntime
+from aiconfig.Config import AIConfigRuntime
 aiconfig = AIConfigRuntime.from_config("/path/to/config")
 ```
 
@@ -57,7 +58,7 @@ Typescript
 ```typescript
 import { AIConfigRuntime } from "../lib/config";
 const aiConfig = AIConfigRuntime.load(
-    path.join(__dirname, "/path/to/config.json")
+  path.join(__dirname, "/path/to/config.json")
 );
 ```
 
@@ -66,8 +67,9 @@ const aiConfig = AIConfigRuntime.load(
 Prompts are input messages or queries you send to a Large Language model. You can create and manage prompts using AIConfig Tools. Here's an example of creating a prompt:
 
 Python
+
 ```python
-from aiconfig_tools.AIConfigSettings import ModelMetadata, Prompt
+from aiconfig.AIConfigSettings import ModelMetadata, Prompt
 
 prompt = Prompt(
     name="prompt1",
@@ -130,7 +132,7 @@ Typescript
 
 ```typescript
 const params = {
-    name: "Demo",
+  name: "Demo",
 };
 
 let result = await aiConfig.run(
@@ -165,12 +167,10 @@ aiConfig.save("demo/demo.aiconfig.json");
 
 Checkout the demo folder for example configs and example python notebooks.
 
-
-
-
 # aiconfig
 
 aiconfig -- for prompt, model and parameter management
+
 - Motivation
 - Why use aiconfig
 - Getting Started

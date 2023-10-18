@@ -1,7 +1,7 @@
 # import ai_config_tools Config class
 
 import os
-from aiconfig_tools import AIConfigRuntime
+from aiconfig import AIConfigRuntime
 from mock import patch
 import openai
 import pytest

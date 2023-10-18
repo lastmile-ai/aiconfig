@@ -1,7 +1,7 @@
 import copy
-from aiconfig_tools.AIConfigSettings import Prompt
-from aiconfig_tools.model_parser import ModelParser
-from aiconfig_tools.registry import ModelParserRegistry
+from aiconfig.AIConfigSettings import Prompt
+from aiconfig.model_parser import ModelParser
+from aiconfig.registry import ModelParserRegistry
 import pytest
 
 
