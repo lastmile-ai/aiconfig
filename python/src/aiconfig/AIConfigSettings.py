@@ -461,7 +461,7 @@ class AIConfig(BaseModel):
         prompt = self.get_prompt(prompt_name)
         existing_outputs = prompt.outputs
         prompt.outputs = []
-        
+
         return existing_outputs
 
     def get_latest_output(self, prompt: str | Prompt):
@@ -521,3 +521,15 @@ class AIConfig(BaseModel):
         model_settings.update(prompt_model_settings)
 
         return model_settings
+
+    def get_global_settings(self, model_name: str):
+        """
+        Gets the global settings for a model.
+
+        Args:
+            model_name (str): The name of the model.
+
+        Returns:
+            dict: The global settings for the model.
+        """
+        return self.metadata.models.get(model_name)

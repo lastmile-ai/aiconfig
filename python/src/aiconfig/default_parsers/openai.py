@@ -7,6 +7,7 @@ from aiconfig.AIConfigSettings import (
     AIConfig,
     ExecuteResult,
     InferenceResponse,
+    ModelMetadata,
     Output,
     Prompt,
     PromptMetadata,
@@ -74,39 +75,70 @@ class OpenAIInference(ParameterizedModelParser):
         Returns:
             str: Serialized representation of the prompt and inference settings.
         """
-        # Serialize Prompt input
-        prompt_input = (
-            data["prompt"] if isinstance(data["prompt"], str) else {"data": data["prompt"]}
+
+        data = copy.deepcopy(data) | kwargs
+
+        # construct model metadata
+        # if global metadata exists, remove non-override keys from model metadata
+        model_metadata = ModelMetadata(name=self.id(), settings=data)
+
+        # For now just serialize the last input. We can add support for multiple inputs later.
+        if not "messages" in data:
+            raise ValueError("Data must have `messages` array as seen in openai api spec")
+
+        # get last system prompt
+        system_prompt = ""
+        for message in reversed(data["messages"]):
+            if message["role"] == "system":
+                system_prompt = message["content"]
+                break
+        # get last input prompt. OpenAI api doesn't require a user prompt to create a chat completion.
+        prompt_input = ""
+        for message in reversed(data["messages"]):
+            if message["role"] == "user":
+                prompt_input = message["content"]
+                break
+
+        prompt_name = (
+            data["prompt_name"]
+            if "prompt_name" in data
+            else "prompt{}".format(len(ai_config.prompts))
         )
 
-        # Cosntruct model settings, does not include prompt
-        prompt_model_metadata = {key: value for key, value in data.items() if key != "prompt"}
+
+        # Remove messages array. We don't process or store this in the prompt.
+        data.pop('messages')
+
+        # Add system message to match spec
+        if system_prompt:
+            data["system_prompt"] = system_prompt
+
+        # Construct model settings.
 
         # check if config already has model settings in global metadata
-        model_name = prompt_model_metadata.get("model", self.id())
-        global_model_metadata = ai_config.metadata.models.get(model_name, {})
+
+        global_model_metadata = ai_config.get_global_settings(self.id())
 
         if global_model_metadata:
             # Check if the model settings from the input data are the same as the global model settings
             # Compute the difference between the global model settings and the model settings from the input data
             # If there is a difference, then we need to add the different model settings as overrides on the prompt's metadata
-            override_keys = set(prompt_model_metadata.keys()) - set(global_model_metadata.keys())
+            override_keys = set(data.keys()) - set(global_model_metadata.keys())
 
-            override_settings = {key: prompt_model_metadata[key] for key in override_keys}
+            override_settings = {key: data[key] for key in override_keys}
 
             if override_settings:
-                model_metadata = {"name": model_name, "settings": override_settings}
+                model_metadata = {"name": self.id(), "settings": override_settings}
             else:
-                model_metadata = model_name
+                model_metadata = self.id()
         else:
-            model_metadata = {"name": model_name, "settings": prompt_model_metadata}
+            model_metadata = {"name": self.id(), "settings": data}
 
         return Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(model=PromptMetadata(**model_metadata)),
+            metadata=PromptMetadata(model=ModelMetadata(**model_metadata)),
             parameters=parameters,
-            **kwargs
         )
 
     async def deserialize(
@@ -328,6 +360,7 @@ def refine_chat_completion_params(model_settings):
     # completion parameters to be used for openai's chat completion api
     # system prompt handled separately
     # streaming handled seperatly.
+    # Messages array built dynamically and handled separately
     supported_keys = {
         "frequency_penalty",
         "functions",
