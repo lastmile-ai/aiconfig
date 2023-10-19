@@ -1,16 +1,14 @@
 from abc import abstractmethod
 import copy
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 from typing import TYPE_CHECKING, Any, Dict, Optional
 from aiconfig import AIConfigSettings
 from aiconfig.AIConfigSettings import (
-    AIConfig,
     ExecuteResult,
-    InferenceResponse,
+    ModelMetadata,
     Output,
     Prompt,
     PromptMetadata,
-    Stream,
 )
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.util.config_utils import get_api_key_from_environment
@@ -36,36 +34,13 @@ class OpenAIInference(ParameterizedModelParser):
     def serialize(
         self,
         prompt_name: str,
-        data: Any,
-        ai_config: "AIConfigRuntime",
-        params: Optional[Dict] = {None},
-        **kwargs
-    ) -> Prompt:
-        """
-        Defines how a prompt and model inference settings get serialized in the .aiconfig.
-
-        Args:
-            prompt_name (str): The name of the prompt.
-            data (dict): The prompt data to be serialized.
-            ai_config (dict): Model-specific inference settings to be serialized.
-            parameters (dict, optional): Additional parameters. Defaults to None.
-
-        Returns:
-            Prompt: Serialized representation of the prompt and inference settings.
-        """
-        # input = data.prompt if isinstance(data.prompt str) else {"data": data.prompt}
-        pass
-
-    def serialize(
-        self,
-        prompt_name: str,
         data: Dict,
         ai_config: "AIConfigRuntime",
         parameters: Optional[Dict],
         **kwargs
-    ) -> Prompt:
+    ) -> List[Prompt]:
         """
-        Defines how a prompt and model inference settings get serialized in the .aiconfig.
+        Defines how prompts and model inference settings get serialized in the .aiconfig.
 
         Args:
             prompt (str): The prompt to be serialized.
@@ -74,40 +49,66 @@ class OpenAIInference(ParameterizedModelParser):
         Returns:
             str: Serialized representation of the prompt and inference settings.
         """
-        # Serialize Prompt input
-        prompt_input = (
-            data["prompt"] if isinstance(data["prompt"], str) else {"data": data["prompt"]}
-        )
+        serialized_prompts = []
 
-        # Cosntruct model settings, does not include prompt
-        prompt_model_metadata = {key: value for key, value in data.items() if key != "prompt"}
+        # Combine conversation data with any extra keyword args
+        conversation_data = {**data} | kwargs
 
-        # check if config already has model settings in global metadata
-        model_name = prompt_model_metadata.get("model", self.id())
-        global_model_metadata = ai_config.metadata.models.get(model_name, {})
+        if not "messages" in conversation_data:
+            raise ValueError("Data must have `messages` array to match openai api spec")
 
-        if global_model_metadata:
-            # Check if the model settings from the input data are the same as the global model settings
-            # Compute the difference between the global model settings and the model settings from the input data
-            # If there is a difference, then we need to add the different model settings as overrides on the prompt's metadata
-            override_keys = set(prompt_model_metadata.keys()) - set(global_model_metadata.keys())
+        # Extract the global settings for the model
+        global_model_settings = ai_config.get_global_settings(self.id())
 
-            override_settings = {key: prompt_model_metadata[key] for key in override_keys}
+        if global_model_settings:
+            # Identify the settings that differ from global settings
+            override_settings = {
+                key: copy.deepcopy(conversation_data[key])
+                for key in conversation_data
+                if key not in global_model_settings
+            }
 
-            if override_settings:
-                model_metadata = {"name": model_name, "settings": override_settings}
-            else:
-                model_metadata = model_name
+            model_metadata = ModelMetadata(**{"name": self.id(), "settings": override_settings})
         else:
-            model_metadata = {"name": model_name, "settings": prompt_model_metadata}
+            model_metadata = ModelMetadata(
+                **{"name": self.id(), "settings": copy.deepcopy(conversation_data)}
+            )
+        # Remove messages array from model metadata. Handled separately
+        model_metadata.settings.pop("messages", None)
 
-        return Prompt(
-            name=prompt_name,
-            input=prompt_input,
-            metadata=PromptMetadata(model=PromptMetadata(**model_metadata)),
-            parameters=parameters,
-            **kwargs
-        )
+        system_prompt = ""
+        user_prompt = ""
+
+        for message in conversation_data["messages"]:
+            role = message["role"]
+            content = message["content"]
+
+            if role == "user":
+                user_prompt = message["content"]
+            elif role == "system":
+                system_prompt = message["content"]
+            elif role == "assistant":
+                # TODO handle assistant messages (not implemented yet)
+                pass
+
+            if user_prompt:
+                # Initialize a new prompt when there is a user message
+                prompt_name = ""
+                model_metadata_with_system_prompt = copy.deepcopy(model_metadata)
+
+                if system_prompt:
+                    model_metadata_with_system_prompt.settings["system_prompt"] = system_prompt
+
+                user_prompt = Prompt(
+                    name=prompt_name,
+                    input=user_prompt,
+                    metadata=PromptMetadata(model=model_metadata_with_system_prompt),
+                    parameters=parameters,
+                )
+                serialized_prompts.append(user_prompt)
+                user_prompt = ""
+
+        return serialized_prompts
 
     async def deserialize(
         self, prompt: Prompt, aiconfig: "AIConfigRuntime", options, params: Optional[Dict] = {}
@@ -328,6 +329,7 @@ def refine_chat_completion_params(model_settings):
     # completion parameters to be used for openai's chat completion api
     # system prompt handled separately
     # streaming handled seperatly.
+    # Messages array built dynamically and handled separately
     supported_keys = {
         "frequency_penalty",
         "functions",
