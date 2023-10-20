@@ -113,6 +113,25 @@ class AIConfigRuntime(AIConfig):
             data = resp.json()
             return cls.model_validate_json(data)
 
+    async def serialize(self, model_name: str, data: Dict, params: Optional[dict] = {},  prompt_name: Optional[str] = "") -> List[Prompt]:
+        """
+        Serializes the completion params into a Prompt object. Inverse of the 'resolve' function.
+
+        args:
+            model_name (str): The model name to create a Prompt object for
+            data (dict): The data to save as a Prompt Object
+            params (dict, optional): Optional parameters to save alongside the prompt
+
+        returns:
+            Prompt | List[Prompt]: A prompt or list of prompts representing the input data
+        """
+        model_parser = ModelParserRegistry.get_model_parser(model_name)
+        if not model_parser:
+            raise ValueError(f"Unable to serialize data: `{data}`\n Model Parser for model {model_name} does not exist.")
+        
+        prompts = model_parser.serialize("", data, self, params)
+        return prompts
+
     async def resolve(
         self,
         prompt_name: str,
