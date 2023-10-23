@@ -75,7 +75,7 @@ class ModelMetadata(BaseModel):
     # Model name
     name: str
     # Settings for model inference
-    settings: Optional[InferenceSettings] = None
+    settings: Optional[InferenceSettings] = {}
 
 
 class PromptMetadata(BaseModel):
@@ -461,7 +461,7 @@ class AIConfig(BaseModel):
         prompt = self.get_prompt(prompt_name)
         existing_outputs = prompt.outputs
         prompt.outputs = []
-        
+
         return existing_outputs
 
     def get_latest_output(self, prompt: str | Prompt):
