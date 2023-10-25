@@ -127,9 +127,11 @@ class AIConfigRuntime(AIConfig):
         """
         model_parser = ModelParserRegistry.get_model_parser(model_name)
         if not model_parser:
-            raise ValueError(f"Unable to serialize data: `{data}`\n Model Parser for model {model_name} does not exist.")
-        
-        prompts = model_parser.serialize("", data, self, params)
+            raise ValueError(
+                f"Unable to serialize data: `{data}`\n Model Parser for model {model_name} does not exist."
+            )
+
+        prompts = model_parser.serialize(prompt_name, data, self, params)
         return prompts
 
     async def resolve(
