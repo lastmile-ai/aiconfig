@@ -1,3 +1,4 @@
+import copy
 from dataclasses import dataclass
 import json
 from typing import Any, Dict, Literal, Optional, Union, List
@@ -360,6 +361,60 @@ class AIConfig(BaseModel):
         # remove from prompt list
         self.prompts = [prompt for prompt in self.prompts if prompt.name != prompt_name]
 
+    def extract_override_settings(self, inference_settings: InferenceSettings, model_id: str):
+        """
+        Extract inference settings with overrides based on inference settings.
+
+        This function takes the inference settings and a model ID and returns a subset
+        of inference settings that have been overridden by model-specific settings. It
+        compares the provided settings with global settings, and returns only those that
+        differ or have no corresponding global setting.
+
+        Args:
+            settings (InferenceSettings): The inference settings.
+            model_id (str): The model id.
+
+        Returns:
+            InferenceSettings: The inference settings with overrides from global settings.
+        """
+        model_name = model_id
+        global_model_settings = self.get_global_settings(model_name)
+
+        if global_model_settings:
+            # Identify the settings that differ from global settings
+            override_settings = {
+                key: copy.deepcopy(inference_settings[key])
+                for key in inference_settings
+                if key not in global_model_settings
+                or global_model_settings.get(key) != inference_settings[key]
+            }
+            return override_settings
+        return inference_settings
+
+    def generate_model_metadata(
+        self, inference_settings: InferenceSettings, model_id: str
+    ) -> ModelMetadata:
+        """
+        Generate a model metadata object based on the provided inference settings
+
+        This function takes the inferene settings and the model ID and generates a ModelMetadata object.
+
+        Args:
+            inference_settings (InferenceSettings): The inference settings.
+            model_id (str): The model id.
+
+        Returns:
+            ModelMetadata: The model metadata.
+        """
+
+        overriden_settings = self.extract_override_settings(inference_settings, model_id)
+
+        if not overriden_settings:
+            model_metadata = ModelMetadata(**{"name": model_id})
+        else:
+            model_metadata = ModelMetadata(**{"name": model_id, "settings": overriden_settings})
+        return model_metadata
+
     def update_model(
         self, model_metadata: Dict | ModelMetadata, prompt_name: Optional[str] = None
     ):
@@ -384,7 +439,7 @@ class AIConfig(BaseModel):
                 )
             prompt.metadata.model = model_metadata
         else:
-            self.metadata.models[model_metadata.name] = model_metadata
+            self.metadata.models[model_metadata.name] = model_metadata.settings
 
     def set_metadata(self, key: str, value: Any, prompt_name: Optional[str] = None):
         """
