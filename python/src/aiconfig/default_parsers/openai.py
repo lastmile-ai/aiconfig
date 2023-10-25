@@ -122,55 +122,46 @@ class OpenAIInference(ParameterizedModelParser):
         Returns:
             dict: Model-specific completion parameters.
         """
-        resolved_prompt = resolve_prompt(prompt, params, aiconfig)
-
-        # Build Completion data
+        # Build Completion params
         model_settings = aiconfig.get_model_settings(prompt)
 
-        completion_data = refine_chat_completion_params(model_settings)
+        completion_params = refine_chat_completion_params(model_settings)
 
-        completion_data["messages"] = []
+        # In the case thhat the messages array weren't saves as part of the model settings, build it here. Messages array is used for conversation history.
+        if not completion_params.get("messages"):
+            completion_params["messages"] = []
 
-        # Handle System Prompt
-        if "system_prompt" in model_settings:
-            system_prompt = model_settings["system_prompt"]
-            resolved_system_prompt = resolve_system_prompt(prompt, system_prompt, params, aiconfig)
-            completion_data["messages"].append(
-                {"content": resolved_system_prompt, "role": "system"}
-            )
+            # Add System Prompt
+            if "system_prompt" in model_settings:
+                system_prompt = model_settings["system_prompt"]
+                resolved_system_prompt = resolve_system_prompt(prompt, system_prompt, params, aiconfig)
+                completion_params["messages"].append(
+                    {"content": resolved_system_prompt, "role": "system"}
+                )
 
-        # Handle Streaming
-        if options and options.stream:
-            completion_data["stream"] = options.stream
+            # Handle Streaming
+            if options and options.stream:
+                completion_params["stream"] = options.stream
 
-        # Default to always use chat context
-        if not hasattr(prompt.metadata, "remember_chat_context") or (
-            hasattr(prompt.metadata, "remember_chat_context")
-            and prompt.metadata.remember_chat_context != False
-        ):
-            # handle chat history. check previous prompts for the same model. if same model, add prompt and its output to completion data if it has a completed output
-            for i, previous_prompt in enumerate(aiconfig.prompts):
-                # include prompts upto the current one
-                if previous_prompt.name == prompt.name:
-                    break
+            # Default to always use chat context
+            if not hasattr(prompt.metadata, "remember_chat_context") or (
+                hasattr(prompt.metadata, "remember_chat_context")
+                and prompt.metadata.remember_chat_context != False
+            ):
+                # handle chat history. check previous prompts for the same model. if same model, add prompt and its output to completion data if it has a completed output
+                for i, previous_prompt in enumerate(aiconfig.prompts):
+                    # include prompts upto the current one
+                    if previous_prompt.name == prompt.name:
+                        break
 
-                # check if prompt is of the same model
-                if previous_prompt.get_model_name() == self.id():
-                    # add prompt and its output to completion data
-                    # constructing this prompt will take into account available parameters.
-                    resolved_previous_prompt = resolve_parameters({}, previous_prompt, aiconfig)
-                    completion_data["messages"].append(
-                        {"content": resolved_previous_prompt, "role": "user"}
-                    )
-                    # check if prompt has an output
-                    if len(previous_prompt.outputs) > 0:
-                        completion_data["messages"].append(
-                            {"content": str(previous_prompt.outputs[-1].data), "role": "assistant"}
+                    if previous_prompt.get_model_name() == prompt.get_model_name():
+                        # Add prompt and its output to completion data. Constructing this prompt will take into account available parameters.
+                        add_prompt_as_message(
+                            previous_prompt, aiconfig, completion_params["messages"], params
                         )
-
-        # pass in the user prompt
-        completion_data["messages"].append({"content": resolved_prompt, "role": "user"})
-        return completion_data
+            # Add in the latest prompt
+            add_prompt_as_message(prompt, aiconfig, completion_params["messages"], params)
+        return completion_params
 
     async def run_inference(self, prompt: Prompt, aiconfig, options, parameters) -> Output:
         """
