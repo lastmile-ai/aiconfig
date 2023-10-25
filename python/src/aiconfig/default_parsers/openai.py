@@ -349,3 +349,45 @@ def refine_chat_completion_params(model_settings):
             completion_data[key] = model_settings[key]
 
     return completion_data
+
+
+def add_prompt_as_message(
+    prompt: Prompt, aiconfig: "AIConfigRuntime", messages: list, params=None
+):
+    """
+    Converts a given prompt to a message and adds it to the specified messages list.
+
+    Note:
+    - If the prompt contains valid input, it's treated as a user message.
+    - If the prompt has a custom role, function call, or name, these attributes are included in the message.
+    - If an AI model output exists, it is appended to the messages list.
+    """
+    if has_valid_prompt_string(prompt):
+        resolved_prompt = resolve_prompt(prompt, params, aiconfig)
+        messages.append({"content": resolved_prompt, "role": "user"})
+    else:
+        # prompt data can have function role
+        prompt_input = prompt.input
+        role = prompt_input.role if hasattr(prompt_input, "role") else "user"
+        fn_call = prompt_input.function_call if hasattr(prompt_input, "function_call") else None
+        name = prompt_input.name if hasattr(prompt_input, "name") else None
+        messages.append(
+            {"content": resolved_prompt, "role": role, "function_call": fn_call, "name": name}
+        )
+
+    output = aiconfig.get_latest_output(prompt)
+    if output:
+        if output.output_type == "execute_result":
+            output_message = output.data
+            if output_message["role"] == "assistant":
+                messages.append(output_message)
+    return messages
+
+
+def has_valid_prompt_string(prompt: Prompt):
+    """
+    Check if a prompt's input is a valid string.
+    """
+    return isinstance(prompt.input, str) or (
+        hasattr(prompt.input, "data") and isinstance(prompt.input.data, str)
+    )
