@@ -274,7 +274,8 @@ export class AIConfigRuntime implements AIConfig {
   public async serialize(
     modelName: string,
     data: JSONObject,
-    params?: JSONObject
+    promptName: string,
+    params?: JSONObject,
   ): Promise<Prompt | Prompt[]> {
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
@@ -284,8 +285,8 @@ export class AIConfigRuntime implements AIConfig {
         )}: ModelParser for model ${modelName} does not exist`
       );
     }
-
-    const prompts = modelParser.serialize("prompt2", data, this, params);
+    
+    const prompts = modelParser.serialize(promptName, data, this, params);
     return prompts;
   }
 
