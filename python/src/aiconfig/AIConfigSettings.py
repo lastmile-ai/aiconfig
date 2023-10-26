@@ -93,10 +93,11 @@ class PromptMetadata(BaseModel):
 
 
 class PromptInput(BaseModel):
-    # The prompt string, which may be a handlebars template
-    prompt: str
     # Any additional inputs to the model
-    data: Any
+    data: Optional[Any] = None
+
+    class Config:
+        extra = "allow"
 
 
 class Prompt(BaseModel):
