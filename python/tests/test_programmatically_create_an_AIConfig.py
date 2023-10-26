@@ -1,3 +1,4 @@
+from aiconfig.util.config_utils import extract_override_settings
 import pytest
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.AIConfigSettings import (
@@ -392,8 +393,9 @@ def test_get_prompt_nonexistent(ai_config_runtime: AIConfigRuntime):
 def test_update_model_ai_config(ai_config_runtime: AIConfigRuntime):
     model_metadata = {"name": "testmodel", "settings": {"topP": 0.9}}
     ai_config_runtime.update_model(model_metadata)
-    assert ai_config_runtime.metadata.models["testmodel"] == ModelMetadata(
-        **{"name": "testmodel", "settings": {"topP": 0.9}}
+    assert (
+        ai_config_runtime.metadata.models["testmodel"]
+        == ModelMetadata(**{"name": "testmodel", "settings": {"topP": 0.9}}).settings
     )
 
 
@@ -427,7 +429,10 @@ def test_set_metadata_ai_config(ai_config_runtime: AIConfigRuntime):
     """Test setting metadata at the AIConfig level."""
     model_metadata = {"name": "testmodel", "settings": {"topP": 0.9}}
     ai_config_runtime.update_model(model_metadata)
-    assert ai_config_runtime.get_metadata().models["testmodel"] == ModelMetadata(**model_metadata)
+    assert (
+        ai_config_runtime.get_metadata().models["testmodel"]
+        == ModelMetadata(**model_metadata).settings
+    )
 
 
 def test_set_and_delete_metadata_ai_config(ai_config_runtime: AIConfigRuntime):
@@ -457,6 +462,7 @@ def test_set_and_delete_metadata_ai_config_prompt(ai_config_runtime: AIConfigRun
 
     assert hasattr(ai_config_runtime.get_prompt("GreetingPrompt").metadata, "testkey") is False
 
+
 def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRuntime):
     """Test adding an output to an existing prompt without overwriting."""
     prompt1 = Prompt(
@@ -465,17 +471,47 @@ def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRunt
         metadata=PromptMetadata(model="fakemodel"),
     )
     ai_config_runtime.add_prompt(prompt1.name, prompt1)
-    test_result = ExecuteResult(output_type='execute_result', execution_count=0.0, data={'role': 'assistant', 'content': 'test output'}, metadata={'finish_reason': 'stop'})
+    test_result = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0.0,
+        data={"role": "assistant", "content": "test output"},
+        metadata={"finish_reason": "stop"},
+    )
     ai_config_runtime.add_output("GreetingPrompt", test_result)
 
-          
-    assert ai_config_runtime.get_latest_output("GreetingPrompt") == test_result 
+    assert ai_config_runtime.get_latest_output("GreetingPrompt") == test_result
 
-    
-    test_result2 = ExecuteResult(output_type='execute_result', execution_count=0.0, data={'role': 'assistant', 'content': 'test output'}, metadata={'finish_reason': 'stop'})
+    test_result2 = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0.0,
+        data={"role": "assistant", "content": "test output"},
+        metadata={"finish_reason": "stop"},
+    )
     ai_config_runtime.add_output("GreetingPrompt", test_result2)
     assert ai_config_runtime.get_latest_output("GreetingPrompt") == test_result2
 
     ai_config_runtime.delete_output("GreetingPrompt")
 
     assert ai_config_runtime.get_latest_output("GreetingPrompt") == None
+
+
+def test_extract_override_settings(ai_config_runtime: AIConfigRuntime):
+    initial_settings = {"topP": 0.9}
+    
+    # Test Case 1: No global setting, Expect an override
+    override = extract_override_settings(ai_config_runtime, initial_settings, "testmodel")
+    assert override == {"topP": 0.9}
+
+    # Test Case 2: Global Settings differ, expect override
+    ai_config_runtime.add_model("testmodel", {"topP": 0.8})
+    override = extract_override_settings(ai_config_runtime, initial_settings, "testmodel")
+    assert override == {"topP": 0.9}
+
+    # Test Case 3: Global Settings match settings, expect no override
+    ai_config_runtime.update_model(ModelMetadata(name="testmodel", settings={"topP": 0.9}))
+    override = extract_override_settings(ai_config_runtime, initial_settings, "testmodel")
+    assert override == {}
+
+    # Test Case 4: Global settings defined and empty settings defined. Expect no override
+    override = extract_override_settings(ai_config_runtime, {}, "testmodel")
+    assert override == {}
