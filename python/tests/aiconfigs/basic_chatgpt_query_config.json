@@ -22,6 +22,30 @@
                 },
                 "remember_chat_context": true
             }
+        },
+        {
+            "name": "prompt2",
+            "input": "Hi! Tell me 10 cool things to do in NYC.",
+            "metadata": {
+                "model": {
+                    "name": "mistralai/Mistral-7B-Instruct-v0.1",
+                    "settings": {
+                        "stream": true,
+                        "details": false,
+                        "max_length": 1280
+                    }
+                }
+            }
+        },
+        {
+            "name": "prompt3",
+            "input": "Evaluate the following texts. Tell me which one is better. \n\n Text one: {{prompt1.output}} \n\n Text Two: {{prompt2.output}}",
+            "metadata": {
+                "model": {
+                    "name": "gpt-3.5-turbo"
+                },
+                "remember_chat_context": false
+            }
         }
     ]
 }
