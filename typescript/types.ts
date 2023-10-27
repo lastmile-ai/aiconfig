@@ -34,6 +34,11 @@ export type AIConfig = {
      */
     models?: GlobalModelMetadata;
 
+    /**
+     * Default model to use for prompts that don't specify a model.
+     */
+    default_model?: string;
+
     [k: string]: any;
   };
 
