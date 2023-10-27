@@ -203,7 +203,7 @@ class AIConfigRuntime(AIConfig):
     #    @param saveOptions Options that determine how to save the AIConfig to the file.
     #    */
 
-    def save(self, json_config_filepath: str = "aiconfig.json"):
+    def save(self, json_config_filepath: str = "aiconfig.json", include_outputs: bool = True):
         """
         Save the AI Configuration to a JSON file.
 
@@ -211,12 +211,18 @@ class AIConfigRuntime(AIConfig):
             json_config_filepath (str, optional): The file path to the JSON configuration file.
                 Defaults to "aiconfig.json".
         """
+        exclude_options = {
+            "prompt_index": True,
+        }
+        if not include_outputs:
+            exclude_options["prompts"] = {"__all__": {"outputs"}}
+            pass
         with open(json_config_filepath, "w") as file:
             # Serialize the AI Configuration to JSON and save it to the file
             json.dump(
                 self.model_dump(
                     mode="json",
-                    exclude={"prompt_index": True, "prompts": {"__all__": {"outputs"}}},
+                    exclude=exclude_options,
                 ),
                 file,
             )
