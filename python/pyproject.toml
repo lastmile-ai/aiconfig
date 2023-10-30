@@ -25,6 +25,7 @@ dependencies = [
   "google-generativeai",
   "openai",
   "python-dotenv",
+  "huggingface_hub",
 ]
 
 [project.urls]
