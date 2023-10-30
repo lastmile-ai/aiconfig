@@ -7,6 +7,8 @@ from mock import patch
 import openai
 import pytest
 
+from ..util.file_path_utils import get_absolute_file_path_from_relative
+
 from ..conftest import mock_openai_chat_completion
 
 
@@ -28,7 +30,10 @@ def test_refine_chat_completion_params():
 @pytest.mark.asyncio
 @patch.object(openai.ChatCompletion, "create", side_effect=mock_openai_chat_completion)
 async def test_get_output_text(mock_method):
-    aiconfig = AIConfigRuntime.from_config("../tests/aiconfigs/basic_chatgpt_query_config.json")
+    config_relative_path = "../aiconfigs/basic_chatgpt_query_config.json"
+    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
+    aiconfig = AIConfigRuntime.from_config(config_absolute_path)
+
     await aiconfig.run("prompt1", {})
 
     output = aiconfig.get_output_text("prompt1")
