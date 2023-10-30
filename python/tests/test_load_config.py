@@ -5,6 +5,8 @@ from aiconfig import AIConfigRuntime
 from mock import patch
 import openai
 import pytest
+
+from .util.file_path_utils import get_absolute_file_path_from_relative
 from .conftest import set_temporary_env_vars
 import os
 import pytest
@@ -13,8 +15,10 @@ import pytest
 @pytest.mark.asyncio
 async def test_load_basic_chatgpt_query_config(set_temporary_env_vars):
     """Test loading a basic chatgpt query config"""
+    config_relative_path = "aiconfigs/basic_chatgpt_query_config.json"
+    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
+    config = AIConfigRuntime.from_config(config_absolute_path)
 
-    config = AIConfigRuntime.from_config("aiconfigs/basic_chatgpt_query_config.json")
     data_for_inference = await config.resolve("prompt1")
 
     assert data_for_inference == {
@@ -28,7 +32,9 @@ async def test_load_basic_chatgpt_query_config(set_temporary_env_vars):
 @pytest.mark.asyncio
 async def test_chained_gpt_config(set_temporary_env_vars):
     """Test loading a chained gpt config and resolving it, with chat context enabled"""
-    config = AIConfigRuntime.from_config("aiconfigs/chained_gpt_config.json")
+    config_relative_path = "aiconfigs/chained_gpt_config.json"
+    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
+    config = AIConfigRuntime.from_config(config_absolute_path)
 
     data_for_inference1 = await config.resolve("prompt1")
 
@@ -71,7 +77,10 @@ async def test_resolve_system_prompt():
     """
     Resolves a system prompt with a provided parameter
     """
-    config = AIConfigRuntime.from_config("aiconfigs/system_prompt_parameters_config.json")
+    config_relative_path = "aiconfigs/system_prompt_parameters_config.json"
+    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
+    config = AIConfigRuntime.from_config(config_absolute_path)
+
     data_for_inference = await config.resolve("prompt1", {"system": "skip odd numbers"})
     assert data_for_inference == {
         "temperature": 1,
