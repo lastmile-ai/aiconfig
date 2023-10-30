@@ -222,7 +222,10 @@ export class AIConfigRuntime implements AIConfig {
    * @param modelParser The model parser to add to the registry.
    * @param ids Optional list of model IDs to register the model parser for. If unspecified, the model parser will be registered for modelParser.id.
    */
-  public static registerModelParser(modelParser: ModelParser, ids?: string[]) {
+  public static registerModelParser(
+    modelParser: ModelParser<any, any>,
+    ids?: string[]
+  ) {
     ModelParserRegistry.registerModelParser(modelParser, ids);
   }
 
@@ -275,7 +278,7 @@ export class AIConfigRuntime implements AIConfig {
     modelName: string,
     data: JSONObject,
     promptName: string,
-    params?: JSONObject,
+    params?: JSONObject
   ): Promise<Prompt | Prompt[]> {
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
@@ -285,7 +288,7 @@ export class AIConfigRuntime implements AIConfig {
         )}: ModelParser for model ${modelName} does not exist`
       );
     }
-    
+
     const prompts = modelParser.serialize(promptName, data, this, params);
     return prompts;
   }
