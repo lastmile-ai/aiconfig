@@ -3,6 +3,8 @@ from aiconfig.Config import AIConfigRuntime
 import pytest
 from aiconfig.util.params import collect_prompt_references
 
+from .util.file_path_utils import get_absolute_file_path_from_relative
+
 """
 The tests in this file are intended to test the functionality of the class methods of the AIConfig and related clases (prompt, etc).
 Mainly testing that data is able to be retrieved correctly, ie prompt.getmodelname() returns the correct model name, etc.
@@ -73,9 +75,7 @@ def test_get_model_settings_from_aiconfig(ai_config_runtime: AIConfigRuntime):
             Prompt(
                 name="test",
                 input="test",
-                metadata=PromptMetadata(
-                    model=ModelMetadata(name="fakemodel", settings=None)
-                ),
+                metadata=PromptMetadata(model=ModelMetadata(name="fakemodel", settings=None)),
             )
         ],
     )
@@ -104,8 +104,9 @@ def test_collect_prompt_references():
 
     # input is an aiconfig with a 4 prompts. Test collects prompt references for the 3rd prompt
     # collect_prompt_references should return references to 1 and 2. 3 is the prompt we are collecting references for, 4 is after. Both are expected to be skipped
-
-    aiconfig = AIConfigRuntime.from_config("aiconfigs/GPT4 Coding Assistant_aiconfig.json")
+    config_relative_path = "aiconfigs/GPT4 Coding Assistant_aiconfig.json"
+    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
+    aiconfig = AIConfigRuntime.from_config(config_absolute_path)
 
     prompt3 = aiconfig.prompts[2]
 
