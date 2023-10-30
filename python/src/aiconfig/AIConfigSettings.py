@@ -82,7 +82,7 @@ class ModelMetadata(BaseModel):
 
 class PromptMetadata(BaseModel):
     # Model name/settings that apply to this prompt
-    model: Union[ModelMetadata, str]
+    model: Optional[Union[ModelMetadata, str]] = None
     # Tags for this prompt. Tags must be unique, and must not contain commas.
     tags: Optional[List[str]] = None
     # Parameter definitions that are accessible to this prompt
@@ -152,6 +152,8 @@ class ConfigMetadata(BaseModel):
     # Globally defined model settings. Any prompts that use these models will have these settings applied by default,
     # unless they override them with their own model settings.
     models: Optional[Dict[str, InferenceSettings]] = {}
+    # Default model to use for prompts that don't specify a model
+    default: Optional[str] = None
 
     class Config:
         extra = "allow"
