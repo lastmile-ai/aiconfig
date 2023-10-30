@@ -25,7 +25,9 @@
     "test": "jest --runInBand",
     "tsn": "ts-node -r tsconfig-paths/register",
     "fix": "eslint --fix --ext ts,js .",
-    "genSchema": "ts-node ./scripts/genJSONSchema.ts"
+    "genSchema": "ts-node ./scripts/genJSONSchema.ts",
+    "lint": "eslint . --max-warnings=0",
+    "compile": "tsc"
   },
   "devDependencies": {
     "@types/jest": "^29.5.5",
