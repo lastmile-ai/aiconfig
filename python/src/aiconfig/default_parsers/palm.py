@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Dict, Optional
 from aiconfig.AIConfigSettings import (
     AIConfig,
     ExecuteResult,
-    InferenceResponse,
+    ExecuteResult,
     ModelMetadata,
     Output,
     Prompt,
@@ -84,7 +84,7 @@ class PaLMTextParser(ParameterizedModelParser):
         completion_data["prompt"] = resolved_prompt
         return completion_data
 
-    def run_inference(self, prompt: Prompt, aiconfig, parameters) -> InferenceResponse:
+    def run_inference(self, prompt: Prompt, aiconfig, parameters) -> ExecuteResult:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -94,14 +94,14 @@ class PaLMTextParser(ParameterizedModelParser):
             inference_settings (dict): Model-specific inference settings.
 
         Returns:
-            InferenceResponse: The response from the model.
+            ExecuteResult: The response from the model.
         """
         # TODO: check api key here
         completion_data = self.deserialize(prompt, aiconfig, parameters)
         completion = palm.generate_text(**completion_data)
 
         # construct output object
-        output = InferenceResponse(output=completion.predictions[0].content, response=completion)
+        output = ExecuteResult(output=completion.predictions[0].content, response=completion)
 
         prompt.add_output(output)
         return output
@@ -190,7 +190,9 @@ class PaLMChatParser(ParameterizedModelParser):
 
                     # check if prompt has an output. PaLM Api requires this
                     if len(previous_prompt.outputs) > 0:
-                        resolved_previous_prompt = resolve_parameters({}, previous_prompt, aiconfig)
+                        resolved_previous_prompt = resolve_parameters(
+                            {}, previous_prompt, aiconfig
+                        )
                         completion_data["messages"].append(
                             {"content": resolved_previous_prompt, "author": "0"}
                         )
@@ -218,7 +220,7 @@ class PaLMChatParser(ParameterizedModelParser):
             inference_settings (dict): Model-specific inference settings.
 
         Returns:
-            InferenceResponse: The response from the model.
+            ExecuteResult: The response from the model.
         """
         # TODO: check and handle api key here
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
@@ -230,7 +232,7 @@ class PaLMChatParser(ParameterizedModelParser):
                     "output_type": "execute_result",
                     "data": candidate,
                     "execution_count": i,
-                    "metadata": {"response": response}
+                    "metadata": {"response": response},
                 }
             )
             outputs.append(output)
