@@ -113,6 +113,27 @@ class AIConfigRuntime(AIConfig):
             data = resp.json()
             return cls.model_validate_json(data)
 
+    async def serialize(self, model_name: str, data: Dict,  prompt_name: str, params: Optional[dict] = {}) -> List[Prompt]:
+        """
+        Serializes the completion params into a Prompt object. Inverse of the 'resolve' function.
+
+        args:
+            model_name (str): The model name to create a Prompt object for
+            data (dict): The data to save as a Prompt Object
+            params (dict, optional): Optional parameters to save alongside the prompt
+
+        returns:
+            Prompt | List[Prompt]: A prompt or list of prompts representing the input data
+        """
+        model_parser = ModelParserRegistry.get_model_parser(model_name)
+        if not model_parser:
+            raise ValueError(
+                f"Unable to serialize data: `{data}`\n Model Parser for model {model_name} does not exist."
+            )
+
+        prompts = model_parser.serialize(prompt_name, data, self, params)
+        return prompts
+
     async def resolve(
         self,
         prompt_name: str,
@@ -182,7 +203,7 @@ class AIConfigRuntime(AIConfig):
     #    @param saveOptions Options that determine how to save the AIConfig to the file.
     #    */
 
-    def save(self, json_config_filepath: str = "aiconfig.json"):
+    def save(self, json_config_filepath: str = "aiconfig.json", include_outputs: bool = True):
         """
         Save the AI Configuration to a JSON file.
 
@@ -190,12 +211,18 @@ class AIConfigRuntime(AIConfig):
             json_config_filepath (str, optional): The file path to the JSON configuration file.
                 Defaults to "aiconfig.json".
         """
+        exclude_options = {
+            "prompt_index": True,
+        }
+        if not include_outputs:
+            exclude_options["prompts"] = {"__all__": {"outputs"}}
+            pass
         with open(json_config_filepath, "w") as file:
             # Serialize the AI Configuration to JSON and save it to the file
             json.dump(
                 self.model_dump(
                     mode="json",
-                    exclude={"prompt_index": True, "prompts": {"__all__": {"outputs"}}},
+                    exclude=exclude_options,
                 ),
                 file,
             )

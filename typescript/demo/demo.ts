@@ -99,7 +99,7 @@ async function createAIConfig() {
   };
 
   const aiConfig = AIConfigRuntime.create("demo", "this is a demo AIConfig");
-  const result = await aiConfig.serialize(model, data);
+  const result = await aiConfig.serialize(model, data, "demoPrompt");
 
   if (Array.isArray(result)) {
     for (const prompt of result) {

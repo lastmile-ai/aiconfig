@@ -126,6 +126,7 @@ describe("Loading an AIConfig", () => {
     const serializeResult = await aiConfig.serialize(
       "gpt-3.5-turbo",
       completionParams,
+      "prompt",
       {
         products: "Thunderbolt",
       }
@@ -183,6 +184,7 @@ describe("Loading an AIConfig", () => {
     const serializeResult = await aiConfig.serialize(
       "gpt-3.5-turbo",
       completionParams,
+      "prompt",
       {
         products: "Thunderbolt",
       }

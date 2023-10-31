@@ -1,6 +1,8 @@
+import copy
 from dataclasses import dataclass
 import json
 from typing import Any, Dict, Literal, Optional, Union, List
+from aiconfig.util.config_utils import extract_override_settings
 from pydantic import BaseModel
 
 # Pydantic doesn't handle circular type references very well, TODO: handle this better than defining as type Any
@@ -75,7 +77,7 @@ class ModelMetadata(BaseModel):
     # Model name
     name: str
     # Settings for model inference
-    settings: Optional[InferenceSettings] = None
+    settings: Optional[InferenceSettings] = {}
 
 
 class PromptMetadata(BaseModel):
@@ -91,10 +93,11 @@ class PromptMetadata(BaseModel):
 
 
 class PromptInput(BaseModel):
-    # The prompt string, which may be a handlebars template
-    prompt: str
     # Any additional inputs to the model
-    data: Any
+    data: Optional[Any] = None
+
+    class Config:
+        extra = "allow"
 
 
 class Prompt(BaseModel):
@@ -360,6 +363,30 @@ class AIConfig(BaseModel):
         # remove from prompt list
         self.prompts = [prompt for prompt in self.prompts if prompt.name != prompt_name]
 
+    def generate_model_metadata(
+        self, inference_settings: InferenceSettings, model_id: str
+    ) -> ModelMetadata:
+        """
+        Generate a model metadata object based on the provided inference settings
+
+        This function takes the inference settings and the model ID and generates a ModelMetadata object.
+
+        Args:
+            inference_settings (InferenceSettings): The inference settings.
+            model_id (str): The model id.
+
+        Returns:
+            ModelMetadata: The model metadata.
+        """
+
+        overriden_settings = extract_override_settings(self, inference_settings, model_id)
+
+        if not overriden_settings:
+            model_metadata = ModelMetadata(**{"name": model_id})
+        else:
+            model_metadata = ModelMetadata(**{"name": model_id, "settings": overriden_settings})
+        return model_metadata
+
     def update_model(
         self, model_metadata: Dict | ModelMetadata, prompt_name: Optional[str] = None
     ):
@@ -384,7 +411,7 @@ class AIConfig(BaseModel):
                 )
             prompt.metadata.model = model_metadata
         else:
-            self.metadata.models[model_metadata.name] = model_metadata
+            self.metadata.models[model_metadata.name] = model_metadata.settings
 
     def set_metadata(self, key: str, value: Any, prompt_name: Optional[str] = None):
         """
@@ -461,7 +488,7 @@ class AIConfig(BaseModel):
         prompt = self.get_prompt(prompt_name)
         existing_outputs = prompt.outputs
         prompt.outputs = []
-        
+
         return existing_outputs
 
     def get_latest_output(self, prompt: str | Prompt):
@@ -521,3 +548,15 @@ class AIConfig(BaseModel):
         model_settings.update(prompt_model_settings)
 
         return model_settings
+
+    def get_global_settings(self, model_name: str):
+        """
+        Gets the global settings for a model.
+
+        Args:
+            model_name (str): The name of the model.
+
+        Returns:
+            dict: The global settings for the model.
+        """
+        return self.metadata.models.get(model_name)

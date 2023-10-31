@@ -350,9 +350,12 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
           }
         }
 
+        const input: PromptInput =
+          message.role === "user" ? message.content ?? "" : { ...message };
+
         const prompt: Prompt = {
           name: `${promptName}_${prompts.length + 1}`,
-          input: message,
+          input,
           metadata: {
             model: modelMetadata,
             parameters: params ?? {},
