@@ -1,6 +1,7 @@
 import { JSONObject, JSONValue } from "../common";
 import {
   AIConfig,
+  InferenceSettings,
   ModelMetadata,
   Output,
   Prompt,
@@ -285,7 +286,7 @@ export class AIConfigRuntime implements AIConfig {
         )}: ModelParser for model ${modelName} does not exist`
       );
     }
-    
+
     const prompts = modelParser.serialize(promptName, data, this, params);
     return prompts;
   }
@@ -446,26 +447,21 @@ export class AIConfigRuntime implements AIConfig {
   }
 
   /**
-   * Adds model settings to AIConfig-level metadata.
+   * Adds model settings to Global AIConfig-level metadata.
    * @param modelMetadata The model metadata to add.
    * @param promptName If specified, the model settings will only be applied to the prompt with the given name.
    */
-  public addModel(modelMetadata: ModelMetadata, promptName?: string) {
-    if (promptName) {
-      const prompt = this.getPrompt(promptName);
-      if (!prompt) {
-        throw new Error(
-          `E1021: Cannot add model ${modelMetadata.name} to prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
-        );
-      }
+  public addModel(modelName: string, modelSettings: InferenceSettings) {
+    if (!this.metadata.models) {
+      this.metadata.models = {};
+    }
 
-      prompt.metadata.model = modelMetadata;
+    if (modelName in this.metadata.models) {
+      throw new Error(
+        `E1021: Model ${modelName} already exists. Use "updateMmodel()".`
+      );
     } else {
-      if (!this.metadata.models) {
-        this.metadata.models = {};
-      }
-
-      this.metadata.models[modelMetadata.name] = modelMetadata;
+      this.metadata.models[modelName] = modelSettings;
     }
   }
 
