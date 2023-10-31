@@ -163,6 +163,51 @@ Typescript
 aiConfig.save("demo/demo.aiconfig.json");
 ```
 
+## AIConfig Schema
+```json
+{
+  "name": "Friendly name descriptor",
+  "description": "Optional description",
+  "schema_version": "semver-based versioning of the aiconfig schema",
+  "metadata": {
+    "parameters": {
+      "param1": "Parameter to use within the prompts. Adheres to handlebar syntax (i.e. can be referenced as {{param1}}.",
+      "param2": "value2"
+    },
+    "default_model": "ID of a default model to use for prompts that don't specify a model themselves (e.g. 'llama2').",
+    "models": {
+      "gpt-4": {
+        "temperature": 0.75,
+        "optional-model-settings": "Optional model parameters to configure (e.g. temperature, tokens, top_k, etc.)"
+      }
+    }
+  },
+  "prompts": [
+    {
+      "name": "Unique identifier to reference this prompt by (e.g. 'prompt_1').",
+      "input": "Input text for the first prompt. Prompts can reference parameters, such as {{param1}} or {{param2}}",
+      "metadata": {
+        "model": {
+          "name": "gpt-4 (inherits settings from the global metadata as well)",
+          "settings": {
+            "optional-local-model-param1": "Model parameter overrides for this prompt.",
+            "temperature": 1.0
+          },
+          "parameters": {
+            "param1": "Parameter overrides for this prompt.",
+            "param3": "value3"
+          }
+        }
+      }
+    },
+    {
+      "name": "prompt_2",
+      "input": "Input text for second prompt. Prompts can reference context from previous prompts, such as {{prompt1.output}} or {{prompt1.input}}"
+    }
+  ]
+}
+```
+
 ## More Demos
 
 Checkout the demo folder for example configs and example python notebooks.
