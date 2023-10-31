@@ -1,6 +1,7 @@
 import { JSONObject, JSONValue } from "../common";
 import {
   AIConfig,
+  InferenceSettings,
   ModelMetadata,
   Output,
   Prompt,
@@ -275,7 +276,7 @@ export class AIConfigRuntime implements AIConfig {
     modelName: string,
     data: JSONObject,
     promptName: string,
-    params?: JSONObject,
+    params?: JSONObject
   ): Promise<Prompt | Prompt[]> {
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
@@ -460,11 +461,26 @@ export class AIConfigRuntime implements AIConfig {
 
       prompt.metadata.model = modelMetadata;
     } else {
+      // Prompt not specified. Update global model settings.
       if (!this.metadata.models) {
         this.metadata.models = {};
       }
 
-      this.metadata.models[modelMetadata.name] = modelMetadata;
+      const modelName = modelMetadata.name;
+      const modelSettings = modelMetadata.settings;
+      if (!modelSettings) {
+        throw new Error(
+          `E1021: ModelMetadata ${modelMetadata} does not have settings. Cannot update settings`
+        );
+      }
+
+      if (modelName in this.metadata.models) {
+        throw new Error(
+          `E1021: Model ${modelName} already exists. Use "updateMmodel()".`
+        );
+      } else {
+        this.metadata.models[modelName] = modelSettings;
+      }
     }
   }
 
