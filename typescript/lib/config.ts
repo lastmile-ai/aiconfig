@@ -117,6 +117,25 @@ export class AIConfigRuntime implements AIConfig {
     );
 
     Object.assign(aiConfig, remainingProps);
+
+    // Update the ModelParserRegistry with any model parsers specified in the AIConfig
+    if (aiConfig.metadata.model_parsers) {
+      for (const [modelName, modelParserId] of Object.entries(
+        aiConfig.metadata.model_parsers
+      )) {
+        const modelParser = ModelParserRegistry.getModelParser(modelParserId);
+        if (!modelParser) {
+          throw new Error(
+            `E1001: Unable to load AIConfig: It specifies ${JSON.stringify(
+              aiConfig.metadata.model_parsers
+            )}, but ModelParser ${modelParserId} for model ${modelName} does not exist. Make sure you have registered the ModelParser using AIConfigRuntime.registerModelParser before loading the AIConfig.`
+          );
+        }
+
+        ModelParserRegistry.registerModelParser(modelParser, [modelName]);
+      }
+    }
+
     return aiConfig;
   }
 
@@ -139,7 +158,7 @@ export class AIConfigRuntime implements AIConfig {
       .then((response) => {
         if (response.status !== 200) {
           throw new Error(
-            `Failed to load workbook. Status code: ${response.status}`
+            `E1005: Failed to load workbook. Status code: ${response.status}`
           );
         }
 
@@ -275,7 +294,7 @@ export class AIConfigRuntime implements AIConfig {
     modelName: string,
     data: JSONObject,
     promptName: string,
-    params?: JSONObject,
+    params?: JSONObject
   ): Promise<Prompt | Prompt[]> {
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
@@ -285,7 +304,7 @@ export class AIConfigRuntime implements AIConfig {
         )}: ModelParser for model ${modelName} does not exist`
       );
     }
-    
+
     const prompts = modelParser.serialize(promptName, data, this, params);
     return prompts;
   }
@@ -507,6 +526,37 @@ export class AIConfigRuntime implements AIConfig {
   }
 
   /**
+   * Sets the model to use for all prompts by default in the AIConfig.
+   * @param modelName The name of the model to default to.
+   */
+  public setDefaultModel(modelName: string | undefined) {
+    if (modelName == null) {
+      delete this.metadata.default_model;
+      return;
+    }
+
+    this.metadata.default_model = modelName;
+  }
+
+  /**
+   * Adds a model name : model parser ID mapping to the AIConfig metadata. This model parser will be used to parse Prompts in the AIConfig that use the given model.
+   * @param modelName The name of the model to set the parser for.
+   * @param modelParserId The ID of the model parser to use for the model. If undefined, the model parser for the model will be removed.
+   */
+  public setModelParser(modelName: string, modelParserId: string | undefined) {
+    if (!this.metadata.model_parsers) {
+      this.metadata.model_parsers = {};
+    }
+
+    if (modelParserId == null) {
+      delete this.metadata.model_parsers[modelName];
+      return;
+    }
+
+    this.metadata.model_parsers[modelName] = modelParserId;
+  }
+
+  /**
    * Sets a parameter in the AIConfig to the specified JSON-serializable value.
    * @param name Parameter name.
    * @param value Parameter value (can be a JSON-serializable object with sub-properties).
@@ -722,7 +772,17 @@ export class AIConfigRuntime implements AIConfig {
 
     if (typeof prompt.metadata.model === "string") {
       return prompt.metadata.model;
-    } else {
+    } else if (prompt.metadata.model == null) {
+      const defaultModel = this.metadata.default_model;
+      if (defaultModel == null) {
+        throw new Error(
+          `E2041: No default model specified in AIConfig metadata, and prompt ${prompt.name} does not specify a model`
+        );
+      }
+
+      return defaultModel;
+    }
+    {
       return prompt.metadata.model?.name;
     }
   }
@@ -740,7 +800,10 @@ export class AIConfigRuntime implements AIConfig {
       }
     }
 
-    const modelParser = ModelParserRegistry.getModelParserForPrompt(prompt);
+    const modelParser = ModelParserRegistry.getModelParserForPrompt(
+      prompt,
+      this
+    );
     if (modelParser != null) {
       return modelParser.getOutputText(this, output, prompt);
     }

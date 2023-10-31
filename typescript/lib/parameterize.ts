@@ -1,13 +1,16 @@
 import { set } from "lodash";
 import { compile } from "handlebars";
-import { AIConfig, Output, Prompt } from "../types";
+import { Prompt } from "../types";
 import { JSONObject } from "../common";
 import { ModelParserRegistry } from "./modelParserRegistry";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { AIConfigRuntime } from "./config";
 
 export function getPromptTemplate(prompt: Prompt, aiConfig: AIConfigRuntime) {
-  const modelParser = ModelParserRegistry.getModelParserForPrompt(prompt);
+  const modelParser = ModelParserRegistry.getModelParserForPrompt(
+    prompt,
+    aiConfig
+  );
   if (modelParser instanceof ParameterizedModelParser) {
     return modelParser.getPromptTemplate(prompt, aiConfig);
   }
@@ -32,17 +35,12 @@ export function getSystemPromptTemplate(
   prompt: Prompt,
   aiConfig: AIConfigRuntime
 ) {
-  // TODO: saqadri - create a getModelSettings abstraction as well
-  let modelSettings;
-  if (typeof prompt.metadata?.model === "string") {
-    modelSettings = aiConfig.metadata.models?.[prompt.metadata.model];
-  } else {
-    modelSettings = {
-      ...(aiConfig.metadata.models?.[prompt.metadata?.model?.name] || {}),
-      ...(prompt.metadata?.model?.settings || {}),
-    };
-  }
+  const modelParser = ModelParserRegistry.getModelParserForPrompt(
+    prompt,
+    aiConfig
+  );
 
+  const modelSettings = modelParser?.getModelSettings(prompt, aiConfig);
   const systemPrompt = modelSettings?.system_prompt;
   return systemPrompt as string;
 }
@@ -401,7 +399,7 @@ export function getParametersInTemplate(template: string) {
   const tags = [];
   let matches;
   while ((matches = re.exec(template)) != null) {
-    tags.push(matches[1]);
+    tags.push(matches[1].trim());
   }
   const root = {};
   let context: any = root;
