@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkaiconfig_docs=self.webpackChunkaiconfig_docs||[]).push([[765],{8832:t=>{t.exports=JSON.parse('{"title":"Introduction","slug":"/category/introduction","permalink":"/aiconfig/docs/category/introduction","navigation":{"next":{"title":"Getting Started","permalink":"/aiconfig/docs/introduction/getting-started"}}}')}}]);
