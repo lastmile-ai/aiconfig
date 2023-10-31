@@ -285,7 +285,6 @@ export class AIConfigRuntime implements AIConfig {
         )}: ModelParser for model ${modelName} does not exist`
       );
     }
-    
     const prompts = modelParser.serialize(promptName, data, this, params);
     return prompts;
   }
@@ -747,6 +746,13 @@ export class AIConfigRuntime implements AIConfig {
 
     // TODO: saqadri - log a warning if the model parser isn't parameterized
     return "";
+  }
+
+  /**
+   *  Returns the global settings for a given model.
+   */
+  public getGlobalSettings(modelName: string) {
+    return this.metadata.models?.[modelName];
   }
 
   //#endregion
