@@ -5,7 +5,6 @@ import { InferenceOptions, ModelParser } from "./modelParser";
 import {
   PromptNode,
   getDependencyGraph,
-  resolvePrompt,
   resolvePromptString,
 } from "./parameterize";
 

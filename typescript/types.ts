@@ -4,6 +4,9 @@ import { JSONObject, JSONValue } from "./common";
  * AIConfig schema, latest version. For older versions, see AIConfigV*.
  */
 export type AIConfig = {
+  /**
+   * Friendly name descriptor for the AIConfig. Could default to the filename if not specified.
+   */
   name: string;
 
   /**
@@ -34,6 +37,22 @@ export type AIConfig = {
      */
     models?: GlobalModelMetadata;
 
+    /**
+     * Default model to use for prompts that do not specify a model.
+     */
+    default_model?: string;
+
+    /**
+     * Model ID to ModelParser ID mapping.
+     * This is useful if you want to use a custom ModelParser for a model, or if a single ModelParser can handle multiple models.
+     */
+    model_parsers?: {
+      /**
+       * Key is Model ID, Value is ModelParser ID.
+       */
+      [model_name: string]: string;
+    };
+
     [k: string]: any;
   };
 
@@ -44,11 +63,6 @@ export type AIConfig = {
 
   [k: string]: any;
 };
-
-/**
- * AIConfig v1 schema.
- */
-export type AIConfigV1 = AIConfig;
 
 export type SchemaVersion =
   | {
@@ -61,7 +75,9 @@ export type SchemaVersion =
 export type PromptInput =
   | {
       /**
-       * Any additional inputs to the model.
+       * Input to the model. This can represent a single input, or multiple inputs.
+       * The structure of the data object is up to the ModelParser. For example,
+       * a multi-modal ModelParser can choose to key the data by MIME type.
        */
       data?: JSONValue;
 
@@ -75,7 +91,14 @@ export type GlobalModelMetadata = {
 };
 
 export type ModelMetadata = {
+  /**
+   * The ID of the model to use.
+   */
   name: string;
+
+  /**
+   * Model inference settings that apply to this prompt.
+   */
   settings?: InferenceSettings;
 };
 
@@ -101,9 +124,10 @@ export type Prompt = {
     /**
      * Model name/settings that apply to this prompt.
      * These settings override any global model settings that may have been defined in the AIConfig metadata.
-     *
+     * If this is a string, it is assumed to be the model name.
+     * If this is undefined, the default model specified in the default_model property will be used for this Prompt.
      */
-    model: ModelMetadata | string;
+    model?: ModelMetadata | string;
 
     /**
      * Tags for this prompt. Tags must be unique, and must not contain commas.
@@ -141,9 +165,14 @@ export type ExecuteResult = {
   execution_count?: number;
 
   /**
-   * A mime-type keyed dictionary of data
+   * The result of executing the prompt.
    */
   data: JSONValue;
+
+  /**
+   * The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
+   */
+  mime_type?: string;
 
   /**
    * Output metadata.
@@ -151,55 +180,6 @@ export type ExecuteResult = {
   metadata?: {
     [k: string]: any;
   };
-};
-
-/**
- * Data displayed as a result of inference.
- * Ignore: this is a work-in-progress
- */
-export type DisplayData = {
-  /**
-   * Type of output.
-   */
-  output_type: "display_data";
-
-  /**
-   * A mime-type keyed dictionary of data
-   */
-  data: {
-    /**
-     * mimetype output (e.g. text/plain), represented as either an array of strings or a string.
-     */
-    [k: string]: string | string[];
-  };
-
-  /**
-   * Output metadata.
-   */
-  metadata: {
-    [k: string]: any;
-  };
-};
-
-/**
- * Stream output from inference.
- * Ignore: this is a work-in-progress
- */
-export type Stream = {
-  /**
-   * Type of output.
-   */
-  output_type: "stream";
-
-  /**
-   * The name of the stream (stdout, stderr).
-   */
-  name: string;
-
-  /**
-   * The stream's text output, represented as an array of strings.
-   */
-  text: string | string[];
 };
 
 /**
@@ -226,5 +206,14 @@ export type Error = {
    */
   traceback: string[];
 };
+
+//#endregion
+
+//#region AIConfig Versions
+
+/**
+ * AIConfig v1 schema.
+ */
+export type AIConfigV1 = AIConfig;
 
 //#endregion
