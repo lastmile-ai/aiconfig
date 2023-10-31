@@ -15,6 +15,7 @@ import _ from "lodash";
 import { getAPIKeyFromEnv } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
+import { extractOverrideSettings } from "./util/configUtils";
 
 export type PromptWithOutputs = Prompt & { outputs?: Output[] };
 
@@ -771,6 +772,30 @@ export class AIConfigRuntime implements AIConfig {
    */
   public getGlobalSettings(modelName: string) {
     return this.metadata.models?.[modelName];
+  }
+
+  /**
+   * Generates a ModelMetadata object based on the provided inference settings and model ID.
+   *
+   * @param inferenceSettings - The inference settings to be used for the model.
+   * @param modelId - The unique identifier for the model.
+   * @returns A ModelMetadata object that includes the model's name and optional settings.
+   */
+  public generateModelMetadata(
+    inferenceSettings: InferenceSettings,
+    modelId: string
+  ) {
+    const overrideSettings = extractOverrideSettings(
+      this,
+      inferenceSettings,
+      modelId
+    );
+
+    if (!overrideSettings) {
+      return { name: modelId } as ModelMetadata;
+    } else {
+      return { name: modelId, settings: overrideSettings } as ModelMetadata;
+    }
   }
 
   //#endregion
