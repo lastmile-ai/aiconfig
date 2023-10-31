@@ -750,4 +750,8 @@ export class AIConfigRuntime implements AIConfig {
   }
 
   //#endregion
+
+  public getGlobalSettings(modelName: string){
+    return this.metadata.models?.[modelName];
+  }
 }
