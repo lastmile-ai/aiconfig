@@ -191,6 +191,33 @@ class AIConfig(BaseModel):
         if model_name not in self.metadata.models:
             raise Exception(f"Model '{model_name}' does not exist.")
         del self.metadata.models[model_name]
+    
+    def get_model_name(self, prompt: Union[str, Prompt]):
+        """
+        Extracts the model ID from the prompt.
+
+        Args:
+            prompt: Either the name of the prompt or a prompt object.
+
+        Returns:
+            str: Name of the model used by the prompt.
+        """
+        if isinstance(prompt, str):
+            prompt = self.prompt_index[prompt]
+        if not prompt:
+            raise Exception(f"Prompt '{prompt}' not found in config.")
+        
+        if not prompt.metadata.model:
+            # If the prompt doesn't have a model, use the default model
+            default_model = self.metadata.default_model
+            if not default_model:
+                raise Exception(f"No model specified in AIConfig metadata, prompt {prompt.name} does not specify a model.")
+            return default_model
+        if isinstance(prompt.metadata.model, str):
+            return prompt.metadata.model
+        else:
+            # Expect a ModelMetadata object
+            return prompt.metadata.model.name
 
     def get_metadata(self, prompt_name: Optional[str] = None):
         """
