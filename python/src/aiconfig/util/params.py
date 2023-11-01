@@ -32,7 +32,7 @@ def get_parameters_in_template(template) -> dict:
     re_pattern = r"{{[{]?(.*?)[}]?}}"
 
     # Find all Handlebars tags in the template
-    tags = [match.group(1) for match in re.finditer(re_pattern, template)]
+    tags = [match.group(1).strip() for match in re.finditer(re_pattern, template)]
 
     # Initialize a dictionary to store parameters
     root = defaultdict(lambda: defaultdict(bool))
