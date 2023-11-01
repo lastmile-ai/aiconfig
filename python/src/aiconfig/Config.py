@@ -240,18 +240,18 @@ class AIConfigRuntime(AIConfig):
         """
         if isinstance(prompt, str):
             prompt = self.get_prompt(prompt)
-        model_parser = ModelParserRegistry.get_model_parser_for_prompt(prompt)
+        model_parser = ModelParserRegistry.get_model_parser_for_prompt(prompt, self)
         return model_parser.get_output_text(prompt, self, output)
 
     @staticmethod
-    def register_model_parser(model_parser: ModelParser):
+    def register_model_parser(model_parser: ModelParser, model_name: str):
         """
         Registers a model parser to the registry.
 
         Args:
             model_parser (ModelParser): The model parser to be registered.
         """
-        ModelParserRegistry.register_model_parser(model_parser)
+        ModelParserRegistry.register_model_parser(model_parser, model_name)
 
     @staticmethod
     def get_model_parser(model_id: str) -> ModelParser:

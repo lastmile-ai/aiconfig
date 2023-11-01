@@ -1,7 +1,11 @@
 from typing import Dict, List
+import typing
 
 from aiconfig.AIConfigSettings import Prompt
 from .model_parser import ModelParser
+
+if typing.TYPE_CHECKING:
+    from aiconfig.Config import AIConfigRuntime
 
 
 class ModelParserRegistry:
@@ -20,8 +24,7 @@ class ModelParserRegistry:
         if ids:
             for id in ids:
                 ModelParserRegistry._parsers[id] = model_parser
-        else:
-            ModelParserRegistry._parsers[model_parser.id()] = model_parser
+        ModelParserRegistry._parsers[model_parser.id()] = model_parser
 
     @staticmethod
     def get_model_parser(model_id: str) -> ModelParser:
@@ -37,7 +40,7 @@ class ModelParserRegistry:
         return ModelParserRegistry._parsers[model_id]
 
     @staticmethod
-    def get_model_parser_for_prompt(prompt: Prompt):
+    def get_model_parser_for_prompt(prompt: Prompt, config: "AIConfigRuntime"):
         """
         Retrieves a model parser from the ModelParserRegistry using the prompt's metadata.
 
@@ -47,8 +50,8 @@ class ModelParserRegistry:
         Returns:
             ModelParser: The retrieved model parser
         """
-        model_name = prompt.get_model_name()
-        return ModelParserRegistry._parsers[model_name]
+        model_name = config.get_model_name(prompt)
+        return ModelParserRegistry.get_model_parser(model_name)
 
     @staticmethod
     def remove_model_parser(id: str):
