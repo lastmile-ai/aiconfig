@@ -83,21 +83,6 @@ class Prompt(BaseModel):
     class Config:
         extra = "allow"
 
-    def get_model_name(self):
-        """
-        Extracts the AI model name from the prompt data.
-
-        Args:
-            prompt_data (AIConfigSettings.Prompt): The data of the prompt.
-
-        Returns:
-            str: Name of the model used by the prompt.
-        """
-        if isinstance(self.metadata.model, str):
-            return self.metadata.model
-        else:
-            return self.metadata.model.name
-
     def add_output(self, output: Output):
         self.outputs.append(output)
 
@@ -227,7 +212,13 @@ class AIConfig(BaseModel):
             model_name (str): The name of the default model.
         """
         self.metadata.default_model = model_name
-    
+
+    def get_default_model(self) -> Union[str, None]:
+        """
+        Returns the default model for the AIConfig.
+        """
+        return self.metadata.default_model
+
     def set_model_parser(self, model_name: str, model_parser_id: Union[str, None]):
         """
         Adds a model name : model parser ID mapping to the AIConfig metadata. This model parser will be used to parse Promps in the AIConfig that use the given model.
@@ -543,38 +534,6 @@ class AIConfig(BaseModel):
     Library Helpers
     """
 
-    def get_model_settings(self, prompt: Prompt) -> Dict[str, Any]:
-        """
-        Extracts the AI model's settings from the configuration. If both prompt and config level settings are defined, merge them with prompt settings taking precedence.
-
-        Args:
-            prompt: The prompt object.
-
-        Returns:
-            dict: The settings of the model used by the prompt.
-        """
-        # Check if the prompt exists in the config
-        if prompt.name not in self.prompt_index or self.prompt_index[prompt.name] != prompt:
-            raise IndexError(f"Prompt '{prompt.name}' not in config.")
-
-        model = prompt.metadata.model
-
-        model_settings = {}
-
-        # Get the config level settings for the model
-        config_model_settings = self.metadata.models.get(prompt.get_model_name(), {})
-
-        # Get the prompt level settings for the model
-        prompt_model_settings = {}
-        if isinstance(model, ModelMetadata) and model.settings is not None:
-            prompt_model_settings = model.settings
-
-        # Merge config and prompt settings with prompt settings taking precents
-        model_settings.update(config_model_settings)
-        model_settings.update(prompt_model_settings)
-
-        return model_settings
-
     def get_global_settings(self, model_name: str):
         """
         Gets the global settings for a model.
@@ -583,9 +542,9 @@ class AIConfig(BaseModel):
             model_name (str): The name of the model.
 
         Returns:
-            dict: The global settings for the model.
+            dict: The global settings for the model with the given name. Returns an empty dict if no settings are defined.
         """
-        return self.metadata.models.get(model_name)
+        return self.metadata.models.get(model_name, {})
 
 
 AIConfigV1 = AIConfig
