@@ -218,6 +218,29 @@ class AIConfig(BaseModel):
         else:
             # Expect a ModelMetadata object
             return prompt.metadata.model.name
+    
+    def set_default_model(self, model_name: Union[str, None]):
+        """
+        Sets the model to use for all prompts by default in the AIConfig. Set to None to delete the default model.
+
+        Args:
+            model_name (str): The name of the default model.
+        """
+        self.metadata.default_model = model_name
+    
+    def set_model_parser(self, model_name: str, model_parser_id: Union[str, None]):
+        """
+        Adds a model name : model parser ID mapping to the AIConfig metadata. This model parser will be used to parse Promps in the AIConfig that use the given model.
+
+        Args:
+            model_name (str): The name of the model to set the parser.
+            model_parser_id (str): The ID of the model parser to use for the mode. If None, the model parser for the model will be removed.
+        """
+        if not self.metadata.model_parsers:
+            self.metadata.model_parsers = {}
+        
+        self.metadata.model_parsers[model_name] = model_parser_id
+
 
     def get_metadata(self, prompt_name: Optional[str] = None):
         """
