@@ -549,38 +549,6 @@ class AIConfig(BaseModel):
     Library Helpers
     """
 
-    def get_model_settings(self, prompt: Prompt) -> Dict[str, Any]:
-        """
-        Extracts the AI model's settings from the configuration. If both prompt and config level settings are defined, merge them with prompt settings taking precedence.
-
-        Args:
-            prompt: The prompt object.
-
-        Returns:
-            dict: The settings of the model used by the prompt.
-        """
-        # Check if the prompt exists in the config
-        if prompt.name not in self.prompt_index or self.prompt_index[prompt.name] != prompt:
-            raise IndexError(f"Prompt '{prompt.name}' not in config.")
-
-        model = prompt.metadata.model
-
-        model_settings = {}
-
-        # Get the config level settings for the model
-        config_model_settings = self.metadata.models.get(prompt.get_model_name(), {})
-
-        # Get the prompt level settings for the model
-        prompt_model_settings = {}
-        if isinstance(model, ModelMetadata) and model.settings is not None:
-            prompt_model_settings = model.settings
-
-        # Merge config and prompt settings with prompt settings taking precents
-        model_settings.update(config_model_settings)
-        model_settings.update(prompt_model_settings)
-
-        return model_settings
-
     def get_global_settings(self, model_name: str):
         """
         Gets the global settings for a model.
