@@ -83,21 +83,6 @@ class Prompt(BaseModel):
     class Config:
         extra = "allow"
 
-    def get_model_name(self):
-        """
-        Extracts the AI model name from the prompt data.
-
-        Args:
-            prompt_data (AIConfigSettings.Prompt): The data of the prompt.
-
-        Returns:
-            str: Name of the model used by the prompt.
-        """
-        if isinstance(self.metadata.model, str):
-            return self.metadata.model
-        else:
-            return self.metadata.model.name
-
     def add_output(self, output: Output):
         self.outputs.append(output)
 
