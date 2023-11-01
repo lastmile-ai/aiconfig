@@ -184,7 +184,7 @@ class PaLMChatParser(ParameterizedModelParser):
                     break
 
                 # check if prompt is of the same model
-                if previous_prompt.get_model_name() == self.id():
+                if aiconfig.get_model_name(previous_prompt) == self.id():
                     # add prompt and its output to completion data
                     # constructing this prompt will take into account available parameters.
 

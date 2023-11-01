@@ -159,7 +159,7 @@ class AIConfigRuntime(AIConfig):
             )
 
         prompt_data = self.prompt_index[prompt_name]
-        model_name = prompt_data.get_model_name()
+        model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
         response = await model_provider.deserialize(prompt_data, self, options, params)
@@ -191,7 +191,7 @@ class AIConfigRuntime(AIConfig):
             )
 
         prompt_data = self.prompt_index[prompt_name]
-        model_name = prompt_data.get_model_name()
+        model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
         response = await model_provider.run(prompt_data, self, options, params, **kwargs)

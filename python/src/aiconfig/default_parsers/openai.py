@@ -168,7 +168,7 @@ class OpenAIInference(ParameterizedModelParser):
                     if previous_prompt.name == prompt.name:
                         break
 
-                    if previous_prompt.get_model_name() == prompt.get_model_name():
+                    if aiconfig.get_model_name(previous_prompt) == aiconfig.get_model_name(prompt):
                         # Add prompt and its output to completion data. Constructing this prompt will take into account available parameters.
                         add_prompt_as_message(
                             previous_prompt, aiconfig, completion_params["messages"], params
