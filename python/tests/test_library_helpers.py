@@ -27,7 +27,7 @@ def ai_config_runtime():
     return runtime
 
 
-def test_get_model_settings_from_aiconfig(ai_config_runtime: AIConfigRuntime):
+def test_get_model_settings(ai_config_runtime: AIConfigRuntime):
     """
     Test the get_model_settings_for_prompt method of the AIConfig class.
     3 cases:

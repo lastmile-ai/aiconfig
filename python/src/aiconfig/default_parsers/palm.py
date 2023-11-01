@@ -72,7 +72,7 @@ class PaLMTextParser(ParameterizedModelParser):
         resolved_prompt = super().deserialize(prompt, aiconfig, params)
 
         # Build Completion data
-        model_settings = aiconfig.get_model_settings(prompt)
+        model_settings = self.get_model_settings(prompt, aiconfig)
 
         supported_keys = {"maxOutputTokens", "topP", "topK", "model", "temperature"}
         completion_data = {}
@@ -165,7 +165,7 @@ class PaLMChatParser(ParameterizedModelParser):
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
 
         # Build Completion data
-        model_settings = aiconfig.get_model_settings(prompt)
+        model_settings = self.get_model_settings(prompt, aiconfig)
 
         completion_data = refine_chat_completion_params(model_settings)
 
