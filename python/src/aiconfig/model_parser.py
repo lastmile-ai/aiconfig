@@ -100,6 +100,44 @@ class ModelParser(ABC):
         """
         pass
 
+    def get_model_settings(self, prompt: Prompt, aiconfig: "AIConfigRuntime") -> Dict[str, Any]:
+        """
+        Extracts the AI model's settings from the configuration. If both prompt and config level settings are defined, merge them with prompt settings taking precedence.
+
+        Args:
+            prompt: The prompt object.
+
+        Returns:
+            dict: The settings of the model used by the prompt.
+        """
+        if not prompt:
+            return aiconfig.get_global_settings(self.id())
+    
+        # Check if the prompt exists in the config
+        if prompt.name not in aiconfig.prompt_index or aiconfig.prompt_index[prompt.name] != prompt:
+            raise IndexError(f"Prompt '{prompt.name}' not in config.")
+
+        model_metadata = prompt.metadata.model
+    
+        if model_metadata is None:
+            # Use Default Model
+            default_model = aiconfig.get_default_model()
+            if not default_model:
+                raise KeyError(f"No default model specified in AIConfigMetadata, and prompt `{prompt.name}` does not specify a model.")
+            return aiconfig.get_global_settings(default_model)
+        elif isinstance(model_metadata, str):
+            # Use Global settings
+            return aiconfig.get_global_settings(model_metadata)
+        else:
+            # Merge config and prompt settings with prompt settings taking precedent
+            model_settings = {}
+            global_settings = aiconfig.get_global_settings(model_metadata.name)
+            prompt_setings = prompt.metadata.model.settings if prompt.metadata.model.settings is not None else {}
+
+            model_settings.update(global_settings)
+            model_settings.update(prompt_setings)
+
+            return model_settings
 
 def print_stream_callback(data, accumulated_data, index: int):
     """
