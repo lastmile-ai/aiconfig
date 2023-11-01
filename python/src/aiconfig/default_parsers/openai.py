@@ -177,7 +177,7 @@ class OpenAIInference(ParameterizedModelParser):
             # If messages are already specified in the model settings, then just resolve each message with the given parameters and append the latest message
             for i in range(len(completion_params.get("messages"))):
                 completion_params["messages"][i]["content"] = resolve_prompt_string(
-                   prompt, params, aiconfig, completion_params["messages"][i]["content"]
+                    prompt, params, aiconfig, completion_params["messages"][i]["content"]
                 )
 
         # Add in the latest prompt
@@ -195,7 +195,7 @@ class OpenAIInference(ParameterizedModelParser):
             inference_settings (dict): Model-specific inference settings.
 
         Returns:
-            InferenceResponse: The response from the model.
+            ExecuteResult: The response from the model.
         """
         if not openai.api_key:
             openai.api_key = get_api_key_from_environment("OPENAI_API_KEY")
