@@ -195,7 +195,7 @@ class OpenAIInference(ParameterizedModelParser):
             inference_settings (dict): Model-specific inference settings.
 
         Returns:
-            InferenceResponse: The response from the model.
+            ExecuteResult: The response from the model.
         """
         if not openai.api_key:
             openai.api_key = get_api_key_from_environment("OPENAI_API_KEY")
