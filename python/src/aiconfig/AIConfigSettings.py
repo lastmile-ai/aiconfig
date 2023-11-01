@@ -17,28 +17,12 @@ class ExecuteResult(BaseModel):
     output_type: Literal["execute_result"]
     # nth choice.
     execution_count: Union[float, None]
-    # A mime-type keyed dictionary of data
+    # The result of the executing prompt.
     data: Any
+    # The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
+    mime_type: Optional[str] = None
     # Output metadata
     metadata: Dict[str, Any]
-
-
-class DisplayData(BaseModel):
-    # Type of output
-    output_type: Literal["display_data"]
-    # A mime-type keyed dictionary of data
-    data: Dict[str, Union[str, List[str]]]
-    # Output metadata
-    metadata: Dict[str, Any]
-
-
-class Stream(BaseModel):
-    # Type of output
-    output_type: Literal["stream"]
-    # The name of the stream (stdout, stderr)
-    name: str
-    # The stream object. This could be a generator, or a list, or anything else.
-    data: Any
 
 
 class Error(BaseModel):
@@ -53,19 +37,22 @@ class Error(BaseModel):
 
 
 # Output can be one of ExecuteResult, ExecuteResult, DisplayData, Stream, or Error
-Output = Union[ExecuteResult, DisplayData, Stream, Error]
+Output = Union[ExecuteResult, Error]
 
 
 class ModelMetadata(BaseModel):
-    # Model name
+    # The ID of the model to use.
     name: str
-    # Settings for model inference
+    # Model Inference settings that apply to this prompt.
     settings: Optional[InferenceSettings] = {}
 
 
 class PromptMetadata(BaseModel):
     # Model name/settings that apply to this prompt
-    model: Union[ModelMetadata, str]
+    # These settings override any global model settings that may have been defined in the AIConfig metadata.
+    # If this is a string, it is assumed to be the model name.
+    # Ift this is undefined, the default model specified in the default_model_property will be used for this Prompt.
+    model: Optional[Union[ModelMetadata, str]] = None
     # Tags for this prompt. Tags must be unique, and must not contain commas.
     tags: Optional[List[str]] = None
     # Parameter definitions that are accessible to this prompt
@@ -135,6 +122,12 @@ class ConfigMetadata(BaseModel):
     # Globally defined model settings. Any prompts that use these models will have these settings applied by default,
     # unless they override them with their own model settings.
     models: Optional[Dict[str, InferenceSettings]] = {}
+    # Default model to use for prompts that do not specify a model.
+    default_model: Optional[str] = None
+    # Model ID to ModelParser ID mapping.
+    # This is useful if you want to use a custom ModelParser for a model, or if a single ModelParser can handle multiple models.
+    # Key is Model ID , Value is ModelParserID
+    model_parsers: Optional[Dict[str, str]] = None
 
     class Config:
         extra = "allow"
@@ -145,7 +138,7 @@ class AIConfig(BaseModel):
     AIConfig schema, latest version. For older versions, see AIConfigV*
     """
 
-    # The name of AIConfig
+    # Friendly name descriptor for the AIConfig. Could default to the filename if not specified.
     name: str
     # The version of the AIConfig schema
     schema_version: Union[SchemaVersion, Literal["v1", "latest"]] = "latest"
@@ -543,3 +536,6 @@ class AIConfig(BaseModel):
             dict: The global settings for the model.
         """
         return self.metadata.models.get(model_name)
+
+
+AIConfigV1 = AIConfig
