@@ -140,7 +140,7 @@ class OpenAIInference(ParameterizedModelParser):
             dict: Model-specific completion parameters.
         """
         # Build Completion params
-        model_settings = aiconfig.get_model_settings(prompt)
+        model_settings = self.get_model_settings(prompt, aiconfig)
 
         completion_params = refine_chat_completion_params(model_settings)
 
