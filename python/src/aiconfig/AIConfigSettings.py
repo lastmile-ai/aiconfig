@@ -23,23 +23,6 @@ class ExecuteResult(BaseModel):
     metadata: Dict[str, Any]
 
 
-class InferenceResponse(BaseModel):
-    """
-    Represents the result of a successful execution.
-
-    Attributes:
-        output (str): The model's generated text
-        processed_data (str): The original response or data derived from the model's output which may contain output, used for processing.
-
-    Example usage:
-        result = ModelExecutionResult(output_text="Lorem ipsum...",
-                                      processed_data="{some data ...}")
-    """
-
-    output: str
-    response: Any
-
-
 class DisplayData(BaseModel):
     # Type of output
     output_type: Literal["display_data"]
@@ -69,8 +52,8 @@ class Error(BaseModel):
     traceback: List[str]
 
 
-# Output can be one of InferenceResponse, ExecuteResult, DisplayData, Stream, or Error
-Output = Union[InferenceResponse, ExecuteResult, DisplayData, Stream, Error]
+# Output can be one of ExecuteResult, ExecuteResult, DisplayData, Stream, or Error
+Output = Union[ExecuteResult, DisplayData, Stream, Error]
 
 
 class ModelMetadata(BaseModel):

@@ -3,7 +3,7 @@
 
 from abc import abstractmethod
 from typing import Dict, Optional
-from aiconfig.AIConfigSettings import AIConfig, InferenceResponse, Prompt
+from aiconfig.AIConfigSettings import AIConfig, ExecuteResult, Prompt
 
 from aiconfig.model_parser import InferenceOptions, ModelParser
 from aiconfig.util.params import resolve_parameters, resolve_parametrized_prompt
@@ -44,7 +44,7 @@ class ParameterizedModelParser(ModelParser):
         options: Optional[InferenceOptions] = None,
         parameters: Dict = {},
         **kwargs
-    ) -> InferenceResponse:
+    ) -> ExecuteResult:
         # maybe use prompt metadata instead of kwargs?
         if kwargs.get("run_with_dependencies", False):
             return await self.run_with_dependencies(prompt, aiconfig, options, parameters)
@@ -53,7 +53,7 @@ class ParameterizedModelParser(ModelParser):
 
     async def run_with_dependencies(
         self, prompt: Prompt, aiconfig: AIConfig, options=None, parameters: Dict = {}
-    ) -> InferenceResponse:
+    ) -> ExecuteResult:
         """
         Executes the AI model with the resolved dependencies and prompt references and returns the API response.
 
@@ -63,7 +63,7 @@ class ParameterizedModelParser(ModelParser):
             parameters (dict): The resolved parameters to use for inference.
 
         Returns:
-            InferenceResponse: An Object containing the response from the AI model.
+            ExecuteResult: An Object containing the response from the AI model.
         """
         dependency_graph = get_dependency_graph(prompt, aiconfig.prompts, aiconfig.prompt_index)
 
