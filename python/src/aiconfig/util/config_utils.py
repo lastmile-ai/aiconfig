@@ -3,9 +3,12 @@ from typing import TYPE_CHECKING
 
 import copy
 
+from aiconfig.registry import ModelParserRegistry
+
 if TYPE_CHECKING:
     from aiconfig import AIConfigSettings
     from aiconfig.AIConfigSettings import InferenceSettings
+    from aiconfig.Config import AIConfigRuntime
 
 
 def get_api_key_from_environment(api_key_name: str):
@@ -46,3 +49,17 @@ def extract_override_settings(
         }
         return override_settings
     return inference_settings
+
+
+def update_model_parser_registry_with_config_runtime(config_runtime: "AIConfigRuntime"):
+    """
+    Updates the model parser registry with the model parsers from the AIConfigRuntime.
+
+    Args:
+        config_runtime (AIConfigRuntime): The AIConfigRuntime.
+    """
+    if not config_runtime.metadata.model_parsers:
+        return
+    for model_id, model_parser_id in config_runtime.metadata.model_parsers:
+        if 
+        ModelParserRegistry.register_model_parser(model_parser)
