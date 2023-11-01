@@ -227,7 +227,13 @@ class AIConfig(BaseModel):
             model_name (str): The name of the default model.
         """
         self.metadata.default_model = model_name
-    
+
+    def get_default_model(self) -> Union[str, None]:
+        """
+        Returns the default model for the AIConfig.
+        """
+        return self.metadata.default_model
+
     def set_model_parser(self, model_name: str, model_parser_id: Union[str, None]):
         """
         Adds a model name : model parser ID mapping to the AIConfig metadata. This model parser will be used to parse Promps in the AIConfig that use the given model.
@@ -582,9 +588,9 @@ class AIConfig(BaseModel):
             model_name (str): The name of the model.
 
         Returns:
-            dict: The global settings for the model.
+            dict: The global settings for the model with the given name. Returns an empty dict if no settings are defined.
         """
-        return self.metadata.models.get(model_name)
+        return self.metadata.models.get(model_name, {})
 
 
 AIConfigV1 = AIConfig
