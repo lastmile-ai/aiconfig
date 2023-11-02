@@ -8,6 +8,7 @@ from .AIConfigSettings import (
     PromptInput,
     PromptMetadata,
     SchemaVersion,
+    JSONObject,
 )
 from .Config import AIConfigRuntime
 from .model_parser import ModelParser
