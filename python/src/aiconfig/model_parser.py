@@ -149,7 +149,8 @@ def print_stream_delta(data, accumulated_data, index: int):
     """
     if "content" in data:
         content = data['content']
-        print(content, end = "", flush=True)
+        if content:
+            print(content, end = "", flush=True)
 
 
 class InferenceOptions():
