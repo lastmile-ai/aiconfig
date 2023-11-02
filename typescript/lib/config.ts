@@ -812,5 +812,12 @@ export class AIConfigRuntime implements AIConfig {
     return "";
   }
 
+  /**
+   *  Returns the global settings for a given model.
+   */
+  public getGlobalSettings(modelName: string) {
+    return this.metadata.models?.[modelName];
+  }
+
   //#endregion
 }
