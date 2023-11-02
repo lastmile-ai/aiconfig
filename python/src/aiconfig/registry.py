@@ -1,7 +1,11 @@
 from typing import Dict, List
+import typing
 
 from aiconfig.AIConfigSettings import Prompt
 from .model_parser import ModelParser
+
+if typing.TYPE_CHECKING:
+    from aiconfig.Config import AIConfigRuntime
 
 
 class ModelParserRegistry:
@@ -20,8 +24,7 @@ class ModelParserRegistry:
         if ids:
             for id in ids:
                 ModelParserRegistry._parsers[id] = model_parser
-        else:
-            ModelParserRegistry._parsers[model_parser.id()] = model_parser
+        ModelParserRegistry._parsers[model_parser.id()] = model_parser
 
     @staticmethod
     def get_model_parser(model_id: str) -> ModelParser:
@@ -37,7 +40,7 @@ class ModelParserRegistry:
         return ModelParserRegistry._parsers[model_id]
 
     @staticmethod
-    def get_model_parser_for_prompt(prompt: Prompt):
+    def get_model_parser_for_prompt(prompt: Prompt, config: "AIConfigRuntime"):
         """
         Retrieves a model parser from the ModelParserRegistry using the prompt's metadata.
 
@@ -47,8 +50,8 @@ class ModelParserRegistry:
         Returns:
             ModelParser: The retrieved model parser
         """
-        model_name = prompt.get_model_name()
-        return ModelParserRegistry._parsers[model_name]
+        model_name = config.get_model_name(prompt)
+        return ModelParserRegistry.get_model_parser(model_name)
 
     @staticmethod
     def remove_model_parser(id: str):
@@ -57,7 +60,7 @@ class ModelParserRegistry:
 
         Args:
             id (str): The ID of the model parser to remove
-        
+
         """
         ModelParserRegistry._parsers.pop(id)
 
@@ -87,3 +90,26 @@ class ModelParserRegistry:
             model_name: model_parser.id()
             for model_name, model_parser in ModelParserRegistry._parsers.items()
         }
+
+
+def update_model_parser_registry_with_config_runtime(config_runtime: "AIConfigRuntime"):
+    """
+    Updates the model parser registry with any model parsers specified in the AIConfig.
+
+    Args:
+        config_runtime (AIConfigRuntime): The AIConfigRuntime.
+    """
+    if not config_runtime.metadata.model_parsers:
+        return
+    for model_id, model_parser_id in config_runtime.metadata.model_parsers.items():
+        retrieved_model_parser = ModelParserRegistry.get_model_parser(model_parser_id)  # Fix
+        if retrieved_model_parser is None:
+            error_message = (
+                f"Unable to load AIConfig: It specifies {config_runtime.metadata.model_parsers}, "
+                f"but ModelParser {model_parser_id} for {model_id} does not exist. "
+                "Make sure you have registered the ModelParser using AIConfigRuntime.registerModelParser "
+                "before loading the AIConfig."
+            )
+            raise Exception(error_message)
+
+        ModelParserRegistry.register_model_parser(retrieved_model_parser, [model_id])

@@ -17,45 +17,12 @@ class ExecuteResult(BaseModel):
     output_type: Literal["execute_result"]
     # nth choice.
     execution_count: Union[float, None]
-    # A mime-type keyed dictionary of data
+    # The result of the executing prompt.
     data: Any
+    # The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
+    mime_type: Optional[str] = None
     # Output metadata
     metadata: Dict[str, Any]
-
-
-class InferenceResponse(BaseModel):
-    """
-    Represents the result of a successful execution.
-
-    Attributes:
-        output (str): The model's generated text
-        processed_data (str): The original response or data derived from the model's output which may contain output, used for processing.
-
-    Example usage:
-        result = ModelExecutionResult(output_text="Lorem ipsum...",
-                                      processed_data="{some data ...}")
-    """
-
-    output: str
-    response: Any
-
-
-class DisplayData(BaseModel):
-    # Type of output
-    output_type: Literal["display_data"]
-    # A mime-type keyed dictionary of data
-    data: Dict[str, Union[str, List[str]]]
-    # Output metadata
-    metadata: Dict[str, Any]
-
-
-class Stream(BaseModel):
-    # Type of output
-    output_type: Literal["stream"]
-    # The name of the stream (stdout, stderr)
-    name: str
-    # The stream object. This could be a generator, or a list, or anything else.
-    data: Any
 
 
 class Error(BaseModel):
@@ -69,20 +36,23 @@ class Error(BaseModel):
     traceback: List[str]
 
 
-# Output can be one of InferenceResponse, ExecuteResult, DisplayData, Stream, or Error
-Output = Union[InferenceResponse, ExecuteResult, DisplayData, Stream, Error]
+# Output can be one of ExecuteResult, ExecuteResult, DisplayData, Stream, or Error
+Output = Union[ExecuteResult, Error]
 
 
 class ModelMetadata(BaseModel):
-    # Model name
+    # The ID of the model to use.
     name: str
-    # Settings for model inference
+    # Model Inference settings that apply to this prompt.
     settings: Optional[InferenceSettings] = {}
 
 
 class PromptMetadata(BaseModel):
     # Model name/settings that apply to this prompt
-    model: Union[ModelMetadata, str]
+    # These settings override any global model settings that may have been defined in the AIConfig metadata.
+    # If this is a string, it is assumed to be the model name.
+    # Ift this is undefined, the default model specified in the default_model_property will be used for this Prompt.
+    model: Optional[Union[ModelMetadata, str]] = None
     # Tags for this prompt. Tags must be unique, and must not contain commas.
     tags: Optional[List[str]] = None
     # Parameter definitions that are accessible to this prompt
@@ -106,27 +76,12 @@ class Prompt(BaseModel):
     # The prompt string, or a more complex prompt object
     input: Union[str, PromptInput]
     # Metadata for the prompt
-    metadata: PromptMetadata
+    metadata: Optional[PromptMetadata] = None
     # Execution, display, or stream outputs (currently a work-in-progress)
     outputs: Optional[List[Output]] = []
 
     class Config:
         extra = "allow"
-
-    def get_model_name(self):
-        """
-        Extracts the AI model name from the prompt data.
-
-        Args:
-            prompt_data (AIConfigSettings.Prompt): The data of the prompt.
-
-        Returns:
-            str: Name of the model used by the prompt.
-        """
-        if isinstance(self.metadata.model, str):
-            return self.metadata.model
-        else:
-            return self.metadata.model.name
 
     def add_output(self, output: Output):
         self.outputs.append(output)
@@ -152,6 +107,12 @@ class ConfigMetadata(BaseModel):
     # Globally defined model settings. Any prompts that use these models will have these settings applied by default,
     # unless they override them with their own model settings.
     models: Optional[Dict[str, InferenceSettings]] = {}
+    # Default model to use for prompts that do not specify a model.
+    default_model: Optional[str] = None
+    # Model ID to ModelParser ID mapping.
+    # This is useful if you want to use a custom ModelParser for a model, or if a single ModelParser can handle multiple models.
+    # Key is Model ID , Value is ModelParserID
+    model_parsers: Optional[Dict[str, str]] = None
 
     class Config:
         extra = "allow"
@@ -162,7 +123,7 @@ class AIConfig(BaseModel):
     AIConfig schema, latest version. For older versions, see AIConfigV*
     """
 
-    # The name of AIConfig
+    # Friendly name descriptor for the AIConfig. Could default to the filename if not specified.
     name: str
     # The version of the AIConfig schema
     schema_version: Union[SchemaVersion, Literal["v1", "latest"]] = "latest"
@@ -215,6 +176,62 @@ class AIConfig(BaseModel):
         if model_name not in self.metadata.models:
             raise Exception(f"Model '{model_name}' does not exist.")
         del self.metadata.models[model_name]
+    
+    def get_model_name(self, prompt: Union[str, Prompt]):
+        """
+        Extracts the model ID from the prompt.
+
+        Args:
+            prompt: Either the name of the prompt or a prompt object.
+
+        Returns:
+            str: Name of the model used by the prompt.
+        """
+        if isinstance(prompt, str):
+            prompt = self.prompt_index[prompt]
+        if not prompt:
+            raise Exception(f"Prompt '{prompt}' not found in config.")
+        
+        if not prompt.metadata:
+            # If the prompt doesn't have a model, use the default model
+            default_model = self.metadata.default_model
+            if not default_model:
+                raise Exception(f"No model specified in AIConfig metadata, prompt {prompt.name} does not specify a model.")
+            return default_model
+        if isinstance(prompt.metadata.model, str):
+            return prompt.metadata.model
+        else:
+            # Expect a ModelMetadata object
+            return prompt.metadata.model.name
+    
+    def set_default_model(self, model_name: Union[str, None]):
+        """
+        Sets the model to use for all prompts by default in the AIConfig. Set to None to delete the default model.
+
+        Args:
+            model_name (str): The name of the default model.
+        """
+        self.metadata.default_model = model_name
+
+    def get_default_model(self) -> Union[str, None]:
+        """
+        Returns the default model for the AIConfig.
+        """
+        return self.metadata.default_model
+
+    def set_model_parser(self, model_name: str, model_parser_id: Union[str, None]):
+        """
+        Adds a model name : model parser ID mapping to the AIConfig metadata. This model parser will be used to parse Promps in the AIConfig that use the given model.
+
+        Args:
+            model_name (str): The name of the model to set the parser.
+            model_parser_id (str): The ID of the model parser to use for the mode. If None, the model parser for the model will be removed.
+        """
+        if not self.metadata.model_parsers:
+            self.metadata.model_parsers = {}
+        
+        self.metadata.model_parsers[model_name] = model_parser_id
+
 
     def get_metadata(self, prompt_name: Optional[str] = None):
         """
@@ -512,42 +529,17 @@ class AIConfig(BaseModel):
             prompt (str|Prompt): The name of the prompt or the prompt object.
         """
         pass
-
+    
+    def get_prompt_parameters(self, prompt: Prompt):
+        """
+        Gets the prompt's local parameters for a prompt.
+        """
+        if not prompt.metadata:
+            return {}
+        return prompt.metadata.parameters
     """
     Library Helpers
     """
-
-    def get_model_settings(self, prompt: Prompt) -> Dict[str, Any]:
-        """
-        Extracts the AI model's settings from the configuration. If both prompt and config level settings are defined, merge them with prompt settings taking precedence.
-
-        Args:
-            prompt: The prompt object.
-
-        Returns:
-            dict: The settings of the model used by the prompt.
-        """
-        # Check if the prompt exists in the config
-        if prompt.name not in self.prompt_index or self.prompt_index[prompt.name] != prompt:
-            raise IndexError(f"Prompt '{prompt.name}' not in config.")
-
-        model = prompt.metadata.model
-
-        model_settings = {}
-
-        # Get the config level settings for the model
-        config_model_settings = self.metadata.models.get(prompt.get_model_name(), {})
-
-        # Get the prompt level settings for the model
-        prompt_model_settings = {}
-        if isinstance(model, ModelMetadata) and model.settings is not None:
-            prompt_model_settings = model.settings
-
-        # Merge config and prompt settings with prompt settings taking precents
-        model_settings.update(config_model_settings)
-        model_settings.update(prompt_model_settings)
-
-        return model_settings
 
     def get_global_settings(self, model_name: str):
         """
@@ -557,6 +549,9 @@ class AIConfig(BaseModel):
             model_name (str): The name of the model.
 
         Returns:
-            dict: The global settings for the model.
+            dict: The global settings for the model with the given name. Returns an empty dict if no settings are defined.
         """
-        return self.metadata.models.get(model_name)
+        return self.metadata.models.get(model_name, {})
+
+
+AIConfigV1 = AIConfig

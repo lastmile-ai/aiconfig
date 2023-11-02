@@ -3,12 +3,20 @@
 
 from abc import abstractmethod
 from typing import Dict, Optional
-from aiconfig.AIConfigSettings import AIConfig, InferenceResponse, Prompt
+import typing
+from aiconfig import AIConfig, ExecuteResult, JSONObject, Prompt, PromptInput
 
 from aiconfig.model_parser import InferenceOptions, ModelParser
-from aiconfig.util.params import resolve_parameters, resolve_parametrized_prompt
+from aiconfig.util.params import (
+    resolve_parameters,
+    resolve_parametrized_prompt,
+    resolve_prompt_string,
+)
 from aiconfig.util.params import get_dependency_graph, resolve_parametrized_prompt
 from aiconfig.registry import ModelParserRegistry
+
+if typing.TYPE_CHECKING:
+    from aiconfig import AIConfigRuntime
 
 
 class ParameterizedModelParser(ModelParser):
@@ -44,7 +52,7 @@ class ParameterizedModelParser(ModelParser):
         options: Optional[InferenceOptions] = None,
         parameters: Dict = {},
         **kwargs
-    ) -> InferenceResponse:
+    ) -> ExecuteResult:
         # maybe use prompt metadata instead of kwargs?
         if kwargs.get("run_with_dependencies", False):
             return await self.run_with_dependencies(prompt, aiconfig, options, parameters)
@@ -53,7 +61,7 @@ class ParameterizedModelParser(ModelParser):
 
     async def run_with_dependencies(
         self, prompt: Prompt, aiconfig: AIConfig, options=None, parameters: Dict = {}
-    ) -> InferenceResponse:
+    ) -> ExecuteResult:
         """
         Executes the AI model with the resolved dependencies and prompt references and returns the API response.
 
@@ -63,7 +71,7 @@ class ParameterizedModelParser(ModelParser):
             parameters (dict): The resolved parameters to use for inference.
 
         Returns:
-            InferenceResponse: An Object containing the response from the AI model.
+            ExecuteResult: An Object containing the response from the AI model.
         """
         dependency_graph = get_dependency_graph(prompt, aiconfig.prompts, aiconfig.prompt_index)
 
@@ -102,3 +110,34 @@ class ParameterizedModelParser(ModelParser):
                 return output
 
         return await execute_recursive(prompt.name)
+
+    def resolve_prompt_template(
+        prompt_template: str,
+        prompt: Prompt,
+        ai_config: "AIConfigRuntime",
+        params: Optional[JSONObject] = {},
+    ):
+        """
+        Resolves a templated string with the provided parameters (applied from the AIConfig as well as passed in params).
+
+        Args:
+            prompt_template (str): The template string to resolve.
+            prompt (Prompt): The prompt object that the template string belongs to (if any).
+            ai_config (AIConfigRuntime): The AIConfig that the template string belongs to (if any).
+            params (dict): Optional parameters resolve the template string with.
+
+        Returns:
+            str: The resolved string.
+        """
+        return resolve_prompt_string(prompt, params, ai_config, prompt_template)
+
+    def get_prompt_template(prompt: Prompt, aiConfig: "AIConfigRuntime") -> str:
+        """
+        An overrideable method that returns a template for a prompt.
+        """
+        if isinstance(prompt.input, str):
+            return prompt.input
+        elif isinstance(prompt.input, PromptInput) and isinstance(prompt.input.data, str):
+            return prompt.input.data
+        else:
+            raise Exception(f"Cannot get prompt template string from prompt input: {prompt.input}")
