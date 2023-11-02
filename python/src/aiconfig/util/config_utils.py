@@ -3,8 +3,9 @@ from typing import TYPE_CHECKING
 
 import copy
 
+
 if TYPE_CHECKING:
-    from aiconfig import AIConfigSettings
+    from ..AIConfigSettings import AIConfig
     from aiconfig.AIConfigSettings import InferenceSettings
     from aiconfig.Config import AIConfigRuntime
 
@@ -17,7 +18,7 @@ def get_api_key_from_environment(api_key_name: str):
 
 
 def extract_override_settings(
-    config_runtime: "AIConfigSettings", inference_settings: "InferenceSettings", model_id: str
+    config_runtime: "AIConfig", inference_settings: "InferenceSettings", model_id: str
 ):
     """
     Extract inference settings with overrides based on inference settings.
