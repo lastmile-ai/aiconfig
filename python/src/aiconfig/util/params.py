@@ -8,7 +8,7 @@ import cachetools
 from pybars import Compiler
 
 if TYPE_CHECKING:
-    from aiconfig.Config import AIConfigRuntime
+    from ..Config import AIConfigRuntime
 
 
 def get_parameters_in_template(template) -> dict:
@@ -279,7 +279,7 @@ def resolve_prompt_string(
     augmented_params.update(ai_config.metadata.parameters)
 
     # augment params with prompt level params
-    augmented_params.update(current_prompt.metadata.parameters)
+    augmented_params.update(ai_config.get_prompt_parameters(current_prompt))
 
     # Combine input_params and augmented_params
     combined_params = dict(input_params, **augmented_params)
