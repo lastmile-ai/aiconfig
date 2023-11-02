@@ -115,7 +115,7 @@ class ModelParser(ABC):
         if prompt.name not in aiconfig.prompt_index or aiconfig.prompt_index[prompt.name] != prompt:
             raise IndexError(f"Prompt '{prompt.name}' not in config.")
 
-        model_metadata = prompt.metadata.model
+        model_metadata = prompt.metadata.model if prompt.metadata else None
     
         if model_metadata is None:
             # Use Default Model
