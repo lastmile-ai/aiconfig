@@ -507,8 +507,10 @@ export class AIConfigRuntime implements AIConfig {
       if (!this.metadata.models) {
         this.metadata.models = {};
       }
-
-      this.metadata.models[modelMetadata.name] = modelMetadata;
+      if (!modelMetadata.settings) {
+        modelMetadata.settings = {};
+      }
+      this.metadata.models[modelMetadata.name] = modelMetadata.settings;
     }
   }
 
