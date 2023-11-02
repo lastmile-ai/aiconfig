@@ -146,6 +146,9 @@ class OpenAIInference(ParameterizedModelParser):
             # Add System Prompt
             if "system_prompt" in model_settings:
                 system_prompt = model_settings["system_prompt"]
+                if isinstance(system_prompt, dict):
+                    # If system prompt is an object, then it should have content and role attributes
+                    system_prompt = system_prompt["content"]
                 resolved_system_prompt = resolve_system_prompt(
                     prompt, system_prompt, params, aiconfig
                 )
@@ -177,7 +180,7 @@ class OpenAIInference(ParameterizedModelParser):
             # If messages are already specified in the model settings, then just resolve each message with the given parameters and append the latest message
             for i in range(len(completion_params.get("messages"))):
                 completion_params["messages"][i]["content"] = resolve_prompt_string(
-                   prompt, params, aiconfig, completion_params["messages"][i]["content"]
+                    prompt, params, aiconfig, completion_params["messages"][i]["content"]
                 )
 
         # Add in the latest prompt
@@ -253,6 +256,18 @@ class OpenAIInference(ParameterizedModelParser):
         prompt.outputs = outputs
 
         return prompt.outputs
+
+    def get_prompt_template(self, prompt: Prompt, aiconfig: "AIConfigRuntime") -> str:
+        """
+        Returns a template for a prompt.
+        """
+        if isinstance(prompt.input, str):
+            return prompt.input
+        elif isinstance(prompt.input, PromptInput) and isinstance(prompt.input.data, str):
+            return prompt.input.data
+        else:
+            message = prompt.input
+            return message.content or ""
 
     def get_output_text(
         self, prompt: Prompt, aiconfig: "AIConfigRuntime", output: Optional[Output] = None
@@ -382,15 +397,22 @@ def add_prompt_as_message(
         messages.append({"content": resolved_prompt, "role": "user"})
     else:
         # Assumes Prompt input will be in the format of ChatCompletionMessageParam (with content, role, function_name, and name attributes)
-        resolved_prompt = resolve_prompt(prompt.input.content, params, aiconfig)
+        resolved_prompt = resolve_prompt_string(prompt, params, aiconfig, prompt.input.content)
 
         prompt_input = prompt.input
         role = prompt_input.role if hasattr(prompt_input, "role") else "user"
         fn_call = prompt_input.function_call if hasattr(prompt_input, "function_call") else None
         name = prompt_input.name if hasattr(prompt_input, "name") else None
-        messages.append(
-            {"content": resolved_prompt, "role": role, "function_call": fn_call, "name": name}
-        )
+
+        message_data = {"content": resolved_prompt, "role": role}
+
+        # filter out None values
+        if fn_call is not None:
+            message_data["function_call"] = fn_call
+        if name is not None:
+            message_data["name"] = name
+
+        messages.append(message_data)
 
     output = aiconfig.get_latest_output(prompt)
     if output:
