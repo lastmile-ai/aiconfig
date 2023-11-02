@@ -76,7 +76,7 @@ class Prompt(BaseModel):
     # The prompt string, or a more complex prompt object
     input: Union[str, PromptInput]
     # Metadata for the prompt
-    metadata: PromptMetadata
+    metadata: Optional[PromptMetadata] = None
     # Execution, display, or stream outputs (currently a work-in-progress)
     outputs: Optional[List[Output]] = []
 
@@ -192,7 +192,7 @@ class AIConfig(BaseModel):
         if not prompt:
             raise Exception(f"Prompt '{prompt}' not found in config.")
         
-        if not prompt.metadata.model:
+        if not prompt.metadata:
             # If the prompt doesn't have a model, use the default model
             default_model = self.metadata.default_model
             if not default_model:
@@ -529,7 +529,14 @@ class AIConfig(BaseModel):
             prompt (str|Prompt): The name of the prompt or the prompt object.
         """
         pass
-
+    
+    def get_prompt_parameters(self, prompt: Prompt):
+        """
+        Gets the prompt's local parameters for a prompt.
+        """
+        if not prompt.metadata:
+            return {}
+        return prompt.metadata.parameters
     """
     Library Helpers
     """
