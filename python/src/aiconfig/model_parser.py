@@ -115,7 +115,7 @@ class ModelParser(ABC):
         if prompt.name not in aiconfig.prompt_index or aiconfig.prompt_index[prompt.name] != prompt:
             raise IndexError(f"Prompt '{prompt.name}' not in config.")
 
-        model_metadata = prompt.metadata.model
+        model_metadata = prompt.metadata.model if prompt.metadata else None
     
         if model_metadata is None:
             # Use Default Model
@@ -149,7 +149,8 @@ def print_stream_delta(data, accumulated_data, index: int):
     """
     if "content" in data:
         content = data['content']
-        print(content, end = "", flush=True)
+        if content:
+            print(content, end = "", flush=True)
 
 
 class InferenceOptions():
