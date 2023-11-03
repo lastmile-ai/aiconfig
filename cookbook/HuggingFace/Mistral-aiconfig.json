@@ -1,0 +1,26 @@
+{
+    "name": "exploring nyc through chatgpt config",
+    "description": "",
+    "schema_version": "latest",
+    "metadata": {
+        "parameters": {},
+        "models": {
+            "mistralai/Mistral-7B-v0.1": {
+                "model": "mistralai/Mistral-7B-v0.1",
+                "top_p": 0.9,
+                "temperature": 0.9,
+                "stream": true
+            }
+        },
+        "default_model": "mistralai/Mistral-7B-v0.1",
+        "model_parsers": {
+            "mistralai/Mistral-7B-v0.1": "HuggingFaceTextParser"
+        }
+    },
+    "prompts": [
+        {
+            "name": "prompt1",
+            "input": "Hi! Tell me 10 cool things to do in NYC."
+        }
+    ]
+}
