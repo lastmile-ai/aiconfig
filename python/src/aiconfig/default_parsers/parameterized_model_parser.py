@@ -131,7 +131,7 @@ class ParameterizedModelParser(ModelParser):
         """
         return resolve_prompt_string(prompt, params, ai_config, prompt_template)
 
-    def get_prompt_template(prompt: Prompt, aiConfig: "AIConfigRuntime") -> str:
+    def get_prompt_template(self, prompt: Prompt, aiConfig: "AIConfigRuntime") -> str:
         """
         An overrideable method that returns a template for a prompt.
         """
