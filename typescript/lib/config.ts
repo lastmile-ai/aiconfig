@@ -1,6 +1,7 @@
 import { JSONObject, JSONValue } from "../common";
 import {
   AIConfig,
+  InferenceSettings,
   ModelMetadata,
   Output,
   Prompt,
@@ -810,6 +811,13 @@ export class AIConfigRuntime implements AIConfig {
 
     // TODO: saqadri - log a warning if the model parser isn't parameterized
     return "";
+  }
+
+  /**
+   *  Returns the global settings for a given model.
+   */
+  public getGlobalSettings(modelName: string): InferenceSettings | undefined {
+    return this.metadata.models?.[modelName];
   }
 
   //#endregion
