@@ -228,6 +228,7 @@ def get_prompt_template(prompt: Prompt, aiconfig: "AIConfigRuntime"):
     model_parser = ModelParserRegistry.get_model_parser_for_prompt(prompt, aiconfig)
     # Circular type reference
     from ..default_parsers.parameterized_model_parser import ParameterizedModelParser
+
     if isinstance(model_parser, ParameterizedModelParser):
         return model_parser.get_prompt_template(prompt, aiconfig)
 
@@ -308,6 +309,6 @@ def resolve_prompt_string(
     augmented_params.update(ai_config.get_prompt_parameters(current_prompt))
 
     # Combine input_params and augmented_params
-    combined_params = dict(input_params, **augmented_params)
+    combined_params = dict(augmented_params, **input_params)
 
     return resolve_parametrized_prompt(prompt_string, combined_params)
