@@ -308,6 +308,6 @@ def resolve_prompt_string(
     augmented_params.update(ai_config.get_prompt_parameters(current_prompt))
 
     # Combine input_params and augmented_params
-    combined_params = dict(input_params, **augmented_params)
+    combined_params = dict(augmented_params, **input_params)
 
     return resolve_parametrized_prompt(prompt_string, combined_params)
