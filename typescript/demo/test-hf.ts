@@ -5,18 +5,13 @@ import { HuggingFaceTextGenerationModelParser } from "../lib/parsers/hf";
 import { Prompt } from "../types";
 
 async function run() {
+  const huggingFaceTextGenerationModelParser =
+    new HuggingFaceTextGenerationModelParser();
+  AIConfigRuntime.registerModelParser(huggingFaceTextGenerationModelParser);
+
   const config = AIConfigRuntime.load(
     path.join(__dirname, "/mistral-config.json")
   );
-
-  // register HF MP
-  const mistralModelParser = new HuggingFaceTextGenerationModelParser(
-    "mistralai/Mistral-7B-v0.1",
-    true
-  );
-  AIConfigRuntime.registerModelParser(mistralModelParser, [
-    "mistralai/Mistral-7B-v0.1",
-  ]);
 
   console.log("Deserialize Prompt1: ");
   console.log(await config.resolve("prompt1"));
@@ -58,9 +53,3 @@ async function run() {
 }
 
 run();
-
-const hfMP = new HuggingFaceTextGenerationModelParser(
-  "mistralai/Mistral-7B-v0.1",
-  true
-);
-AIConfigRuntime.registerModelParser(hfMP, ["mistralai/Mistral-7B-v0.1"]);
