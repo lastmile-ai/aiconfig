@@ -44,7 +44,7 @@ aiconfig = AIConfigRuntime.from_config("/path/to/config")
 Prompts are input messages or queries you send to a Large Language model. You can create and manage prompts using AIConfig Tools. Here's an example of creating a prompt:
 
 ```python
-from aiconfig.AIConfigSettings import ModelMetadata, Prompt
+from aiconfig.schema import ModelMetadata, Prompt
 
 prompt = Prompt(
     name="prompt1",

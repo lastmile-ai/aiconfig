@@ -1,5 +1,5 @@
 import copy
-from aiconfig.AIConfigSettings import Prompt
+from aiconfig.schema import Prompt
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.model_parser import ModelParser
 from aiconfig.registry import ModelParserRegistry

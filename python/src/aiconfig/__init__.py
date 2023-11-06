@@ -1,5 +1,5 @@
 # Core Data Classes
-from .AIConfigSettings import (
+from .schema import (
     AIConfig,
     ConfigMetadata,
     ExecuteResult,

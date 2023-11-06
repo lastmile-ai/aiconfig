@@ -2,8 +2,8 @@ from abc import abstractmethod
 import copy
 from typing import Dict, List, Optional, Union
 from typing import TYPE_CHECKING, Any, Dict, Optional
-from aiconfig import AIConfigSettings
-from aiconfig.AIConfigSettings import (
+from aiconfig import schema
+from aiconfig.schema import (
     ExecuteResult,
     ModelMetadata,
     Output,
