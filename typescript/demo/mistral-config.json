@@ -11,6 +11,9 @@
         "temperature": 0.9,
         "stream": true
       }
+    },
+    "model_parsers": {
+      "mistralai/Mistral-7B-v0.1": "HuggingFaceTextGenerationModelParser"
     }
   },
   "prompts": [
