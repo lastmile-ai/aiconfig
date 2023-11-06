@@ -6,6 +6,7 @@ import copy
 if TYPE_CHECKING:
     from aiconfig import AIConfigSettings
     from aiconfig.AIConfigSettings import InferenceSettings
+    from aiconfig.Config import AIConfigRuntime
 
 
 def get_api_key_from_environment(api_key_name: str):

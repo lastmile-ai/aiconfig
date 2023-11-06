@@ -13,7 +13,7 @@ from aiconfig.default_parsers.openai import (
 from aiconfig.default_parsers.palm import PaLMChatParser, PaLMTextParser
 from aiconfig.model_parser import InferenceOptions, ModelParser
 from .AIConfigSettings import AIConfig, ConfigMetadata, Prompt
-from .registry import ModelParserRegistry
+from .registry import ModelParserRegistry, update_model_parser_registry_with_config_runtime
 
 gpt_models = [
         "gpt-4",
@@ -81,7 +81,9 @@ class AIConfigRuntime(AIConfig):
         with open(json_config_filepath) as file:
             # load the file as bytes and let pydantic handle the parsing
             # validated_data =  AIConfig.model_validate_json(file.read())
-            return cls.model_validate_json(file.read())
+            aiconfigruntime = cls.model_validate_json(file.read())
+            update_model_parser_registry_with_config_runtime(aiconfigruntime)
+            return aiconfigruntime
 
     @classmethod
     def load_from_workbook(cls, workbook_id: str) -> "AIConfigRuntime":
@@ -111,7 +113,10 @@ class AIConfigRuntime(AIConfig):
                 raise Exception(f"Failed to load workbook. Status code: {resp.status_code}")
 
             data = resp.json()
-            return cls.model_validate_json(data)
+
+            aiconfigruntime = cls.model_validate_json(data)
+            update_model_parser_registry_with_config_runtime(aiconfigruntime)
+            return aiconfigruntime
 
     async def serialize(self, model_name: str, data: Dict,  prompt_name: str, params: Optional[dict] = {}) -> List[Prompt]:
         """
@@ -159,7 +164,7 @@ class AIConfigRuntime(AIConfig):
             )
 
         prompt_data = self.prompt_index[prompt_name]
-        model_name = prompt_data.get_model_name()
+        model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
         response = await model_provider.deserialize(prompt_data, self, options, params)
@@ -191,7 +196,7 @@ class AIConfigRuntime(AIConfig):
             )
 
         prompt_data = self.prompt_index[prompt_name]
-        model_name = prompt_data.get_model_name()
+        model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
         response = await model_provider.run(prompt_data, self, options, params, **kwargs)
@@ -240,18 +245,18 @@ class AIConfigRuntime(AIConfig):
         """
         if isinstance(prompt, str):
             prompt = self.get_prompt(prompt)
-        model_parser = ModelParserRegistry.get_model_parser_for_prompt(prompt)
+        model_parser = ModelParserRegistry.get_model_parser_for_prompt(prompt, self)
         return model_parser.get_output_text(prompt, self, output)
 
     @staticmethod
-    def register_model_parser(model_parser: ModelParser):
+    def register_model_parser(model_parser: ModelParser, model_name: str):
         """
         Registers a model parser to the registry.
 
         Args:
             model_parser (ModelParser): The model parser to be registered.
         """
-        ModelParserRegistry.register_model_parser(model_parser)
+        ModelParserRegistry.register_model_parser(model_parser, [model_name])
 
     @staticmethod
     def get_model_parser(model_id: str) -> ModelParser:
