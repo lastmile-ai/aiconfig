@@ -173,8 +173,8 @@ class AIConfigRuntime(AIConfig):
 
     async def run(
         self,
-        prompt_name: Optional[str],
-        params: Optional[dict],        
+        prompt_name: str,
+        params: Optional[dict] = {},        
         options: Optional[InferenceOptions] = None,
         **kwargs,
     ):
