@@ -1,4 +1,4 @@
-from aiconfig.AIConfigSettings import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
+from aiconfig.schema import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
 from aiconfig.Config import AIConfigRuntime
 import pytest
 

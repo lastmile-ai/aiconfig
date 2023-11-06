@@ -12,7 +12,7 @@ from aiconfig.default_parsers.openai import (
 )
 from aiconfig.default_parsers.palm import PaLMChatParser, PaLMTextParser
 from aiconfig.model_parser import InferenceOptions, ModelParser
-from .AIConfigSettings import AIConfig, ConfigMetadata, Prompt
+from .schema import AIConfig, ConfigMetadata, Prompt
 from .registry import ModelParserRegistry, update_model_parser_registry_with_config_runtime
 
 gpt_models = [

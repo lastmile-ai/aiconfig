@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import copy
 from typing import TYPE_CHECKING, Dict, Optional
-from aiconfig.AIConfigSettings import (
+from aiconfig.schema import (
     AIConfig,
     ExecuteResult,
     ExecuteResult,

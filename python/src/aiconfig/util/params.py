@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Set
-from aiconfig.AIConfigSettings import Prompt
+from aiconfig.schema import Prompt
 from aiconfig.registry import ModelParserRegistry
 
 import cachetools
