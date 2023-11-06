@@ -7,3 +7,4 @@ pybars3
 google-generativeai
 openai
 python-dotenv
+huggingface_hub
