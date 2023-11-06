@@ -15,6 +15,7 @@ import _ from "lodash";
 import { getAPIKeyFromEnv } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
+import { extractOverrideSettings } from "./utils";
 
 export type PromptWithOutputs = Prompt & { outputs?: Output[] };
 
@@ -242,7 +243,10 @@ export class AIConfigRuntime implements AIConfig {
    * @param modelParser The model parser to add to the registry.
    * @param ids Optional list of model IDs to register the model parser for. If unspecified, the model parser will be registered for modelParser.id.
    */
-  public static registerModelParser(modelParser: ModelParser, ids?: string[]) {
+  public static registerModelParser(
+    modelParser: ModelParser<any, any>,
+    ids?: string[]
+  ) {
     ModelParserRegistry.registerModelParser(modelParser, ids);
   }
 
@@ -820,6 +824,30 @@ export class AIConfigRuntime implements AIConfig {
    */
   public getGlobalSettings(modelName: string): InferenceSettings | undefined {
     return this.metadata.models?.[modelName];
+  }
+
+  /**
+   * Generates a ModelMetadata object from the inferene settings by extracting the settings that override the global settings.
+   *
+   * @param inferenceSettings - The inference settings to be used for the model.
+   * @param modelName - The unique identifier for the model.
+   * @returns A ModelMetadata object that includes the model's name and optional settings.
+   */
+  public getModelMetadata(
+    inferenceSettings: InferenceSettings,
+    modelName: string
+  ) {
+    const overrideSettings = extractOverrideSettings(
+      this,
+      inferenceSettings,
+      modelName
+    );
+
+    if (!overrideSettings || Object.keys(overrideSettings).length === 0) {
+      return { name: modelName } as ModelMetadata;
+    } else {
+      return { name: modelName, settings: overrideSettings } as ModelMetadata;
+    }
   }
 
   //#endregion
