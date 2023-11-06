@@ -5,8 +5,8 @@ import copy
 
 
 if TYPE_CHECKING:
-    from ..AIConfigSettings import AIConfig
-    from aiconfig.AIConfigSettings import InferenceSettings
+    from ..schema import AIConfig
+    from aiconfig.schema import InferenceSettings
     from aiconfig.Config import AIConfigRuntime
 
 
