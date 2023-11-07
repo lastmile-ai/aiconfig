@@ -39,6 +39,7 @@ class AIConfigRuntime(AIConfig):
     # TODO: Define a default constructor that will construct with default values. This seems a little complicated because of the way pydantic works. Pydantic creates its own constructors.
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.file_path = None
 
     @classmethod
     def create(
@@ -83,6 +84,9 @@ class AIConfigRuntime(AIConfig):
             # validated_data =  AIConfig.model_validate_json(file.read())
             aiconfigruntime = cls.model_validate_json(file.read())
             update_model_parser_registry_with_config_runtime(aiconfigruntime)
+
+            # set the file path. This is used when saving the config
+            aiconfigruntime.file_path = json_config_filepath
             return aiconfigruntime
 
     @classmethod
@@ -207,7 +211,7 @@ class AIConfigRuntime(AIConfig):
     #    @param saveOptions Options that determine how to save the AIConfig to the file.
     #    */
 
-    def save(self, json_config_filepath: str = "aiconfig.json", include_outputs: bool = True):
+    def save(self, json_config_filepath: str = None, include_outputs: bool = True):
         """
         Save the AI Configuration to a JSON file.
 
@@ -216,11 +220,17 @@ class AIConfigRuntime(AIConfig):
                 Defaults to "aiconfig.json".
         """
         exclude_options = {
-            "prompt_index": True,
+            "prompt_index": True, 
+            "file_path": True
         }
+
         if not include_outputs:
             exclude_options["prompts"] = {"__all__": {"outputs"}}
             pass
+
+        if not json_config_filepath:
+            json_config_filepath = self.file_path or "aiconfig.json"
+
         with open(json_config_filepath, "w") as file:
             # Serialize the AI Configuration to JSON and save it to the file
             json.dump(
