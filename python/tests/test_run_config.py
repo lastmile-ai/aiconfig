@@ -16,7 +16,7 @@ async def test_load_parametrized_data_config(mock_method, set_temporary_env_vars
     """
     config_relative_path = "aiconfigs/parametrized_data_config.json"
     config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
-    config = AIConfigRuntime.from_config(config_absolute_path)
+    config = AIConfigRuntime.load(config_absolute_path)
 
     prompt1_params = {
         "sql_language": "MySQL",
