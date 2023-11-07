@@ -334,7 +334,7 @@ def test_load_saved_config(tmp_path):
     json_config_filepath = tmp_path / "my_aiconfig.json"
     config_runtime.save(json_config_filepath)
 
-    loaded_config = AIConfigRuntime.from_config(json_config_filepath)
+    loaded_config = AIConfigRuntime.load(json_config_filepath)
 
     # Ensure the loaded AIConfig contains the expected data
     assert loaded_config.name == "My AIConfig"
@@ -497,7 +497,7 @@ def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRunt
 
 def test_extract_override_settings(ai_config_runtime: AIConfigRuntime):
     initial_settings = {"topP": 0.9}
-    
+
     # Test Case 1: No global setting, Expect an override
     override = extract_override_settings(ai_config_runtime, initial_settings, "testmodel")
     assert override == {"topP": 0.9}
