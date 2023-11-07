@@ -16,22 +16,23 @@ from .schema import AIConfig, ConfigMetadata, Prompt
 from .registry import ModelParserRegistry, update_model_parser_registry_with_config_runtime
 
 gpt_models = [
-        "gpt-4",
-        "GPT-4",
-        "gpt-4-0314",
-        "gpt-4-0613",
-        "gpt-4-32k",
-        "gpt-4-32k-0314",
-        "gpt-4-32k-0613",
-        "gpt-3.5-turbo",
-        "gpt-3.5-turbo-16k",
-        "gpt-3.5-turbo-0301",
-        "gpt-3.5-turbo-0613",
-        "gpt-3.5-turbo-16k-0613",
-    ]
+    "gpt-4",
+    "GPT-4",
+    "gpt-4-0314",
+    "gpt-4-0613",
+    "gpt-4-32k",
+    "gpt-4-32k-0314",
+    "gpt-4-32k-0613",
+    "gpt-3.5-turbo",
+    "gpt-3.5-turbo-16k",
+    "gpt-3.5-turbo-0301",
+    "gpt-3.5-turbo-0613",
+    "gpt-3.5-turbo-16k-0613",
+]
 for model in gpt_models:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
 ModelParserRegistry.register_model_parser(PaLMChatParser())
+
 
 class AIConfigRuntime(AIConfig):
     # A mapping of model names to their respective parsers
@@ -118,7 +119,9 @@ class AIConfigRuntime(AIConfig):
             update_model_parser_registry_with_config_runtime(aiconfigruntime)
             return aiconfigruntime
 
-    async def serialize(self, model_name: str, data: Dict,  prompt_name: str, params: Optional[dict] = {}) -> List[Prompt]:
+    async def serialize(
+        self, model_name: str, data: Dict, prompt_name: str, params: Optional[dict] = {}
+    ) -> List[Prompt]:
         """
         Serializes the completion params into a Prompt object. Inverse of the 'resolve' function.
 
@@ -173,7 +176,7 @@ class AIConfigRuntime(AIConfig):
     async def run(
         self,
         prompt_name: str,
-        params: Optional[dict] = {},        
+        params: Optional[dict] = {},
         options: Optional[InferenceOptions] = None,
         **kwargs,
     ):
@@ -221,14 +224,16 @@ class AIConfigRuntime(AIConfig):
         if not include_outputs:
             exclude_options["prompts"] = {"__all__": {"outputs"}}
             pass
-        with open(json_config_filepath, "w") as file:
+        with open(json_config_filepath, "w+") as file:
             # Serialize the AI Configuration to JSON and save it to the file
             json.dump(
                 self.model_dump(
                     mode="json",
                     exclude=exclude_options,
+                    exclude_none=True,
                 ),
                 file,
+                indent=2,
             )
 
     def get_output_text(self, prompt: str | Prompt, output: Optional[dict] = None) -> str:
@@ -238,7 +243,7 @@ class AIConfigRuntime(AIConfig):
         Args:
             prompt (str | Prompt): The prompt to get the output text from.
             output (dict, optional): The output to get the output text from.
-        
+
         Returns:
             str: The output text from the prompt.
         """
