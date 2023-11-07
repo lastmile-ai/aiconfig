@@ -143,7 +143,6 @@ class AIConfigRuntime(AIConfig):
         self,
         prompt_name: str,
         params: Optional[dict] = {},
-        options: Optional[InferenceOptions] = None,
         **kwargs,
     ):
         """
@@ -167,7 +166,7 @@ class AIConfigRuntime(AIConfig):
         model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
-        response = await model_provider.deserialize(prompt_data, self, options, params)
+        response = await model_provider.deserialize(prompt_data, self, params)
 
         return response
 
