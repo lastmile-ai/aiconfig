@@ -227,8 +227,10 @@ class AIConfigRuntime(AIConfig):
                 self.model_dump(
                     mode="json",
                     exclude=exclude_options,
+                    exclude_none=True,
                 ),
                 file,
+                indent=2,
             )
 
     def get_output_text(self, prompt: str | Prompt, output: Optional[dict] = None) -> str:
