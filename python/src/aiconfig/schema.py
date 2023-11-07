@@ -380,7 +380,7 @@ class AIConfig(BaseModel):
         # remove from prompt list
         self.prompts = [prompt for prompt in self.prompts if prompt.name != prompt_name]
 
-    def generate_model_metadata(
+    def get_model_metadata(
         self, inference_settings: InferenceSettings, model_id: str
     ) -> ModelMetadata:
         """
