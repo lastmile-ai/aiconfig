@@ -13,7 +13,7 @@ async def test_resolve_default_model_config_with_openai_parser():
     """
     config_relative_path = "aiconfigs/basic_default_model_aiconfig.json"
     config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
-    config = AIConfigRuntime.from_config(config_absolute_path)
+    config = AIConfigRuntime.load(config_absolute_path)
     resolved_params = await config.resolve("prompt1")
 
     assert resolved_params == {

@@ -70,7 +70,7 @@ class AIConfigRuntime(AIConfig):
         )
 
     @classmethod
-    def from_config(cls, json_config_filepath) -> "AIConfigRuntime":
+    def load(cls, json_config_filepath) -> "AIConfigRuntime":
         """
         Constructs AIConfigRuntime from a JSON file given its file path and returns it.
 
@@ -227,8 +227,10 @@ class AIConfigRuntime(AIConfig):
                 self.model_dump(
                     mode="json",
                     exclude=exclude_options,
+                    exclude_none=True,
                 ),
                 file,
+                indent=2,
             )
 
     def get_output_text(self, prompt: str | Prompt, output: Optional[dict] = None) -> str:
