@@ -69,7 +69,7 @@ class OpenAIInference(ParameterizedModelParser):
         # Get the global settings for the model
         model_name = conversation_data["model"] if "model" in conversation_data else self.id()
 
-        model_metadata = ai_config.generate_model_metadata(conversation_data, model_name)
+        model_metadata = ai_config.get_model_metadata(conversation_data, model_name)
         # Remove messages array from model metadata. Handled separately
         model_metadata.settings.pop("messages", None)
 
