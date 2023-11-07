@@ -2,8 +2,8 @@ from abc import abstractmethod
 import copy
 from typing import Dict, List, Optional, Union
 from typing import TYPE_CHECKING, Any, Dict, Optional
-from aiconfig import AIConfigSettings
-from aiconfig.AIConfigSettings import (
+from aiconfig import schema
+from aiconfig.schema import (
     ExecuteResult,
     ModelMetadata,
     Output,
@@ -69,7 +69,7 @@ class OpenAIInference(ParameterizedModelParser):
         # Get the global settings for the model
         model_name = conversation_data["model"] if "model" in conversation_data else self.id()
 
-        model_metadata = ai_config.generate_model_metadata(conversation_data, model_name)
+        model_metadata = ai_config.get_model_metadata(conversation_data, model_name)
         # Remove messages array from model metadata. Handled separately
         model_metadata.settings.pop("messages", None)
 
@@ -122,7 +122,7 @@ class OpenAIInference(ParameterizedModelParser):
         return prompts
 
     async def deserialize(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options, params: Optional[Dict] = {}
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}
     ) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
@@ -155,10 +155,6 @@ class OpenAIInference(ParameterizedModelParser):
                 completion_params["messages"].append(
                     {"content": resolved_system_prompt, "role": "system"}
                 )
-
-            # Handle Streaming
-            if options and options.stream:
-                completion_params["stream"] = options.stream
 
             # Default to always use chat context
             if not hasattr(prompt.metadata, "remember_chat_context") or (
@@ -203,7 +199,7 @@ class OpenAIInference(ParameterizedModelParser):
         if not openai.api_key:
             openai.api_key = get_api_key_from_environment("OPENAI_API_KEY")
 
-        completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
+        completion_data = await self.deserialize(prompt, aiconfig, parameters)
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         stream = (options.stream if options else False) and (
             "stream" in completion_data and completion_data.get("stream") == True
@@ -368,6 +364,7 @@ def refine_chat_completion_params(model_settings):
         "n",
         "presence_penalty",
         "stop",
+        "stream",
         "temperature",
         "top_p",
         "user",

@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import copy
 from typing import TYPE_CHECKING, Dict, Optional
-from aiconfig.AIConfigSettings import (
+from aiconfig.schema import (
     AIConfig,
     ExecuteResult,
     ExecuteResult,
@@ -150,7 +150,7 @@ class PaLMChatParser(ParameterizedModelParser):
         )
 
     async def deserialize(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options, params: Optional[Dict] = {}
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}
     ) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
@@ -221,7 +221,7 @@ class PaLMChatParser(ParameterizedModelParser):
             ExecuteResult: The response from the model.
         """
         # TODO: check and handle api key here
-        completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
+        completion_data = await self.deserialize(prompt, aiconfig, parameters)
         response = palm.chat(**completion_data)
         outputs = []
         for i, candidate in enumerate(response.candidates):

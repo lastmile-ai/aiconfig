@@ -15,7 +15,7 @@ usage:
         ```
 """
 
-from aiconfig.AIConfigSettings import ExecuteResult
+from aiconfig.schema import ExecuteResult
 from aiconfig.Config import AIConfigRuntime
 import openai
 import asyncio

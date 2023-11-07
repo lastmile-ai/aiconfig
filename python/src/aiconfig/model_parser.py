@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Optional, Callable
 
-from aiconfig.AIConfigSettings import AIConfig, ExecuteResult, Output, Prompt
+from aiconfig.schema import AIConfig, ExecuteResult, Output, Prompt
 
 
 if TYPE_CHECKING:
@@ -45,7 +45,6 @@ class ModelParser(ABC):
         self,
         prompt: Prompt,
         aiConfig: "AIConfigRuntime",
-        options: Optional["InferenceOptions"] = None,
         params: Optional[Dict] = None,
     ) -> Any:
         """

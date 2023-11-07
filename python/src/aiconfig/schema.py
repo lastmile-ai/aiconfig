@@ -16,7 +16,7 @@ class ExecuteResult(BaseModel):
     # Type of output
     output_type: Literal["execute_result"]
     # nth choice.
-    execution_count: Union[float, None]
+    execution_count: Union[int, None]
     # The result of the executing prompt.
     data: Any
     # The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
@@ -380,7 +380,7 @@ class AIConfig(BaseModel):
         # remove from prompt list
         self.prompts = [prompt for prompt in self.prompts if prompt.name != prompt_name]
 
-    def generate_model_metadata(
+    def get_model_metadata(
         self, inference_settings: InferenceSettings, model_id: str
     ) -> ModelMetadata:
         """

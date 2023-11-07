@@ -12,7 +12,7 @@ from aiconfig.default_parsers.openai import (
 )
 from aiconfig.default_parsers.palm import PaLMChatParser, PaLMTextParser
 from aiconfig.model_parser import InferenceOptions, ModelParser
-from .AIConfigSettings import AIConfig, ConfigMetadata, Prompt
+from .schema import AIConfig, ConfigMetadata, Prompt
 from .registry import ModelParserRegistry, update_model_parser_registry_with_config_runtime
 
 gpt_models = [
@@ -70,7 +70,7 @@ class AIConfigRuntime(AIConfig):
         )
 
     @classmethod
-    def from_config(cls, json_config_filepath) -> "AIConfigRuntime":
+    def load(cls, json_config_filepath) -> "AIConfigRuntime":
         """
         Constructs AIConfigRuntime from a JSON file given its file path and returns it.
 
@@ -143,7 +143,6 @@ class AIConfigRuntime(AIConfig):
         self,
         prompt_name: str,
         params: Optional[dict] = {},
-        options: Optional[InferenceOptions] = None,
         **kwargs,
     ):
         """
@@ -167,14 +166,14 @@ class AIConfigRuntime(AIConfig):
         model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
-        response = await model_provider.deserialize(prompt_data, self, options, params)
+        response = await model_provider.deserialize(prompt_data, self, params)
 
         return response
 
     async def run(
         self,
-        prompt_name: Optional[str],
-        params: Optional[dict],        
+        prompt_name: str,
+        params: Optional[dict] = {},        
         options: Optional[InferenceOptions] = None,
         **kwargs,
     ):
@@ -228,8 +227,10 @@ class AIConfigRuntime(AIConfig):
                 self.model_dump(
                     mode="json",
                     exclude=exclude_options,
+                    exclude_none=True,
                 ),
                 file,
+                indent=2,
             )
 
     def get_output_text(self, prompt: str | Prompt, output: Optional[dict] = None) -> str:
