@@ -22,7 +22,7 @@ def test_refine_chat_completion_params():
     refined_params = refine_chat_completion_params(model_settings_with_stream_and_system_prompt)
 
     assert "system_prompt" not in refined_params
-    assert "stream" not in refined_params
+    assert "stream" in refined_params
     assert "random_attribute" not in refined_params
     assert refined_params["n"] == "3"
 
