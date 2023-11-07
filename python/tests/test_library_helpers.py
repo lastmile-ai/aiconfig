@@ -40,7 +40,7 @@ def test_collect_prompt_references():
     # collect_prompt_references should return references to 1 and 2. 3 is the prompt we are collecting references for, 4 is after. Both are expected to be skipped
     config_relative_path = "aiconfigs/GPT4 Coding Assistant_aiconfig.json"
     config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
-    aiconfig = AIConfigRuntime.from_config(config_absolute_path)
+    aiconfig = AIConfigRuntime.load(config_absolute_path)
 
     prompt3 = aiconfig.prompts[2]
 
