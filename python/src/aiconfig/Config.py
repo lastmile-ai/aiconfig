@@ -221,14 +221,16 @@ class AIConfigRuntime(AIConfig):
         if not include_outputs:
             exclude_options["prompts"] = {"__all__": {"outputs"}}
             pass
-        with open(json_config_filepath, "w") as file:
+        with open(json_config_filepath, "w+") as file:
             # Serialize the AI Configuration to JSON and save it to the file
             json.dump(
                 self.model_dump(
                     mode="json",
                     exclude=exclude_options,
+                    exclude_none=True,
                 ),
                 file,
+                indent=2,
             )
 
     def get_output_text(self, prompt: str | Prompt, output: Optional[dict] = None) -> str:
