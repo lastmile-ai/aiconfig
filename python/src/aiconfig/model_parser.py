@@ -45,7 +45,6 @@ class ModelParser(ABC):
         self,
         prompt: Prompt,
         aiConfig: "AIConfigRuntime",
-        options: Optional["InferenceOptions"] = None,
         params: Optional[Dict] = None,
     ) -> Any:
         """
