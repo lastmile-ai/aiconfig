@@ -27,5 +27,6 @@
     "editor.formatOnSave": true,
     "python.formatting.provider": "none",
     "python.formatting.blackArgs": ["--line-length", "99"]
-  }
+  },
+  "python.formatting.provider": "none"
 }
