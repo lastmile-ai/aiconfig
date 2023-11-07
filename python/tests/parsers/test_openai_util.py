@@ -32,7 +32,7 @@ def test_refine_chat_completion_params():
 async def test_get_output_text(mock_method):
     config_relative_path = "../aiconfigs/basic_chatgpt_query_config.json"
     config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
-    aiconfig = AIConfigRuntime.from_config(config_absolute_path)
+    aiconfig = AIConfigRuntime.load(config_absolute_path)
 
     await aiconfig.run("prompt1", {})
 
