@@ -10,7 +10,7 @@ from pprint import pprint
 
 async def function_calling():
     config_file_path = "function-call.aiconfig.json"
-    config = AIConfigRuntime.from_config(config_file_path)
+    config = AIConfigRuntime.load(config_file_path)
 
     params = {
         "book": "Where the Crawdads Sing",

@@ -334,7 +334,7 @@ def test_load_saved_config(tmp_path):
     json_config_filepath = tmp_path / "my_aiconfig.json"
     config_runtime.save(json_config_filepath)
 
-    loaded_config = AIConfigRuntime.from_config(json_config_filepath)
+    loaded_config = AIConfigRuntime.load(json_config_filepath)
 
     # Ensure the loaded AIConfig contains the expected data
     assert loaded_config.name == "My AIConfig"
