@@ -3,6 +3,7 @@ import copy
 from typing import Dict, List, Optional, Union
 from typing import TYPE_CHECKING, Any, Dict, Optional
 from aiconfig import schema
+from aiconfig.callback import CallbackEvent, CallbackManager
 from aiconfig.schema import (
     ExecuteResult,
     ModelMetadata,
@@ -122,7 +123,7 @@ class OpenAIInference(ParameterizedModelParser):
         return prompts
 
     async def deserialize(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}, callback_manager: CallbackManager = None
     ) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
@@ -134,6 +135,11 @@ class OpenAIInference(ParameterizedModelParser):
         Returns:
             dict: Model-specific completion parameters.
         """
+
+        if callback_manager:
+            event = CallbackEvent(name = "Start Deserialize", data = prompt.name)
+            callback_manager.run_callbacks(event)
+
         # Build Completion params
         model_settings = self.get_model_settings(prompt, aiconfig)
 
@@ -184,7 +190,7 @@ class OpenAIInference(ParameterizedModelParser):
 
         return completion_params
 
-    async def run_inference(self, prompt: Prompt, aiconfig, options, parameters) -> Output:
+    async def run_inference(self, prompt: Prompt, aiconfig, options, parameters, callback_manager = None) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -196,6 +202,11 @@ class OpenAIInference(ParameterizedModelParser):
         Returns:
             ExecuteResult: The response from the model.
         """
+        if callback_manager:
+            event = CallbackEvent(name = "Start Run", data = prompt.name)
+            callback_manager.run_callbacks(event)
+
+
         if not openai.api_key:
             openai.api_key = get_api_key_from_environment("OPENAI_API_KEY")
 

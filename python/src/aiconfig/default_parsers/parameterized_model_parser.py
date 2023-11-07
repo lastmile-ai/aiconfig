@@ -51,13 +51,14 @@ class ParameterizedModelParser(ModelParser):
         aiconfig: AIConfig,
         options: Optional[InferenceOptions] = None,
         parameters: Dict = {},
+        callback_manager = None,
         **kwargs
     ) -> ExecuteResult:
         # maybe use prompt metadata instead of kwargs?
         if kwargs.get("run_with_dependencies", False):
-            return await self.run_with_dependencies(prompt, aiconfig, options, parameters)
+            return await self.run_with_dependencies(prompt, aiconfig, options, parameters, callback_manager)
         else:
-            return await self.run_inference(prompt, aiconfig, options, parameters)
+            return await self.run_inference(prompt, aiconfig, options, parameters, callback_manager)
 
     async def run_with_dependencies(
         self, prompt: Prompt, aiconfig: AIConfig, options=None, parameters: Dict = {}

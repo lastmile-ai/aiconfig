@@ -40,6 +40,9 @@ class AIConfigRuntime(AIConfig):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+
+        self.callback_manager = None
+
     @classmethod
     def create(
         cls,
@@ -166,7 +169,7 @@ class AIConfigRuntime(AIConfig):
         model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
-        response = await model_provider.deserialize(prompt_data, self, params)
+        response = await model_provider.deserialize(prompt_data, self, params, callback_manager = self.callback_manager)
 
         return response
 
@@ -198,7 +201,7 @@ class AIConfigRuntime(AIConfig):
         model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
-        response = await model_provider.run(prompt_data, self, options, params, **kwargs)
+        response = await model_provider.run(prompt_data, self, options, params, callback_manager = self.callback_manager, **kwargs)
         return response
 
     #
@@ -217,6 +220,7 @@ class AIConfigRuntime(AIConfig):
         """
         exclude_options = {
             "prompt_index": True,
+            "callback_manager": True,
         }
         if not include_outputs:
             exclude_options["prompts"] = {"__all__": {"outputs"}}
