@@ -176,7 +176,7 @@ class AIConfig(BaseModel):
         if model_name not in self.metadata.models:
             raise Exception(f"Model '{model_name}' does not exist.")
         del self.metadata.models[model_name]
-    
+
     def get_model_name(self, prompt: Union[str, Prompt]):
         """
         Extracts the model ID from the prompt.
@@ -191,19 +191,21 @@ class AIConfig(BaseModel):
             prompt = self.prompt_index[prompt]
         if not prompt:
             raise Exception(f"Prompt '{prompt}' not found in config.")
-        
+
         if not prompt.metadata:
             # If the prompt doesn't have a model, use the default model
             default_model = self.metadata.default_model
             if not default_model:
-                raise Exception(f"No model specified in AIConfig metadata, prompt {prompt.name} does not specify a model.")
+                raise Exception(
+                    f"No model specified in AIConfig metadata, prompt {prompt.name} does not specify a model."
+                )
             return default_model
         if isinstance(prompt.metadata.model, str):
             return prompt.metadata.model
         else:
             # Expect a ModelMetadata object
             return prompt.metadata.model.name
-    
+
     def set_default_model(self, model_name: Union[str, None]):
         """
         Sets the model to use for all prompts by default in the AIConfig. Set to None to delete the default model.
@@ -229,9 +231,8 @@ class AIConfig(BaseModel):
         """
         if not self.metadata.model_parsers:
             self.metadata.model_parsers = {}
-        
-        self.metadata.model_parsers[model_name] = model_parser_id
 
+        self.metadata.model_parsers[model_name] = model_parser_id
 
     def get_metadata(self, prompt_name: Optional[str] = None):
         """
@@ -380,7 +381,7 @@ class AIConfig(BaseModel):
         # remove from prompt list
         self.prompts = [prompt for prompt in self.prompts if prompt.name != prompt_name]
 
-    def generate_model_metadata(
+    def get_model_metadata(
         self, inference_settings: InferenceSettings, model_id: str
     ) -> ModelMetadata:
         """
@@ -529,7 +530,7 @@ class AIConfig(BaseModel):
             prompt (str|Prompt): The name of the prompt or the prompt object.
         """
         pass
-    
+
     def get_prompt_parameters(self, prompt: Prompt):
         """
         Gets the prompt's local parameters for a prompt.
@@ -537,6 +538,7 @@ class AIConfig(BaseModel):
         if not prompt.metadata:
             return {}
         return prompt.metadata.parameters
+
     """
     Library Helpers
     """

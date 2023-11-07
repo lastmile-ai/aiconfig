@@ -13,7 +13,12 @@ from aiconfig.schema import (
 )
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.util.config_utils import get_api_key_from_environment
-from aiconfig.util.params import resolve_parameters, resolve_prompt, resolve_prompt_string, resolve_system_prompt
+from aiconfig.util.params import (
+    resolve_parameters,
+    resolve_prompt,
+    resolve_prompt_string,
+    resolve_system_prompt,
+)
 
 import openai
 
@@ -69,7 +74,7 @@ class OpenAIInference(ParameterizedModelParser):
         # Get the global settings for the model
         model_name = conversation_data["model"] if "model" in conversation_data else self.id()
 
-        model_metadata = ai_config.generate_model_metadata(conversation_data, model_name)
+        model_metadata = ai_config.get_model_metadata(conversation_data, model_name)
         # Remove messages array from model metadata. Handled separately
         model_metadata.settings.pop("messages", None)
 
