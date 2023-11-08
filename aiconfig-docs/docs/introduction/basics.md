@@ -26,7 +26,7 @@ Separating prompt management from application development leads to a few powerfu
 
 1. **Separation of concerns**: You can iterate on prompts and models separately from application code -- and different people could be responsible for them, making the overall development more collaborative.
 2. **Notebook editor for prompts**: Having prompts and models in one place allows a notebook-like editor environment to iterate on the aiconfig. This greatly increases the velocity of prototyping and iteration.
-3. **Governance**: `aiconfig` becomes a source-controlled artifact that can be used for reproducability and provenance of the generative AI bits of your application.
+3. **Governance**: As a source-controlled artifact, `aiconfig` can be used for reproducability and provenance of the generative AI bits of your application.
 
 ## Example
 
@@ -164,7 +164,7 @@ As you go through AIConfig, you may notice similarities to [Jupyter](https://jup
 
 _**AI Workbooks are to AIConfig what Jupyter notebooks are to `ipynb`**_
 
-We believe that notebooks are a perfect iteration environment for generative AI -- they are flexible and multi-modal, with no vendor lock-in.
+We believe that notebooks are a perfect iteration environment for generative AI -- they are flexible, multi-modal, and collaborative.
 
 The multi-modality and flexibility offered by notebooks and `ipynb` offers a good interaction model for generative AI. The `aiconfig` file format is extensible like `ipynb`, and AI Workbook editor allows rapid iteration in a notebook-like IDE.
 
