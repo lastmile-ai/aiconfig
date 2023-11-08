@@ -16,6 +16,7 @@ import { getAPIKeyFromEnv } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
 import { extractOverrideSettings } from "./utils";
+import { CallbackManager } from "./callback";
 
 export type PromptWithOutputs = Prompt & { outputs?: Output[] };
 
@@ -70,6 +71,7 @@ export class AIConfigRuntime implements AIConfig {
   prompts: PromptWithOutputs[];
 
   filePath?: string;
+  callbackManager?: CallbackManager;
 
   public constructor(
     name: string,
@@ -218,12 +220,13 @@ export class AIConfigRuntime implements AIConfig {
         }
         aiConfigObj.prompts = prompts;
       }
-      // Remove the filePath property from the to-be-saved AIConfig
+      // Remove the filePath, callbackManager property from the to-be-saved AIConfig
       aiConfigObj.filePath = undefined;
+      aiConfigObj.callbackManager = undefined;
 
       // TODO: saqadri - make sure that the object satisfies the AIConfig schema
       const aiConfigString = JSON.stringify(aiConfigObj, null, 2);
-  
+
       if (!filePath) {
         filePath = this.filePath ?? "aiconfig.json";
       }
@@ -406,6 +409,10 @@ export class AIConfigRuntime implements AIConfig {
       params
     );
     return result;
+  }
+
+  public setCallbackManager(callbackManager: CallbackManager) {
+    this.callbackManager = callbackManager;
   }
 
   //#endregion
