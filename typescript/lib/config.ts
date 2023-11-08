@@ -69,6 +69,8 @@ export class AIConfigRuntime implements AIConfig {
   metadata: AIConfig["metadata"];
   prompts: PromptWithOutputs[];
 
+  filePath?: string;
+
   public constructor(
     name: string,
     description?: string,
@@ -92,7 +94,11 @@ export class AIConfigRuntime implements AIConfig {
   public static load(aiConfigFilePath: string) {
     const aiConfigString = fs.readFileSync(aiConfigFilePath, "utf8");
     const aiConfigObj = JSON.parse(aiConfigString);
-    return this.loadJSON(aiConfigObj);
+
+    const config = this.loadJSON(aiConfigObj);
+    config.filePath = aiConfigFilePath;
+
+    return config;
   }
 
   /**
@@ -201,9 +207,10 @@ export class AIConfigRuntime implements AIConfig {
    * @param filePath The path to the file to save to.
    * @param saveOptions Options that determine how to save the AIConfig to the file.
    */
-  public save(filePath: string, saveOptions?: SaveOptions) {
+  public save(filePath?: string, saveOptions?: SaveOptions) {
     try {
       let aiConfigObj: AIConfigRuntime = _.cloneDeep(this);
+
       if (!saveOptions?.serializeOutputs) {
         const prompts = [];
         for (const prompt of aiConfigObj.prompts) {
@@ -211,9 +218,16 @@ export class AIConfigRuntime implements AIConfig {
         }
         aiConfigObj.prompts = prompts;
       }
+      // Remove the file_path property from the to-be-saved AIConfig
+      aiConfigObj.filePath = undefined;
 
       // TODO: saqadri - make sure that the object satisfies the AIConfig schema
       const aiConfigString = JSON.stringify(aiConfigObj, null, 2);
+  
+      if (!filePath) {
+        filePath = this.filePath ?? "aiconfig.json";
+      }
+
       fs.writeFileSync(filePath, aiConfigString);
     } catch (error) {
       console.error(error);
