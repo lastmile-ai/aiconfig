@@ -1,6 +1,7 @@
 import json
 import sys
 import os
+from aiconfig.callback import CallbackEvent, CallbackManager
 import requests
 from typing import ClassVar, Dict, List, Optional
 
@@ -40,6 +41,8 @@ class AIConfigRuntime(AIConfig):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.file_path = None
+        # Blank CallbackManager does nothing
+        self.callback_manager = CallbackManager([])
 
     @classmethod
     def create(
@@ -134,6 +137,9 @@ class AIConfigRuntime(AIConfig):
         returns:
             Prompt | List[Prompt]: A prompt or list of prompts representing the input data
         """
+        event = CallbackEvent("on_serialize_start", {"model_name": model_name, "data": data, "prompt_name": prompt_name, "params": params})
+        self.callback_manager.run_callbacks(event)
+
         model_parser = ModelParserRegistry.get_model_parser(model_name)
         if not model_parser:
             raise ValueError(
@@ -141,6 +147,9 @@ class AIConfigRuntime(AIConfig):
             )
 
         prompts = model_parser.serialize(prompt_name, data, self, params)
+
+        event = CallbackEvent("on_serialize_complete", {"model_name": model_name, "data": data, "prompt_name": prompt_name, "params": params})
+        self.callback_manager.run_callbacks(event)
         return prompts
 
     async def resolve(
@@ -159,6 +168,8 @@ class AIConfigRuntime(AIConfig):
         Returns:
             str: The resolved prompt.
         """
+        event = CallbackEvent("on_resolve_start", {"prompt_name": prompt_name, "params": params})
+        self.callback_manager.run_callbacks(event)
         if prompt_name not in self.prompt_index:
             raise IndexError(
                 "Prompt not found in config, available prompts are:\n {}".format(
@@ -171,7 +182,9 @@ class AIConfigRuntime(AIConfig):
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
         response = await model_provider.deserialize(prompt_data, self, params)
-
+        
+        event = CallbackEvent("on_resolve_complete", {"prompt_name": prompt_name, "params": params, "response": response})
+        self.callback_manager.run_callbacks(event)
         return response
 
     async def run(
@@ -191,6 +204,8 @@ class AIConfigRuntime(AIConfig):
         Returns:
             object: The response object returned by the AI-model's API.
         """
+        event = CallbackEvent("on_run_start", {"prompt_name": prompt_name, "params": params, "options": options, "kwargs": kwargs})
+        self.callback_manager.run_callbacks(event)
         if prompt_name not in self.prompt_index:
             raise IndexError(
                 "Prompt not found in config, available prompts are:\n {}".format(
@@ -202,7 +217,10 @@ class AIConfigRuntime(AIConfig):
         model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
-        response = await model_provider.run(prompt_data, self, options, params, **kwargs)
+        response = await model_provider.run(prompt_data, self, options, params, callback_manager = self.callback_manager, **kwargs)
+
+        event = CallbackEvent("on_run_complete", {"prompt_name": prompt_name, "params": params, "options": options, "kwargs": kwargs, "response": response})
+        self.callback_manager.run_callbacks(event)
         return response
 
     #
@@ -219,9 +237,11 @@ class AIConfigRuntime(AIConfig):
             json_config_filepath (str, optional): The file path to the JSON configuration file.
                 Defaults to "aiconfig.json".
         """
+        # AIConfig json should only contain the core data fields. These are auxiliary fields that should not be persisted
         exclude_options = {
             "prompt_index": True, 
-            "file_path": True
+            "file_path": True,
+            "callback_manager": True,
         }
 
         if not include_outputs:
@@ -287,3 +307,6 @@ class AIConfigRuntime(AIConfig):
                 )
             )
         return ModelParserRegistry.get_model_parser(model_id)
+
+    def set_callback_manager(self, callback_manager: CallbackManager):
+        self.callback_manager = callback_manager
