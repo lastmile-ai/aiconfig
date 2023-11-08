@@ -9,14 +9,14 @@ import constants from '@site/core/tabConstants';
 # Getting Started
 
 :::tip
-Please read [AIConfig Basics](/docs/introduction/basics) to understand the motivation behind storing prompts and model parameters as configs, and what it enables.
+Please read [AIConfig Basics](/docs/introduction/basics) to understand the motivation behind storing prompts and model parameters as configs.
 :::
 
 ## Installation
 
 The [`aiconfig` file format](/docs/overview/ai-config-format) is best used with the AIConfig SDK. To install the SDK, use your favorite package manager:
 
-### Node.js (TypeScript)
+#### Node.js (TypeScript)
 
 <Tabs groupId="package-manager" queryString defaultValue={constants.defaultNodePackageManager} values={constants.nodePackageManagers}>
 <TabItem value="npm">
@@ -36,7 +36,7 @@ $ yarn add aiconfig
 
 </Tabs>
 
-### Python
+#### Python
 
 <Tabs groupId="package-manager" queryString defaultValue={constants.defaultPythonPackageManager} values={constants.pythonPackageManagers}>
 <TabItem value="pip">
@@ -62,9 +62,11 @@ Make sure to specify the API keys (such as `OPENAI_API_KEY`) in your environment
 
 ## Quickstart
 
-### Your first AIConfig
+In this quickstart, you will create a customizable NYC travel itinerary using `aiconfig`.
 
-Suppose we have a series of prompts to help us plan a trip. We can model them with this `aiconfig`:
+### 1. Download the AIConfig - `travel.aiconfig.json`.
+
+This AIConfig contains a prompt chain to get a list of travel activities from an LLM and then customize the activities based on user preferences (defined as parameters of the prompt). It also contains the specific models and model parameters for the LLMs.
 
 <details>
 <summary>`travel.aiconfig.json`</summary>
@@ -110,12 +112,9 @@ Suppose we have a series of prompts to help us plan a trip. We can model them wi
 
 </details>
 
-:::tip
-Don't worry if you don't understand all parts of this yet, we'll go over it in steps. We will also cover a prompt editor ([AI Workbooks](#ai-workbook-playground)) to help you create AIConfigs visually.
-:::
+### 2. Run the `get_activities` prompt.
 
-To get started, let's use this `aiconfig` in application code to run the `get_activities` prompt:
-
+You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
 <TabItem value="node">
 
@@ -150,15 +149,9 @@ await config.run("get_activities", params=None)
 </TabItem>
 </Tabs>
 
-That's it! You don't need to worry about how to run inference for the model; it's all handled by AIConfig.
+### 3. Enable streaming for your prompt.
 
-:::note
-In this case, `get_activities` is run with **gpt-3.5-turbo**, since that is the `default_model` for this AIConfig.
-:::
-
-### Stream outputs
-
-Now let's add streaming to the above example.
+You can enable streaming for your prompt responses using `InferenceOptions`.
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
 <TabItem value="node">
@@ -204,17 +197,19 @@ await config.run("get_activities", params=None, inference_options)
 </TabItem>
 </Tabs>
 
-### Prompt and model chains
+### 4. Run the `gen_itinerary` prompt.
 
-Let's take a closer look at the `gen_itinerary` prompt above:
+This prompt depends on the output of `get_activities`. It also takes in parameters (user input) to determine the customized itinerary.
 
-**Prompt input:**
+Let's take a closer look:
+
+**`gen_itinerary` prompt:**
 
 ```
 "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}."
 ```
 
-**Prompt metadata:**
+**prompt metadata:**
 
 ```json
 {
@@ -227,13 +222,13 @@ Let's take a closer look at the `gen_itinerary` prompt above:
 }
 ```
 
-Notice a few interesting things:
+Observe the following:
 
 1. The prompt depends on the output of the `get_activities` prompt.
 2. It also depends on an `order_by` parameter
 3. It uses **gpt-4**, whereas the `get_activities` prompt it depends on uses **gpt-3.5-turbo**.
 
-Effectively, this is a prompt chain between `gen_itinerary` and `get_activities` prompts, _as well as_ as a model chain between `gpt-3.5-turbo` and `gpt-4`.
+Effectively, this is a prompt chain between `gen_itinerary` and `get_activities` prompts, _as well as_ as a model chain between **gpt-3.5-turbo** and **gpt-4**.
 
 Let's run this with AIConfig:
 
@@ -269,17 +264,9 @@ await config.run_with_dependencies(
 </TabItem>
 </Tabs>
 
-:::tip
-Just notice how simple the syntax is to perform a fairly complex task - running 2 different prompts across 2 different models and chaining one's output as part of the input of another.
-:::
+### 5. Save the AIConfig with outputs.
 
-### Saving the AIConfig
-
-Finally, let's save the AIConfig back to disk, and serialize the outputs from the latest inference run as well:
-
-:::note
-The AIConfig SDK supports [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations for prompts, models, parameters, and arbitrary metadata in the `aiconfig`. For more details, see the [SDK Overview](/docs/category/sdk).
-:::
+Let's save the AIConfig back to disk, and serialize the outputs from the latest inference run as well:
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
 <TabItem value="node">
@@ -303,16 +290,23 @@ config.save('updated.aiconfig.json', include_output=True)
 </TabItem>
 </Tabs>
 
-## AI Workbook playground
-
-:::tip
-Try out this workbook yourself here: **[NYC Travel Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9)**
+:::note
+The AIConfig SDK supports [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations for prompts, models, parameters, and arbitrary metadata in the `aiconfig`. For more details, see the [SDK Overview](/docs/category/sdk).
 :::
+
+### 6. Open the AIConfig in AI Workbook Playground.
 
 We can iterate on an `aiconfig` using a notebook-like editor called an **AI Workbook**. Now that we have an `aiconfig` file artifact that encapsulates the generative AI part of our application, the application code doesn't need to change even as the `aiconfig` is updated.
 
+1. Go to https://lastmileai.dev.
+2. Go to Workbooks page: https://lastmileai.dev/workbooks
+3. Click dropdown from '+ New Workbook' and select 'Create from AIConfig'
+4. Upload `travel.aiconfig.json`
+
+Try out the workbook playground here: **[NYC Travel Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9)**
+
 :::note
-We are currently working on a local editor that you can run yourself. For now, please use the hosted version on https://lastmileai.dev.
+We are working on a local editor that you can run yourself. For now, please use the hosted version on https://lastmileai.dev.
 :::
 
 <video controls><source src="https://s3.amazonaws.com/publicdata.lastmileai.com/workbook_editor_480.mov"/></video>
