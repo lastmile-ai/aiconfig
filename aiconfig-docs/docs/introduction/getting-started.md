@@ -305,6 +305,10 @@ config.save('updated.aiconfig.json', include_output=True)
 
 ## AI Workbook playground
 
+:::tip
+Try out this workbook yourself here: **[NYC Travel Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9)**
+:::
+
 We can iterate on an `aiconfig` using a notebook-like editor called an **AI Workbook**. Now that we have an `aiconfig` file artifact that encapsulates the generative AI part of our application, the application code doesn't need to change even as the `aiconfig` is updated.
 
 :::note
@@ -312,10 +316,6 @@ We are currently working on a local editor that you can run yourself. For now, p
 :::
 
 <video controls><source src="https://s3.amazonaws.com/publicdata.lastmileai.com/workbook_editor_480.mov"/></video>
-
-:::tip
-Try out this workbook yourself here: **[NYC Travel Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9)**
-:::
 
 ## Using OpenAI API introspection
 
