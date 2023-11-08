@@ -48,4 +48,194 @@
     no-repeat;
 }
 
+/* Labels */
+
+.label {
+  display: inline-block;
+  position: relative;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+  padding: 2px 12px;
+  border-radius: 0 2px 2px 0;
+
+  /* Label sharp end */
+  &:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -12px;
+    border-color: transparent;
+    border-style: solid;
+    border-width: 12px 12px 12px 0;
+  }
+
+  /* Label skeuomorphic hole */
+  &:after {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 4px;
+    height: 4px;
+    border-radius: 2px;
+    background: #fff;
+  }
+
+  /* Basic label */
+  &.basic {
+    border-radius: 3px;
+    border-style: solid;
+    border-width: 2px;
+
+    &:before,
+    &:after {
+      display: none;
+    }
+  }
+
+  /* Label variants */
+  &.android {
+    background: #a4c936;
+
+    &:before {
+      border-right-color: #a4c936;
+    }
+  }
+
+  &.ios {
+    background: #222;
+
+    &:before {
+      border-right-color: #222;
+    }
+  }
+
+  &.tv {
+    background: #6170af;
+
+    &:before {
+      border-right-color: #6170af;
+    }
+  }
+
+  &.required {
+    margin-left: 0;
+    margin-right: 16px;
+    color: #fa5035;
+    border-color: #fa5035;
+  }
+
+  &.coming-soon {
+    top: 0px;
+    margin-left: 5px;
+    margin-right: 5px;
+    color: hsl(38, 95%, 59%);
+    border-color: hsl(38, 95%, 59%);
+    border-width: 1px;
+    font-size: 0.5rem;
+    font-weight: 500;
+  }
+}
+
+html[data-theme="dark"] .label {
+  color: var(--text);
+
+  &:after {
+    background: var(--ifm-background-color);
+  }
+
+  &.ios {
+    background: #fff;
+
+    &:before {
+      border-right-color: #fff;
+    }
+  }
+
+  &.required {
+    color: #fa5035;
+  }
+
+  &.coming-soon {
+    color: hsl(38, 95%, 59%);
+  }
+}
+
+/* Label inside other tags */
+
+h2 .label {
+  top: -6px;
+  margin-left: 12px;
+  padding: 3px 12px;
+}
+
+h3 .label {
+  top: -3px;
+  margin-left: 22px;
+  line-height: 20px;
+}
+
+td .label {
+  padding: 0 8px 0 10px;
+  font-size: 0.7rem;
+  margin-left: 14px;
+
+  &:before {
+    left: -8px;
+    border-width: 10px 8px 10px 0;
+  }
+
+  &:after {
+    top: 8px;
+  }
+
+  &.required {
+    margin-left: 8px;
+    letter-spacing: 0.02rem;
+    padding: 0 6px;
+    border-width: 1px;
+    margin-right: 0;
+  }
+
+  &.two-lines {
+    margin-left: 0;
+    margin-top: 5px;
+
+    &.ios,
+    &.android,
+    &.tv {
+      margin-left: 8px;
+    }
+  }
+}
+
+/* Label as dot in the right sidebar */
+
+.table-of-contents .label {
+  position: absolute;
+  padding: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 100%;
+  margin-left: 4px;
+  margin-top: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  color: transparent;
+  float: initial;
+
+  &.required {
+    position: initial;
+    margin-left: 0;
+    margin-right: 6px;
+    border-width: 3px;
+    background: #fa5035;
+  }
+
+  /* Second dot shift */
+  &:nth-child(3) {
+    margin-left: 13px;
+  }
+}
 
