@@ -58,95 +58,107 @@ const config = {
       // Replace with your project's social card
       image: "img/docusaurus-social-card.jpg",
       navbar: {
-        title: "AIConfig",
+        // title: "AIConfig",
         logo: {
-          alt: "My Site Logo",
-          src: "img/logo.svg",
+          alt: "AI Config Logo",
+          src: "img/aiConfigLogo_Dark.svg",
+          srcDark: "img/aiConfigLogo_Light.svg",
         },
         items: [
-          {
-            type: "docSidebar",
-            sidebarId: "docSidebar",
-            position: "left",
-            label: "Overview",
-          },
-          {
-            to: "/docs/introduction/getting-started",
-            label: "Getting Started",
-            position: "left",
-          },
-          {
-            to: "/docs/overview/ai-config-format",
-            label: "Specification",
-            position: "left",
-          },
-          {
-            href: "https://blog.lastmileai.dev",
-            label: "Blog",
-            position: "left",
-          },
-          {
-            href: "https://github.com/lastmile-ai/aiconfig",
-            label: "GitHub",
-            position: "right",
-          },
+          // {
+          //   type: "docSidebar",
+          //   sidebarId: "docSidebar",
+          //   position: "left",
+          //   label: "Overview",
+          // },
+          // {
+          //   to: "/docs/introduction/getting-started",
+          //   label: "Getting Started",
+          //   position: "left",
+          // },
+          // {
+          //   to: "/docs/overview/ai-config-format",
+          //   label: "Specification",
+          //   position: "left",
+          // },
+          // {
+          //   href: "https://blog.lastmileai.dev",
+          //   label: "Blog",
+          //   position: "left",
+          // },
+          // {
+          //   href: "https://github.com/lastmile-ai/aiconfig",
+          //   label: "GitHub",
+          //   position: "right",
+          // },
           {
             href: "https://github.com/lastmile-ai/aiconfig",
             position: "right",
             className: "header-github-link",
-            "aria-label": "GitHub repository",
+            "aria-label": "GitHub Repository",
+          },
+          {
+            href: "https://discord.com/invite/xBhNKTetGx",
+            position: "right",
+            className: "header-discord-link",
+            "aria-label": "Discord Community",
           },
         ],
       },
-      footer: {
-        style: "dark",
-        links: [
-          {
-            title: "Developers",
-            items: [
-              {
-                label: "GitHub",
-                href: "https://github.com/lastmile-ai/aiconfig",
-              },
-            ],
-          },
-          {
-            title: "Community",
-            items: [
-              {
-                label: "Discord",
-                href: "https://discord.com/invite/xBhNKTetGx",
-              },
-              {
-                label: "Twitter",
-                href: "https://twitter.com/LastMile",
-              },
-              {
-                label: "LinkedIn",
-                href: "https://www.linkedin.com/company/lastmile-ai/",
-              },
-            ],
-          },
-          {
-            title: "Legal",
-            items: [
-              {
-                label: "Privacy",
-                href: "https://lastmileai.dev/privacy",
-              },
-              {
-                label: "Terms",
-                href: "https://lastmileai.dev/terms",
-              },
-            ],
-          },
-        ],
-        copyright: "Copyright © 2023 LastMile AI, Inc.",
-      },
+      // footer: {
+      //   style: "dark",
+      //   links: [
+      //     {
+      //       title: "Developers",
+      //       items: [
+      //         {
+      //           label: "GitHub",
+      //           href: "https://github.com/lastmile-ai/aiconfig",
+      //         },
+      //       ],
+      //     },
+      //     {
+      //       title: "Community",
+      //       items: [
+      //         {
+      //           label: "Discord",
+      //           href: "https://discord.com/invite/xBhNKTetGx",
+      //         },
+      //         {
+      //           label: "Twitter",
+      //           href: "https://twitter.com/LastMile",
+      //         },
+      //         {
+      //           label: "LinkedIn",
+      //           href: "https://www.linkedin.com/company/lastmile-ai/",
+      //         },
+      //       ],
+      //     },
+      //     {
+      //       title: "Legal",
+      //       items: [
+      //         {
+      //           label: "Privacy",
+      //           href: "https://lastmileai.dev/privacy",
+      //         },
+      //         {
+      //           label: "Terms",
+      //           href: "https://lastmileai.dev/terms",
+      //         },
+      //       ],
+      //     },
+      //   ],
+      //   copyright: "Copyright © 2023 LastMile AI, Inc.",
+      // },
       // prism: {
       //   theme: lightTheme,
       //   darkTheme: darkTheme,
       // },
+      colorMode: {
+        defaultMode: "dark",
+        disableSwitch: false,
+        respectPrefersColorScheme: false,
+      },
       prism: {
         defaultLanguage: "jsx",
         theme: require("./core/prismTheme"),
