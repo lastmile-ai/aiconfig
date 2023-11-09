@@ -63,7 +63,7 @@ class AIConfigRuntime(AIConfig):
 
         This method creates a new AI configuration with the provided parameters and sets it as the current AI configuration.
         """
-        return cls(
+        new_aiconfig_object =  cls(
             **{
                 "name": name,
                 "description": description,
@@ -72,6 +72,10 @@ class AIConfigRuntime(AIConfig):
                 "prompts": prompts,
             }
         )
+
+        default_callback_manager = CallbackManager([])
+
+        return new_aiconfig_object
 
     @classmethod
     def load(cls, json_config_filepath) -> "AIConfigRuntime":
