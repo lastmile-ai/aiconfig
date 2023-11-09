@@ -19,6 +19,7 @@ import {
 } from "openai/resources";
 import _ from "lodash";
 import { InferenceOptions } from "../modelParser";
+import { CallbackEvent } from "../callback";
 
 export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreateParams> {
   private openai: OpenAI | null = null;
@@ -149,6 +150,9 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
     options?: InferenceOptions,
     params?: JSONObject | undefined
   ): Promise<Output | Output[]> {
+    const event = new CallbackEvent("on_run_start", {});
+    aiConfig.callbackManager?.runCallbacks(event);
+
     if (!this.openai) {
       const apiKey = getAPIKeyFromEnv("OPENAI_API_KEY");
       this.openai = new OpenAI({ apiKey, ...(this.openaiOptions || {}) });
