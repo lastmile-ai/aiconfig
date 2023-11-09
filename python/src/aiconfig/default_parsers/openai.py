@@ -32,7 +32,7 @@ class OpenAIInference(ParameterizedModelParser):
         """
         return self.id
 
-    def serialize(
+    async def serialize(
         self,
         prompt_name: str,
         data: Dict,
