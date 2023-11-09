@@ -8,7 +8,8 @@
             "gpt-3.5-turbo": {
                 "model": "gpt-3.5-turbo",
                 "top_p": 1,
-                "temperature": 1
+                "temperature": 1,
+                "stream": false
             }
         }
     },
