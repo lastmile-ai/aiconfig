@@ -16,7 +16,7 @@ import { getAPIKeyFromEnv } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
 import { extractOverrideSettings } from "./utils";
-import { CallbackManager } from "./callback";
+import { CallbackEvent, CallbackManager } from "./callback";
 
 export type PromptWithOutputs = Prompt & { outputs?: Output[] };
 
@@ -288,6 +288,8 @@ export class AIConfigRuntime implements AIConfig {
    * that can be used to call the GPT-4 API. It will combine all the parameters, references and metadata specified in the AIConfig."
    */
   public async resolve(promptName: string, params: JSONObject = {}) {
+    const event = new CallbackEvent("on_start_resolve", { promptName, params });
+    this.callbackManager?.runCallbacks(event);
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
       throw new Error(`E1011: Prompt ${promptName} does not exist in AIConfig`);
