@@ -216,8 +216,10 @@ class OpenAIInference(ParameterizedModelParser):
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         stream = (options.stream if options else False) and (
-            "stream" in completion_data and completion_data.get("stream") == True
+            "stream" not in completion_data or completion_data.get("stream") == True
         )
+
+        completion_data["stream"] = stream
 
         response = openai.ChatCompletion.create(**completion_data)
         outputs = []
