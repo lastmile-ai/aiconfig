@@ -29,7 +29,7 @@ class PaLMTextParser(ParameterizedModelParser):
         """
         return "PaLM Chat"
 
-    def serialize(
+    async def serialize(
         self,
         prompt_name: str,
         prompt: str,
@@ -120,7 +120,7 @@ class PaLMChatParser(ParameterizedModelParser):
         """
         return "PaLM Chat"
 
-    def serialize(
+    async def serialize(
         self,
         prompt_name: str,
         prompt: str,

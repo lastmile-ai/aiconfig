@@ -17,7 +17,7 @@ class ModelParser(ABC):
         pass
 
     @abstractmethod
-    def serialize(
+    async def serialize(
         self,
         prompt_name: str,
         data: Any,
