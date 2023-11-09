@@ -139,7 +139,7 @@ async function travelWithGPT() {
 ```python title="app.py"
 from aiconfig import AIConfigRuntime, InferenceOptions
 
-# Load the aiconfig. You can also use AIConfigRuntime.loadJSON({})
+# Load the aiconfig.
 config = AIConfigRuntime.load('travel.aiconfig.json')
 
 # Run a single prompt
@@ -191,7 +191,7 @@ config = AIConfigRuntime.load('travel.aiconfig.json')
 
 # Run a single prompt (with streaming)
 inference_options = InferenceOptions(stream=True)
-await config.run("get_activities", params=None, inference_options)
+await config.run("get_activities", params=None, options=inference_options)
 ```
 
 </TabItem>
@@ -255,10 +255,11 @@ Replace `config.run` above with this:
 
 ```python
 inference_options = InferenceOptions(stream=True)
-await config.run_with_dependencies(
+await config.run(
     "gen_itinerary",
     params={"order_by": "duration"},
-    inference_options)
+    options=inference_options,
+    run_with_dependencies=True)
 ```
 
 </TabItem>
@@ -284,7 +285,7 @@ aiConfig.save(
 
 ```python
 # Save the aiconfig to disk. and serialize outputs from the model run
-config.save('updated.aiconfig.json', include_output=True)
+config.save('updated.aiconfig.json', include_outputs=True)
 ```
 
 </TabItem>
