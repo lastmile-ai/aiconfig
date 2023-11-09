@@ -284,7 +284,7 @@ aiConfig.save(
 
 ```python
 # Save the aiconfig to disk. and serialize outputs from the model run
-config.save('updated.aiconfig.json', include_output=True)
+config.save('updated.aiconfig.json', include_outputs=True)
 ```
 
 </TabItem>
