@@ -14,6 +14,7 @@ def mock_openai_chat_completion(**kwargs):
                 "top_p": 1,
                 "max_tokens": 3000,
                 "temperature": 1,
+                "stream": False,
                 "messages": [
                     {
                         "content": "Write me a MySQL query to get this final output: total revenue from sales for each product category. Use the tables relationships defined here: Employees are related to Departments through the &#x27;DepartmentID&#x27; field..",
@@ -45,6 +46,7 @@ def mock_openai_chat_completion(**kwargs):
                 "model": "gpt-3.5-turbo",
                 "temperature": 1,
                 "top_p": 1,
+                "stream": False,
                 "messages": [
                     {"content": "Hi! Tell me 10 cool things to do in NYC.", "role": "user"}
                 ],
@@ -66,7 +68,7 @@ def mock_openai_chat_completion(**kwargs):
                 ],
                 "usage": {"prompt_tokens": 20, "completion_tokens": 379, "total_tokens": 399},
             },
-        ]
+        ],
     ]
 
     for input_params, response in response_map_list:

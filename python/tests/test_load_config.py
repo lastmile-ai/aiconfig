@@ -25,6 +25,7 @@ async def test_load_basic_chatgpt_query_config(set_temporary_env_vars):
         "model": "gpt-3.5-turbo",
         "top_p": 1,
         "temperature": 1,
+        "stream": False,
         "messages": [{"content": "Hi! Tell me 10 cool things to do in NYC.", "role": "user"}],
     }
 

@@ -97,12 +97,6 @@ class ParameterizedModelParser(ModelParser):
             for dependency_prompt_name in dependency_graph[prompt_name]:
                 await execute_recursive(dependency_prompt_name)
 
-            # Get prompt data and model parser
-            prompt_data = aiconfig.prompt_index[prompt_name]
-            model_parser = ModelParserRegistry.get_model_parser(prompt_data.metadata.model.name)
-
-            # Execute the model parser with parameters and the current prompt name
-            prompt_to_execute = aiconfig.get_prompt(prompt_name)
             output = await aiconfig.run(prompt_name, parameters, options)
 
             # Return the output of the original prompt being executed
