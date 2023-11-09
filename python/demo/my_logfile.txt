@@ -1,0 +1,4 @@
+2023-11-07 18:22:00,135 - my-logger - INFO - Callback called.
+event: name='Start Deserialize' data='prompt1' ts_ns=1699399297761965000
+2023-11-07 18:22:00,138 - my-logger - INFO - Callback called.
+event: name='Start Run' data='prompt1' ts_ns=1699399297761965000
