@@ -11,9 +11,23 @@
 
 ## Overview
 
-AIConfig Tools is a package that simplifies Prompt, Model, and Parameter Management by allowing you to create and manage AIConfigs.
+AIConfig is a source-control friendly way to manage prompts and model parameters for generative AI.
+
+1. **Prompts as configs**: a [standardized JSON format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to store generative AI model settings, prompt inputs and outputs, and flexible multi-purpose metadata. This allows you to iterate on prompts and model parameters _separately from your application code_.
+2. **Extensible SDK**: Python & Node SDKs to use `aiconfig` in your application code. AIConfig is designed to be **model-agnostic** and **multi-modal**, so you can extend it to work with models from any provider for any modality, including text, image and audio.
+3. **AI Workbook editor**: A [notebook-like playground](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9) to edit `aiconfig` files visually, run prompts, tweak models and model settings, and chain things together.
 
 > Full documentation: **[aiconfig.lastmileai.dev](https://aiconfig.lastmileai.dev/)**
+
+## Features
+
+Features:
+
+- [x] **Source-control friendly** format to save prompts and model settings, which you can use for evaluation and reproducibility and simplifying your application code.
+- [x] **Multi-modal and model agnostic**. Use with any model, and serialize/deserialize data from the same `aiconfig` format.
+- [x] **Prompt chaining and parameterization** with [{{handlebars}}](https://handlebarsjs.com/) templating syntax.
+- [x] **Streaming** supported out of the box, allowing you to get playground-like streaming in CLI, notebooks and any other interface easily.
+- [x] **Notebook editor**. Use [AI Workbooks](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9) to visually create your `aiconfig`, and use the SDK to connect it to your application code.
 
 ## Install
 
@@ -44,6 +58,8 @@ poetry add python-aiconfig
 ```
 
 [Detailed installation instructions](https://aiconfig.lastmileai.dev/docs/introduction/getting-started/#installation).
+
+## Getting Started
 
 ### Table of Contents
 
