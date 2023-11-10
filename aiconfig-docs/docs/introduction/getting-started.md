@@ -315,5 +315,28 @@ We are working on a local editor that you can run yourself. For now, please use 
 ## Using OpenAI API introspection
 
 ```
+"""
+wrapper around openai.ChatCompletion.create that will serialize prompts and save them to config 
 
+usage:
+
+    Normal Import:
+        ` import openai`
+
+    Modified:
+        ```
+        import openai 
+        
+        from aiconfig.ChatCompletion import create_and_save_to_config
+        openai.ChatCompletion.create = create_and_save_to_config
+        ```
+"""
+
+import openai 
+
+from aiconfig.ChatCompletion import create_and_save_to_config
+openai.ChatCompletion.create = create_and_save_to_config
+
+# now you can use openai normally
+openai.ChatCompletion.create(...)
 ```

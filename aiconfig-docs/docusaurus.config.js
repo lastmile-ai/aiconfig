@@ -14,9 +14,7 @@ const config = {
 
   // Set the production url of your site here
   url: "https://aiconfig.lastmileai.dev",
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: "/aiconfig",
+  baseUrl: "/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -46,29 +44,32 @@ const config = {
           editUrl: "https://github.com/lastmile-ai/aiconfig/aiconfig-docs",
         },
         theme: {
-          customCss: require.resolve("./src/css/custom.css"),
+          customCss: require.resolve("./src/css/custom.scss"),
+        },
+        gtag: {
+          trackingID: "G-JYD7V9L7DR",
+          anonymizeIP: false,
         },
       }),
     ],
   ],
-
+  plugins: ["docusaurus-plugin-sass"],
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
       image: "img/docusaurus-social-card.jpg",
       navbar: {
-        title: "AIConfig",
         logo: {
-          alt: "My Site Logo",
-          src: "img/logo.svg",
+          alt: "AI Config Logo",
+          src: "img/aiConfigLogo_Dark.svg",
+          srcDark: "img/aiConfigLogo_Light.svg",
         },
         items: [
           {
-            type: "docSidebar",
-            sidebarId: "docSidebar",
-            position: "left",
+            to: "/docs/introduction/basics",
             label: "Overview",
+            position: "left",
           },
           {
             to: "/docs/introduction/getting-started",
@@ -81,20 +82,16 @@ const config = {
             position: "left",
           },
           {
-            href: "https://blog.lastmileai.dev",
-            label: "Blog",
-            position: "left",
-          },
-          {
-            href: "https://github.com/lastmile-ai/aiconfig",
-            label: "GitHub",
-            position: "right",
-          },
-          {
             href: "https://github.com/lastmile-ai/aiconfig",
             position: "right",
             className: "header-github-link",
             "aria-label": "GitHub repository",
+          },
+          {
+            href: "https://discord.com/invite/xBhNKTetGx",
+            position: "right",
+            className: "header-discord-link",
+            "aria-label": "Discord Community",
           },
         ],
       },
@@ -107,6 +104,10 @@ const config = {
               {
                 label: "GitHub",
                 href: "https://github.com/lastmile-ai/aiconfig",
+              },
+              {
+                label: "Blog",
+                href: "https://blog.lastmileai.dev",
               },
             ],
           },
@@ -143,10 +144,11 @@ const config = {
         ],
         copyright: "Copyright © 2023 LastMile AI, Inc.",
       },
-      // prism: {
-      //   theme: lightTheme,
-      //   darkTheme: darkTheme,
-      // },
+      colorMode: {
+        defaultMode: "dark",
+        disableSwitch: false,
+        respectPrefersColorScheme: false,
+      },
       prism: {
         defaultLanguage: "jsx",
         theme: require("./core/prismTheme"),
@@ -164,6 +166,31 @@ const config = {
           "ruby",
           "flow",
         ],
+      },
+      algolia: {
+        appId: "MXLMDZIH1G",
+        apiKey: "ed56ae054b0f8ac02ef281e34584cc3c",
+        indexName: "aiconfig",
+
+        // Optional: see doc section below
+        contextualSearch: true,
+
+        // Optional: Specify domains where the navigation should occur through window.location instead on history.push. Useful when our Algolia config crawls multiple documentation sites and we want to navigate with window.location.href to them.
+        //externalUrlRegex: "external\\.com|domain\\.com",
+
+        // Optional: Replace parts of the item URLs from Algolia. Useful when using the same search index for multiple deployments using a different baseUrl. You can use regexp or string in the `from` param. For example: localhost:3000 vs myCompany.com/docs
+        replaceSearchResultPathname: {
+          from: "/docs/", // or as RegExp: /\/docs\//
+          to: "/",
+        },
+
+        // Optional: Algolia search parameters
+        searchParameters: {},
+
+        // Optional: path for search page that enabled by default (`false` to disable it)
+        searchPagePath: "search",
+
+        //... other Algolia params
       },
     }),
 };

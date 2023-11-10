@@ -183,5 +183,5 @@ AIConfig is meant to be fully customizable and extensible for your use-cases. Th
 - **Routing**<div className="label basic coming-soon">Coming Soon</div>: define custom routers over a series of `aiconfig`s to intelligently route incoming requests over prompts and models (i.e. prompt routing and model routing).
 
 :::tip
-Go to [Customization & Extensibility](/docs/category/customization--extensibility) to learn more about AIConfig extensibility
+Go to [Customization & Extensibility](/docs/category/extensibility) to learn more about AIConfig extensibility
 :::
