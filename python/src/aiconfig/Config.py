@@ -1,6 +1,7 @@
 import json
 import sys
 import os
+from aiconfig.callback import CallbackManager
 import requests
 from typing import ClassVar, Dict, List, Optional
 
@@ -40,6 +41,8 @@ class AIConfigRuntime(AIConfig):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.file_path = None
+        # AIConfigRuntime will always have a callback manager. Ae default one is be created when initialized.
+        self.callback_manager = CallbackManager.create_default_manager()
 
     @classmethod
     def create(
@@ -226,9 +229,11 @@ class AIConfigRuntime(AIConfig):
             json_config_filepath (str, optional): The file path to the JSON configuration file.
                 Defaults to "aiconfig.json".
         """
+        # AIConfig json should only contain the core data fields. These are auxiliary fields that should not be persisted
         exclude_options = {
             "prompt_index": True, 
-            "file_path": True
+            "file_path": True,
+            "callback_manager": True,
         }
 
         if not include_outputs:
@@ -294,3 +299,8 @@ class AIConfigRuntime(AIConfig):
                 )
             )
         return ModelParserRegistry.get_model_parser(model_id)
+
+    def set_callback_manager(self, callback_manager: CallbackManager):
+        if callback_manager is None:
+            raise ValueError("callback_manager cannot be None. Create a new CallbackManager with No callbacks instead.")
+        self.callback_manager = callback_manager
