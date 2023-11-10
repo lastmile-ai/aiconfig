@@ -1,12 +1,49 @@
+<div align="center"><picture>
+  <img alt="aiconfig" src="aiconfig-docs/static/img/readme_logo.png">
+</picture></div>
+<br/>
+
 ![Python](https://github.com/lastmile-ai/aiconfig/actions/workflows/pr_python.yml/badge.svg)
 ![Node](https://github.com/lastmile-ai/aiconfig/actions/workflows/pr_typescript.yml/badge.svg)
 ![Docs](https://github.com/lastmile-ai/aiconfig/actions/workflows/test-deploy-docs.yml/badge.svg)
 
-# AIConfig Tools: Configuring and Interacting AIConfigs
+<!-- <div align="right"><a href="https://aiconfig.lastmileai.dev">Go to Docs</a></div> -->
 
 ## Overview
 
 AIConfig Tools is a package that simplifies Prompt, Model, and Parameter Management by allowing you to create and manage AIConfigs.
+
+> Full documentation: **[aiconfig.lastmileai.dev](https://aiconfig.lastmileai.dev/)**
+
+## Install
+
+Install with your favorite package manager for Node or Python.
+
+### Node.js
+
+#### `npm` or `yarn`
+
+```bash
+npm install aiconfig
+```
+
+```bash
+yarn add aiconfig
+```
+
+### Python
+
+#### `pip` or `poetry`
+
+```bash
+pip install python-aiconfig
+```
+
+```bash
+poetry add python-aiconfig
+```
+
+[Detailed installation instructions](https://aiconfig.lastmileai.dev/docs/introduction/getting-started/#installation).
 
 ### Table of Contents
 
