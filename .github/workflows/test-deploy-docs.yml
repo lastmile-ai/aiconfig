@@ -1,4 +1,4 @@
-name: Test AIConfig Docs Deployment
+name: Build AIConfig Docs
 
 on:
   pull_request:

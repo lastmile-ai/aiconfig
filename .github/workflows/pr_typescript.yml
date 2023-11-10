@@ -1,4 +1,4 @@
-name: Typescript Pull request testing
+name: Node.js Test
 on:
   pull_request:
     branches: [main]
