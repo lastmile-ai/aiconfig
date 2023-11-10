@@ -19,5 +19,13 @@ from .util.params import resolve_prompt
 from .util.config_utils import get_api_key_from_environment
 from .registry import ModelParserRegistry
 
+# Callback Utilities
+from .callback import (
+    Callback,
+    CallbackEvent,
+    CallbackManager,
+    create_logging_callback,
+)
+
 # The AIConfigRuntime class. This is the main class that you will use to run your AIConfig.
 from .Config import AIConfigRuntime
