@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "ts-node ./index.ts",
-    "build": "rm -rf ./dist && tsc",
+    "build": "rm -rf ./dist && tsc && cd ./aiconfig-editor && yarn build && cd .. && cp -r ./aiconfig-editor ./dist/aiconfig-editor",
     "start": "node ./dist/index.js"
   },
   "files": [
