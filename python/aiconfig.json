@@ -1,0 +1,51 @@
+{
+  "name": "",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {}
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "prompt_0",
+      "input": "Compose a poem that explains the concept of recursion in programming.",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo",
+          "settings": {
+            "model": "gpt-3.5-turbo",
+            "system_prompt": {
+              "role": "system",
+              "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+            }
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": {
+            "role": "assistant",
+            "content": "In the realm of code, where logic unfolds,\nLies a concept that's oh so bold.\nIt goes by the name of recursion,\nA clever technique, wrapped in allusion.\n\nImagine a function, calling itself,\nCreating a loop, like an infinite shelf.\nWith great devotion and grace it repeats,\nUntil a condition, it finally meets.\n\nA process mystical, a looping spell,\nUnleashing magic, as far as we can tell.\nLike a fractal pattern, intricate and vast,\nRecursive calls, the future and the past.\n\nEach function call creates a new world,\nWith its own universe, neatly twirled.\nA mirror of existence, so profound,\nAs layers upon layers, they compound.\n\nIn this dance of self-reference and return,\nThe true power of recursion we discern.\nSolving problems, breaking them apart,\nIt's a journey, an endless work of art.\n\nFrom Fibonacci numbers, to traversing trees,\nRecursion unlocks the mystery with ease.\nBinary searches and quicksort arrays,\nRecursive allies, weaving their ways.\n\nYet in this wondrous journey, beware the abyss,\nA danger awaits that should not be dismissed,\nA mighty stack explosion can arise,\nIf boundaries are breached, the program cries.\n\nSo find the balance, maintain control,\nRecursion, a sword with which to enroll.\nIntricate melodies of recursive might,\nCreating wonders, in code's eternal light."
+          },
+          "metadata": {
+            "id": "chatcmpl-8JPlxrPEalCKaTIBOIutH7OGcLlAf",
+            "object": "chat.completion",
+            "created": 1699637993,
+            "model": "gpt-3.5-turbo-0613",
+            "usage": {
+              "prompt_tokens": 39,
+              "completion_tokens": 280,
+              "total_tokens": 319
+            },
+            "finish_reason": "stop"
+          }
+        }
+      ]
+    }
+  ]
+}
