@@ -1,4 +1,4 @@
-import { Button, Container, Group, Table } from "@mantine/core";
+import { Button, Container, Group, Table, Text } from "@mantine/core";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -44,22 +44,29 @@ export default function Home() {
       // If directory, then change path & also update the url route to add to history
       // If random file, should not be able to select
       // If aiconfig.json file, then open editor - can't actually detect yet, so will just try to parse
-      // load_json
+      // Use load_json
       console.log("navigate", file);
       console.log(file.isDirectory);
 
+      const newPath = `${file.path}/${file.name}`;
       if (file.isDirectory) {
-        const newPath = `${file.path}/${file.name}`;
-
         router.push(`?path=${encodeURIComponent(newPath)}`);
       } else {
-        // Try to open editor (new tab?)
+        router.push(`/editor?path=${encodeURIComponent(newPath)}`);
+        // Uncomment to open editor in new tab
+        // window.open(`/editor?path=${encodeURIComponent(file.path)}`, "_blank");
       }
     },
     [router]
   );
 
-  const back = useCallback(() => {}, []);
+  const back = useCallback(() => {
+    if (!router.query.path) {
+      return;
+    } else {
+      router.back();
+    }
+  }, [router]);
 
   return (
     <>
@@ -71,19 +78,28 @@ export default function Home() {
       </Head>
       <main>
         <Container>
-          <Group>
+          <Group grow m="sm">
             <Button
-              m="sm"
+              variant="default"
               disabled={!router.query.path}
-              onClick={() => {
-                if (!router.query.path) {
-                  return;
-                } else {
-                  router.back();
-                }
-              }}
+              onClick={back}
             >
               Back
+            </Button>
+            <div>
+              <Text
+                size={12}
+                sx={{ textOverflow: "ellipsis", overflow: "hidden" }}
+              >
+                {router.query.path || "/"}
+              </Text>
+            </div>
+            <Button
+              onClick={() => {
+                window.alert("Todo: Implement this");
+              }}
+            >
+              Create New
             </Button>
           </Group>
           <Table withBorder>
