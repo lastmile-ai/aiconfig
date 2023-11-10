@@ -40,7 +40,7 @@ export class ModelParserRegistry {
   ) {
     let id: string;
 
-    if (prompt.metadata.model != null) {
+    if (prompt?.metadata?.model != null) {
       id =
         typeof prompt.metadata.model === "string"
           ? prompt.metadata.model
