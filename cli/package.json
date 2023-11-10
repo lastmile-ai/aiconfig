@@ -1,0 +1,26 @@
+{
+  "name": "aiconfig-cli",
+  "bin": {
+    "aiconfig": "./bin/aiconfig.js"
+  },
+  "dependencies": {
+    "commander": "^11.1.0"
+  },
+  "scripts": {
+    "dev": "ts-node ./index.ts",
+    "build": "rm -rf ./dist && tsc",
+    "start": "node ./dist/index.js"
+  },
+  "files": [
+    "/bin",
+    "/dist"
+  ],
+  "homepage": "https://github.com/lastmile-ai/aiconfig",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "devDependencies": {
+    "@types/node": "^20.9.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}
