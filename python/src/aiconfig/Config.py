@@ -122,7 +122,7 @@ class AIConfigRuntime(AIConfig):
             update_model_parser_registry_with_config_runtime(aiconfigruntime)
             return aiconfigruntime
 
-    async def serialize(self, model_name: str, data: Dict,  prompt_name: str, params: Optional[dict] = {}) -> List[Prompt]:
+    async def serialize(self, model_name: str, data: Dict,  prompt_name: str, params: Optional[dict] = None) -> List[Prompt]:
         """
         Serializes the completion params into a Prompt object. Inverse of the 'resolve' function.
 
@@ -134,19 +134,21 @@ class AIConfigRuntime(AIConfig):
         returns:
             Prompt | List[Prompt]: A prompt or list of prompts representing the input data
         """
+        if not params:
+            params = {}
         model_parser = ModelParserRegistry.get_model_parser(model_name)
         if not model_parser:
             raise ValueError(
                 f"Unable to serialize data: `{data}`\n Model Parser for model {model_name} does not exist."
             )
 
-        prompts = model_parser.serialize(prompt_name, data, self, params)
+        prompts = await model_parser.serialize(prompt_name, data, self, params)
         return prompts
 
     async def resolve(
         self,
         prompt_name: str,
-        params: Optional[dict] = {},
+        params: Optional[dict] = None,
         **kwargs,
     ):
         """
@@ -159,6 +161,8 @@ class AIConfigRuntime(AIConfig):
         Returns:
             str: The resolved prompt.
         """
+        if not params:
+            params = {}
         if prompt_name not in self.prompt_index:
             raise IndexError(
                 "Prompt not found in config, available prompts are:\n {}".format(
@@ -177,7 +181,7 @@ class AIConfigRuntime(AIConfig):
     async def run(
         self,
         prompt_name: str,
-        params: Optional[dict] = {},        
+        params: Optional[dict] = None,        
         options: Optional[InferenceOptions] = None,
         **kwargs,
     ):
@@ -191,6 +195,9 @@ class AIConfigRuntime(AIConfig):
         Returns:
             object: The response object returned by the AI-model's API.
         """
+        if not params:
+            params = {}
+
         if prompt_name not in self.prompt_index:
             raise IndexError(
                 "Prompt not found in config, available prompts are:\n {}".format(
