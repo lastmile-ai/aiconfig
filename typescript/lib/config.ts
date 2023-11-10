@@ -1,6 +1,7 @@
 import { JSONObject, JSONValue } from "../common";
 import {
   AIConfig,
+  InferenceSettings,
   ModelMetadata,
   Output,
   Prompt,
@@ -14,6 +15,7 @@ import _ from "lodash";
 import { getAPIKeyFromEnv } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
+import { extractOverrideSettings } from "./utils";
 
 export type PromptWithOutputs = Prompt & { outputs?: Output[] };
 
@@ -67,6 +69,8 @@ export class AIConfigRuntime implements AIConfig {
   metadata: AIConfig["metadata"];
   prompts: PromptWithOutputs[];
 
+  filePath?: string;
+
   public constructor(
     name: string,
     description?: string,
@@ -90,7 +94,11 @@ export class AIConfigRuntime implements AIConfig {
   public static load(aiConfigFilePath: string) {
     const aiConfigString = fs.readFileSync(aiConfigFilePath, "utf8");
     const aiConfigObj = JSON.parse(aiConfigString);
-    return this.loadJSON(aiConfigObj);
+
+    const config = this.loadJSON(aiConfigObj);
+    config.filePath = aiConfigFilePath;
+
+    return config;
   }
 
   /**
@@ -117,6 +125,25 @@ export class AIConfigRuntime implements AIConfig {
     );
 
     Object.assign(aiConfig, remainingProps);
+
+    // Update the ModelParserRegistry with any model parsers specified in the AIConfig
+    if (aiConfig.metadata.model_parsers) {
+      for (const [modelName, modelParserId] of Object.entries(
+        aiConfig.metadata.model_parsers
+      )) {
+        const modelParser = ModelParserRegistry.getModelParser(modelParserId);
+        if (!modelParser) {
+          throw new Error(
+            `E1001: Unable to load AIConfig: It specifies ${JSON.stringify(
+              aiConfig.metadata.model_parsers
+            )}, but ModelParser ${modelParserId} for model ${modelName} does not exist. Make sure you have registered the ModelParser using AIConfigRuntime.registerModelParser before loading the AIConfig.`
+          );
+        }
+
+        ModelParserRegistry.registerModelParser(modelParser, [modelName]);
+      }
+    }
+
     return aiConfig;
   }
 
@@ -139,7 +166,7 @@ export class AIConfigRuntime implements AIConfig {
       .then((response) => {
         if (response.status !== 200) {
           throw new Error(
-            `Failed to load workbook. Status code: ${response.status}`
+            `E1005: Failed to load workbook. Status code: ${response.status}`
           );
         }
 
@@ -180,9 +207,10 @@ export class AIConfigRuntime implements AIConfig {
    * @param filePath The path to the file to save to.
    * @param saveOptions Options that determine how to save the AIConfig to the file.
    */
-  public save(filePath: string, saveOptions?: SaveOptions) {
+  public save(filePath?: string, saveOptions?: SaveOptions) {
     try {
       let aiConfigObj: AIConfigRuntime = _.cloneDeep(this);
+
       if (!saveOptions?.serializeOutputs) {
         const prompts = [];
         for (const prompt of aiConfigObj.prompts) {
@@ -190,9 +218,16 @@ export class AIConfigRuntime implements AIConfig {
         }
         aiConfigObj.prompts = prompts;
       }
+      // Remove the filePath property from the to-be-saved AIConfig
+      aiConfigObj.filePath = undefined;
 
       // TODO: saqadri - make sure that the object satisfies the AIConfig schema
       const aiConfigString = JSON.stringify(aiConfigObj, null, 2);
+
+      if (!filePath) {
+        filePath = this.filePath ?? "aiconfig.json";
+      }
+
       fs.writeFileSync(filePath, aiConfigString);
     } catch (error) {
       console.error(error);
@@ -222,7 +257,10 @@ export class AIConfigRuntime implements AIConfig {
    * @param modelParser The model parser to add to the registry.
    * @param ids Optional list of model IDs to register the model parser for. If unspecified, the model parser will be registered for modelParser.id.
    */
-  public static registerModelParser(modelParser: ModelParser, ids?: string[]) {
+  public static registerModelParser(
+    modelParser: ModelParser<any, any>,
+    ids?: string[]
+  ) {
     ModelParserRegistry.registerModelParser(modelParser, ids);
   }
 
@@ -274,6 +312,7 @@ export class AIConfigRuntime implements AIConfig {
   public async serialize(
     modelName: string,
     data: JSONObject,
+    promptName: string,
     params?: JSONObject
   ): Promise<Prompt | Prompt[]> {
     const modelParser = ModelParserRegistry.getModelParser(modelName);
@@ -285,7 +324,7 @@ export class AIConfigRuntime implements AIConfig {
       );
     }
 
-    const prompts = modelParser.serialize("prompt2", data, this, params);
+    const prompts = modelParser.serialize(promptName, data, this, params);
     return prompts;
   }
 
@@ -487,8 +526,10 @@ export class AIConfigRuntime implements AIConfig {
       if (!this.metadata.models) {
         this.metadata.models = {};
       }
-
-      this.metadata.models[modelMetadata.name] = modelMetadata;
+      if (!modelMetadata.settings) {
+        modelMetadata.settings = {};
+      }
+      this.metadata.models[modelMetadata.name] = modelMetadata.settings;
     }
   }
 
@@ -503,6 +544,37 @@ export class AIConfigRuntime implements AIConfig {
     }
 
     delete this.metadata.models[modelName];
+  }
+
+  /**
+   * Sets the model to use for all prompts by default in the AIConfig.
+   * @param modelName The name of the model to default to.
+   */
+  public setDefaultModel(modelName: string | undefined) {
+    if (modelName == null) {
+      delete this.metadata.default_model;
+      return;
+    }
+
+    this.metadata.default_model = modelName;
+  }
+
+  /**
+   * Adds a model name : model parser ID mapping to the AIConfig metadata. This model parser will be used to parse Prompts in the AIConfig that use the given model.
+   * @param modelName The name of the model to set the parser for.
+   * @param modelParserId The ID of the model parser to use for the model. If undefined, the model parser for the model will be removed.
+   */
+  public setModelParser(modelName: string, modelParserId: string | undefined) {
+    if (!this.metadata.model_parsers) {
+      this.metadata.model_parsers = {};
+    }
+
+    if (modelParserId == null) {
+      delete this.metadata.model_parsers[modelName];
+      return;
+    }
+
+    this.metadata.model_parsers[modelName] = modelParserId;
   }
 
   /**
@@ -719,11 +791,20 @@ export class AIConfigRuntime implements AIConfig {
       }
     }
 
-    if (typeof prompt.metadata.model === "string") {
+    if (typeof prompt?.metadata?.model === "string") {
       return prompt.metadata.model;
-    } else {
-      return prompt.metadata.model?.name;
+    } else if (prompt?.metadata?.model == null) {
+      const defaultModel = this.metadata.default_model;
+      if (defaultModel == null) {
+        throw new Error(
+          `E2041: No default model specified in AIConfig metadata, and prompt ${prompt.name} does not specify a model`
+        );
+      }
+
+      return defaultModel;
     }
+
+    return prompt.metadata.model?.name;
   }
 
   /**
@@ -739,13 +820,47 @@ export class AIConfigRuntime implements AIConfig {
       }
     }
 
-    const modelParser = ModelParserRegistry.getModelParserForPrompt(prompt);
+    const modelParser = ModelParserRegistry.getModelParserForPrompt(
+      prompt,
+      this
+    );
     if (modelParser != null) {
       return modelParser.getOutputText(this, output, prompt);
     }
 
     // TODO: saqadri - log a warning if the model parser isn't parameterized
     return "";
+  }
+
+  /**
+   *  Returns the global settings for a given model.
+   */
+  public getGlobalSettings(modelName: string): InferenceSettings | undefined {
+    return this.metadata.models?.[modelName];
+  }
+
+  /**
+   * Generates a ModelMetadata object from the inferene settings by extracting the settings that override the global settings.
+   *
+   * @param inferenceSettings - The inference settings to be used for the model.
+   * @param modelName - The unique identifier for the model.
+   * @returns A ModelMetadata object that includes the model's name and optional settings.
+   */
+  public getModelMetadata(
+    inferenceSettings: InferenceSettings,
+    modelName: string
+  ) {
+    const overrideSettings = extractOverrideSettings(
+      this,
+      inferenceSettings,
+      modelName
+    );
+
+    if (!overrideSettings || Object.keys(overrideSettings).length === 0) {
+      return { name: modelName } as ModelMetadata;
+    } else {
+      return { name: modelName, settings: overrideSettings } as ModelMetadata;
+    }
   }
 
   //#endregion

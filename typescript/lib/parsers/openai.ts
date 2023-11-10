@@ -350,9 +350,12 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
           }
         }
 
+        const input: PromptInput =
+          message.role === "user" ? message.content ?? "" : { ...message };
+
         const prompt: Prompt = {
           name: `${promptName}_${prompts.length + 1}`,
-          input: message,
+          input,
           metadata: {
             model: modelMetadata,
             parameters: params ?? {},
@@ -413,7 +416,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
         messages.push(systemPrompt);
       }
 
-      if (prompt.metadata.remember_chat_context !== false) {
+      if (prompt?.metadata?.remember_chat_context !== false) {
         // Loop through the prompts in the AIConfig and add the user messages to the messages array
 
         for (let i = 0; i < aiConfig.prompts.length; i++) {

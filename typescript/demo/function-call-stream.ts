@@ -273,7 +273,7 @@ async function createAIConfig() {
     "function-call-demo",
     "this is a demo AIConfig to show function calling using OpenAI"
   );
-  const result = await aiConfig.serialize(model, data);
+  const result = await aiConfig.serialize(model, data, "functionCallResult");
 
   if (Array.isArray(result)) {
     for (const prompt of result) {

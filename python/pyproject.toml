@@ -1,6 +1,37 @@
 [build-system]
 requires = ["setuptools", "wheel"]
 
+[project]
+name = "python-aiconfig"
+version = "1.0.4"
+authors = [
+  { name="Sarmad Qadri", email="sarmad@lastmileai.dev" },
+]
+description = "Python library for LastMile AI API"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+]
+
+dependencies = [
+  "requests==2.30.0",
+  "black",
+  "flake8",
+  "pytest",
+  "pydantic>=2.1",
+  "pybars3",
+  "google-generativeai",
+  "openai",
+  "python-dotenv",
+  "huggingface_hub",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/lastmile-ai/aiconfig"
+"Bug Tracker" = "https://github.com/lastmile-ai/aiconfig/issues"
+
 # Black formatting
 [tool.black]
 line-length = 99

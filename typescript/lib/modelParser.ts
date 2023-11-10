@@ -114,9 +114,18 @@ export abstract class ModelParser<T = JSONObject, R = T> {
       return aiConfig.metadata.models?.[this.id];
     }
 
-    const modelMetadata = prompt.metadata.model;
+    const modelMetadata = prompt.metadata?.model;
     if (typeof modelMetadata === "string") {
       return aiConfig.metadata.models?.[modelMetadata];
+    } else if (modelMetadata == null) {
+      const defaultModel = aiConfig.metadata.default_model;
+      if (defaultModel == null) {
+        throw new Error(
+          `E2040: No default model specified in AIConfig metadata, and prompt ${prompt.name} does not specify a model`
+        );
+      }
+
+      return aiConfig.metadata.models?.[defaultModel];
     } else {
       const globalModelMetadata =
         aiConfig.metadata.models?.[modelMetadata.name];

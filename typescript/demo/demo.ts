@@ -3,6 +3,7 @@
 import OpenAI from "openai";
 import * as path from "path";
 import { AIConfigRuntime } from "../lib/config";
+import { InferenceOptions } from "../lib/modelParser";
 
 // This example is taken from https://github.com/openai/openai-node/blob/v4/examples/demo.ts
 // and modified to show the same functionality using AIConfig.
@@ -69,19 +70,25 @@ async function openAIWithAIConfig() {
   //     console.log(aiConfig.getOutputText("demoPrompt", output));
   //   }
 
+  const inferenceOptions: InferenceOptions = {
+    callbacks: {
+      streamCallback: (data: any, _accumulatedData: any, _index: any) => {
+        process.stdout.write(data?.content || "\n");
+      },
+    },
+  };
+
+  const streamCallback = (data: any, _accumulatedData: any, _index: any) => {
+    process.stdout.write(data?.content || "\n");
+  };
+
   // Streaming:
   let result2 = await aiConfig.run(
     "demoPrompt",
     /*params*/ {
       name: "Streaming Demo",
     },
-    {
-      callbacks: {
-        streamCallback: (data: any, _accumulatedData: any, _index: any) => {
-          process.stdout.write(data?.content || "\n");
-        },
-      },
-    }
+    inferenceOptions
   );
 
   // This is a Streaming Demo test.
@@ -99,7 +106,7 @@ async function createAIConfig() {
   };
 
   const aiConfig = AIConfigRuntime.create("demo", "this is a demo AIConfig");
-  const result = await aiConfig.serialize(model, data);
+  const result = await aiConfig.serialize(model, data, "demoPrompt");
 
   if (Array.isArray(result)) {
     for (const prompt of result) {

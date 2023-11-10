@@ -329,6 +329,11 @@
     protobufjs "^7.2.4"
     yargs "^17.7.2"
 
+"@huggingface/inference@^2.6.4":
+  version "2.6.4"
+  resolved "https://registry.yarnpkg.com/@huggingface/inference/-/inference-2.6.4.tgz#a17d73e6e6558670a607752c44ac5868286ceb09"
+  integrity sha512-Xna7arltBSBoKaH3diGi3sYvkExgJMd/pF4T6vl2YbmDccbr1G/X5EPZ2048p+YgrJYG1jTYFCtY6Dr3HvJaow==
+
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"

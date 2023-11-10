@@ -1,0 +1,30 @@
+name: Build AIConfig Docs
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "aiconfig-docs/**/*"
+    # Review gh actions docs if you want to further define triggers, paths, etc
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
+
+jobs:
+  test-deploy:
+    name: Test deployment
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: aiconfig-docs
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+          cache-dependency-path: ./aiconfig-docs
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Test build website
+        run: yarn build

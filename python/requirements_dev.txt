@@ -1,6 +1,0 @@
-flake8
-tox
-pytest
-pytest-cov
-pytest-mock
-pytest-asyncio

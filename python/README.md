@@ -1,15 +1,120 @@
-## Testing
+# AIConfig Tools: Configuring and Interacting AIConfigs
 
-To run tests locally,
+## Overview
 
-1. Navigate to the aiconfig_tools directory
-2. Install required testing dependencies `pip install -r requirements_dev.txt`
-3. "install" the aiconfig source package with `pip install -e .` The -e flag links the package to your local src. Any changes made are automatically updated.
-4. run tests `pytest`
-5. run linter `flake8`
+AIConfig Tools is a package that simplifies Prompt, Model, and Parameter Management by allowing you to create and manage AIConfigs.
 
-feel free to run ` black <path_to_src>` or `black .` , to format code, but this is not required. It is easier to use a vscode extension which will automatically format your code on save.
+### Table of Contents
 
+1. Installation
+2. Creating AIConfig Runtime
+3. Creating and Managing Prompts
+4. Updating Model Settings
+5. Executing and Displaying Output
+6. Saving Configuration to Disk
 
+## 1) Installation
 
-TODO: build a github action workflow to automatically test and lint code.
+First, you need to install the AIConfig Tools package and any required dependencies. Use the following command to install it. :
+
+Python
+
+```bash
+pip install python-aiconfig
+```
+
+## 2) Creating AIConfig Runtime
+
+To start using AIConfig Tools, create an AIConfig Runtime instance. This runtime will allow you to manage prompts, model settings, and execute AI tasks. Here's how you can create it:
+
+```python
+from aiconfig.Config import AIConfigRuntime
+aiconfig = AIConfigRuntime.create("demo", "this is a demo AIConfig")
+```
+
+###### Loading an existing config is easy too.
+
+```python
+from aiconfig.Config import AIConfigRuntime
+aiconfig = AIConfigRuntime.from_config("/path/to/config")
+```
+
+## 3) Creating and Managing Prompts
+
+Prompts are input messages or queries you send to a Large Language model. You can create and manage prompts using AIConfig Tools. Here's an example of creating a prompt:
+
+```python
+from aiconfig.schema import ModelMetadata, Prompt
+
+prompt = Prompt(
+    name="prompt1",
+    input="Hi! What are transformers?",
+    metadata={
+        "model": "gpt-3.5-turbo",
+    }
+)
+
+aiconfig.add_prompt(prompt.name, prompt)
+```
+
+## 4) Updating Model Settings
+
+You can also update the settings of Large Language models, such as temperature and top-k. Here's an example of updating the model settings:
+
+```python
+model_name = "gpt-3.5-turbo"
+model_settings = {
+    "top_k": 40,
+    "top_p": 0.95,
+    "model": "gpt-3.5-turbo",
+    "temperature": 0.9
+}
+
+aiconfig.add_model(model_name, model_settings)
+```
+
+## 5) Executing and Displaying Output
+
+Once you have created prompts and updated model settings, you can execute prompts and retrieve the output. Here's an example of executing a prompt and displaying the output:
+
+```python
+import asyncio
+parameters = {"name": "Demo"}
+asyncio.run(aiconfig.run("prompt1", parameters))
+
+latest_output = aiconfig.get_latest_output("prompt1")
+output_text = aiconfig.get_output_text("prompt1", latest_output)
+print(output_text)
+```
+
+## 6) Saving Configuration to Disk
+
+You can save your AIConfig configuration to disk for later use or to share with others. This allows you to persist your prompts, model settings, and other configurations. Here's how you can save your AIConfig configuration to a file:
+
+```python
+# Save the configuration to a file
+aiconfig.save_config("my_aiconfig.json")
+```
+
+## More Demos
+
+Checkout the demo folder for example configs and example python notebooks.
+
+# aiconfig
+
+aiconfig -- for prompt, model and parameter management
+
+- Motivation
+- Why use aiconfig
+- Getting Started
+- Core Components
+- Capabilities
+  - Version Control
+  - Model parser
+  - Routing
+  - Evaluation
+- Debugging
+- Roadmap
+  - Multi-modal model support (use with image, audio generation models as well as multi-modal models like GPT-V)
+  - Routing
+  - Evaluation
