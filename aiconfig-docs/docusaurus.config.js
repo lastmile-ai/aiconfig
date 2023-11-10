@@ -48,6 +48,10 @@ const config = {
         theme: {
           customCss: require.resolve("./src/css/custom.scss"),
         },
+        gtag: {
+          trackingID: "G-JYD7V9L7DR",
+          anonymizeIP: false,
+        },
       }),
     ],
   ],
@@ -84,6 +88,12 @@ const config = {
             position: "right",
             className: "header-github-link",
             "aria-label": "GitHub repository",
+          },
+          {
+            href: "https://discord.com/invite/xBhNKTetGx",
+            position: "right",
+            className: "header-discord-link",
+            "aria-label": "Discord Community",
           },
         ],
       },
