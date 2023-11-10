@@ -287,13 +287,15 @@ td .label {
   }
 }
 
-#__docusaurus_skipToContent_fallback {
-  width: 92rem;
-  margin: 0 auto;
-}
+@media screen and (min-width: 1300px) {
+  #__docusaurus_skipToContent_fallback {
+    width: 92rem;
+    margin: 0 auto;
+  }
 
-#__docusaurus_skipToContent_fallback aside {
-  border-right: none;
+  #__docusaurus_skipToContent_fallback aside {
+    border-right: none;
+  }
 }
 
 .table-of-contents__left-border {
