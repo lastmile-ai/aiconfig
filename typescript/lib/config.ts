@@ -223,7 +223,7 @@ export class AIConfigRuntime implements AIConfig {
 
       // TODO: saqadri - make sure that the object satisfies the AIConfig schema
       const aiConfigString = JSON.stringify(aiConfigObj, null, 2);
-  
+
       if (!filePath) {
         filePath = this.filePath ?? "aiconfig.json";
       }
@@ -791,9 +791,9 @@ export class AIConfigRuntime implements AIConfig {
       }
     }
 
-    if (typeof prompt.metadata.model === "string") {
+    if (typeof prompt?.metadata?.model === "string") {
       return prompt.metadata.model;
-    } else if (prompt.metadata.model == null) {
+    } else if (prompt?.metadata?.model == null) {
       const defaultModel = this.metadata.default_model;
       if (defaultModel == null) {
         throw new Error(
@@ -803,9 +803,8 @@ export class AIConfigRuntime implements AIConfig {
 
       return defaultModel;
     }
-    {
-      return prompt.metadata.model?.name;
-    }
+
+    return prompt.metadata.model?.name;
   }
 
   /**
