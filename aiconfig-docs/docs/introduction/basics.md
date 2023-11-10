@@ -182,6 +182,6 @@ AIConfig is meant to be fully customizable and extensible for your use-cases. Th
 - **Evaluation**<div className="label basic coming-soon">Coming Soon</div>: define custom evaluators and run batch evaluation to measure the performance of your `aiconfig`.
 - **Routing**<div className="label basic coming-soon">Coming Soon</div>: define custom routers over a series of `aiconfig`s to intelligently route incoming requests over prompts and models (i.e. prompt routing and model routing).
 
-:::tip
+<!-- :::tip
 Go to [Customization & Extensibility](/docs/category/extensibility) to learn more about AIConfig extensibility
-:::
+::: -->
