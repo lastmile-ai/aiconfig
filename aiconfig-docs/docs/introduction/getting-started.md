@@ -300,7 +300,10 @@ config.save('updated.aiconfig.json', include_outputs=True)
 </Tabs>
 
 :::note
-The AIConfig SDK supports [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations for prompts, models, parameters, and arbitrary metadata in the `aiconfig`. For more details, see the [SDK Overview](/docs/category/sdk).
+The AIConfig SDK supports [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations for prompts, models, parameters, and arbitrary metadata in the `aiconfig`.
+
+<!-- For more details, see the [SDK Overview](/docs/category/sdk). -->
+
 :::
 
 ### 6. Open the AIConfig in AI Workbook editor.

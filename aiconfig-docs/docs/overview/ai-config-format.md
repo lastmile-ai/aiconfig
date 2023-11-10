@@ -263,7 +263,7 @@ Output metadata contains information like completion reason, usage tokens, etc.
 
 See [this example](#example-prompt-output) to see the output structure.
 
-## Final thoughts
+<!-- ## Final thoughts
 
 As you can see, the `aiconfig` schema is flexible enough to be used for a wide array of use-cases out of the box, and can be customized further. To see how to customize and extend AIConfig for your needs, see the **[Customization & Extensibility](/docs/category/extensibility)** section.
 
@@ -271,4 +271,4 @@ As you can see, the `aiconfig` schema is flexible enough to be used for a wide a
 
 We aim to maintain backwards-compatibility of the schema format, and don't foresee it changing often. **If you have a use-case that the existing schema doesn't satisfy, please _[get in touch with us](https://discord.com/invite/xBhNKTetGx)_**.
 
-:::
+::: -->
