@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import * as path from "path";
 import { AIConfigRuntime } from "../lib/config";
-import { HuggingFaceTextGenerationModelParser } from "../lib/parsers/hf";
+import { HuggingFaceTextGenerationModelParser } from "../../Extensions/mistral/typescript/hf";
 import { Prompt } from "../types";
 
 async function run() {
