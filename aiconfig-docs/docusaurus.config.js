@@ -169,7 +169,7 @@ const config = {
       },
       algolia: {
         appId: "MXLMDZIH1G",
-        apiKey: "ed56ae054b0f8ac02ef281e34584cc3c",
+        apiKey: "ae2a15a60477c4a9ab7840b2a1e640fc",
         indexName: "aiconfig",
         contextualSearch: true,
       },
