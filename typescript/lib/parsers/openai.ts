@@ -416,7 +416,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
         messages.push(systemPrompt);
       }
 
-      if (prompt.metadata.remember_chat_context !== false) {
+      if (prompt?.metadata?.remember_chat_context !== false) {
         // Loop through the prompts in the AIConfig and add the user messages to the messages array
 
         for (let i = 0; i < aiConfig.prompts.length; i++) {
