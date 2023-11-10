@@ -277,13 +277,17 @@ td .label {
   }
 }
 
-.navbar {
-  background-color: transparent;
-  backdrop-filter: blur(10px);
-  box-shadow: none;
-  .navbar__inner {
-    width: 92rem;
-    margin: 0 auto;
+@media screen and (max-width: 1300px) {
+  [data-theme="light"] {
+    .navbar--fixed-top {
+      background-color: #eaf1f3;
+    }
+  }
+
+  [data-theme="dark"] {
+    .navbar--fixed-top {
+      background-color: #050c21;
+    }
   }
 }
 
@@ -295,6 +299,19 @@ td .label {
 
   #__docusaurus_skipToContent_fallback aside {
     border-right: none;
+  }
+
+  .navbar--fixed-top {
+    background-color: transparent;
+  }
+  .navbar {
+    background-color: transparent;
+    backdrop-filter: blur(10px);
+    box-shadow: none;
+    .navbar__inner {
+      width: 92rem;
+      margin: 0 auto;
+    }
   }
 }
 
