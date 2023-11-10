@@ -112,6 +112,10 @@ This AIConfig contains a prompt chain to get a list of travel activities from an
 
 </details>
 
+:::tip
+Don't worry if you don't understand all parts of this yet, we'll go over it in steps. We will also cover a prompt editor ([AI Workbooks](#ai-workbook-playground)) to help you create AIConfigs visually.
+:::
+
 ### 2. Run the `get_activities` prompt.
 
 You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
@@ -151,7 +155,7 @@ await config.run("get_activities", params=None)
 
 ### 3. Enable streaming for your prompt.
 
-You can enable streaming for your prompt responses using `InferenceOptions`.
+You can enable streaming for your prompt responses by passing in a streaming callback.
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
 <TabItem value="node">
@@ -265,7 +269,11 @@ await config.run(
 </TabItem>
 </Tabs>
 
-### 5. Save the AIConfig with outputs.
+:::info
+Notice how simple the syntax is to perform a fairly complex task - running 2 different prompts across 2 different models and chaining one's output as part of the input of another.
+:::
+
+### 5. Save the AIConfig.
 
 Let's save the AIConfig back to disk, and serialize the outputs from the latest inference run as well:
 
@@ -295,7 +303,7 @@ config.save('updated.aiconfig.json', include_outputs=True)
 The AIConfig SDK supports [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations for prompts, models, parameters, and arbitrary metadata in the `aiconfig`. For more details, see the [SDK Overview](/docs/category/sdk).
 :::
 
-### 6. Open the AIConfig in AI Workbook Playground.
+### 6. Open the AIConfig in AI Workbook editor.
 
 We can iterate on an `aiconfig` using a notebook-like editor called an **AI Workbook**. Now that we have an `aiconfig` file artifact that encapsulates the generative AI part of our application, the application code doesn't need to change even as the `aiconfig` is updated.
 
@@ -311,8 +319,6 @@ We are working on a local editor that you can run yourself. For now, please use 
 :::
 
 <video controls><source src="https://s3.amazonaws.com/publicdata.lastmileai.com/workbook_editor_480.mov"/></video>
-
-## Using OpenAI API introspection
 
 ```
 

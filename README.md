@@ -61,6 +61,90 @@ poetry add python-aiconfig
 
 ### Your first AIConfig
 
+> **Note**: Make sure to specify the API keys (such as `OPENAI_API_KEY`) in your environment before proceeding.
+
+In this quickstart, you will create a customizable NYC travel itinerary using `aiconfig`.
+
+This AIConfig contains a prompt chain to get a list of travel activities from an LLM and then customize the activities based on user preferences.
+
+#### 1. Download `travel.aiconfig.json`
+
+```json
+{
+  "name": "NYC Trip Planner",
+  "description": "Intrepid explorer with ChatGPT and AIConfig",
+  "schema_version": "latest",
+  "metadata": {
+    "models": {
+      "gpt-3.5-turbo": {
+        "model": "gpt-3.5-turbo",
+        "top_p": 1,
+        "temperature": 1
+      },
+      "gpt-4": {
+        "model": "gpt-4",
+        "max_tokens": 3000,
+        "system_prompt": "You are an expert travel coordinator with exquisite taste."
+      }
+    },
+    "default_model": "gpt-3.5-turbo"
+  },
+  "prompts": [
+    {
+      "name": "get_activities",
+      "input": "Tell me 10 fun attractions to do in NYC."
+    },
+    {
+      "name": "gen_itinerary",
+      "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
+      "metadata": {
+        "model": "gpt-4",
+        "parameters": {
+          "order_by": "geographic location"
+        }
+      }
+    }
+  ]
+}
+```
+
+#### 2. Run the `get_activities` prompt.
+
+You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
+
+##### Python
+
+```python title="app.py"
+from aiconfig import AIConfigRuntime, InferenceOptions
+
+# Load the aiconfig. You can also use AIConfigRuntime.loadJSON({})
+config = AIConfigRuntime.load('travel.aiconfig.json')
+
+# Run a single prompt
+await config.run("get_activities", params=None)
+```
+
+#### 3. Enable streaming for your prompt.
+
+You can enable streaming for your prompt responses using `InferenceOptions`.
+
+##### Node.js
+
+```typescript
+import * as path from "path";
+import { AIConfigRuntime, InferenceOptions } from "aiconfig";
+
+async function travelWithGPT() {
+  // Load the AIConfig. You can also use AIConfigRuntime.loadJSON({})
+  const aiConfig = AIConfigRuntime.load(
+    path.join(__dirname, "travel.aiconfig.json")
+  );
+
+  // Run a single prompt
+  await aiConfig.run("get_activities");
+}
+```
+
 ### OpenAI Introspection API
 
 If you are already using OpenAI completion API's in your application, you can get started very quickly to start saving the prompts and outputs in an `aiconfig`.
