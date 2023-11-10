@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Union
 from typing import TYPE_CHECKING, Any, Dict, Optional
 from aiconfig import schema
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.callback import CallbackEvent
 from aiconfig.schema import (
     ExecuteResult,
     ModelMetadata,
@@ -14,7 +15,12 @@ from aiconfig.schema import (
 )
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.util.config_utils import get_api_key_from_environment
-from aiconfig.util.params import resolve_parameters, resolve_prompt, resolve_prompt_string, resolve_system_prompt
+from aiconfig.util.params import (
+    resolve_parameters,
+    resolve_prompt,
+    resolve_prompt_string,
+    resolve_system_prompt,
+)
 
 import openai
 
@@ -51,6 +57,12 @@ class OpenAIInference(ParameterizedModelParser):
         Returns:
             str: Serialized representation of the prompt and inference settings.
         """
+        event = CallbackEvent(
+            "on_serialize_start",
+            __name__,
+            {"prompt_name": prompt_name, "data": data, "parameters": parameters, "kwargs": kwargs},
+        )
+        await ai_config.callback_manager.run_callbacks(event)
         prompts = []
 
         # Combine conversation data with any extra keyword args
@@ -120,6 +132,9 @@ class OpenAIInference(ParameterizedModelParser):
 
         if prompts:
             prompts[len(prompts) - 1].name = prompt_name
+
+        event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
+        ai_config.callback_manager.run_callbacks(event)
         return prompts
 
     async def deserialize(
@@ -135,6 +150,9 @@ class OpenAIInference(ParameterizedModelParser):
         Returns:
             dict: Model-specific completion parameters.
         """
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params})
+        )
         # Build Completion params
         model_settings = self.get_model_settings(prompt, aiconfig)
 
@@ -182,10 +200,14 @@ class OpenAIInference(ParameterizedModelParser):
 
         # Add in the latest prompt
         add_prompt_as_message(prompt, aiconfig, completion_params["messages"], params)
-
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent("on_deserialize_complete", __name__, {"output": completion_params})
+        )
         return completion_params
 
-    async def run_inference(self, prompt: Prompt, aiconfig, options: InferenceOptions, parameters) -> Output:
+    async def run_inference(
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters
+    ) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -197,6 +219,14 @@ class OpenAIInference(ParameterizedModelParser):
         Returns:
             ExecuteResult: The response from the model.
         """
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_run_start",
+                __name__,
+                {"prompt": prompt, "options": options, "parameters": parameters},
+            )
+        )
+
         if not openai.api_key:
             openai.api_key = get_api_key_from_environment("OPENAI_API_KEY")
 
@@ -207,11 +237,10 @@ class OpenAIInference(ParameterizedModelParser):
 
         if options is not None and options.stream:
             stream = options.stream
-        elif 'stream' in completion_data:
-            stream = completion_data['stream']
-        
-        completion_data["stream"] = stream
+        elif "stream" in completion_data:
+            stream = completion_data["stream"]
 
+        completion_data["stream"] = stream
 
         response = openai.ChatCompletion.create(**completion_data)
         outputs = []
@@ -261,6 +290,9 @@ class OpenAIInference(ParameterizedModelParser):
         # rewrite or extend list of outputs?
         prompt.outputs = outputs
 
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs})
+        )
         return prompt.outputs
 
     def get_prompt_template(self, prompt: Prompt, aiconfig: "AIConfigRuntime") -> str:
