@@ -11,14 +11,14 @@ import {
   PromptInput,
   ModelMetadata,
   ExecuteResult,
-} from "../../types";
+} from "../../../typescript/types";
 import { CompletionCreateParams } from "openai/resources";
 import _ from "lodash";
-import { getAPIKeyFromEnv } from "../utils";
-import { ParameterizedModelParser } from "../parameterizedModelParser";
-import { JSONObject } from "../../common";
-import { AIConfigRuntime } from "../config";
-import { InferenceOptions } from "../modelParser";
+import { getAPIKeyFromEnv } from "../../../typescript/lib/utils";
+import { ParameterizedModelParser } from "../../../typescript/lib/parameterizedModelParser";
+import { JSONObject } from "../../../typescript/common";
+import { AIConfigRuntime } from "../../../typescript/lib/config";
+import { InferenceOptions } from "../../../typescript/lib/modelParser";
 
 export class HuggingFaceTextGenerationModelParser extends ParameterizedModelParser<TextGenerationArgs> {
   private hfClient: HfInference;
