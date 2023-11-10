@@ -8,9 +8,7 @@ import constants from '@site/core/tabConstants';
 
 # Getting Started
 
-:::tip
 Please read [AIConfig Basics](/docs/introduction/basics) to understand the motivation behind storing prompts and model parameters as configs.
-:::
 
 ## Installation
 
@@ -62,11 +60,15 @@ Make sure to specify the API keys (such as `OPENAI_API_KEY`) in your environment
 
 ## Quickstart
 
-In this quickstart, you will create a customizable NYC travel itinerary using `aiconfig`.
+In this guide, you're going to use AIConfig's core features to generate a customizable NYC travel itinerary. When you're finished, you'll learn how to create AIConfigs, run inference on prompt chains, enable streaming, and update/manage your AIConfig.
 
-### 1. Download the AIConfig - `travel.aiconfig.json`.
+We provided a pre-built AIConfig to help show you how it gets used. The AIConfig `travel.aiconfig.json` contains the prompts, models, and model parameters that we will use to build our customizable travel itinerary. We generated `travel.aiconfig.json` from this [AI Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9). An AI Workbook is a notebook-like playground to prototype your prompt chains and model parameters.
 
-This AIConfig contains a prompt chain to get a list of travel activities from an LLM and then customize the activities based on user preferences (defined as parameters of the prompt). It also contains the specific models and model parameters for the LLMs.
+### 1. Download the AIConfig
+
+This AIConfig `travel.aiconfig.json` contains a prompt chain to get a list of travel activities from an LLM and then customize the activities based on user preferences (defined as parameters of the prompt). It also contains the specific models and model parameters for the LLMs.
+
+You can download `travel.aiconfig.json` [here](https://drive.google.com/file/d/1rNs7YA30_MZKNkKfUNzm5v3mlAxW3yuQ/view?usp=sharing).
 
 <details>
 <summary>`travel.aiconfig.json`</summary>
@@ -112,11 +114,17 @@ This AIConfig contains a prompt chain to get a list of travel activities from an
 
 </details>
 
+<<<<<<< dest:   ad38040ec3d9 - 81494782+tanya-rai: Merge pull request #164 fr...
 :::tip
 Don't worry if you don't understand all parts of this yet, we'll go over it in steps. We will also cover a prompt editor ([AI Workbooks](#ai-workbook-playground)) to help you create AIConfigs visually.
 :::
 
 ### 2. Run the `get_activities` prompt.
+||||||| base
+### 2. Run the `get_activities` prompt.
+=======
+### 2. Run the `get_activities` prompt
+>>>>>>> source: 53aa569adf91 - tanya: [Docs] Updated Getting Started Page (Py...
 
 You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
@@ -147,13 +155,13 @@ from aiconfig import AIConfigRuntime, InferenceOptions
 config = AIConfigRuntime.load('travel.aiconfig.json')
 
 # Run a single prompt
-await config.run("get_activities", params=None)
+await config.run("get_activities")
 ```
 
 </TabItem>
 </Tabs>
 
-### 3. Enable streaming for your prompt.
+### 3. Enable streaming for your prompt
 
 You can enable streaming for your prompt responses by passing in a streaming callback.
 
@@ -195,13 +203,19 @@ config = AIConfigRuntime.load('travel.aiconfig.json')
 
 # Run a single prompt (with streaming)
 inference_options = InferenceOptions(stream=True)
+<<<<<<< dest:   ad38040ec3d9 - 81494782+tanya-rai: Merge pull request #164 fr...
 await config.run("get_activities", params=None, options=inference_options)
+||||||| base
+await config.run("get_activities", params=None, inference_options)
+=======
+await config.run("get_activities", inference_options)
+>>>>>>> source: 53aa569adf91 - tanya: [Docs] Updated Getting Started Page (Py...
 ```
 
 </TabItem>
 </Tabs>
 
-### 4. Run the `gen_itinerary` prompt.
+### 4. Run the `gen_itinerary` prompt
 
 This prompt depends on the output of `get_activities`. It also takes in parameters (user input) to determine the customized itinerary.
 
@@ -269,11 +283,17 @@ await config.run(
 </TabItem>
 </Tabs>
 
+<<<<<<< dest:   ad38040ec3d9 - 81494782+tanya-rai: Merge pull request #164 fr...
 :::info
 Notice how simple the syntax is to perform a fairly complex task - running 2 different prompts across 2 different models and chaining one's output as part of the input of another.
 :::
 
 ### 5. Save the AIConfig.
+||||||| base
+### 5. Save the AIConfig with outputs.
+=======
+### 5. Save the AIConfig with outputs
+>>>>>>> source: 53aa569adf91 - tanya: [Docs] Updated Getting Started Page (Py...
 
 Let's save the AIConfig back to disk, and serialize the outputs from the latest inference run as well:
 
@@ -306,7 +326,13 @@ The AIConfig SDK supports [CRUD](https://en.wikipedia.org/wiki/Create,_read,_upd
 
 :::
 
+<<<<<<< dest:   ad38040ec3d9 - 81494782+tanya-rai: Merge pull request #164 fr...
 ### 6. Open the AIConfig in AI Workbook editor.
+||||||| base
+### 6. Open the AIConfig in AI Workbook Playground.
+=======
+### 6. Open the AIConfig in AI Workbook Playground
+>>>>>>> source: 53aa569adf91 - tanya: [Docs] Updated Getting Started Page (Py...
 
 We can iterate on an `aiconfig` using a notebook-like editor called an **AI Workbook**. Now that we have an `aiconfig` file artifact that encapsulates the generative AI part of our application, the application code doesn't need to change even as the `aiconfig` is updated.
 
@@ -323,6 +349,29 @@ We are working on a local editor that you can run yourself. For now, please use 
 
 <video controls><source src="https://s3.amazonaws.com/publicdata.lastmileai.com/workbook_editor_480.mov"/></video>
 
+<<<<<<< dest:   ad38040ec3d9 - 81494782+tanya-rai: Merge pull request #164 fr...
+||||||| base
+## Using OpenAI API introspection
+
+=======
+_TODO: Using OpenAI API introspection_
+
+# Let's pull it all together
+
+That's it, you've made it to the end. Here's the complete implementation for the getting started.
+
+- Python - [Google Colab Notebook](https://colab.research.google.com/drive/1DxuzME4qyK91-PzQiWoi1RkeDs7_X4g7#scrollTo=kNmnUZnUFzt3)
+- Typescript [To be Added]
+
+### Python Implementation
+
+<iframe src="https://nbviewer.org/github/lastmile-ai/aiconfig/blob/main/cookbook/Getting-Started/getting_started.ipynb" width="100%" height="500"></iframe>
+
+### Typescript Implementation
+
+Script to be added
+
+>>>>>>> source: 53aa569adf91 - tanya: [Docs] Updated Getting Started Page (Py...
 ```
 
 ```
