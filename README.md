@@ -13,21 +13,19 @@
 
 AIConfig is a source-control friendly way to manage prompts and model parameters for generative AI.
 
-1. **Prompts as configs**: a [standardized JSON format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to store generative AI model settings, prompt inputs and outputs, and flexible multi-purpose metadata. This allows you to iterate on prompts and model parameters _separately from your application code_.
-2. **Extensible SDK**: Python & Node SDKs to use `aiconfig` in your application code. AIConfig is designed to be **model-agnostic** and **multi-modal**, so you can extend it to work with models from any provider for any modality, including text, image and audio.
+1. **Prompts as configs**: a [standardized JSON format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to store generative AI model settings, prompt inputs/outputs, and flexible metadata. This allows you to iterate on prompts and model parameters _separately from your application code_.
+2. **Model-agnostic SDK**: Python & Node SDKs to use `aiconfig` in your application code. AIConfig is designed to be **model-agnostic** and **multi-modal**, so you can extend it to work with any generative AI model, including text, image and audio.
 3. **AI Workbook editor**: A [notebook-like playground](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9) to edit `aiconfig` files visually, run prompts, tweak models and model settings, and chain things together.
 
 > Full documentation: **[aiconfig.lastmileai.dev](https://aiconfig.lastmileai.dev/)**
 
 ## Features
 
-Features:
-
-- [x] **Source-control friendly** format to save prompts and model settings, which you can use for evaluation and reproducibility and simplifying your application code.
-- [x] **Multi-modal and model agnostic**. Use with any model, and serialize/deserialize data from the same `aiconfig` format.
-- [x] **Prompt chaining and parameterization** with [{{handlebars}}](https://handlebarsjs.com/) templating syntax.
-- [x] **Streaming** supported out of the box, allowing you to get playground-like streaming in CLI, notebooks and any other interface easily.
-- [x] **Notebook editor**. Use [AI Workbooks](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9) to visually create your `aiconfig`, and use the SDK to connect it to your application code.
+- [x] **Source-control friendly** [`aiconfig` format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to save prompts and model settings, which you can use for evaluation, reproducibility and simplifying your application code.
+- [x] **Multi-modal and model agnostic**. Use with any model, and serialize/deserialize data with the same `aiconfig` format.
+- [x] **Prompt chaining and parameterization** with [{{handlebars}}](https://handlebarsjs.com/) templating syntax, allowing you to pass dynamic data into prompts (as well as between prompts).
+- [x] **Streaming** supported out of the box, allowing you to get playground-like streaming wherever you use `aiconfig`.
+- [x] **Notebook editor**. [AI Workbooks editor](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9) to visually create your `aiconfig`, and use the SDK to connect it to your application code.
 
 ## Install
 
@@ -61,6 +59,32 @@ poetry add python-aiconfig
 
 ## Getting Started
 
+### Your first AIConfig
+
+### OpenAI Introspection API
+
+If you are already using OpenAI completion API's in your application, you can get started very quickly to start saving the prompts and outputs in an `aiconfig`.
+
+Simply add the following lines to your `import`:
+
+```python
+import openai
+from aiconfig.ChatCompletion import create_and_save_to_config
+ openai.ChatCompletion.create = create_and_save_to_config
+```
+
+Now you can continue using `openai` completion API as normal. By default, the data will get serialized to an `aiconfig.json`.
+
+#### Specifying an AIConfig object
+
+## Cookbooks
+
+We provide several guides to show you the power of `aiconfig`.
+
+> **See the [`cookbooks`](https://github.com/lastmile-ai/aiconfig/tree/main/cookbook) folder for examples to clone.**
+
+## Roadmap
+
 ### Table of Contents
 
 1. Installation
@@ -69,16 +93,6 @@ poetry add python-aiconfig
 4. Updating Model Settings
 5. Executing and Displaying Output
 6. Saving Configuration to Disk
-
-## 1) Installation
-
-First, you need to install the AIConfig Tools package and any required dependencies. Use the following command to install it. :
-
-Python
-
-```bash
-pip install python-aiconfig
-```
 
 ## 2) Creating AIConfig Runtime
 
