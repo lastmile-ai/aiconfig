@@ -58,17 +58,16 @@ const config = {
       // Replace with your project's social card
       image: "img/docusaurus-social-card.jpg",
       navbar: {
-        title: "AIConfig",
         logo: {
-          alt: "My Site Logo",
-          src: "img/logo.svg",
+          alt: "AI Config Logo",
+          src: "img/aiConfigLogo_Dark.svg",
+          srcDark: "img/aiConfigLogo_Light.svg",
         },
         items: [
           {
-            type: "docSidebar",
-            sidebarId: "docSidebar",
-            position: "left",
+            to: "/docs/introduction/basics",
             label: "Overview",
+            position: "left",
           },
           {
             to: "/docs/introduction/getting-started",
@@ -79,16 +78,6 @@ const config = {
             to: "/docs/overview/ai-config-format",
             label: "Specification",
             position: "left",
-          },
-          {
-            href: "https://blog.lastmileai.dev",
-            label: "Blog",
-            position: "left",
-          },
-          {
-            href: "https://github.com/lastmile-ai/aiconfig",
-            label: "GitHub",
-            position: "right",
           },
           {
             href: "https://github.com/lastmile-ai/aiconfig",
@@ -107,6 +96,10 @@ const config = {
               {
                 label: "GitHub",
                 href: "https://github.com/lastmile-ai/aiconfig",
+              },
+              {
+                label: "Blog",
+                href: "https://blog.lastmileai.dev",
               },
             ],
           },
@@ -143,10 +136,11 @@ const config = {
         ],
         copyright: "Copyright © 2023 LastMile AI, Inc.",
       },
-      // prism: {
-      //   theme: lightTheme,
-      //   darkTheme: darkTheme,
-      // },
+      colorMode: {
+        defaultMode: "dark",
+        disableSwitch: false,
+        respectPrefersColorScheme: false,
+      },
       prism: {
         defaultLanguage: "jsx",
         theme: require("./core/prismTheme"),

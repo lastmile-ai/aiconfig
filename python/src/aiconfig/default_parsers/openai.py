@@ -3,6 +3,7 @@ import copy
 from typing import Dict, List, Optional, Union
 from typing import TYPE_CHECKING, Any, Dict, Optional
 from aiconfig import schema
+from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import (
     ExecuteResult,
     ModelMetadata,
@@ -32,7 +33,7 @@ class OpenAIInference(ParameterizedModelParser):
         """
         return self.id
 
-    def serialize(
+    async def serialize(
         self,
         prompt_name: str,
         data: Dict,
@@ -184,7 +185,7 @@ class OpenAIInference(ParameterizedModelParser):
 
         return completion_params
 
-    async def run_inference(self, prompt: Prompt, aiconfig, options, parameters) -> Output:
+    async def run_inference(self, prompt: Prompt, aiconfig, options: InferenceOptions, parameters) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -201,9 +202,16 @@ class OpenAIInference(ParameterizedModelParser):
 
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
-        stream = (options.stream if options else False) and (
-            "stream" in completion_data and completion_data.get("stream") == True
-        )
+        # const stream = options?.stream ?? completionParams.stream ?? true;
+        stream = True  # Default value
+
+        if options is not None and options.stream:
+            stream = options.stream
+        elif 'stream' in completion_data:
+            stream = completion_data['stream']
+        
+        completion_data["stream"] = stream
+
 
         response = openai.ChatCompletion.create(**completion_data)
         outputs = []
@@ -235,7 +243,9 @@ class OpenAIInference(ParameterizedModelParser):
                     index = choice.get("index")
                     accumulated_message_for_choice = messages.get(index, {})
                     delta = choice.get("delta")
-                    options.stream_callback(delta, accumulated_message_for_choice, index)
+
+                    if options and options.stream_callback:
+                        options.stream_callback(delta, accumulated_message_for_choice, index)
 
                     output = ExecuteResult(
                         **{

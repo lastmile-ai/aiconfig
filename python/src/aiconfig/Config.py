@@ -39,6 +39,7 @@ class AIConfigRuntime(AIConfig):
     # TODO: Define a default constructor that will construct with default values. This seems a little complicated because of the way pydantic works. Pydantic creates its own constructors.
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.file_path = None
 
     @classmethod
     def create(
@@ -83,6 +84,9 @@ class AIConfigRuntime(AIConfig):
             # validated_data =  AIConfig.model_validate_json(file.read())
             aiconfigruntime = cls.model_validate_json(file.read())
             update_model_parser_registry_with_config_runtime(aiconfigruntime)
+
+            # set the file path. This is used when saving the config
+            aiconfigruntime.file_path = json_config_filepath
             return aiconfigruntime
 
     @classmethod
@@ -118,7 +122,7 @@ class AIConfigRuntime(AIConfig):
             update_model_parser_registry_with_config_runtime(aiconfigruntime)
             return aiconfigruntime
 
-    async def serialize(self, model_name: str, data: Dict,  prompt_name: str, params: Optional[dict] = {}) -> List[Prompt]:
+    async def serialize(self, model_name: str, data: Dict,  prompt_name: str, params: Optional[dict] = None) -> List[Prompt]:
         """
         Serializes the completion params into a Prompt object. Inverse of the 'resolve' function.
 
@@ -130,19 +134,21 @@ class AIConfigRuntime(AIConfig):
         returns:
             Prompt | List[Prompt]: A prompt or list of prompts representing the input data
         """
+        if not params:
+            params = {}
         model_parser = ModelParserRegistry.get_model_parser(model_name)
         if not model_parser:
             raise ValueError(
                 f"Unable to serialize data: `{data}`\n Model Parser for model {model_name} does not exist."
             )
 
-        prompts = model_parser.serialize(prompt_name, data, self, params)
+        prompts = await model_parser.serialize(prompt_name, data, self, params)
         return prompts
 
     async def resolve(
         self,
         prompt_name: str,
-        params: Optional[dict] = {},
+        params: Optional[dict] = None,
         **kwargs,
     ):
         """
@@ -155,6 +161,8 @@ class AIConfigRuntime(AIConfig):
         Returns:
             str: The resolved prompt.
         """
+        if not params:
+            params = {}
         if prompt_name not in self.prompt_index:
             raise IndexError(
                 "Prompt not found in config, available prompts are:\n {}".format(
@@ -173,7 +181,7 @@ class AIConfigRuntime(AIConfig):
     async def run(
         self,
         prompt_name: str,
-        params: Optional[dict] = {},        
+        params: Optional[dict] = None,        
         options: Optional[InferenceOptions] = None,
         **kwargs,
     ):
@@ -187,6 +195,9 @@ class AIConfigRuntime(AIConfig):
         Returns:
             object: The response object returned by the AI-model's API.
         """
+        if not params:
+            params = {}
+
         if prompt_name not in self.prompt_index:
             raise IndexError(
                 "Prompt not found in config, available prompts are:\n {}".format(
@@ -207,7 +218,7 @@ class AIConfigRuntime(AIConfig):
     #    @param saveOptions Options that determine how to save the AIConfig to the file.
     #    */
 
-    def save(self, json_config_filepath: str = "aiconfig.json", include_outputs: bool = True):
+    def save(self, json_config_filepath: str = None, include_outputs: bool = True):
         """
         Save the AI Configuration to a JSON file.
 
@@ -216,11 +227,17 @@ class AIConfigRuntime(AIConfig):
                 Defaults to "aiconfig.json".
         """
         exclude_options = {
-            "prompt_index": True,
+            "prompt_index": True, 
+            "file_path": True
         }
+
         if not include_outputs:
             exclude_options["prompts"] = {"__all__": {"outputs"}}
             pass
+
+        if not json_config_filepath:
+            json_config_filepath = self.file_path or "aiconfig.json"
+
         with open(json_config_filepath, "w") as file:
             # Serialize the AI Configuration to JSON and save it to the file
             json.dump(

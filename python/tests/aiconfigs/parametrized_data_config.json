@@ -9,7 +9,8 @@
                 "model": "gpt-3.5-turbo",
                 "top_p": 1,
                 "max_tokens": 3000,
-                "temperature": 1
+                "temperature": 1,
+                "stream": false
             },
             "gpt-4": {
                 "model": "gpt-4",
