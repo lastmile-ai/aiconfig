@@ -1,4 +1,4 @@
-name: Python Pull request testing
+name: Python Test
 on:
   pull_request:
     branches: [main]
