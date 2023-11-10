@@ -265,7 +265,7 @@ See [this example](#example-prompt-output) to see the output structure.
 
 ## Final thoughts
 
-As you can see, the `aiconfig` schema is flexible enough to be used for a wide array of use-cases out of the box, and can be customized further. To see how to customize and extend AIConfig for your needs, see the **[Customization & Extensibility](/docs/category/customization--extensibility)** section.
+As you can see, the `aiconfig` schema is flexible enough to be used for a wide array of use-cases out of the box, and can be customized further. To see how to customize and extend AIConfig for your needs, see the **[Customization & Extensibility](/docs/category/extensibility)** section.
 
 :::note
 
