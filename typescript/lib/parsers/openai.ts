@@ -19,6 +19,7 @@ import {
 } from "openai/resources";
 import _ from "lodash";
 import { InferenceOptions } from "../modelParser";
+import { CallbackEvent } from "../callback";
 
 export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreateParams> {
   private openai: OpenAI | null = null;
@@ -284,6 +285,12 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     aiConfig: AIConfigRuntime,
     params?: JSONObject
   ): Prompt[] {
+    const startEvent = new CallbackEvent("on_serialize_start", __filename, {
+      promptName,
+      data,
+      params,
+    });
+    aiConfig.callbackManager.runCallbacks(startEvent);
     // Chat completion comes as an array of messages. We can serialize each message as a Prompt.
 
     // Get the system prompt from the messages
@@ -381,6 +388,10 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     // Rename the last prompt to the requested prompt name
     prompts[prompts.length - 1].name = promptName;
 
+    const endEvent = new CallbackEvent("on_serialize_end", __filename, {
+      result: prompts,
+    });
+    aiConfig.callbackManager.runCallbacks(endEvent);
     return prompts;
   }
 
@@ -389,6 +400,11 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     aiConfig: AIConfigRuntime,
     params?: JSONObject
   ): Chat.ChatCompletionCreateParams {
+    const startEvent = new CallbackEvent("on_deserialize_start", __filename, {
+      prompt,
+      params,
+    });
+    aiConfig.callbackManager.runCallbacks(startEvent);
     // Build the completion params
     const modelMetadata = this.getModelSettings(prompt, aiConfig) ?? {};
     const completionParams: Chat.ChatCompletionCreateParams =
@@ -460,7 +476,10 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
         params
       );
     }
-
+    const endEvent = new CallbackEvent("on_deserialize_end", __filename, {
+      result: completionParams,
+    });
+    aiConfig.callbackManager.runCallbacks(endEvent);
     return completionParams;
   }
 
@@ -470,6 +489,12 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     options?: InferenceOptions,
     params?: JSONObject | undefined
   ): Promise<Output | Output[]> {
+    const startEvent = new CallbackEvent("on_run_start", __filename, {
+      prompt,
+      options,
+      params,
+    });
+    await aiConfig.callbackManager.runCallbacks(startEvent);
     if (!this.openai) {
       const apiKey = getAPIKeyFromEnv("OPENAI_API_KEY");
       this.openai = new OpenAI({ apiKey, ...(this.openaiOptions || {}) });
@@ -505,6 +530,10 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
 
       // TODO: saqadri - determine if we want to append the new outputs to the previous ones. For now we overwrite them.
       prompt.outputs = outputs;
+      const endEvent = new CallbackEvent("on_run_end", __filename, {
+        result: outputs,
+      });
+      await aiConfig.callbackManager.runCallbacks(endEvent);
       return outputs;
     } else {
       // For streaming, then we can just run the prompt as a simple completion
@@ -545,6 +574,10 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
 
       // TODO: saqadri - determine if we want to append the new outputs to the previous ones. For now we overwrite them.
       prompt.outputs = Array.from(outputs.values());
+      const endEvent = new CallbackEvent("on_run_end", __filename, {
+        result: prompt.outputs,
+      });
+      await aiConfig.callbackManager.runCallbacks(endEvent);
       return prompt.outputs;
     }
   }
