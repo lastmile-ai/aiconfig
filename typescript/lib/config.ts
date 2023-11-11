@@ -208,8 +208,11 @@ export class AIConfigRuntime implements AIConfig {
    * @param saveOptions Options that determine how to save the AIConfig to the file.
    */
   public save(filePath?: string, saveOptions?: SaveOptions) {
+    const keysToOmit = ['filePath'] as const;
+  
     try {
-      let aiConfigObj: AIConfigRuntime = _.cloneDeep(this);
+      // Create a Deep Copy and omit fields that should not be saved
+      let aiConfigObj: Omit<AIConfigRuntime, typeof keysToOmit[number]> = _.omit(_.cloneDeep(this), keysToOmit)
 
       if (!saveOptions?.serializeOutputs) {
         const prompts = [];
@@ -218,8 +221,6 @@ export class AIConfigRuntime implements AIConfig {
         }
         aiConfigObj.prompts = prompts;
       }
-      // Remove the filePath property from the to-be-saved AIConfig
-      aiConfigObj.filePath = undefined;
 
       // TODO: saqadri - make sure that the object satisfies the AIConfig schema
       const aiConfigString = JSON.stringify(aiConfigObj, null, 2);
