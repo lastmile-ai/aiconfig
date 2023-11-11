@@ -16,7 +16,7 @@ class ExecuteResult(BaseModel):
     # Type of output
     output_type: Literal["execute_result"]
     # nth choice.
-    execution_count: Union[int, None]
+    execution_count: Union[int, None] = None
     # The result of the executing prompt.
     data: Any
     # The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
