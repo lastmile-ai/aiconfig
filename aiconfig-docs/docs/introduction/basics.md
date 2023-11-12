@@ -141,17 +141,26 @@ Now that we have an `aiconfig` file artifact that encapsulates the generative AI
 We are currently working on a local editor that you can run yourself. For now, please use the hosted version on https://lastmileai.dev.
 :::
 
-<video controls><source src="https://s3.amazonaws.com/publicdata.lastmileai.com/workbook_editor_480.mov"/></video>
+<p align="center">
+<video controls height="480" width="800">
+    <source src="https://github.com/lastmile-ai/aiconfig/assets/81494782/5d901493-bbda-4f8e-93c7-dd9a91bf242e"/>
+  </video>
+</p>
 
-:::tip
-Try out this workbook yourself here: **[NYC Travel Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9)**
-:::
+You can also start with an AI Workbook to prototype your prompts and model parameters, and then download the AIConfig to use in your application code.
+
+<p align="center">
+<video controls height="480" width="800">
+    <source src="https://github.com/lastmile-ai/aiconfig/assets/81494782/d826b872-eab6-4245-91dc-96a509b4f5ec"/>
+  </video>
+</p>
+
+Try out this AI Workbook yourself here: **[NYC Travel Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9)**
 
 ## Improved AI Governance
 
 `aiconfig` helps you track the _signature_ of generative AI model behavior:
 
-- **prompts** and prompt chains that constitute the input (can be text, image or any modality)
 - **model** to run inference (can be any model from any model provider)
 - **model parameters** to tune the model behavior
 - **outputs** cached from previous inference runs, which can be serialized optionally.
