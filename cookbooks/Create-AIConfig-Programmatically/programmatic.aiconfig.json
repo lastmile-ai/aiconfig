@@ -1,0 +1,30 @@
+{
+  "name": "create_programmatically_demo",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {}
+  },
+  "description": "This is a demo of creating a config programmatically",
+  "prompts": [
+    {
+      "name": "results",
+      "input": "I really enjoyed reading To Kill a Mockingbird, could you recommend me a book that is similar and tell me why?",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo",
+          "settings": {
+            "model": "gpt-3.5-turbo",
+            "system_prompt": {
+              "role": "system",
+              "content": "Please reply as a sophisticated librarian the following questions about books."
+            }
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": []
+    }
+  ]
+}
