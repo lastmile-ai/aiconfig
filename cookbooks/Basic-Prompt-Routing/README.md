@@ -1,6 +1,6 @@
 # Basic Prompting Routing - AI Teaching Assistant
 
-This demo shows how a simple use case of prompt routing with AIConfig. We used streamlit to host the app so you can interact with the assistant!
+This demo shows prompt routing with AIConfig. We used streamlit to host the app so you can interact with the assistant!
 
 ![image](https://github-production-user-asset-6210df.s3.amazonaws.com/81494782/282203473-f779feb6-339d-4331-9aed-1761b845100a.png)
 

@@ -5,28 +5,36 @@ import {
   TextGenerationStreamOutput,
 } from "@huggingface/inference";
 
-import _ from "lodash";
-import { ParameterizedModelParser } from "../parameterizedModelParser";
-import { AIConfigRuntime } from "../config";
 import {
-  ExecuteResult,
-  ModelMetadata,
-  Output,
   Prompt,
+  Output,
   PromptInput,
-} from "../../types";
-import { InferenceOptions } from "../modelParser";
-import { JSONObject } from "../../common";
-import { getAPIKeyFromEnv } from "../utils";
+  ModelMetadata,
+  ExecuteResult,
+  AIConfigRuntime,
+  InferenceOptions,
+} from "aiconfig";
+import { CompletionCreateParams } from "openai/resources";
+import _ from "lodash";
+import * as aiconfig from "aiconfig";
+import { JSONObject } from "aiconfig/dist/common";
+
+export function getAPIKeyFromEnv(apiKeyName: string) {
+  const apiKeyValue = process.env[apiKeyName];
+  if (!apiKeyValue) {
+    throw new Error(`Missing API key ${apiKeyName} in environment`);
+  }
+  return apiKeyValue;
+}
 
 /**
  * A model parser for HuggingFace text generation models.
  * Set the environment variable HUGGING_FACE_API_TOKEN to use your HuggingFace API token.
  * A HuggingFace API token is not required to use this model parser.
  */
-export class HuggingFaceTextGenerationParser extends ParameterizedModelParser<TextGenerationArgs> {
+export class HuggingFaceTextGenerationModelParser extends aiconfig.ParameterizedModelParser<TextGenerationArgs> {
   private hfClient: HfInference | undefined;
-  _id = "HuggingFaceTextGenerationParser";
+  _id = "HuggingFaceTextGenerationModelParser";
 
   public constructor() {
     super();

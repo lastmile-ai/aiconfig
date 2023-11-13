@@ -1,6 +1,6 @@
 {
   "name": "aiconfig",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Library to help manage AI configs (i.e. prompts, models and parameters) using the .aiconfig file format.",
   "repository": {
     "type": "git",
