@@ -2,6 +2,7 @@ import json
 import sys
 import os
 from aiconfig.callback import CallbackEvent, CallbackManager
+from .default_parsers.hf import HuggingFaceTextGenerationParser
 import requests
 from typing import ClassVar, Dict, List, Optional
 
@@ -33,6 +34,7 @@ gpt_models = [
 for model in gpt_models:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
 ModelParserRegistry.register_model_parser(PaLMChatParser())
+ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
 
 class AIConfigRuntime(AIConfig):
     # A mapping of model names to their respective parsers

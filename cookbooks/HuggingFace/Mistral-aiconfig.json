@@ -14,7 +14,7 @@
         },
         "default_model": "mistralai/Mistral-7B-v0.1",
         "model_parsers": {
-            "mistralai/Mistral-7B-v0.1": "HuggingFaceTextParser"
+            "mistralai/Mistral-7B-v0.1": "HuggingFaceTextGenerationModelParser"
         }
     },
     "prompts": [
