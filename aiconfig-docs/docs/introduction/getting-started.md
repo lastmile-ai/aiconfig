@@ -8,9 +8,7 @@ import constants from '@site/core/tabConstants';
 
 # Getting Started
 
-:::tip
 Please read [AIConfig Basics](/docs/introduction/basics) to understand the motivation behind storing prompts and model parameters as configs.
-:::
 
 ## Installation
 
@@ -62,11 +60,13 @@ Make sure to specify the API keys (such as `OPENAI_API_KEY`) in your environment
 
 ## Quickstart
 
-In this quickstart, you will create a customizable NYC travel itinerary using `aiconfig`.
+In this quickstart, you will create a customizable NYC travel itinerary using `aiconfig`. We will start with a pre-built AIConfig that we generated from this [AI Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9).
 
-### 1. Download the AIConfig - `travel.aiconfig.json`.
+### 1. Download the AIConfig.
 
-This AIConfig contains a prompt chain to get a list of travel activities from an LLM and then customize the activities based on user preferences (defined as parameters of the prompt). It also contains the specific models and model parameters for the LLMs.
+This AIConfig `travel.aiconfig.json` contains a prompt chain to get a list of travel activities from an LLM and then customize the activities based on user preferences (defined as parameters of the prompt). It also contains the specific models and model parameters for the LLMs.
+
+Download AIConfig [here](https://github.com/lastmile-ai/aiconfig/blob/main/cookbook/Getting-Started/travel.aiconfig.json).
 
 <details>
 <summary>`travel.aiconfig.json`</summary>
@@ -147,7 +147,7 @@ from aiconfig import AIConfigRuntime, InferenceOptions
 config = AIConfigRuntime.load('travel.aiconfig.json')
 
 # Run a single prompt
-await config.run("get_activities", params=None)
+await config.run("get_activities")
 ```
 
 </TabItem>
@@ -195,7 +195,7 @@ config = AIConfigRuntime.load('travel.aiconfig.json')
 
 # Run a single prompt (with streaming)
 inference_options = InferenceOptions(stream=True)
-await config.run("get_activities", params=None, options=inference_options)
+await config.run("get_activities", options=inference_options)
 ```
 
 </TabItem>
@@ -300,7 +300,10 @@ config.save('updated.aiconfig.json', include_outputs=True)
 </Tabs>
 
 :::note
-The AIConfig SDK supports [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations for prompts, models, parameters, and arbitrary metadata in the `aiconfig`. For more details, see the [SDK Overview](/docs/category/sdk).
+The AIConfig SDK supports [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations for prompts, models, parameters, and arbitrary metadata in the `aiconfig`.
+
+<!-- For more details, see the [SDK Overview](/docs/category/sdk). -->
+
 :::
 
 ### 6. Open the AIConfig in AI Workbook editor.
@@ -323,3 +326,7 @@ We are working on a local editor that you can run yourself. For now, please use 
 ```
 
 ```
+
+### Code for Getting Started
+
+Python and typescript implementation [here](https://github.com/lastmile-ai/aiconfig/tree/ad38040ec3d9f0273e006464e01e02b06f2809e9/cookbook/Getting-Started).

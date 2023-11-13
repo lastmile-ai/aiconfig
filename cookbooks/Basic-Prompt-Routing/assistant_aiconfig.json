@@ -1,0 +1,70 @@
+{
+  "name": "assistant_config",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {
+      "gpt-4": {
+        "top_k": 40,
+        "top_p": 1,
+        "model": "gpt-4",
+        "temperature": 0.0
+      }
+    }
+  },
+  "description": "teaching assistant config",
+  "prompts": [
+    {
+      "name": "router",
+      "input": "{{student_question}}",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {
+            "system_prompt": "\n                    You will be given a question. Classify the question as one of the following topics: \n                        1. Math\n                        2. Physics\n                        3. General\n                    Output the topic name.\n                "
+          }
+        },
+        "parameters": {}
+      }
+    },
+    {
+      "name": "math",
+      "input": "\n        Student Question: {{router.input}}\n        Topic: {{router.output}}\n    ",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {
+            "system_prompt": "\n                    You are a very good mathematician. You are great at answering math questions. \n                    You are so good because you are able to break down hard problems into their component parts, \n                    answer the component parts, and then put them together to answer the broader question.\n                    \n                    Output: If topic is Math, introduce yourself as 'Hi! I'm your Math Professor' and then answer the question. \n                    If the topic is not Math, output 'Sorry I only answer Math questions'.\n                "
+          }
+        },
+        "parameters": {}
+      }
+    },
+    {
+      "name": "physics",
+      "input": "\n        Student Question: {{router.input}}\n        Topic: {{router.output}}\n    ",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {
+            "system_prompt": "\n                    You are a very smart physics professor. You are great at answering questions about physics in a concise and easy\n                    to understand manner. When you don't know the answer to a question you admit that you don't know.\n                    \n                    Output: If topic is Physics, introduce yourself as 'Hi! I'm your Physics Professor' and then answer the question. \n                    If the topic is not Physics, output 'Sorry I only answer Physics questions'.\n                "
+          }
+        },
+        "parameters": {}
+      }
+    },
+    {
+      "name": "general",
+      "input": "\n        Student Question: {{router.input}}\n        Topic: {{router.output}}\n    ",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {
+            "system_prompt": "\n                    You are a helpful assistant. Answer the question as accurately as you can. \n                    \n                    Introduce yourself as \"Hi I'm your general assistant\". Then answer the question. \n                "
+          }
+        },
+        "parameters": {}
+      }
+    }
+  ]
+}
