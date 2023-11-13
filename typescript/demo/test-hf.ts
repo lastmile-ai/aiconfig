@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import * as path from "path";
 import { AIConfigRuntime } from "../lib/config";
-import { HuggingFaceTextGenerationModelParser } from "../lib/parsers/hf";
+import { HuggingFaceTextGenerationParser } from "../lib/parsers/hf";
 import { Prompt } from "../types";
 
 async function run() {
@@ -10,10 +10,7 @@ async function run() {
   );
 
   // register HF MP
-  const mistralModelParser = new HuggingFaceTextGenerationModelParser(
-    "mistralai/Mistral-7B-v0.1",
-    true
-  );
+  const mistralModelParser = new HuggingFaceTextGenerationParser();
   AIConfigRuntime.registerModelParser(mistralModelParser, [
     "mistralai/Mistral-7B-v0.1",
   ]);
@@ -59,8 +56,3 @@ async function run() {
 
 run();
 
-const hfMP = new HuggingFaceTextGenerationModelParser(
-  "mistralai/Mistral-7B-v0.1",
-  true
-);
-AIConfigRuntime.registerModelParser(hfMP, ["mistralai/Mistral-7B-v0.1"]);
