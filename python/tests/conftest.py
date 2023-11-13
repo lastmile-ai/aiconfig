@@ -1,4 +1,5 @@
-from openai import ChatCompletion
+from functools import wraps
+import openai
 import pytest
 import os
 
