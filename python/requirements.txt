@@ -6,6 +6,5 @@ pybars3
 google-generativeai
 openai<1.0.0
 python-dotenv
-huggingface_hub
 result
 nest_asyncio
