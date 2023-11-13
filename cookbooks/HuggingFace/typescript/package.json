@@ -1,0 +1,16 @@
+{
+  "name": "typescript",
+  "version": "1.0.0",
+  "main": "main.ts",
+  "license": "MIT",
+  "dependencies": {
+    "@huggingface/inference": "^2.6.4",
+    "@types/node": "^20.9.0",
+    "aiconfig": "^1.0.1",
+    "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.201",
+    "ts-node": "^10.9.1"
+  }
+}

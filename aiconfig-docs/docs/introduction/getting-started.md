@@ -8,9 +8,7 @@ import constants from '@site/core/tabConstants';
 
 # Getting Started
 
-:::tip
 Please read [AIConfig Basics](/docs/introduction/basics) to understand the motivation behind storing prompts and model parameters as configs.
-:::
 
 ## Installation
 
@@ -62,11 +60,13 @@ Make sure to specify the API keys (such as `OPENAI_API_KEY`) in your environment
 
 ## Quickstart
 
-In this quickstart, you will create a customizable NYC travel itinerary using `aiconfig`.
+In this quickstart, you will create a customizable NYC travel itinerary using `aiconfig`. We will start with a pre-built AIConfig that we generated from this [AI Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9).
 
-### 1. Download the AIConfig - `travel.aiconfig.json`.
+### 1. Download the AIConfig.
 
-This AIConfig contains a prompt chain to get a list of travel activities from an LLM and then customize the activities based on user preferences (defined as parameters of the prompt). It also contains the specific models and model parameters for the LLMs.
+This AIConfig `travel.aiconfig.json` contains a prompt chain to get a list of travel activities from an LLM and then customize the activities based on user preferences (defined as parameters of the prompt). It also contains the specific models and model parameters for the LLMs.
+
+Download AIConfig [here](https://github.com/lastmile-ai/aiconfig/blob/main/cookbook/Getting-Started/travel.aiconfig.json).
 
 <details>
 <summary>`travel.aiconfig.json`</summary>
@@ -143,11 +143,11 @@ async function travelWithGPT() {
 ```python title="app.py"
 from aiconfig import AIConfigRuntime, InferenceOptions
 
-# Load the aiconfig. You can also use AIConfigRuntime.loadJSON({})
+# Load the aiconfig.
 config = AIConfigRuntime.load('travel.aiconfig.json')
 
 # Run a single prompt
-await config.run("get_activities", params=None)
+await config.run("get_activities")
 ```
 
 </TabItem>
@@ -195,7 +195,7 @@ config = AIConfigRuntime.load('travel.aiconfig.json')
 
 # Run a single prompt (with streaming)
 inference_options = InferenceOptions(stream=True)
-await config.run("get_activities", params=None, inference_options)
+await config.run("get_activities", options=inference_options)
 ```
 
 </TabItem>
@@ -259,10 +259,11 @@ Replace `config.run` above with this:
 
 ```python
 inference_options = InferenceOptions(stream=True)
-await config.run_with_dependencies(
+await config.run(
     "gen_itinerary",
     params={"order_by": "duration"},
-    inference_options)
+    options=inference_options,
+    run_with_dependencies=True)
 ```
 
 </TabItem>
@@ -292,7 +293,7 @@ aiConfig.save(
 
 ```python
 # Save the aiconfig to disk. and serialize outputs from the model run
-config.save('updated.aiconfig.json', include_output=True)
+config.save('updated.aiconfig.json', include_outputs=True)
 ```
 
 </TabItem>
@@ -325,3 +326,7 @@ We are working on a local editor that you can run yourself. For now, please use 
 ```
 
 ```
+
+### Code for Getting Started
+
+Python and typescript implementation [here](https://github.com/lastmile-ai/aiconfig/tree/ad38040ec3d9f0273e006464e01e02b06f2809e9/cookbook/Getting-Started).
