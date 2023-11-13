@@ -1,4 +1,3 @@
-from openai import ChatCompletion
 import pytest
 import os
 
