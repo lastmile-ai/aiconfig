@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "python-aiconfig"
-version = "1.0.4"
+version = "1.0.7"
 authors = [
   { name="Sarmad Qadri", email="sarmad@lastmileai.dev" },
 ]
