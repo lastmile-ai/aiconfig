@@ -25,7 +25,7 @@ import asyncio
 
 import nest_asyncio
 
-openai_chat_completion_create = openai.ChatCompletion.create
+openai_chat_completion_create = openai.chat.completions.create
 
 
 def create_and_save_to_config(
@@ -56,7 +56,7 @@ def create_and_save_to_config(
         outputs = []
 
         # Check if response is a stream
-        stream = kwargs.get("stream", False) is True and isinstance(response, types.GeneratorType)
+        stream = kwargs.get("stream", False) is True and isinstance(response, openai.Stream)
 
         # Convert Response to output for last prompt
         if not stream:
@@ -79,6 +79,8 @@ def create_and_save_to_config(
                 stream_outputs = {}
                 messages = {}
                 for chunk in response:
+                    chunk = chunk.model_dump(exclude_none=True)
+
                     # streaming only returns one chunk, one choice at a time. The order in which the choices are returned is not guaranteed.
                     messages = multi_choice_message_reducer(messages, chunk)
 
@@ -148,6 +150,8 @@ def extract_outputs_from_response(response) -> List[Output]:
         List[Output]: A list of outputs extracted and formatted from the response.
     """
     outputs = []
+
+    response = response.model_dump(exclude_none=True)
 
     response_without_choices = {
         key: copy.deepcopy(value) for key, value in response.items() if key != "choices"
