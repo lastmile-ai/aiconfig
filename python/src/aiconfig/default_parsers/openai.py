@@ -134,7 +134,7 @@ class OpenAIInference(ParameterizedModelParser):
             prompts[len(prompts) - 1].name = prompt_name
 
         event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
-        ai_config.callback_manager.run_callbacks(event)
+        await ai_config.callback_manager.run_callbacks(event)
         return prompts
 
     async def deserialize(
@@ -242,7 +242,7 @@ class OpenAIInference(ParameterizedModelParser):
 
         completion_data["stream"] = stream
 
-        response = openai.ChatCompletion.create(**completion_data)
+        response = openai.chat.completions.create(**completion_data)
         outputs = []
 
         if not stream:
