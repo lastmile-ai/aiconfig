@@ -5,10 +5,8 @@ from hf import HuggingFaceTextParser
 
 
 async def main():
-    text_generation_model_parser = HuggingFaceTextParser(use_api_token=False)
-    AIConfigRuntime.register_model_parser(text_generation_model_parser, "HuggingFaceTextParser")
 
-    config = AIConfigRuntime.load("Mistral-aiconfig.json")
+    config = AIConfigRuntime.load("../Mistral-aiconfig.json")
 
     def stream_callback(data, accumulated_message, index):
         print(data, end="")
