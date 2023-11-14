@@ -11,7 +11,7 @@ Workshop Date: November 14, 2023
 
 ## What are we building?
 
-We are building an AI teaching assistant app to showcase prompt engineering, prompt routing, function calling, and RAG (retrieval-augmented geneartion).
+We are building an AI teaching assistant app to showcase prompt engineering, prompt routing, function calling, and RAG (retrieval-augmented generation).
 
 ## Setup Instructions
 
