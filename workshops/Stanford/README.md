@@ -1,4 +1,4 @@
-# Building a Generative AI App with LastMile AI (Stanford x LastMile AI)
+# Building a Generative AI App (Stanford x LastMile AI)
 
 This workshop walks you through how to build a generative AI app with open-source LastMile AI tools.
 Workshop Date: November 14, 2023
@@ -6,23 +6,27 @@ Workshop Date: November 14, 2023
 ## Tools
 
 **AI Workbooks**: a notebook-like editor for prompt engineering and model experimentation. You can chain prompts, parametrize prompts, and iterate on model parameters.
+
 **AI Config**: a standardized JSON file format to manage your prompts, models, and model parameters as configs. It allows you to store and iterate on generative AI model behavior separately from your application code.
 
 ## What are we building?
 
-We are building an AI teaching assistant app to showcase prompt engineering, prompt routing, function calling, and RAG (retrieval-augmented geneartion).
+We are building an AI teaching assistant app to showcase prompt engineering, prompt routing, function calling, and RAG (retrieval-augmented generation).
 
 ## Setup Instructions
 
-1. Clone this [AI Workbook](https://lastmileai.dev/workbooks/clowg4ywg00daqpf2cvyz9z0g) and rename the workbook to `{your_name}_lastmile_workshop`.
-2. Clone this [Google Colab Notebook](https://colab.research.google.com/drive/1bhG2YbBI4q3ZhoEZ_LdflLf-AkV9WWc9): File > Save a Copy in Drive. Rename to `{Your Name} LastMile Workshop`.
+1. Go to [LastMile AI](https://lastmileai.dev) and sign up for a free account to get access to AI Workbooks.
+2. Create a new workbook, experiment with some prompts, parameters, and system prompt.
+3. Go to this [AI Workbook](https://lastmileai.dev/workbooks/clowg4ywg00daqpf2cvyz9z0g).
+4. Download the AIConfig .json.
+5. Clone this [AI Workbook](https://lastmileai.dev/workbooks/clowg4ywg00daqpf2cvyz9z0g) and follow workshop.
+6. Clone this [Google Colab Notebook](https://colab.research.google.com/drive/1bhG2YbBI4q3ZhoEZ_LdflLf-AkV9WWc9): File > Save a Copy in Drive. Rename to `{Your Name} LastMile Workshop`.
 
 ## Tutorial
 
-1. Start with this AI Workbook to prototype your prompts, prompt chains, and model parameters.
-2. Dowload the AI Config from the workbook.
-3. Upload the AIConfig to your Google Colab Notebook Files: '{your_name}\_lastmile_workshop.json'
-4. Follow the instructions in the Google Colab Notebook.
+1. Start with the AI Workbook to prototype your prompts, prompt chains, and model parameters.
+2. Upload the AIConfig to your Google Colab Notebook Files: 'stanford_lastmile_workshop_aiconfig.json'
+3. Follow the instructions in the Google Colab Notebook.
 
 ## Apply for Raffle
 
