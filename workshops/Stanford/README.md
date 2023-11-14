@@ -1,4 +1,4 @@
-# Building a Generative AI App with LastMile AI (Stanford x LastMile AI) 
+# Building a Generative AI App with LastMile AI (Stanford x LastMile AI)
 
 This workshop walks you through how to build a generative AI app with open-source LastMile AI tools.
 Workshop Date: November 14, 2023
@@ -15,7 +15,7 @@ We are building an AI teaching assistant app to showcase prompt engineering, pro
 ## Setup Instructions
 
 1. Clone this [AI Workbook](https://lastmileai.dev/workbooks/clowg4ywg00daqpf2cvyz9z0g) and rename the workbook to `{your_name}_lastmile_workshop`.
-2. Clone this [Google Colab Notebook](https://colab.research.google.com/drive/1oI_zlCRW5qh_6cDA-UGhExwfIwsbjhcp#scrollTo=Mgb3ieYE5O7d): File > Save a Copy in Drive. Rename to `{Your Name} LastMile Workshop`.
+2. Clone this [Google Colab Notebook](https://colab.research.google.com/drive/1bhG2YbBI4q3ZhoEZ_LdflLf-AkV9WWc9): File > Save a Copy in Drive. Rename to `{Your Name} LastMile Workshop`.
 
 ## Tutorial
 
@@ -29,11 +29,12 @@ We are building an AI teaching assistant app to showcase prompt engineering, pro
 Submit your Workshop Colab Notebook to this [spreadsheet](https://docs.google.com/spreadsheets/d/1c38NgDS0IIlYyuiHuCnCU_iWYE1TsxVwkOt_iMM9cdg/edit#gid=0).
 
 ## Win a $100 Amazon Gift Card - Stanford LastMile Challenge
+
 Build a project that uses AI Config (and AI workbooks).
 
 Deadline: Novemeber 28th 12:00AM PST
 
-Read instructions [here](https://github.com/lastmile-ai/aiconfig/blob/main/workshops/Stanford/competition/README.md). 
+Read instructions [here](https://github.com/lastmile-ai/aiconfig/blob/main/workshops/Stanford/competition/README.md).
 
 # Key Concepts
 
