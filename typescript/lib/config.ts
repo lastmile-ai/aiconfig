@@ -17,7 +17,7 @@ import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
 import { extractOverrideSettings } from "./utils";
 import { HuggingFaceTextGenerationParser } from "./parsers/hf";
-import { CallbackManager } from "./callback";
+import { CallbackEvent, CallbackManager } from "./callback";
 
 export type PromptWithOutputs = Prompt & { outputs?: Output[] };
 
@@ -217,7 +217,8 @@ export class AIConfigRuntime implements AIConfig {
 
     try {
       // Create a Deep Copy and omit fields that should not be saved
-      const aiConfigObj: Omit<AIConfigRuntime, typeof keysToOmit[number]> = _.omit(_.cloneDeep(this), keysToOmit)
+      const aiConfigObj: Omit<AIConfigRuntime, (typeof keysToOmit)[number]> =
+        _.omit(_.cloneDeep(this), keysToOmit);
 
       if (!saveOptions?.serializeOutputs) {
         const prompts = [];
@@ -291,6 +292,12 @@ export class AIConfigRuntime implements AIConfig {
    * that can be used to call the GPT-4 API. It will combine all the parameters, references and metadata specified in the AIConfig."
    */
   public async resolve(promptName: string, params: JSONObject = {}) {
+    const startEvent = {
+      name: "on_resolve_start",
+      file: __filename,
+      data: { promptName, params },
+    } as CallbackEvent;
+    await this.callbackManager.runCallbacks(startEvent);
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
       throw new Error(`E1011: Prompt ${promptName} does not exist in AIConfig`);
@@ -305,6 +312,12 @@ export class AIConfigRuntime implements AIConfig {
     }
 
     const resolvedPrompt = modelParser.deserialize(prompt, this, params);
+    const endEvent = {
+      name: "on_resolve_end",
+      file: __filename,
+      data: { result: resolvedPrompt },
+    };
+    await this.callbackManager.runCallbacks(endEvent);
     return resolvedPrompt;
   }
 
@@ -321,6 +334,12 @@ export class AIConfigRuntime implements AIConfig {
     promptName: string,
     params?: JSONObject
   ): Promise<Prompt | Prompt[]> {
+    const startEvent = {
+      name: "on_serialize_start",
+      file: __filename,
+      data: { modelName, data, promptName, params },
+    };
+    await this.callbackManager.runCallbacks(startEvent);
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
       throw new Error(
@@ -331,6 +350,12 @@ export class AIConfigRuntime implements AIConfig {
     }
 
     const prompts = modelParser.serialize(promptName, data, this, params);
+    const endEvent = {
+      name: "on_serialize_end",
+      file: __filename,
+      data: { result: prompts },
+    };
+    await this.callbackManager.runCallbacks(endEvent);
     return prompts;
   }
 
@@ -347,6 +372,12 @@ export class AIConfigRuntime implements AIConfig {
     params: JSONObject = {},
     options?: InferenceOptions
   ) {
+    const startEvent = {
+      name: "on_run_start",
+      file: __filename,
+      data: { promptName, params, options },
+    };
+    await this.callbackManager.runCallbacks(startEvent);
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
       throw new Error(`E1013: Prompt ${promptName} does not exist in AIConfig`);
@@ -371,6 +402,12 @@ export class AIConfigRuntime implements AIConfig {
       prompt.outputs = [result];
     }
 
+    const endEvent = {
+      name: "on_run_end",
+      file: __filename,
+      data: { result: prompt.outputs },
+    };
+    await this.callbackManager.runCallbacks(endEvent);
     return result;
   }
 
