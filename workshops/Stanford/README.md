@@ -15,10 +15,12 @@ We are building an AI teaching assistant app to showcase prompt engineering, pro
 
 ## Setup Instructions
 
-1. Go to this [AI Workbook](https://lastmileai.dev/workbooks/clowg4ywg00daqpf2cvyz9z0g).
-2. Download the AIConfig .json. 
-3. Clone this [AI Workbook](https://lastmileai.dev/workbooks/clowg4ywg00daqpf2cvyz9z0g) and follow workshop. 
-4. Clone this [Google Colab Notebook](https://colab.research.google.com/drive/1bhG2YbBI4q3ZhoEZ_LdflLf-AkV9WWc9): File > Save a Copy in Drive. Rename to `{Your Name} LastMile Workshop`.
+1. Go to [LastMile AI](https://lastmileai.dev) and sign up for a free account to get access to AI Workbooks.
+2. Create a new workbook, experiment with some prompts, parameters, and system prompt.
+3. Go to this [AI Workbook](https://lastmileai.dev/workbooks/clowg4ywg00daqpf2cvyz9z0g).
+4. Download the AIConfig .json.
+5. Clone this [AI Workbook](https://lastmileai.dev/workbooks/clowg4ywg00daqpf2cvyz9z0g) and follow workshop.
+6. Clone this [Google Colab Notebook](https://colab.research.google.com/drive/1bhG2YbBI4q3ZhoEZ_LdflLf-AkV9WWc9): File > Save a Copy in Drive. Rename to `{Your Name} LastMile Workshop`.
 
 ## Tutorial
 
