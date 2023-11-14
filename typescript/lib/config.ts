@@ -17,6 +17,7 @@ import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
 import { extractOverrideSettings } from "./utils";
 import { HuggingFaceTextGenerationParser } from "./parsers/hf";
+import { CallbackManager } from "./callback";
 
 export type PromptWithOutputs = Prompt & { outputs?: Output[] };
 
@@ -73,6 +74,7 @@ export class AIConfigRuntime implements AIConfig {
   prompts: PromptWithOutputs[];
 
   filePath?: string;
+  callbackManager: CallbackManager = CallbackManager.createManagerWithLogging();
 
   public constructor(
     name: string,
@@ -211,8 +213,8 @@ export class AIConfigRuntime implements AIConfig {
    * @param saveOptions Options that determine how to save the AIConfig to the file.
    */
   public save(filePath?: string, saveOptions?: SaveOptions) {
-    const keysToOmit = ['filePath'] as const;
-  
+    const keysToOmit = ["filePath", "callbackManager"] as const;
+
     try {
       // Create a Deep Copy and omit fields that should not be saved
       const aiConfigObj: Omit<AIConfigRuntime, typeof keysToOmit[number]> = _.omit(_.cloneDeep(this), keysToOmit)
@@ -410,6 +412,10 @@ export class AIConfigRuntime implements AIConfig {
       params
     );
     return result;
+  }
+
+  public setCallbackManager(callbackManager: CallbackManager) {
+    this.callbackManager = callbackManager;
   }
 
   //#endregion
