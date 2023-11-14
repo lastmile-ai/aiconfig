@@ -1,4 +1,4 @@
-## Competition
+## 🌲 Stanford LastMile Challenge 
 
 Build a project that uses AI Config (and AI workbooks). You can use Google Colab or a script. Make sure to include a README.md for your project describing what you built and how you used AIConfig.
 
@@ -10,22 +10,35 @@ Suggestions:
 
 ## How to Enter:
 
-- Submit a PR to this folder before November 28th with a new folder for your project.
-- Your PR should contain either a Colab or a script:
-- Colab:
+1. Fork the [AIConfig Github repo](https://github.com/lastmile-ai/aiconfig) & submit a pull request with a new folder for your project inside of this [ competition folder](https://github.com/lastmile-ai/aiconfig/tree/main/workshops/Stanford/competition). Deadline to submit the PR is November 28th 12:00 PST.
+   
+2. Send us an email at [team@lastmileai.dev](mailto:team@lastmileai.dev) once you've submitted your PR.
+3. Have quesitons? Join our [discord](https://discord.com/invite/xBhNKTetGx) and ask the team. 
+
+**Requirements for PR Submission** 
+
+Colab Notebook
   1. .ipynb of the notebook (download from Colab directly)
   2. AIConfig .json file
   3. README.md with instructions
-- Script
+
+Script
   1. .py or .js files
   2. AIConfig .json file
   3. README.md with instructions
 
-Fork the [AIConfig Github repo](https://github.com/lastmile-ai/aiconfig) & submit a pull request with a new folder for your project inside of this [folder](https://github.com/lastmile-ai/aiconfig/tree/main/workshops/Stanford/competition).
 
-Send us an email at [team@lastmileai.dev](mailto:team@lastmileai.dev) once you've submitted your PR. You can also join our [discord](https://discord.com/invite/xBhNKTetGx) to ask questions.
+## Rubric 
+**Creativity and Originality:** The project should be unique and not a copy of existing projects. It should display creativity in using AIConfig and AI workbooks.
 
-Deadline: Nov 28th, 2023 at 12:00am PST.
+**Functionality**: The project should work properly without bugs or errors and be reproducible for others to easily clone.
+
+**Use of AIConfig**: The project should effectively and innovatively integrate AIConfig and AI workbooks. The degree to which AI Config is utilized will be taken into account.
+
+**Documentation**: The README.md file should clearly explain the project, including what it does, how it works, and how AIConfig and AI workbooks are used.
+
+**Submission before the deadline**: Submitting the project on time via a PR to the designated folder is a must before November 28, 2023 12:00 AM PST. Make sure to also send us an email at [team@lastmileai.dev](mailto:team@lastmileai.dev) once you have submitted the PR so that we can contact you if you win. 
+
 
 ## Additional info
 
