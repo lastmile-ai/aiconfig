@@ -1,0 +1,3 @@
+llama-cpp-python
+python-aiconfig
+asyncio
