@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+      "declaration": true,
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "noImplicitAny": true,
+      "outDir": "dist",
+      "resolveJsonModule": true,
+      "rootDir": ".",
+      "strict": true,
+      "target": "es6",
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "paths": {
+        "aiconfig-extensions-llama": ["./node_modules/aiconfig-extensions-llama"]
+      }
+    },
+    "exclude": ["dist", "node_modules"]
+  }
+  
