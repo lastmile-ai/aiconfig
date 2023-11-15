@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Optional, Callable
+from typing import TYPE_CHECKING, Any, Dict, Optional, Callable, TypedDict
 
 from aiconfig.schema import AIConfig, ExecuteResult, Output, Prompt
 
@@ -151,13 +151,17 @@ def print_stream_delta(data, accumulated_data, index: int):
         if content:
             print(content, end = "", flush=True)
 
+class InferenceCallbackHandlers(TypedDict):
+  """
+  """
+  stream_callback: Callable[[Any, Any, int], Any]
 
 class InferenceOptions():
     """
     Options that determine how to run inference for the prompt (e.g., whether to stream the output or not, callbacks, etc.)
     """
 
-    def __init__(self, stream_callback: Callable[[Any, Any, int], Any] = print_stream_delta,  stream=True, **kwargs ):
+    def __init__(self, callbacks: InferenceCallbackHandlers, stream: bool =True, stream_callback: Callable[[Any, Any, int], Any] = print_stream_delta, **kwargs ):
         super().__init__()
 
         """ 
@@ -174,6 +178,11 @@ class InferenceOptions():
                 None
         """
         self.stream_callback = stream_callback
+
+        self.callbacks = callbacks
+
+        if callbacks.get("stream_callback", None) is not None:
+            self.stream_callback = kwargs["stream_callback"]
         
         self.stream = stream
 
