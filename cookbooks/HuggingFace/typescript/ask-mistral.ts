@@ -9,13 +9,11 @@ import {
   InferenceCallbackHandlers,
 } from "aiconfig";
 
-import { HuggingFaceTextGenerationModelParser } from "./hf";
+import { HuggingFaceTextGenerationModelParser } from "";
 
 async function main() {
   const textGenerationModelParser = new HuggingFaceTextGenerationModelParser();
 
-  // reguster type error updated in unpublished version
-  // @ts-ignore: Unreachable code error
   AIConfigRuntime.registerModelParser(textGenerationModelParser, [
     "HuggingFaceTextParser",
   ]);
