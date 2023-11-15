@@ -34,7 +34,7 @@ export function getAPIKeyFromEnv(apiKeyName: string) {
  */
 export class HuggingFaceTextGenerationModelParser extends aiconfig.ParameterizedModelParser<TextGenerationArgs> {
   private hfClient: HfInference | undefined;
-  _id = "HuggingFaceTextGenerationModelParser";
+  _id = "HuggingFaceTextGenerationParser";
 
   public constructor() {
     super();
