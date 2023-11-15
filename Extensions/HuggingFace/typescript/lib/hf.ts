@@ -14,7 +14,6 @@ import {
   AIConfigRuntime,
   InferenceOptions,
 } from "aiconfig";
-import { CompletionCreateParams } from "openai/resources";
 import _ from "lodash";
 import * as aiconfig from "aiconfig";
 import { JSONObject } from "aiconfig/dist/common";
