@@ -1,0 +1,67 @@
+{
+    "name": "exploring nyc through llama config",
+    "description": "",
+    "schema_version": "latest",
+    "metadata": {
+        "parameters": {},
+        "models": {
+            "llama-2-7b-chat": {
+                "model": "llama-2-7b-chat",
+                "stream": true
+            },
+            "llama-2-13b-chat": {
+                "model": "llama-2-13b-chat",
+                "stream": true
+            },
+            "codeup-llama-2-13b-chat-hf": {
+                "model": "codeup-llama-2-13b-chat-hf",
+                "stream": true
+            }
+        },
+        "default_model": "llama-2-7b-chat",
+        "model_parsers": {
+            "llama-2-7b-chat": "LLaMA",
+            "llama-2-13b-chat": "LLaMA",
+            "codeup-llama-2-13b-chat-hf": "LLaMA"
+        }
+    },
+    "prompts": [
+        {
+            "name": "prompt7b",
+            "input": "List 10 interesting things to do in NYC?",
+            "metadata": {
+                "model": {
+                    "name": "llama-2-7b-chat"
+                }
+            }
+        },
+        {
+            "name": "prompt7b_chat",
+            "input": "Where are those things located?",
+            "metadata": {
+                "model": {
+                    "name": "llama-2-7b-chat"
+                },
+                "remember_chat_context": true
+            }
+        },
+        {
+            "name": "prompt13b",
+            "input": "List 10 interesting things to do in London?",
+            "metadata": {
+                "model": {
+                    "name": "llama-2-13b-chat"
+                }
+            }
+        },
+        {
+            "name": "prompt13b_code",
+            "input": "Write a python program that takes in a number and returns the number squared.",
+            "metadata": {
+                "model": {
+                    "name": "codeup-llama-2-13b-chat-hf"
+                }
+            }
+        }
+    ]
+}
