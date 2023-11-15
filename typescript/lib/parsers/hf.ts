@@ -5,31 +5,31 @@ import {
   TextGenerationStreamOutput,
 } from "@huggingface/inference";
 
-import {
-  Prompt,
-  Output,
-  PromptInput,
-  ModelMetadata,
-  ExecuteResult,
-} from "../../types";
-import { CompletionCreateParams } from "openai/resources";
 import _ from "lodash";
-import { getAPIKeyFromEnv } from "../utils";
 import { ParameterizedModelParser } from "../parameterizedModelParser";
-import { JSONObject } from "../../common";
 import { AIConfigRuntime } from "../config";
+import {
+  ExecuteResult,
+  ModelMetadata,
+  Output,
+  Prompt,
+  PromptInput,
+} from "../../types";
 import { InferenceOptions } from "../modelParser";
+import { JSONObject } from "../../common";
+import { getAPIKeyFromEnv } from "../utils";
 
-export class HuggingFaceTextGenerationModelParser extends ParameterizedModelParser<TextGenerationArgs> {
-  private hfClient: HfInference;
+/**
+ * A model parser for HuggingFace text generation models.
+ * Set the environment variable HUGGING_FACE_API_TOKEN to use your HuggingFace API token.
+ * A HuggingFace API token is not required to use this model parser.
+ */
+export class HuggingFaceTextGenerationParser extends ParameterizedModelParser<TextGenerationArgs> {
+  private hfClient: HfInference | undefined;
+  _id = "HuggingFaceTextGenerationParser";
 
-  public constructor(modelId: string, use_api_token?: Boolean) {
+  public constructor() {
     super();
-    let token = use_api_token
-      ? getAPIKeyFromEnv("HUGGING_FACE_API_TOKEN")
-      : undefined;
-    this.hfClient = new HfInference(token);
-    this.id = modelId;
   }
 
   public serialize(
@@ -133,6 +133,10 @@ export class HuggingFaceTextGenerationModelParser extends ParameterizedModelPars
   ): Promise<Output | Output[]> {
     const textGenerationArgs = this.deserialize(prompt, aiConfig, params);
 
+    if (!this.hfClient) {
+      this.hfClient = createHuggingFaceClient();
+    }
+
     // if no options are passed in, don't stream because streaming is dependent on a callback handler
     const stream = options ? (options.stream ? options.stream : true) : false;
 
@@ -217,4 +221,18 @@ function constructOutput(response: TextGenerationOutput): Output {
   } as ExecuteResult;
 
   return output;
+}
+
+/**
+ * Creates a new HuggingFace Inference client. Checks for an api token in the environment variables. If no api token is found, the client is created without an api token.
+ * @returns
+ */
+function createHuggingFaceClient() {
+  let huggingFaceAPIToken;
+  try {
+    huggingFaceAPIToken = getAPIKeyFromEnv("HUGGING_FACE_API_TOKEN");
+  } catch (err) {
+  } finally {
+    return new HfInference(huggingFaceAPIToken);
+  }
 }
