@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+
+[project]
+name = "aiconfig_extension_huggingface_textgeneration"
+version = "1.0.0"
+authors = [
+  { name="Sarmad Qadri", email="sarmad@lastmileai.dev" },
+]
+description = "HuggingFace TextGeneration Extension for AIConfig"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+]
+
+dependencies = [
+  "huggingface_hub",
+  "python-aiconfig",
+  "asyncio",
+  ]
+
+[project.urls]
+"Homepage" = "https://github.com/lastmile-ai/aiconfig"
+"Bug Tracker" = "https://github.com/lastmile-ai/aiconfig/issues"
+
+# Black formatting
+[tool.black]
+line-length = 99
+include = '\.pyi?$'
+exclude = '''
+/(
+      .eggs         # exclude a few common directories in the
+    | .git          # root of the project
+    | .hg
+    | .mypy_cache
+    | .tox
+    | venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+'''
