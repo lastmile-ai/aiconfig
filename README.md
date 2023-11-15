@@ -192,11 +192,17 @@ We can iterate on an `aiconfig` using a notebook-like editor called an **AI Work
 3. Click dropdown from '+ New Workbook' and select 'Create from AIConfig'
 4. Upload `travel.aiconfig.json`
 
+<p align="center">
+<video controls height="480" width="800">
+    <source src="https://github.com/lastmile-ai/aiconfig/assets/81494782/5d901493-bbda-4f8e-93c7-dd9a91bf242e"/>
+  </video>
+</p>
+
 Try out the workbook playground here: **[NYC Travel Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9)**
 
 > **We are working on a local editor that you can run yourself. For now, please use the hosted version on https://lastmileai.dev.**
 
-<video controls><source src="https://s3.amazonaws.com/publicdata.lastmileai.com/workbook_editor_480.mov"/></video>
+<!-- <video controls><source src="https://s3.amazonaws.com/publicdata.lastmileai.com/workbook_editor_480.mov"/></video> -->
 
 ## OpenAI Introspection API
 
@@ -329,7 +335,7 @@ To add metadata, use the `config.setMetadata` API (available in both Python and 
 
 We provide several guides to demonstrate the power of `aiconfig`.
 
-> **See the [`cookbooks`](https://github.com/lastmile-ai/aiconfig/tree/main/cookbook) folder for examples to clone.**
+> **See the [`cookbooks`](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks) folder for examples to clone.**
 
 ## Roadmap
 
