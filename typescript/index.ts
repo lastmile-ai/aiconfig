@@ -5,3 +5,6 @@ export * from "./lib/modelParser";
 export * from "./lib/modelParserRegistry";
 export * from "./lib/parameterizedModelParser";
 export * from "./lib/parsers/openai";
+
+export * from "./lib/parsers/hf";
+export * from "./lib/utils";
