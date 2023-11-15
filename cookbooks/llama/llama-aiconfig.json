@@ -1,0 +1,29 @@
+{
+    "name": "exploring nyc through llama config",
+    "description": "",
+    "schema_version": "latest",
+    "metadata": {
+        "parameters": {},
+        "models": {
+            "llama-2-7b-chat": {
+                "model": "llama-2-7b-chat",
+                "stream": true
+            }
+        },
+        "default_model": "llama-2-7b-chat",
+        "model_parsers": {
+            "llama-2-7b-chat": "LLaMA"
+        }
+    },
+    "prompts": [
+        {
+            "name": "prompt7b",
+            "input": "What are some interesting things to do in NYC?",
+            "metadata": {
+                "model": {
+                    "name": "llama-2-7b-chat"
+                }
+            }
+        }
+    ]
+}

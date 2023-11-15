@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "declaration": true,
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "noImplicitAny": true,
+      "outDir": "./dist",
+      "resolveJsonModule": true,
+      "rootDir": ".",
+      "strict": true,
+      "target": "es6",
+      "esModuleInterop": true,
+      "skipLibCheck": true
+    },
+    "exclude": ["dist", "models", "node_modules"],
+  }
+  
