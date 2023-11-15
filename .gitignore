@@ -132,7 +132,10 @@ dist
 
 # misc
 **/.DS_Store
+
 .virtual_documents
 .ipynb_checkpoints
 __pycache__/
 models
+.virtual_documents
+.ipynb_checkpoint
