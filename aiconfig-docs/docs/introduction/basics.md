@@ -161,6 +161,7 @@ Try out this AI Workbook yourself here: **[NYC Travel Workbook](https://lastmile
 
 `aiconfig` helps you track the _signature_ of generative AI model behavior:
 
+- **prompt** and prompt chains that constitute the input
 - **model** to run inference (can be any model from any model provider)
 - **model parameters** to tune the model behavior
 - **outputs** cached from previous inference runs, which can be serialized optionally.
