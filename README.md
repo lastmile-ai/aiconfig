@@ -434,3 +434,9 @@ aiconfig -- for prompt, model and parameter management
   - Multi-modal model support (use with image, audio generation models as well as multi-modal models like GPT-V)
   - Routing
   - Evaluation
+
+## Dev
+
+### Python
+
+`pyright; pytest; flake8; pylint`
