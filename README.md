@@ -319,6 +319,53 @@ The AIConfig SDK has a `CallbackManager` class which can be used to register cal
 
 Anyone can register a callback, and filter for the events they care about. You can subsequently use these callbacks to integrate with your own monitoring and observability systems.
 
+# Setting up the Callback Manager
+By default, AIConfigRuntime is initialized with a default CallbackManager which logs callback events. You can, however, replace this with your custom callback manager using the setCallbackManager method.
+
+```typescript
+const customCallbackManager = new CallbackManager([yourCustomCallback]);
+aiConfigRuntimeInstance.setCallbackManager(customCallbackManager);
+```
+
+# Writing Custom Callbacks
+Custom callbacks are functions that conform to the Callback type. They receive a CallbackEvent object containing event details, and return a Promise. Here's an example of a simple logging callback:
+
+```typescript
+const myLoggingCallback: Callback = async (event: CallbackEvent) => {
+  console.log(`Event triggered: ${event.name}`, event);
+};
+```
+
+# Registering Callbacks
+To register this callback with the AIConfigRuntime, include it in the array of callbacks when creating a CallbackManager:
+
+```typescript
+const callbackManager = new CallbackManager([myLoggingCallback]);
+aiConfigRuntimeInstance.setCallbackManager(callbackManager);
+```
+
+# Triggering Callbacks
+Callbacks are automatically triggered at specific points in the AIConfigRuntime flow. For example, when the resolve method is called on an AIConfigRuntime instance, it triggers on_resolve_start and on_resolve_end events, which are then passed to the CallbackManager to execute any associated callbacks.
+
+# Handling Callbacks with Timers
+The CallbackManager uses a timeout mechanism to ensure callbacks do not hang indefinitely. If a callback does not complete within the specified timeout, it is aborted, and an error is logged. This timeout can be adjusted in the CallbackManager constructor.
+
+```typescript
+const customTimeout = 10; // 10 seconds
+const callbackManager = new CallbackManager(callbacks, customTimeout);
+```
+
+# Error Handling
+Custom callbacks should include error handling to manage exceptions. Errors thrown within callbacks are caught by the CallbackManager and can be logged or handled as needed.
+
+
+
+
+
+
+
+
+
 ### Custom metadata
 
 You can store any kind of JSON-serializable metadata in an `aiconfig`. See the [metadata schema details](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format#metadata) to learn more.
