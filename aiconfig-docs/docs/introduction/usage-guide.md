@@ -68,3 +68,20 @@ import constants from '@site/core/tabConstants';
 ## Config File
 
 ## SDK
+
+## FAQs
+
+### Is the `aiconfig` json file meant to be edited by hand?
+
+For quick updates (like changing a prompt string slightly, or changing a model parameter value), it should be ok for editing the `aiconfig` JSON manually.
+
+But for proper editing, it should be done either programmatically via AIConfig SDK, or via the AI Workbooks editor.
+
+1. Editing with SDK
+   See the [editing `aiconfig`](#programmatically) section, and this [example cookbook](https://github.com/lastmile-ai/aiconfig/blob/main/cookbooks/Create-AIConfig-Programmatically/create_aiconfig_programmatically.ipynb).
+
+2. Editing with UI
+
+In the Jupyter world, an `ipynb` is a JSON file, but it's very rare to edit the JSON directly. Most people use the notebook editor which serializes updates into the `ipynb`.
+
+Using an AI Workbook with an `aiconfig` is meant to satisfy the same behavior. See the [editing visually](#visually) section for more details.
