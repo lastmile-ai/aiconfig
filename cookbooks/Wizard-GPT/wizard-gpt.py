@@ -1,8 +1,13 @@
 from aiconfig import AIConfigRuntime, Prompt, InferenceOptions
 import asyncio
 import os
+from dotenv import load_dotenv
+import openai
+
 
 async def main():
+    load_dotenv()
+    openai.api_key = os.getenv("OPENAI_API_KEY")
     while True:
         user_input = input("\nUser: ")
         if user_input == "quit":
@@ -22,5 +27,5 @@ async def main():
 
 if __name__ == "__main__":
     inference_options = InferenceOptions()
-    config = AIConfigRuntime.load("wizard.aiconfig.json")
+    config = AIConfigRuntime.load("cookbooks/Wizard-GPT/wizard.aiconfig.json")
     asyncio.run(main())
