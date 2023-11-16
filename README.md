@@ -21,11 +21,11 @@ AIConfig is a source-control friendly way to manage prompts and model parameters
 
 ## Features
 
-- [X] **Source-control friendly** [`aiconfig` format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to save prompts and model settings, which you can use for evaluation, reproducibility and simplifying your application code.
-- [X] **Multi-modal and model agnostic**. Use with any model, and serialize/deserialize data with the same `aiconfig` format.
-- [X] **Prompt chaining and parameterization** with [{{handlebars}}](https://handlebarsjs.com/) templating syntax, allowing you to pass dynamic data into prompts (as well as between prompts).
-- [X] **Streaming** supported out of the box, allowing you to get playground-like streaming wherever you use `aiconfig`.
-- [X] **Notebook editor**. [AI Workbooks editor](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9) to visually create your `aiconfig`, and use the SDK to connect it to your application code.
+- [x] **Source-control friendly** [`aiconfig` format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to save prompts and model settings, which you can use for evaluation, reproducibility and simplifying your application code.
+- [x] **Multi-modal and model agnostic**. Use with any model, and serialize/deserialize data with the same `aiconfig` format.
+- [x] **Prompt chaining and parameterization** with [{{handlebars}}](https://handlebarsjs.com/) templating syntax, allowing you to pass dynamic data into prompts (as well as between prompts).
+- [x] **Streaming** supported out of the box, allowing you to get playground-like streaming wherever you use `aiconfig`.
+- [x] **Notebook editor**. [AI Workbooks editor](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9) to visually create your `aiconfig`, and use the SDK to connect it to your application code.
 
 ## Install
 
@@ -314,8 +314,6 @@ You can use any generative AI model with the `aiconfig` format. All you need to 
 - **deserialize** existing `aiconfig` prompts for that model into the data that the model accepts (e.g. OpenAI chat completion params).
 - **run** inference using a model (e.g. calling the OpenAI API or a model running locally).
 
-### Getting Started with Model Parsers
-
 # Defining Your Own Model Parser
 
 In this guide, you will learn the basics of defining your own custom Model Parser for use in the AIConfig library. Model Parsers play a crucial role in managing and interacting with AI models within the AIConfig SDK. You can create custom Model Parsers to suit your specific needs and integrate them seamlessly into AIConfig.
@@ -338,6 +336,11 @@ The `ModelParser` is an abstract base class that serves as the foundation for al
 ## Model Parser Extensibility
 
 When defining your custom Model Parser, you can inherit from the `ModelParser` class and override its methods as needed to customize the behavior for your specific AI models. This extensibility allows you to seamlessly integrate your Model Parser into the AIConfig framework and manage AI models with ease.
+
+Here are some helpful resources to get started:
+
+1. `ModelParser` class ([Python](https://github.com/lastmile-ai/aiconfig/blob/main/python/src/aiconfig/model_parser.py), [TypeScript](https://github.com/lastmile-ai/aiconfig/blob/main/typescript/lib/modelParser.ts)).
+2. OpenAI Chat `ModelParser` ([Python](https://github.com/lastmile-ai/aiconfig/blob/main/python/src/aiconfig/default_parsers/openai.py#L25), [TypeScript](https://github.com/lastmile-ai/aiconfig/blob/main/typescript/lib/parsers/openai.ts#L261))
 
 ### Parameterized Model Parser
 
@@ -380,11 +383,6 @@ To facilitate parameterization, AIConfig provides a set of helper utilities:
   Resolves system prompts, often used in multi-turn conversations, by applying parameterization to system prompt templates.
 
 These utilities enable dynamic parameterization of prompts and customization of prompt templates to meet specific requirements.
-
-Here are some helpful resources to get started:
-
-1. `ModelParser` class ([Python](https://github.com/lastmile-ai/aiconfig/blob/main/python/src/aiconfig/model_parser.py), [TypeScript](https://github.com/lastmile-ai/aiconfig/blob/main/typescript/lib/modelParser.ts)).
-2. OpenAI Chat `ModelParser` ([Python](https://github.com/lastmile-ai/aiconfig/blob/main/python/src/aiconfig/default_parsers/openai.py#L25), [TypeScript](https://github.com/lastmile-ai/aiconfig/blob/main/typescript/lib/parsers/openai.ts#L261))
 
 ### Callback handlers
 
