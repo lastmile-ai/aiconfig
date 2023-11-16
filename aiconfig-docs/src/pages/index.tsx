@@ -17,7 +17,7 @@ function HomepageHeader() {
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            to="/docs/introduction/getting-started"
+            to="/docs/getting-started"
           >
             Get Started
           </Link>
@@ -32,7 +32,7 @@ export default function Home(): JSX.Element {
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
+      description="Source-control friendly format for saving gen AI prompts, models & settings"
     >
       <HomepageHeader />
       <main>
