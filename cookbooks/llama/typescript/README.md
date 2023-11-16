@@ -42,3 +42,9 @@ Run with
 ```
 npx ts-node ask-llama.ts
 ```
+
+<p align="center">
+<video controls height="480" width="800">
+    <source src="https://s3.amazonaws.com/publicdata.lastmileai.com/llama_model_parser_cookbook.mov"/>
+  </video>
+</p>
