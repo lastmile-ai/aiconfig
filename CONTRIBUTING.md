@@ -80,3 +80,7 @@ We have our documentation source controlled in the [`aiconfig/aiconfig-docs`](ht
 
 ---
 ## Development Guide
+
+### Python
+
+`pyright; pytest; flake8; pylint`
