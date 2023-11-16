@@ -325,6 +325,8 @@ The AIConfig SDK has a `CallbackManager` class which can be used to register cal
 
 Anyone can register a callback, and filter for the events they care about. You can subsequently use these callbacks to integrate with your own monitoring and observability systems.
 
+Video: https://github.com/lastmile-ai/aiconfig/assets/141073967/ce909fc4-881f-40d9-9c67-78a6682b3063
+
 #### Structure of a Callback Event
 
 Each callback event is an object of the CallbackEvent type, containing:
@@ -333,15 +335,6 @@ name: The name of the event (e.g., "on_resolve_start"). \
 file: The source file where the event is triggered \
 data: An object containing relevant data for the event, such as parameters or results.\
 ts_ns: An optional timestamp in nanoseconds.
-
-#### Setting up the Callback Manager
-
-By default, AIConfigRuntime is initialized with a default CallbackManager which logs callback events to `aiconfig.log`. You can, however, replace this with your custom callback manager using the setCallbackManager method.
-
-```typescript
-const customCallbackManager = new CallbackManager([yourCustomCallback]);
-aiConfigRuntimeInstance.setCallbackManager(customCallbackManager);
-```
 
 #### Writing Custom Callbacks
 
@@ -353,20 +346,45 @@ const myLoggingCallback: Callback = async (event: CallbackEvent) => {
 };
 ```
 
-#### Registering Callbacks
+```python
+async def my_logging_callback(event: CallbackEvent) -> None:
+  print(f"Event triggered: {event.name}", event)
+```
+
+Sample output:
+
+```
+Event triggered: on_resolve_start
+CallbackEventModel(name='on_resolve_start', file='/Users/John/Projects/aiconfig/python/src/aiconfig/Config.py', data={'prompt_name': 'get_activities', 'params': None}, ts_ns=1700094936363867000)
+Event triggered: on_deserialize_start
+```
+
+#### Setting up a CallbackManager and Registering Callbacks
 
 To register this callback with the AIConfigRuntime, include it in the array of callbacks when creating a CallbackManager:
 
 ```typescript
-const callbackManager = new CallbackManager([myLoggingCallback]);
+const myCustomCallback: Callback = async (event: CallbackEvent) => {
+  console.log(`Event triggered: ${event.name}`, event);
+};
+
+const callbackManager = new CallbackManager([myCustomCallback]);
 aiConfigRuntimeInstance.setCallbackManager(callbackManager);
+```
+
+```python
+async def my_custom_callback(event: CallbackEvent) -> None:
+  print(f"Event triggered: {event.name}", event)
+
+callback_manager = CallbackManager([my_custom_callback])
+aiconfigRuntimeInstance.set_callback_manager(callback_manager)
 ```
 
 #### Triggering Callbacks
 
 Callbacks are automatically triggered at specific points in the AIConfigRuntime flow. For example, when the resolve method is called on an AIConfigRuntime instance, it triggers on_resolve_start and on_resolve_end events, which are then passed to the CallbackManager to execute any associated callbacks.
 
-Sample implementation: 
+Sample implementation inside source code:
 
 ```typescript
   public async resolve(promptName: string, params: JSONObject = {}) {
@@ -389,6 +407,24 @@ Sample implementation:
   }
 ```
 
+```python
+async def resolve(
+    self,
+    prompt_name: str,
+    params: Optional[dict] = None,
+    **kwargs,
+):
+    event = CallbackEvent("on_resolve_start", __file__, {"prompt_name": prompt_name, "params": params})
+    await self.callback_manager.run_callbacks(event)
+
+    """Method Implementation"""
+
+    event = CallbackEvent("on_resolve_complete", __name__, {"result": response})
+    await self.callback_manager.run_callbacks(event)
+    return response
+
+```
+
 Similarly, ModelParsers should trigger their own events when serializing, deserializing, and running inference. These events are also passed to the CallbackManager to execute any associated callbacks.
 
 #### Handling Callbacks with Timers
@@ -398,6 +434,11 @@ The CallbackManager uses a timeout mechanism to ensure callbacks do not hang ind
 ```typescript
 const customTimeout = 10; // 10 seconds
 const callbackManager = new CallbackManager(callbacks, customTimeout);
+```
+
+```python
+custom_timeout = 10; # 10 seconds
+callback_manager = CallbackManager([my_logging_callback], custom_timeout)
 ```
 
 #### Error Handling
