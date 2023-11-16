@@ -6,7 +6,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import constants from '@site/core/tabConstants';
 
-# Passing data into prompts
+# Passing Data into Prompts
 
 Passing data into prompts is fundamental to `aiconfig`. It allows you to store prompt _templates_ as the config, and resolve the template into a prompt by passing in data.
 
@@ -298,7 +298,7 @@ params = {
 }
 
 # Run the prompt chain
-await config.run("translate", params, options=None, run_with_dependencies=True)
+await config.run("translate", params, run_with_dependencies=True)
 ```
 
 </TabItem>
