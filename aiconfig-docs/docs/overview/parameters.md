@@ -29,7 +29,7 @@ Parameters allow you to pass data _into_ prompts, as well as _between_ prompts. 
 Here is an example `aiconfig` that specifies parameters in the config metadata.
 Parameters can be specified globally in the global metadata, or in prompt-specific metadata.
 
-In this case, `sql_language` is set to `postgres` by default, but overridden to be `mysql` by the `write_sql` prompt. The other parameters aren't specified in the `aiconfig, so they will have to be passed in when running the prompt.
+In this case, `sql_language` is set to `postgresql` by default, but overridden to be `sqlserver` by the `write_sql` prompt. The other parameters used by the prompt aren't specified in the `aiconfig`, so they will have to be passed in when running the prompt.
 
 ```json title="sql.aiconfig.json"
 {
@@ -38,7 +38,7 @@ In this case, `sql_language` is set to `postgres` by default, but overridden to 
   "schema_version": "latest",
   "metadata": {
     "parameters": {
-      "sql_language": "postgres"
+      "sql_language": "postgresql"
     }
   },
   "prompts": [
@@ -56,9 +56,7 @@ In this case, `sql_language` is set to `postgres` by default, but overridden to 
       "name": "translate",
       "input": "Translate the following {{sql_language}} into {{target_language}} code:\n {{write_sql.output}}",
       "metadata": {
-        "model": {
-          "name": "gpt-4"
-        }
+        "model": "gpt-4"
       }
     }
   ]
@@ -202,13 +200,11 @@ This will return the fully-resolved completion params that will be passed to the
     "role": "user",
     "content":
       "Write me a mysql query to get this final output:
-      user_name, user_email, trial, num_trial_steps,
-      num_trial_steps_params. output granularity is the
+      user_name, user_email, trial. output granularity is the
       trial_id. Use the tables relationships defined
       here: user table, trial table, trial_step table. a
       user can create many trials. each trial has many
-      trial_steps. a trial_step has parameters if
-      metadata[0] (json) has a non-null parameters value."
+      trial_steps."
   }],
   "model": "gpt-4",
 }
@@ -216,7 +212,11 @@ This will return the fully-resolved completion params that will be passed to the
 
 ### Passing dynamic data
 
-Because parameters can be passed in to prompts programmatically, exactly what gets passed in can be dynamic. For example, for the example above you could have a dropdown of possible SQL languages, and you can set the `sql_langauge` parameter to the value selected by a user.
+Because parameters can be passed in to prompts programmatically, exactly what gets passed in can be dynamic. For the example above you could have a dropdown of possible SQL languagesin your app, and you can set the `sql_langauge` parameter to the value selected by a user.
+
+:::tip
+This pattern can be used to apply Retrieval Augmented Generation (RAG) techniques with `aiconfig`. For more details, see the [RAG cookbook](/docs/cookbooks/aiconfig-rag).
+:::
 
 ## What gets parameterized
 
@@ -243,9 +243,7 @@ In the example above, the `translate` prompt is a prompt chain because it depend
   "name": "translate",
   "input": "Translate the following {{sql_language}} into {{target_language}} code:\n {{write_sql.output}}",
   "metadata": {
-    "model": {
-      "name": "gpt-4"
-    }
+    "model": "gpt-4"
   }
 }
 ```

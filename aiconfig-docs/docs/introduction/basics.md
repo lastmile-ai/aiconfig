@@ -16,7 +16,7 @@ AIConfig has 3 foundations:
 2. **[AIConfig SDK](/docs/introduction/getting-started)**: Python and Node SDKs to use `aiconfig` in your application code, and extension points to customize behavior.
 3. **[AI Workbook editor](https://lastmileai.dev/workbooks/clm7b9yez00mdqw70majklrmx)**: A notebook-like playground to edit `aiconfig` files visually, run prompts, tweak models and model settings, and chain things together.
 
-AIConfig is **multi-modal** and **model-agnostic**. This enables powerful interop between different models and modalities, including chaining them together (see [prompt chaining](/docs/overview/parameters-and-chaining)). For example, a Whisper (speech-to-text) prompt can be connected to a GPT4-V prompt (image+text-to-text) to build complex AI applications, all backed by the same `aiconfig` serialization format.
+AIConfig is **multi-modal** and **model-agnostic**. This enables powerful interop between different models and modalities, including chaining them together (see [prompt chaining](/docs/overview/define-prompt-chain)). For example, a Whisper (speech-to-text) prompt can be connected to a GPT4-V prompt (image+text-to-text) to build complex AI applications, all backed by the same `aiconfig` serialization format.
 
 ## Prompts as configs
 
