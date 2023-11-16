@@ -187,8 +187,8 @@ There are 2 areas where we are going beyond what notebooks offer:
 
 AIConfig is meant to be fully customizable and extensible for your use-cases. The specific parts that you can customize include:
 
-- **Model Parsers**: these parsers are responsible for deciding how to run inference, what data to store in the `aiconfig`, and how. You can add model parsers for any model of any input/output modality, and from any provider (including a model running on your local machine).
-- **Callbacks**: callback handlers allow you to hook up `aiconfig` runs to monitoring and observability endpoints of your choosing.
+- **[Model Parsers](https://aiconfig.lastmileai.dev/docs/extensibility#model-parser-extensibility)**: these parsers are responsible for deciding how to run inference, what data to store in the `aiconfig`, and how. You can add model parsers for any model of any input/output modality, and from any provider (including a model running on your local machine).
+- **[Callbacks](https://aiconfig.lastmileai.dev/docs/extensibility#callback-handlers)**: callback handlers allow you to hook up `aiconfig` runs to monitoring and observability endpoints of your choosing.
 - **Evaluation**<div className="label basic coming-soon">Coming Soon</div>: define custom evaluators and run batch evaluation to measure the performance of your `aiconfig`.
 - **Routing**<div className="label basic coming-soon">Coming Soon</div>: define custom routers over a series of `aiconfig`s to intelligently route incoming requests over prompts and models (i.e. prompt routing and model routing).
 
