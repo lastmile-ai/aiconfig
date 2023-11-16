@@ -10,9 +10,6 @@ from llama_cpp import CreateCompletionResponse, Llama
 from aiconfig.util.params import resolve_prompt
 
 
-SUPPORTED_MODELS = ["llama-2-7b-chat"]
-
-
 class LlamaModelParser(ParameterizedModelParser):
     def __init__(self, model_path: str) -> None:
         super().__init__()
@@ -48,15 +45,30 @@ class LlamaModelParser(ParameterizedModelParser):
     ) -> ExecuteResult:
         resolved = resolve_prompt(prompt, parameters, aiconfig)
 
+        # print(f"{prompt=}, {resolved=}, {parameters=}, {options=},{aiconfig=}")
+
+        stream = True
+
         llm = Llama(self.model_path)
-        response = llm(resolved)
+        acc = ""
+        if stream:
+            for res in llm(resolved, stream=True):
+                raw_data = res["choices"][0]
+                data = raw_data["text"]
+                index = int(raw_data["index"])
+                acc += data
+                if options:
+                    options.stream_callback(data, acc, index)
+            print(flush=True)
+            return ExecuteResult(output_type="execute_result", data=[acc], metadata={})
+        else:
+            response = llm(resolved)
+            try:
+                texts = [r["choices"][0]["text"] for r in response]
+            except TypeError:
+                texts = [response["choices"][0]["text"]]
 
-        try:
-            texts = [r["choices"][0]["text"] for r in response]
-        except TypeError:
-            texts = [response["choices"][0]["text"]]
-
-        return ExecuteResult(output_type="execute_result", data=texts, metadata={})
+            return ExecuteResult(output_type="execute_result", data=texts, metadata={})
 
     def get_output_text(
         self, prompt: Prompt, aiconfig: AIConfigRuntime, output: Output | None = None

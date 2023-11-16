@@ -136,3 +136,4 @@ dist
 .ipynb_checkpoints
 __pycache__/
 models
+*.egg-info
