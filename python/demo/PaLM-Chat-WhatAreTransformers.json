@@ -1,40 +1,39 @@
 {
-    "name": "hi",
-    "schema_version": "latest",
-    "metadata": {},
-    "prompts": [
-        {
-            "name": "prompt1",
-            "input": "Hi! What are transformers?",
-            "metadata": {
-                "model": {
-                    "name": "PaLM Chat",
-                    "settings": {
-                        "top_k": 40,
-                        "top_p": 0.95,
-                        "model": "models/chat-bison-001",
-                        "temperature": 0.9
-                    }
-                },
-                "remember_chat_context": true
-            }
+  "name": "hi",
+  "schema_version": "latest",
+  "metadata": {},
+  "prompts": [
+    {
+      "name": "prompt1",
+      "input": "Hi! What are transformers?",
+      "metadata": {
+        "model": {
+          "name": "PaLM Chat",
+          "settings": {
+            "top_k": 40,
+            "top_p": 0.95,
+            "model": "models/chat-bison-001",
+            "temperature": 0.9
+          }
         },
-        {
-            "name": "prompt2",
-            "input": "How does this differ from a recurrent neural network?",
-            "metadata": {
-                "model": {
-                    "name": "PaLM Chat",
-                    "settings": {
-                        "top_k": 40,
-                        "top_p": 0.95,
-                        "model": "models/chat-bison-001",
-                        "temperature": 0.9
-                    }
-                },
-                "remember_chat_context": true
-            }
-        }
-
-    ]
+        "remember_chat_context": true
+      }
+    },
+    {
+      "name": "prompt2",
+      "input": "How does this differ from a recurrent neural network?",
+      "metadata": {
+        "model": {
+          "name": "PaLM Chat",
+          "settings": {
+            "top_k": 40,
+            "top_p": 0.95,
+            "model": "models/chat-bison-001",
+            "temperature": 0.9
+          }
+        },
+        "remember_chat_context": true
+      }
+    }
+  ]
 }
