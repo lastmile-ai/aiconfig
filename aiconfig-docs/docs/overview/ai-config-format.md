@@ -5,7 +5,7 @@ sidebar_position: 1
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# The AIConfig Format
+# AIConfig Specification
 
 ## Introduction
 
