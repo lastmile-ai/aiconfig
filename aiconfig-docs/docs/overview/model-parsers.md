@@ -4,7 +4,9 @@ sidebar_position: 10
 
 # Supported Models
 
-## Model Providers
+`aiconfig` is designed to be model-agnostic and multi-modal, allowing it to work with any model from any provider. For more information on how this works, please see [Extensibility](/docs/extensibility/define-your-own-modelparser)
+
+## Default Models
 
 ### OpenAI
 
@@ -12,4 +14,4 @@ sidebar_position: 10
 
 ### Hugging Face
 
-## Using AIConfig with other models
+## AIConfig Extensions

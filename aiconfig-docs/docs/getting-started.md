@@ -8,7 +8,7 @@ import constants from '@site/core/tabConstants';
 
 # Getting Started
 
-Please read [AIConfig Basics](/docs/introduction/basics) to understand the motivation behind storing prompts and model parameters as configs.
+Please read [AIConfig Basics](/docs/basics) to understand the motivation behind storing prompts and model parameters as configs.
 
 ## Installation
 
