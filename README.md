@@ -21,11 +21,11 @@ AIConfig is a source-control friendly way to manage prompts and model parameters
 
 ## Features
 
-- [x] **Source-control friendly** [`aiconfig` format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to save prompts and model settings, which you can use for evaluation, reproducibility and simplifying your application code.
-- [x] **Multi-modal and model agnostic**. Use with any model, and serialize/deserialize data with the same `aiconfig` format.
-- [x] **Prompt chaining and parameterization** with [{{handlebars}}](https://handlebarsjs.com/) templating syntax, allowing you to pass dynamic data into prompts (as well as between prompts).
-- [x] **Streaming** supported out of the box, allowing you to get playground-like streaming wherever you use `aiconfig`.
-- [x] **Notebook editor**. [AI Workbooks editor](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9) to visually create your `aiconfig`, and use the SDK to connect it to your application code.
+- [X] **Source-control friendly** [`aiconfig` format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to save prompts and model settings, which you can use for evaluation, reproducibility and simplifying your application code.
+- [X] **Multi-modal and model agnostic**. Use with any model, and serialize/deserialize data with the same `aiconfig` format.
+- [X] **Prompt chaining and parameterization** with [{{handlebars}}](https://handlebarsjs.com/) templating syntax, allowing you to pass dynamic data into prompts (as well as between prompts).
+- [X] **Streaming** supported out of the box, allowing you to get playground-like streaming wherever you use `aiconfig`.
+- [X] **Notebook editor**. [AI Workbooks editor](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9) to visually create your `aiconfig`, and use the SDK to connect it to your application code.
 
 ## Install
 
@@ -114,7 +114,7 @@ You don't need to worry about how to run inference for the model; it's all handl
 
 #### Python
 
-```python title="app.py"
+```python
 from aiconfig import AIConfigRuntime, InferenceOptions
 
 # Load the aiconfig. You can also use AIConfigRuntime.loadJSON({})
@@ -314,6 +314,73 @@ You can use any generative AI model with the `aiconfig` format. All you need to 
 - **deserialize** existing `aiconfig` prompts for that model into the data that the model accepts (e.g. OpenAI chat completion params).
 - **run** inference using a model (e.g. calling the OpenAI API or a model running locally).
 
+### Getting Started with Model Parsers
+
+# Defining Your Own Model Parser
+
+In this guide, you will learn the basics of defining your own custom Model Parser for use in the AIConfig library. Model Parsers play a crucial role in managing and interacting with AI models within the AIConfig SDK. You can create custom Model Parsers to suit your specific needs and integrate them seamlessly into AIConfig.
+
+## ModelParser Class
+
+The `ModelParser` is an abstract base class that serves as the foundation for all Model Parsers. It defines a set of methods and behaviors that any Model Parser implementation must adhere to. Below are the key methods defined in the `ModelParser` class:
+
+- `id()`
+  Returns an identifier for the model parser (e.g., "OpenAIModelParser, HuggingFaceTextGeneration", etc.).
+- `serialize()`
+  Serialize a prompt and additional metadata/model settings into a `Prompt` object that can be saved in the AIConfig.
+- `deserialize()`
+  Deserialize a `Prompt` object loaded from an AIConfig into a structure that can be used for model inference.
+- `run()`
+  Execute model inference based on completion data constructed in the `deserialize()` method. It saves the response or output in `prompt.outputs`.
+- `get_output_text()`: Get the output text from the output object containing model inference response.
+- `get_model_settings()`: Extract the AI model's settings from the AIConfig
+
+## Model Parser Extensibility
+
+When defining your custom Model Parser, you can inherit from the `ModelParser` class and override its methods as needed to customize the behavior for your specific AI models. This extensibility allows you to seamlessly integrate your Model Parser into the AIConfig framework and manage AI models with ease.
+
+### Parameterized Model Parser
+
+In some cases, you may want to create a specialized Model Parser that handles parameterization of prompts. The `ParameterizedModelParser` is an abstract subclass of `ModelParser` that provides additional methods and utilities for parameterization.
+
+#### Quick Note On Parameterization:
+
+In AIConfig, parameters refer to the handlebar syntax used by prompt inputs to denote a placeholder for another value. See # Parameters and Chaining Prompts section
+
+### Model Parser Extensibility with Parameterization
+
+When defining your own custom Model Parser, you can choose to inherit from the `ParameterizedModelParser` class to take advantage of the parameterization features provided by AIConfig. This allows you to create model parsers that can handle prompts with placeholders and dynamically replace them with actual values during serialization and deserialization.
+
+By incorporating parameterization into your model parser, you can create AIConfigs that are more flexible and adaptable to different use cases, as well as facilitate the customization of prompt templates to meet specific requirements.
+
+Another notable benefit of using parameterization is the ability to leverage the `run_with_dependencies` feature. The `run_with_dependencies` API method allows you to execute prompts with resolved dependencies and prompt references, providing more advanced control over the model's behavior.
+
+The `ParameterizedModelParser` class and associated helper utilities empower you to harness the power of parameterization in your AI configuration management, offering greater flexibility and control over how prompts are processed and used in model inference.
+
+### Helper Utils provided with the Parameterized Model Parser Class
+
+The `ParameterizedModelParser` class extends the capabilities of the base `ModelParser` and includes the following methods:
+
+- Python `resolve_prompt_template()` TypeScript: `resolve_prompt_template()`
+  Resolves a templated string with provided parameters, allowing for dynamic prompt generation.
+- Python `get_prompt_template()` TypeScript: `get_prompt_template()`
+  An overrideable method that returns a template for a prompt. Customize this method to specify how prompt templates are extracted from prompts.
+
+### General Helper Utilities for Parameterization
+
+To facilitate parameterization, AIConfig provides a set of helper utilities:
+
+- Python: `resolve_parameters()` TypeScript: `resolveParameters()`
+  Resolves parameters within a given string by substituting placeholders with actual values.
+- Python: `resolve_prompt_string()` TypeScript: `resolve_prompt_string()`
+  Resolves a templated string with parameters, similar to the `resolve_prompt_template()` method of the `ParameterizedModelParser` class.
+- Python: `resolve_parametrized_prompt()` TypeScript: `resolve_parametrized_prompt() `
+  Resolves a parametrized prompt by substituting parameter placeholders with their corresponding values.
+- Python: `resolve_system_prompt()` TypeScript: `resolve_system_prompt() `
+  Resolves system prompts, often used in multi-turn conversations, by applying parameterization to system prompt templates.
+
+These utilities enable dynamic parameterization of prompts and customization of prompt templates to meet specific requirements.
+
 Here are some helpful resources to get started:
 
 1. `ModelParser` class ([Python](https://github.com/lastmile-ai/aiconfig/blob/main/python/src/aiconfig/model_parser.py), [TypeScript](https://github.com/lastmile-ai/aiconfig/blob/main/typescript/lib/modelParser.ts)).
@@ -331,9 +398,9 @@ Video: https://github.com/lastmile-ai/aiconfig/assets/141073967/ce909fc4-881f-40
 
 Each callback event is an object of the CallbackEvent type, containing:
 
-name: The name of the event (e.g., "on_resolve_start"). \
-file: The source file where the event is triggered \
-data: An object containing relevant data for the event, such as parameters or results.\
+name: The name of the event (e.g., "on_resolve_start").
+file: The source file where the event is triggered
+data: An object containing relevant data for the event, such as parameters or results.
 ts_ns: An optional timestamp in nanoseconds.
 
 #### Writing Custom Callbacks
