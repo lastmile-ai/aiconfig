@@ -28,11 +28,9 @@ async function main() {
   const options = { stream: true, callbacks };
 
   await config.run("prompt7b", undefined, options);
-  await config.run("prompt7b_chat", options);
-  await config.run("prompt13b", options);
-
-  const codeResponse = await config.run("prompt13b_code");
-  console.log(codeResponse);
+  await config.run("prompt7b_chat", undefined, options);
+  await config.run("prompt13b", undefined, options);
+  await config.run("prompt13b_code", undefined, options);
 }
 
 main();
