@@ -1,0 +1,28 @@
+{
+    "name": "aiconfig-extension-llama",
+    "version": "1.1.0",
+    "license": "MIT",
+    "main": "./dist/llama.js",
+    "types": "./dist/llama.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc -p ./tsconfig.json",
+        "compile": "tsc -p ./tsconfig.json",
+        "lint": "eslint --max-warnings=0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.9.0",
+        "@typescript-eslint/eslint-plugin": "^6.7.2",
+        "@typescript-eslint/parser": "^6.7.2",
+        "eslint": "^8.50.0",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.2.2"
+    },
+    "dependencies": {
+        "aiconfig": "^1.0.4",
+        "inclusion": "^1.0.1",
+        "node-llama-cpp": "^2.8.0"
+    }
+}

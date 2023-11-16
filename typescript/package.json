@@ -1,6 +1,6 @@
 {
   "name": "aiconfig",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "Library to help manage AI configs (i.e. prompts, models and parameters) using the .aiconfig file format.",
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
     "test": "jest --runInBand",
     "tsn": "ts-node -r tsconfig-paths/register",
     "fix": "eslint --fix --ext ts,js .",
-    "genSchema": "ts-node ./scripts/genJSONSchema.ts",
+    "gen-schema": "ts-node ./scripts/genJSONSchema.ts",
     "lint": "eslint . --max-warnings=0",
     "compile": "tsc"
   },

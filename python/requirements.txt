@@ -1,5 +1,6 @@
 black
 flake8
+pylint
 pytest
 pydantic>=2.1
 pybars3
