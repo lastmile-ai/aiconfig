@@ -5,7 +5,7 @@
 ---
 ### **Ways to Contribute**
 
-1. **{ Code Contributions }**: 
+1. **{ Code Contributions }**: We always welcome code contributions to the library. In particular, *model-parsers*, *extensions*, and *cookbooks* are areas that can always use contributions.
 
 2. **{ Cookbooks }**: Showcase innovative ways and use cases to use AIConfig in your code through a cookbook.
 
@@ -25,13 +25,22 @@ aiconfig/
 ├─ editor/
 ├─ aiconfig-docs/
 ├─ python/
-│   ├── model-parsers/
 ├─ typescript/
-│   ├── model-parsers/
 ├─ extensions/
 ```
 
-> *To Do: Add information on library structure and contribution opportunities*
+1. **{ Model Parsers }**: Model Parsers manage the conection to foundation models. By default, we provide the OpenAI models and Google PaLM models. The model parsers are defined in both `python` and `typescript`. 
+   
+    Instructions for contributing a Model Parser:
+    1. Add a folder under `aiconfig/extensions`
+    2. Define the requirements. For `python`, you'll need to set up `pyproject.toml`. For `typescript`, you'll need a `package.json`.
+   > **Naming convention for the extension**: *aiconfig-extension-NAME_OF_MODEL_PARSER*.
+    3. Extend from `ModelParser` class, and implement `serialize`, `deserialize` and `run` functions.
+    4. We highly recommend adding a cookbook under `aiconfig/cookbooks` for a guide on using your model parser.
+    5. Submit a PR for the lastmile team to review the extension and cookbook
+    6. Finally, publish your extension package on `pypi` and/or `npm`
+
+2. **{ Extensions }**: Other than Model Parsers, there are opportunities to publish extensions that can connect `aiconfig` with other useful Generative AI libraries.
 
 ---
 ### **2. Cookbooks**
@@ -67,6 +76,7 @@ We track feature requests in [Github issues](https://github.com/lastmile-ai/aico
 ---
 ### **5. Documentation**
 
+We have our documentation source controlled in the [`aiconfig/aiconfig-docs`](https://github.com/lastmile-ai/aiconfig/tree/main/aiconfig-docs) directory. The docs are published to our [LastMile AI website](https://aiconfig.lastmileai.dev/docs/introduction/basics). Feel free to contribute documentation fixes and improvements and the lastmile team will review.
 
 ---
 ## Development Guide
