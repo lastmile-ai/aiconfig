@@ -396,10 +396,10 @@ Video: https://github.com/lastmile-ai/aiconfig/assets/141073967/ce909fc4-881f-40
 
 Each callback event is an object of the CallbackEvent type, containing:
 
-name: The name of the event (e.g., "on_resolve_start").
-file: The source file where the event is triggered
-data: An object containing relevant data for the event, such as parameters or results.
-ts_ns: An optional timestamp in nanoseconds.
+`name`: The name of the event (e.g., "on_resolve_start").\
+`file`: The source file where the event is triggered\
+`data`: An object containing relevant data for the event, such as parameters or results.\
+`ts_ns`: An optional timestamp in nanoseconds.\
 
 #### Writing Custom Callbacks
 
