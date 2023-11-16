@@ -5,7 +5,7 @@
     "license": "MIT",
     "dependencies": {
         "aiconfig": "^1.0.2",
-        "aiconfig-extension-llama": "^1.0.0"
+        "aiconfig-extension-llama": "^1.1.0"
     },
     "devDependencies": {
         "ts-node": "^10.9.1",
