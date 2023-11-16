@@ -24,6 +24,40 @@ import constants from '@site/core/tabConstants';
 ## Using an `aiconfig`
 
 ### Run a prompt
+You can execute a single prompt using your AIConfig anytime after you've loaded your config into memory. This allows you to obtain a generated response from the model.
+
+```python
+# Example code to run a prompt
+response = aiconfig_runtime.run(prompt_name="my_prompt")
+print(response)
+```
+Sample Output: 
+```
+Execute Result(
+  yada yada yada
+)
+```
+
+AIConfig will automatically store the response in a standardized format, namely `ExecuteResult`
+
+#### Outputs
+
+On Run, a model parser will store the response in a standardized format, namely `ExecuteResult`. This is a dictionary like object with the following attributes:
+- output_type
+- execution_count
+- data
+- mime_type: Optional[str] = None
+- metadata: Dict[str, Any]
+
+#### Retrieving Outputs
+
+A model parser has the option to implement method `get_output_text`. This method takes in a prompt name and optionally an output and returns the raw text response, unpacked from the Output format. If no output is specified, the last output should be returned.
+
+To call this method from the AIConfig Runtime, simply call `get_output_text` on the runtime object.
+
+```python
+output_text = AIConfig.get_output_text(prompt_name="my_prompt")
+```
 
 #### Run a prompt chain
 
