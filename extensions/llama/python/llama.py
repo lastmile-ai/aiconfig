@@ -14,6 +14,7 @@ class LlamaModelParser(ParameterizedModelParser):
     def __init__(self, model_path: str) -> None:
         super().__init__()
         self.model_path = model_path
+        self.qa = []
 
     async def serialize(
         self,
@@ -36,6 +37,13 @@ class LlamaModelParser(ParameterizedModelParser):
     def id(self) -> str:
         return "LLaMA"
 
+    def history(self) -> str:
+        def _fmt(q, a):
+            return f"Q: {q}\nA: {a}"
+
+        out = "\n".join(_fmt(q, a) for q, a in self.qa)
+        return out
+
     async def run_inference(
         self,
         prompt: Prompt,
@@ -45,14 +53,28 @@ class LlamaModelParser(ParameterizedModelParser):
     ) -> ExecuteResult:
         resolved = resolve_prompt(prompt, parameters, aiconfig)
 
-        # print(f"{prompt=}, {resolved=}, {parameters=}, {options=},{aiconfig=}")
+        try:
+            remember_chat_context = prompt.metadata.remember_chat_context
+        except AttributeError:
+            remember_chat_context = False
 
-        stream = True
+        model_input = (
+            f"CONTEXT:\n{self.history()}\nQUESTION:\n{resolved}"
+            if remember_chat_context
+            else resolved
+        )
+        result = await self._run_inference_helper(model_input, options)
 
+        self.qa.append((model_input, result.data[0]))
+
+        return result
+
+    async def _run_inference_helper(self, model_input, options) -> ExecuteResult:
         llm = Llama(self.model_path)
         acc = ""
+        stream = options.stream if options else True
         if stream:
-            for res in llm(resolved, stream=True):
+            for res in llm(model_input, stream=True):
                 raw_data = res["choices"][0]
                 data = raw_data["text"]
                 index = int(raw_data["index"])
@@ -62,7 +84,7 @@ class LlamaModelParser(ParameterizedModelParser):
             print(flush=True)
             return ExecuteResult(output_type="execute_result", data=[acc], metadata={})
         else:
-            response = llm(resolved)
+            response = llm(model_input)
             try:
                 texts = [r["choices"][0]["text"] for r in response]
             except TypeError:
