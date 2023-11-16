@@ -9,7 +9,7 @@ const darkTheme = themes.dracula;
 const config = {
   title: "AIConfig",
   tagline:
-    "Source-control friendly Prompt & Model Management for Generative AI",
+    "Gen AI prompts, models and settings as source-control friendly configs",
   favicon: "img/favicon-light-theme.ico",
 
   // Set the production url of your site here
@@ -58,7 +58,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: "img/docusaurus-social-card.jpg",
+      image: "img/readme_logo.jpg",
       navbar: {
         logo: {
           alt: "AI Config Logo",
@@ -67,12 +67,12 @@ const config = {
         },
         items: [
           {
-            to: "/docs/introduction/basics",
+            to: "/docs/basics",
             label: "Overview",
             position: "left",
           },
           {
-            to: "/docs/introduction/getting-started",
+            to: "/docs/getting-started",
             label: "Getting Started",
             position: "left",
           },
