@@ -42,3 +42,9 @@ Run with
 ```
 npx ts-node ask-llama.ts
 ```
+
+<p align="center">
+<video controls height="480" width="800">
+    <source src="https://github.com/lastmile-ai/aiconfig/assets/5060851/f2ecf6ce-7601-469c-aea1-5c0f776d7b73"/>
+  </video>
+</p>
