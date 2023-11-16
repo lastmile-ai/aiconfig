@@ -1,0 +1,20 @@
+{
+  "name": "cli-mate",
+  "schema_version": "latest",
+  "metadata": {
+    "models": {
+      "gpt-4": {
+        "model": "gpt-4",
+        "stream": false
+      }
+    },
+    "default_model": "gpt-4",
+    "parameters": {}
+  },
+  "prompts": [
+    {
+      "name": "query",
+      "input": "{{the_input}}"
+    }
+  ]
+}
