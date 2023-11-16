@@ -6,7 +6,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import constants from '@site/core/tabConstants';
 
-# Create an `aiconfig`
+# Create an AIConfig
 
 There are 2 ways to create an `aiconfig` from scratch.
 

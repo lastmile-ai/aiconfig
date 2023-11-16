@@ -8,7 +8,7 @@ import constants from '@site/core/tabConstants';
 
 # Getting Started
 
-Please read [AIConfig Basics](/docs/introduction/basics) to understand the motivation behind storing prompts and model parameters as configs.
+Please read [AIConfig Basics](/docs/basics) to understand the motivation behind storing prompts and model parameters as configs.
 
 ## Installation
 
@@ -165,7 +165,6 @@ import * as path from "path";
 import { AIConfigRuntime, InferenceOptions } from "aiconfig";
 
 async function travelWithGPT() {
-  // Alternatively, you can use AIConfigRuntime.loadJSON({/*travel.aiconfig.json contents*/})
   const aiConfig = AIConfigRuntime.load(
     path.join(__dirname, "travel.aiconfig.json")
   );
@@ -189,8 +188,6 @@ async function travelWithGPT() {
 
 ```python title="app.py"
 from aiconfig import AIConfigRuntime, InferenceOptions
-
-# Load the aiconfig. You can also use AIConfigRuntime.loadJSON({})
 config = AIConfigRuntime.load('travel.aiconfig.json')
 
 # Run a single prompt (with streaming)
