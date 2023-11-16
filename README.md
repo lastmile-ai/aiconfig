@@ -325,6 +325,8 @@ The AIConfig SDK has a `CallbackManager` class which can be used to register cal
 
 Anyone can register a callback, and filter for the events they care about. You can subsequently use these callbacks to integrate with your own monitoring and observability systems.
 
+Video: https://github.com/lastmile-ai/aiconfig/assets/141073967/ce909fc4-881f-40d9-9c67-78a6682b3063
+
 #### Structure of a Callback Event
 
 Each callback event is an object of the CallbackEvent type, containing:
