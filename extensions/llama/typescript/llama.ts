@@ -21,6 +21,7 @@ import {
   LlamaModelOptions,
   Token,
 } from "node-llama-cpp";
+import { CallbackEvent } from "aiconfig/dist/lib/callback";
 
 // Use require since there's no module declaration for this package
 const inclusion = require("inclusion");
@@ -105,6 +106,17 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
     aiConfig: AIConfigRuntime,
     params?: JSONObject | undefined
   ): Prompt | Prompt[] {
+    const startEvent = {
+      name: "on_serialize_start",
+      file: __filename,
+      data: {
+        promptName,
+        data,
+        params,
+      },
+    } as CallbackEvent;
+    aiConfig.callbackManager.runCallbacks(startEvent);
+
     const { prompt: input, conversationHistory, ...completionParams } = data;
 
     // Metadata is constructed by obtaining any default metadata for the model
@@ -156,6 +168,15 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
       prompts.push(prompt);
       result = prompts;
     }
+
+    const endEvent = {
+      name: "on_serialize_end",
+      file: __filename,
+      data: {
+        result,
+      },
+    };
+    aiConfig.callbackManager.runCallbacks(endEvent);
 
     return result;
   }
@@ -227,6 +248,16 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
     aiConfig: AIConfigRuntime,
     params?: JSONObject
   ): LlamaCompletionParams {
+    const startEvent = {
+      name: "on_deserialize_start",
+      file: __filename,
+      data: {
+        prompt,
+        params,
+      },
+    } as CallbackEvent;
+    aiConfig.callbackManager.runCallbacks(startEvent);
+
     // Resolve the prompt template with the given parameters, and update the completion params
     const resolvedPrompt = this.resolvePromptTemplate(
       prompt.input as string,
@@ -251,10 +282,21 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
       );
     }
 
-    return {
+    const result = {
       ...promptParams,
       conversationHistory,
     };
+
+    const endEvent = {
+      name: "on_deserialize_end",
+      file: __filename,
+      data: {
+        result,
+      },
+    } as CallbackEvent;
+    aiConfig.callbackManager.runCallbacks(endEvent);
+
+    return result;
   }
 
   private getConversationHistory(
@@ -310,6 +352,17 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
     options?: InferenceOptions | undefined,
     params?: JSONObject | undefined
   ): Promise<Output | Output[]> {
+    const startEvent = {
+      name: "on_run_start",
+      file: __filename,
+      data: {
+        prompt,
+        options,
+        params,
+      },
+    } as CallbackEvent;
+    await aiConfig.callbackManager.runCallbacks(startEvent);
+
     const {
       model,
       prompt: input,
@@ -343,8 +396,7 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
     }
 
     const response = await session.prompt(input, finalizedPromptOptions);
-
-    return [
+    const outputs = [
       {
         output_type: "execute_result",
         data: response,
@@ -352,6 +404,19 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
         metadata: {},
       } as ExecuteResult,
     ];
+
+    prompt.outputs = outputs;
+
+    const endEvent = {
+      name: "on_run_end",
+      file: __filename,
+      data: {
+        result: outputs,
+      },
+    } as CallbackEvent;
+    await aiConfig.callbackManager.runCallbacks(endEvent);
+
+    return outputs;
   }
 
   public getOutputText(
