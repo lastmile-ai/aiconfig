@@ -1,6 +1,7 @@
 import asyncio
 
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import Prompt, PromptMetadata
 from llama import LlamaModelParser
 
 from aiconfig import AIConfigRuntime
@@ -20,12 +21,11 @@ async def main():
 
     config = AIConfigRuntime.load("cookbooks/llama/llama-aiconfig.json")
 
-    print("Getting response without streaming...")
-    response7b = await config.run("prompt7b", {})
-    texts = config.get_output_text("prompt7b", response7b)
-    print(f"\n\n\nFinal output:\n{texts[0]}")
+    deser = await llama_model_parser.deserialize(
+        Prompt(name="the_prompt", input="the_input"), config, {}
+    )
 
-    print("\n\n\n\nGetting streaming response...")
+    print(f"{deser=}")
 
     def stream_callback(data, accumulated_message, index):
         print(data, end="", flush=True)
@@ -35,10 +35,18 @@ async def main():
         stream_callback=stream_callback,
     )
 
-    response7b = await config.run("prompt7b", {}, options=inference_options)
+    print("\n\nRunning prompt7b...")
 
-    texts = config.get_output_text("prompt7b", response7b)
-    print(f"\n\n\nFinal output:\n{texts[0]}")
+    await config.run("prompt7b", params={}, options=inference_options)
+    print("\n\nRunning prompt7b_chat...")
+    await config.run("prompt7b_chat", params={}, options=inference_options)
+
+    print("\n\nRunning prompt13b...")
+    await config.run("prompt13b", params={}, options=inference_options)
+
+    print("\n\nRunning prompt13b_code...")
+    code_res = await config.run("prompt13b_code", params={}, options=inference_options)
+    print(f"\n\n\n\nCode response:\n{code_res}")
 
 
 if __name__ == "__main__":
