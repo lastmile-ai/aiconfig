@@ -314,6 +314,67 @@ You can use any generative AI model with the `aiconfig` format. All you need to 
 - **deserialize** existing `aiconfig` prompts for that model into the data that the model accepts (e.g. OpenAI chat completion params).
 - **run** inference using a model (e.g. calling the OpenAI API or a model running locally).
 
+### Getting Started with Model Parsers
+
+# Defining Your Own Model Parser
+
+In this guide, you will learn the basics of defining your own custom Model Parser for use in the AIConfig library. Model Parsers play a crucial role in managing and interacting with AI models within the AIConfig SDK. You can create custom Model Parsers to suit your specific needs and integrate them seamlessly into AIConfig.
+
+## ModelParser Class
+
+The `ModelParser` is an abstract base class that serves as the foundation for all Model Parsers. It defines a set of methods and behaviors that any Model Parser implementation must adhere to. Below are the key methods defined in the `ModelParser` class:
+
+- `id()`
+  Returns an identifier for the model parser (e.g., "OpenAIModelParser, HuggingFaceTextGeneration", etc.).
+- `serialize()`
+  Serialize a prompt and additional metadata/model settings into a `Prompt` object that can be saved in the AIConfig.
+- `deserialize()`
+  Deserialize a `Prompt` object loaded from an AIConfig into a structure that can be used for model inference.
+- `run()`
+  Execute model inference based on completion data constructed in the `deserialize()` method. It saves the response or output in `prompt.outputs`.
+- `get_output_text()`: Get the output text from the output object containing model inference response.
+- `get_model_settings()`: Extract the AI model's settings from the AIConfig
+
+## Model Parser Extensibility
+
+When defining your custom Model Parser, you can inherit from the `ModelParser` class and override its methods as needed to customize the behavior for your specific AI models. This extensibility allows you to seamlessly integrate your Model Parser into the AIConfig framework and manage AI models with ease.
+
+### Parameterized Model Parser
+
+In some cases, you may want to create a specialized Model Parser that handles parameterization of prompts. The `ParameterizedModelParser` is an abstract subclass of `ModelParser` that provides additional methods and utilities for parameterization.
+
+#### Quick Note On Parameterization:
+
+In AIConfig, parameters refer to the handlebar syntax used by prompt inputs to denote a placeholder for another value. See # Parameters and Chaining Prompts section
+
+### Model Parser Extensibility with Parameterization
+
+When defining your own custom Model Parser, you can choose to inherit from the `ParameterizedModelParser` class to take advantage of the parameterization features provided by AIConfig. This allows you to create model parsers that can handle prompts with placeholders and dynamically replace them with actual values during serialization and deserialization.
+
+By incorporating parameterization into your model parser, you can create AIConfigs that are more flexible and adaptable to different use cases, as well as facilitate the customization of prompt templates to meet specific requirements.
+
+Another notable benefit of using parameterization is the ability to leverage the `run_with_dependencies` feature. The `run_with_dependencies` API method allows you to execute prompts with resolved dependencies and prompt references, providing more advanced control over the model's behavior.
+
+The `ParameterizedModelParser` class and associated helper utilities empower you to harness the power of parameterization in your AI configuration management, offering greater flexibility and control over how prompts are processed and used in model inference.
+
+### Helper Utils provided with the Parameterized Model Parser Class
+
+The `ParameterizedModelParser` class extends the capabilities of the base `ModelParser` and includes the following methods:
+
+- `resolve_prompt_template()`: Resolves a templated string with provided parameters, allowing for dynamic prompt generation.
+- `get_prompt_template()`: An overrideable method that returns a template for a prompt. Customize this method to specify how prompt templates are extracted from prompts.
+
+### General Helper Utilities for Parameterization
+
+To facilitate parameterization, AIConfig provides a set of helper utilities:
+
+- `resolve_parameters()`: Resolves parameters within a given string by substituting placeholders with actual values.
+- `resolve_prompt_string()`: Resolves a templated string with parameters, similar to the `resolve_prompt_template()` method of the `ParameterizedModelParser` class.
+- `resolve_parametrized_prompt()`: Resolves a parametrized prompt by substituting parameter placeholders with their corresponding values.
+- `resolve_system_prompt()`: Resolves system prompts, often used in multi-turn conversations, by applying parameterization to system prompt templates.
+
+These utilities enable dynamic parameterization of prompts and customization of prompt templates to meet specific requirements.
+
 Here are some helpful resources to get started:
 
 1. `ModelParser` class ([Python](https://github.com/lastmile-ai/aiconfig/blob/main/python/src/aiconfig/model_parser.py), [TypeScript](https://github.com/lastmile-ai/aiconfig/blob/main/typescript/lib/modelParser.ts)).
