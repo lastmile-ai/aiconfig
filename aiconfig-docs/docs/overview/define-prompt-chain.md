@@ -184,7 +184,6 @@ config = AIConfigRuntime.load('travel.aiconfig.json')
 # and then use its output to run the gen_itinerary using GPT-4
 await config.run(
     "gen_itinerary",
-    params=None,
     options=InferenceOptions(stream=True),
     run_with_dependencies=True)
 ```
