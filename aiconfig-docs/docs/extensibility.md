@@ -16,8 +16,6 @@ You can use any generative AI model with the `aiconfig` format. All you need to 
 - **deserialize** existing `aiconfig` `Prompts` for that model into the data that the model accepts (e.g. OpenAI chat completion params).
 - **run** inference using a model (e.g. calling the OpenAI API or a model running locally).
 
-### Getting Started with Model Parsers
-
 # Defining Your Own Model Parser
 
 In this guide, you will learn the basics of defining your own custom Model Parser for use in the AIConfig library. Model Parsers play a crucial role in managing and interacting with AI models within the AIConfig SDK. You can create custom Model Parsers to suit your specific needs and integrate them seamlessly into AIConfig.
