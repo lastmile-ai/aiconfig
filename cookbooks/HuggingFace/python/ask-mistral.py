@@ -1,11 +1,13 @@
-from aiconfig import AIConfigRuntime
-from aiconfig.model_parser import InferenceOptions
 import asyncio
-from hf import HuggingFaceTextParser
+from aiconfig_extension_huggingface_textgeneration import hf
 
+from aiconfig import AIConfigRuntime, InferenceOptions
 
 async def main():
 
+    model_parser = hf.HuggingFaceTextParser()
+    AIConfigRuntime.register_model_parser(model_parser, 'HuggingFaceTextGenerationModelParser')
+    
     config = AIConfigRuntime.load("../Mistral-aiconfig.json")
 
     def stream_callback(data, accumulated_message, index):

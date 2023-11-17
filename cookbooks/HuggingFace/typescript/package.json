@@ -6,7 +6,7 @@
   "dependencies": {
     "@huggingface/inference": "^2.6.4",
     "@types/node": "^20.9.0",
-    "aiconfig": "^1.0.2",
+    "aiconfig": "^1.0.1",
     "typescript": "^5.2.2"
   },
   "devDependencies": {
