@@ -1,0 +1,86 @@
+{
+  "name": "Multi-LLM Consistency Prompting & LLM-based Quorum",
+  "schema_version": "latest",
+  "metadata": {
+    "models": {
+      "gpt-4": {
+        "model": "gpt-4",
+        "top_p": 1,
+        "temperature": 1,
+        "system_prompt": "{{ few_shot_prompting_examples }}",
+        "presence_penalty": 0,
+        "frequency_penalty": 0
+      },
+      "gpt-3.5-turbo": {
+        "model": "gpt-3.5-turbo",
+        "top_p": 1,
+        "temperature": 1,
+        "system_prompt": "{{ few_shot_prompting_examples }}",
+        "presence_penalty": 0,
+        "frequency_penalty": 0
+      },
+      "models/text-bison-001": {
+        "topK": 40,
+        "topP": 0.95,
+        "model": "models/text-bison-001",
+        "prompt": "Q: There are 15 trees in the grove. Grove workers will plant trees in the grove today. After they are done,\nthere will be 21 trees. How many trees did the grove workers plant today?\nA: We start with 15 trees. Later we have 21 trees. The difference must be the number of trees they planted.\nSo, they must have planted 21 - 15 &#x3D; 6 trees. The answer is 6.\nQ: If there are 3 cars in the parking lot and 2 more cars arrive, how many cars are in the parking lot?\nA: There are 3 cars in the parking lot already. 2 more arrive. Now there are 3 + 2 &#x3D; 5 cars. The answer is 5.\nQ: Leah had 32 chocolates and her sister had 42. If they ate 35, how many pieces do they have left in total?\nA: Leah had 32 chocolates and Leah’s sister had 42. That means there were originally 32 + 42 &#x3D; 74\nchocolates. 35 have been eaten. So in total they still have 74 - 35 &#x3D; 39 chocolates. The answer is 39.\nQ: Jason had 20 lollipops. He gave Denny some lollipops. Now Jason has 12 lollipops. How many lollipops\ndid Jason give to Denny?\nA: Jason had 20 lollipops. Since he only has 12 now, he must have given the rest to Denny. The number of\nlollipops he has given to Denny must have been 20 - 12 &#x3D; 8 lollipops. The answer is 8.\nQ: Shawn has five toys. For Christmas, he got two toys each from his mom and dad. How many toys does\nhe have now?\nA: He has 5 toys. He got 2 from mom, so after that he has 5 + 2 &#x3D; 7 toys. Then he got 2 more from dad, so\nin total he has 7 + 2 &#x3D; 9 toys. The answer is 9.\nQ: There were nine computers in the server room. Five more computers were installed each day, from\nmonday to thursday. How many computers are now in the server room?\nA: There are 4 days from monday to thursday. 5 computers were added each day. That means in total 4 * 5 &#x3D;\n20 computers were added. There were 9 computers in the beginning, so now there are 9 + 20 &#x3D; 29 computers.\nThe answer is 29.\nQ: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many\ngolf balls did he have at the end of wednesday?\nA: Michael initially had 58 balls. He lost 23 on Tuesday, so after that he has 58 - 23 &#x3D; 35 balls. On\nWednesday he lost 2 more so now he has 35 - 2 &#x3D; 33 balls. The answer is 33.\nQ: Olivia has $23. She bought five bagels for $3 each. How much money does she have left?\nA: She bought 5 bagels for $3 each. This means she spent $15. She has $8 left.\n\nQ: When I was 6 my sister was half my age. Now I’m 70 how old is my sister?\nA:",
+        "temperature": 0,
+        "maxOutputTokens": 1024
+      }
+    },
+    "parameters": {
+      "input_question": "Q: When I was 6 my sister was half my age. Now I’m 70 how old is my sister?\nA:",
+      "few_shot_prompting_examples": "Q: There are 15 trees in the grove. Grove workers will plant trees in the grove today. After they are done,\nthere will be 21 trees. How many trees did the grove workers plant today?\nA: We start with 15 trees. Later we have 21 trees. The difference must be the number of trees they planted.\nSo, they must have planted 21 - 15 = 6 trees. The answer is 6.\nQ: If there are 3 cars in the parking lot and 2 more cars arrive, how many cars are in the parking lot?\nA: There are 3 cars in the parking lot already. 2 more arrive. Now there are 3 + 2 = 5 cars. The answer is 5.\nQ: Leah had 32 chocolates and her sister had 42. If they ate 35, how many pieces do they have left in total?\nA: Leah had 32 chocolates and Leah’s sister had 42. That means there were originally 32 + 42 = 74\nchocolates. 35 have been eaten. So in total they still have 74 - 35 = 39 chocolates. The answer is 39.\nQ: Jason had 20 lollipops. He gave Denny some lollipops. Now Jason has 12 lollipops. How many lollipops\ndid Jason give to Denny?\nA: Jason had 20 lollipops. Since he only has 12 now, he must have given the rest to Denny. The number of\nlollipops he has given to Denny must have been 20 - 12 = 8 lollipops. The answer is 8.\nQ: Shawn has five toys. For Christmas, he got two toys each from his mom and dad. How many toys does\nhe have now?\nA: He has 5 toys. He got 2 from mom, so after that he has 5 + 2 = 7 toys. Then he got 2 more from dad, so\nin total he has 7 + 2 = 9 toys. The answer is 9.\nQ: There were nine computers in the server room. Five more computers were installed each day, from\nmonday to thursday. How many computers are now in the server room?\nA: There are 4 days from monday to thursday. 5 computers were added each day. That means in total 4 * 5 =\n20 computers were added. There were 9 computers in the beginning, so now there are 9 + 20 = 29 computers.\nThe answer is 29.\nQ: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many\ngolf balls did he have at the end of wednesday?\nA: Michael initially had 58 balls. He lost 23 on Tuesday, so after that he has 58 - 23 = 35 balls. On\nWednesday he lost 2 more so now he has 35 - 2 = 33 balls. The answer is 33.\nQ: Olivia has $23. She bought five bagels for $3 each. How much money does she have left?\nA: She bought 5 bagels for $3 each. This means she spent $15. She has $8 left."
+    }
+  },
+  "prompts": [
+    {
+      "name": "gpt4-execution",
+      "input": "{{input_question}}",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {}
+        },
+        "parameters": {},
+        "remember_chat_context": false
+      }
+    },
+    {
+      "name": "gpt3.5-execution",
+      "input": "{{input_question}}",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo",
+          "settings": {}
+        },
+        "parameters": {},
+        "remember_chat_context": false
+      }
+    },
+    {
+      "name": "palm-execution",
+      "input": "{{ few_shot_prompting_examples }}\n\n{{input_question}}",
+      "metadata": {
+        "model": {
+          "name": "models/text-bison-001",
+          "settings": {}
+        },
+        "parameters": {},
+        "remember_chat_context": false
+      }
+    },
+    {
+      "name": "majority-evaluator",
+      "input": "What is the majority across across these outputs:\n1. {{ gpt4-execution.output }}\n2. {{gpt3.5-execution.output }}\n3. {{palm-execution.output }}",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {}
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      }
+    }
+  ]
+}
