@@ -57,11 +57,11 @@ pip install python-aiconfig
 poetry add python-aiconfig
 ```
 
-[Detailed installation instructions](https://aiconfig.lastmileai.dev/docs/introduction/getting-started/#installation).
+[Detailed installation instructions](https://aiconfig.lastmileai.dev/docs/getting-started#installation).
 
 ## Getting Started - your first AIConfig
 
-> **We cover Python instructions here, for Node.js please see the [detailed Getting Started guide](https://aiconfig.lastmileai.dev/docs/introduction/getting-started)**
+> **We cover Python instructions here, for Node.js please see the [detailed Getting Started guide](https://aiconfig.lastmileai.dev/docs/getting-started/?aiconfig-language=node)**
 
 In this quickstart, you will create a customizable NYC travel itinerary using `aiconfig`.
 
