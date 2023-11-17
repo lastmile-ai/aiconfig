@@ -113,11 +113,7 @@ This AIConfig contains a prompt chain to get a list of travel activities from an
 
 > **Link to tutorial code: [here](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Getting-Started)**
 
-<p align="center">
-<video controls height="480" width="800">
-  <source src="https://github.com/lastmile-ai/aiconfig/assets/25641935/d3d41ad2-ab66-4eb6-9deb-012ca283ff81"/>
-</video>
-</p>
+https://github.com/lastmile-ai/aiconfig/assets/25641935/d3d41ad2-ab66-4eb6-9deb-012ca283ff81
 
 ### Download `travel.aiconfig.json`
 
@@ -245,11 +241,7 @@ We can iterate on an `aiconfig` using a notebook-like editor called an **AI Work
 3. Click dropdown from '+ New Workbook' and select 'Create from AIConfig'
 4. Upload `travel.aiconfig.json`
 
-<p align="center">
-<video controls height="480" width="800">
-  <source src="https://github.com/lastmile-ai/aiconfig/assets/81494782/5d901493-bbda-4f8e-93c7-dd9a91bf242e"/>
-</video>
-</p>
+https://github.com/lastmile-ai/aiconfig/assets/81494782/5d901493-bbda-4f8e-93c7-dd9a91bf242e
 
 Try out the workbook playground here: **[NYC Travel Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9)**
 
