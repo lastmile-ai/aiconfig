@@ -160,21 +160,37 @@ https://github.com/lastmile-ai/aiconfig/assets/81494782/805173d1-0f83-44c5-b570-
 
 ### Run the `get_activities` prompt.
 
-> **Note**: Make sure to specify the API keys (such as `OPENAI_API_KEY`) in your environment before proceeding.
+> **Note**: Make sure to specify the API keys (such as [`OPENAI_API_KEY`](https://platform.openai.com/api-keys)) in your environment before proceeding.
+
+In your CLI, set the environment variable:
+
+```bash
+export OPENAI_API_KEY=my_key
+```
 
 You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
 
 Create a new file called `app.py` and and enter the following code:
 
 ```python
-from aiconfig import AIConfigRuntime
+import asyncio
+from aiconfig import AIConfigRuntime, InferenceOptions
 
-# Load the aiconfig
-config = AIConfigRuntime.load('travel.aiconfig.json')
+async def main():
+  # Load the aiconfig
+  config = AIConfigRuntime.load('travel.aiconfig.json')
 
-# Run a single prompt (with streaming)
-inference_options = InferenceOptions(stream=True)
-await config.run("get_activities", params=None, inference_options)
+  # Run a single prompt (with streaming)
+  inference_options = InferenceOptions(stream=True)
+  await config.run("get_activities", options=inference_options)
+
+asyncio.run(main())
+```
+
+Now run this in your terminal with the command:
+
+```bash
+python3 app.py
 ```
 
 Now run this in your terminal with the command:
@@ -233,10 +249,7 @@ Let's run this with AIConfig:
 Replace `config.run` above with this:
 
 ```python
-await config.run_with_dependencies(
-    "gen_itinerary",
-    params={"order_by": "duration"},
-    inference_options)
+await config.run("gen_itinerary", params={"order_by": "duration"}, options=inference_options, run_with_dependencies=True)
 ```
 
 Notice how simple the syntax is to perform a fairly complex task - running 2 different prompts across 2 different models and chaining one's output as part of the input of another.
@@ -249,7 +262,7 @@ Let's save the AIConfig back to disk, and serialize the outputs from the latest 
 
 ```python
 # Save the aiconfig to disk. and serialize outputs from the model run
-config.save('updated.aiconfig.json', include_output=True)
+config.save('updated.aiconfig.json', include_outputs=True)
 ```
 
 ### Edit `aiconfig` in a notebook editor

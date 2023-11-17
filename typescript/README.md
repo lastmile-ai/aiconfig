@@ -137,7 +137,13 @@ https://github.com/lastmile-ai/aiconfig/assets/25641935/d3d41ad2-ab66-4eb6-9deb-
 
 ### Run the `get_activities` prompt.
 
-> **Note**: Make sure to specify the API keys (such as `OPENAI_API_KEY`) in your environment before proceeding.
+> **Note**: Make sure to specify the API keys (such as [`OPENAI_API_KEY`](https://platform.openai.com/api-keys)) in your environment before proceeding.
+
+In your CLI, set the environment variable:
+
+```bash
+export OPENAI_API_KEY=my_key
+```
 
 You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
 

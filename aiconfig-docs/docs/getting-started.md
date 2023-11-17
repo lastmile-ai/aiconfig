@@ -155,13 +155,17 @@ async function travelWithGPT() {
 <TabItem value="python">
 
 ```python title="app.py"
+import asyncio
 from aiconfig import AIConfigRuntime, InferenceOptions
 
-# Load the aiconfig.
-config = AIConfigRuntime.load('travel.aiconfig.json')
+async def main():
+  # Load the aiconfig
+  config = AIConfigRuntime.load('travel.aiconfig.json')
 
-# Run a single prompt
-await config.run("get_activities")
+  # Run a single prompt
+  await config.run("get_activities")
+
+asyncio.run(main())
 ```
 
 </TabItem>
