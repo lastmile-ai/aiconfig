@@ -4,7 +4,7 @@ AIConfig is a source-control friendly way to manage your prompts, models and mod
 
 ## Instructions
 
-Follow the tutorial to get started [here](https://aiconfig.lastmileai.dev/docs/introduction/getting-started).
+Follow the tutorial to get started [here](https://aiconfig.lastmileai.dev/docs/getting-started).
 
 ## Resources
 
