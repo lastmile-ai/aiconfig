@@ -59,7 +59,7 @@ $ poetry add python-aiconfig
 </Tabs>
 
 :::caution
-Make sure to specify the API keys (such as `OPENAI_API_KEY`) in your environment before proceeding.
+Make sure to specify the API keys (such as [`OPENAI_API_KEY`](https://platform.openai.com/api-keys)) in your environment before proceeding.
 :::
 
 ## Quickstart
@@ -155,13 +155,17 @@ async function travelWithGPT() {
 <TabItem value="python">
 
 ```python title="app.py"
+import asyncio
 from aiconfig import AIConfigRuntime, InferenceOptions
 
-# Load the aiconfig.
-config = AIConfigRuntime.load('travel.aiconfig.json')
+async def main():
+  # Load the aiconfig
+  config = AIConfigRuntime.load('travel.aiconfig.json')
 
-# Run a single prompt
-await config.run("get_activities")
+  # Run a single prompt
+  await config.run("get_activities")
+
+asyncio.run(main())
 ```
 
 </TabItem>
