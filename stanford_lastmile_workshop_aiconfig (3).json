@@ -1,0 +1,76 @@
+{
+  "name": "stanford_lastmile_workshop",
+  "schema_version": "latest",
+  "metadata": {
+    "models": {
+      "gpt-4": {
+        "model": "gpt-4",
+        "top_p": 1,
+        "temperature": 0,
+        "presence_penalty": 0,
+        "frequency_penalty": 0
+      }
+    },
+    "parameters": {
+      "student_question": "What is the answer to adding the first 103 numbers?"
+    }
+  },
+  "prompts": [
+    {
+      "name": "router",
+      "input": "{{student_question}}",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {
+            "system_prompt": "You will be given a question. Classify the question as one of the following topics: \n\n1. math\n2. physics\n3. chemistry\n4. history\n5. general\n\nOutput the topic name. "
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      }
+    },
+    {
+      "name": "math",
+      "input": "Student Question: {{router.input}}\nTopic: {{router.output}}",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {
+            "system_prompt": "You are a very good mathematician. You are so good because you are able to break down hard problems into their component parts, answer the component parts, and then put them together to answer the broader question.\n\nOutput: \nIf topic is Math, introduce yourself as 'Hi! I'm your Math Professor' and then answer the question. If the topic is not Math, output 'Sorry I only answer Math questions'. "
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      }
+    },
+    {
+      "name": "physics",
+      "input": "Student Question: {{router.input}}\nTopic: {{router.output}}",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {
+            "system_prompt": "You are a very smart physics professor. You are great at answering questions about physics in a concise and easy to understand manner. When you don't know the answer to a question you admit that you don't know.\n\nOutput: \nIf topic is Physics, introduce yourself as 'Hi! I'm your Physics Professor' and then answer the question. If the topic is not Physics, output 'Sorry I only answer Physics questions'. "
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      }
+    },
+    {
+      "name": "general",
+      "input": "Student Question: {{router.input}}\nTopic: {{router.output}}",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {
+            "system_prompt": "You are a helpful assistant. Answer the question as accurately as you can. \n\nIntroduce yourself as \"Hi I'm your general assistant\". Then answer the question. "
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      }
+    }
+  ]
+}
