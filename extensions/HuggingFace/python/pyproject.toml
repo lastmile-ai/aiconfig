@@ -19,7 +19,6 @@ classifiers = [
 dependencies = [
   "huggingface_hub",
   "python-aiconfig",
-  "asyncio",
   ]
 
 [project.urls]
