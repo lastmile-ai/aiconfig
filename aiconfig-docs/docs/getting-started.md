@@ -8,7 +8,11 @@ import constants from '@site/core/tabConstants';
 
 # Getting Started
 
+AIConfig saves prompts, models and model parameters as source control friendly configs. This allows you to iterate on prompts and model parameters _separately from your application code_.
+
+:::tip
 Please read [AIConfig Basics](/docs/basics) to understand the motivation behind storing prompts and model parameters as configs.
+:::
 
 ## Installation
 
@@ -61,6 +65,16 @@ Make sure to specify the API keys (such as `OPENAI_API_KEY`) in your environment
 ## Quickstart
 
 In this quickstart, you will create a customizable NYC travel itinerary using `aiconfig`. We will start with a pre-built AIConfig that we generated from this [AI Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9).
+
+:::tip
+Clone the tutorial code used below from [**here**](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Getting-Started)
+:::
+
+<p align="center">
+<video controls height="480" width="800">
+    <source src="https://github.com/lastmile-ai/aiconfig/assets/25641935/d3d41ad2-ab66-4eb6-9deb-012ca283ff81"/>
+  </video>
+</p>
 
 ### 1. Download the AIConfig.
 
@@ -326,4 +340,22 @@ We are working on a local editor that you can run yourself. For now, please use 
 
 ### Code for Getting Started
 
-Python and typescript implementation [here](https://github.com/lastmile-ai/aiconfig/tree/ad38040ec3d9f0273e006464e01e02b06f2809e9/cookbook/Getting-Started).
+Tutorial code can be found [here](https://github.com/lastmile-ai/aiconfig/tree/ad38040ec3d9f0273e006464e01e02b06f2809e9/cookbook/Getting-Started).
+
+## Additional Guides
+
+There is a lot you can do with `aiconfig`. We have several other tutorials to help get you started:
+
+- [Create an AIConfig from scratch](/docs/overview/create-an-aiconfig)
+- [Run a prompt](/docs/overview/run-aiconfig)
+- [Pass data into prompts](/docs/overview/parameters)
+- [Prompt chains](/docs/overview/define-prompt-chain)
+- [Callbacks and monitoring](/docs/overview/monitoring-aiconfig)
+
+### Cookbooks
+
+- [CLI Chatbot](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Wizard-GPT)
+- [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
+- [Prompt routing](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Basic-Prompt-Routing)
+- [OpenAI function calling](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI)
+- [Chain of thought](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Chain-of-Verification)
