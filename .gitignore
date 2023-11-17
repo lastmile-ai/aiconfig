@@ -128,3 +128,12 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+
+# misc
+**/.DS_Store
+.virtual_documents
+.ipynb_checkpoints
+__pycache__/
+models
+*.egg-info

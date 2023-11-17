@@ -4,38 +4,41 @@ import styles from "./styles.module.css";
 
 type FeatureItem = {
   title: string;
-  Svg: React.ComponentType<React.ComponentProps<"svg">>;
+  Svg?: React.ComponentType<React.ComponentProps<"svg">>;
   description: JSX.Element;
 };
 
 const FeatureList: FeatureItem[] = [
   {
     title: "Prompts as Config",
-    Svg: require("@site/static/img/undraw_docusaurus_mountain.svg").default,
+    Svg: require("@site/static/img/prompts_as_config.svg").default,
     description: (
       <>
         Iterate on prompts and model parameters separately from application
-        code, making the overall development faster and more collaborative.
+        code, helping you simplify your application logic and iterate faster and
+        more collaboratively.
       </>
     ),
   },
   {
     title: "Source Control Friendly",
-    Svg: require("@site/static/img/undraw_docusaurus_tree.svg").default,
+    Svg: require("@site/static/img/source_control_friendly.svg").default,
     description: (
       <>
-        Better AI governance and reproducibility with a standardized JSON format
-        to store generative AI model settings, prompt inputs and outputs.
+        Standardized JSON format to store generative AI model settings, prompt
+        inputs and outputs, providing better AI governance, reproducibility and
+        shareability.
       </>
     ),
   },
   {
     title: "Multi-modal and model-agnostic",
-    Svg: require("@site/static/img/undraw_docusaurus_react.svg").default,
+    Svg: require("@site/static/img/multi_modal.svg").default,
     description: (
       <>
         Extensible SDK allows you to use aiconfig with any model from any
-        provider for any modality, including text, image and audio.
+        provider for any modality, including text, image and audio. Never worry
+        about wrangling different model formats again.
       </>
     ),
   },
@@ -44,9 +47,11 @@ const FeatureList: FeatureItem[] = [
 function Feature({ title, Svg, description }: FeatureItem) {
   return (
     <div className={clsx("col col--4")}>
-      <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
-      </div>
+      {Svg && (
+        <div className="text--center">
+          <Svg className={styles.featureSvg} role="img" />
+        </div>
+      )}
       <div className="text--center padding-horiz--md">
         <h3>{title}</h3>
         <p>{description}</p>
