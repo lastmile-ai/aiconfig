@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import copy
 from typing import TYPE_CHECKING, Dict, Optional
-from aiconfig.schema import (
+from ..schema import (
     AIConfig,
     ExecuteResult,
     ExecuteResult,
@@ -27,12 +27,11 @@ class PaLMTextParser(ParameterizedModelParser):
         """
         Returns an identifier for the model (e.g. llama-2, gpt-4, etc.).
         """
-        return "PaLM Chat"
+        return "models/text-bison-001"
 
     async def serialize(
         self,
         prompt_name: str,
-        prompt: str,
         model_name: str,
         inference_settings: Dict,
         parameters: Optional[Dict],
@@ -84,7 +83,7 @@ class PaLMTextParser(ParameterizedModelParser):
         completion_data["prompt"] = resolved_prompt
         return completion_data
 
-    def run_inference(self, prompt: Prompt, aiconfig, parameters) -> ExecuteResult:
+    def run_inference(self, prompt: Prompt, aiconfig, options: InferenceOptions, parameters) -> ExecuteResult:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -118,7 +117,7 @@ class PaLMChatParser(ParameterizedModelParser):
         """
         Returns an identifier for the model (e.g. llama-2, gpt-4, etc.).
         """
-        return "PaLM Chat"
+        return "models/chat-bison-001"
 
     async def serialize(
         self,
@@ -208,7 +207,7 @@ class PaLMChatParser(ParameterizedModelParser):
         completion_data["messages"].append({"content": resolved_prompt, "author": "0"})
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig, options, parameters) -> Output:
+    async def run_inference(self, prompt: Prompt, aiconfig, options: InferenceOptions, parameters) -> ExecuteResult:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
