@@ -6,6 +6,7 @@
 ![Python](https://github.com/lastmile-ai/aiconfig/actions/workflows/pr_python.yml/badge.svg)
 ![Node](https://github.com/lastmile-ai/aiconfig/actions/workflows/pr_typescript.yml/badge.svg)
 ![Docs](https://github.com/lastmile-ai/aiconfig/actions/workflows/test-deploy-docs.yml/badge.svg)
+![Static Badge](<https://img.shields.io/badge/Discord-LastMile%20AI-blue?color=rgb(37%2C%20150%2C%20190)&link=https%3A%2F%2Fdiscord.gg%2FqMqgzDae>)
 
 > Full documentation: **[aiconfig.lastmileai.dev](https://aiconfig.lastmileai.dev/)**
 
