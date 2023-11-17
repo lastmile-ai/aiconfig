@@ -91,10 +91,10 @@ yarn add aiconfig
 
 ### Python
 
-#### `pip` or `poetry`
+#### `pip3` or `poetry`
 
 ```bash
-pip install python-aiconfig
+pip3 install python-aiconfig
 ```
 
 ```bash
@@ -102,6 +102,16 @@ poetry add python-aiconfig
 ```
 
 [Detailed installation instructions](https://aiconfig.lastmileai.dev/docs/getting-started/#installation).
+
+### Set your OpenAI API Key
+
+> **Note**: Make sure to specify the API keys (such as [`OPENAI_API_KEY`](https://platform.openai.com/api-keys)) in your environment before proceeding.
+
+In your CLI, set the environment variable:
+
+```bash
+export OPENAI_API_KEY=my_key
+```
 
 ## Getting Started
 
@@ -160,15 +170,9 @@ https://github.com/lastmile-ai/aiconfig/assets/81494782/805173d1-0f83-44c5-b570-
 
 ### Run the `get_activities` prompt.
 
-> **Note**: Make sure to specify the API keys (such as [`OPENAI_API_KEY`](https://platform.openai.com/api-keys)) in your environment before proceeding.
-
-In your CLI, set the environment variable:
-
-```bash
-export OPENAI_API_KEY=my_key
-```
-
 You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
+
+Create a new file called `app.py` and and enter the following code:
 
 ```python
 import asyncio
@@ -185,7 +189,25 @@ async def main():
 asyncio.run(main())
 ```
 
+Now run this in your terminal with the command:
+
+```bash
+python3 app.py
+```
+
 ### Run the `gen_itinerary` prompt.
+
+In your `app.py` file, change the last line to below:
+
+```python
+await config.run("gen_itinerary", params=None, options=inference_options)
+```
+
+Re-run the command in your terminal:
+
+```bash
+python3 app.py
+```
 
 This prompt depends on the output of `get_activities`. It also takes in parameters (user input) to determine the customized itinerary.
 
