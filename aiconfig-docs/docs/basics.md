@@ -29,7 +29,7 @@ AIConfig helps unwind complexity by separating prompts, model parameters, and mo
 ![AIConfig flow](/img/aiconfig_dataflow.png)
 
 1. **[`aiconfig` file format](/docs/overview/ai-config-format)**: a standardized JSON format to store generative AI model settings, prompt inputs and outputs, and flexible multi-purpose metadata.
-2. **[AIConfig SDK](/docs/usage-guide)**: Python and Node SDKs to use `aiconfig` in your application code, and extension points to customize behavior.
+2. **[AIConfig SDK](https://github.com/lastmile-ai/aiconfig#aiconfig-sdk)**: Python and Node SDKs to use `aiconfig` in your application code, and extension points to customize behavior.
 3. **[AI Workbook editor](https://lastmileai.dev/workbooks/clm7b9yez00mdqw70majklrmx)**: A notebook-like playground to edit `aiconfig` files visually, run prompts, tweak models and model settings, and chain things together.
 
 AIConfig is **multi-modal** and **model-agnostic**. This enables powerful interop between different models and modalities, including chaining them together (see [prompt chaining](/docs/overview/define-prompt-chain)). For example, a Whisper (speech-to-text) prompt can be connected to a GPT4-V prompt (image+text-to-text) to build complex AI applications, all backed by the same `aiconfig` serialization format.
