@@ -1,7 +1,7 @@
 # Building a Generative AI App (Berkeley x LastMile AI)
 
 This workshop walks you through how to build a generative AI app with open-source LastMile AI tools.
-Workshop Date: November 14, 2023
+Workshop Date: November 17, 2023
 
 ## Tools
 
