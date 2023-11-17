@@ -193,7 +193,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         # Prompt is handled, remove from data
         data.pop("prompt", None)
 
-        model_metadata = ai_config.generate_model_metadata(data, self.id())
+        model_metadata = ai_config.get_model_metadata(data, self.id())
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
