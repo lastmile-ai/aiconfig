@@ -19,6 +19,8 @@ AIConfig is a source-control friendly way to manage prompts and model parameters
 
 > Full documentation: **[aiconfig.lastmileai.dev](https://aiconfig.lastmileai.dev/)**
 
+![AIConfig flow](aiconfig-docs/static/img/aiconfig_dataflow.png)
+
 ## Features
 
 - [x] **Source-control friendly** [`aiconfig` format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to save prompts and model settings, which you can use for evaluation, reproducibility and simplifying your application code.
