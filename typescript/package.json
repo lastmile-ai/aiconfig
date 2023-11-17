@@ -1,7 +1,7 @@
 {
   "name": "aiconfig",
-  "version": "1.0.4",
-  "description": "Library to help manage AI configs (i.e. prompts, models and parameters) using the .aiconfig file format.",
+  "version": "1.0.5",
+  "description": "Library to help manage AI prompts, models and parameters using the .aiconfig file format.",
   "repository": {
     "type": "git",
     "url": "https://github.com/lastmile-ai/aiconfig.git"
