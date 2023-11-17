@@ -306,7 +306,13 @@ AIConfigRuntime.registerModelParser(myModelParserInstance, ["gpt-4"])
 
 ## Extending AIConfig
 
-AIConfig is designed to be customized and extended for your use-case. There are some key extension points for AIConfig:
+AIConfig is designed to be customized and extended for your use-case. The [Extensibility](/docs/extensibility) goes into more detail.
+
+Currently, there are 3 core ways to extend AIConfig:
+
+1. [Supporting other models](/docs/extensibility#1-bring-your-own-model) (BYO Model)
+2. [Callback event handlers](/docs/extensibility#2-callback-handlers)
+3. [Custom metadata](/docs/extensibility#3-custom-metadata)
 
 ### Bring your own Model
 
