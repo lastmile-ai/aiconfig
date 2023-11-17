@@ -32,7 +32,7 @@ export default function Home(): JSX.Element {
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="Source-control friendly format for saving gen AI prompts, models & settings"
+      description="Source control format for gen AI prompts, models & settings"
     >
       <HomepageHeader />
       <main>
