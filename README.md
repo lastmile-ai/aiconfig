@@ -1,5 +1,5 @@
 <div align="center"><picture>
-  <img alt="aiconfig" src="aiconfig-docs/static/img/readme_logo.png">
+  <img alt="aiconfig" src="aiconfig-docs/static/img/readme_logo.png" />
 </picture></div>
 <br/>
 
@@ -35,29 +35,35 @@ AIConfig helps unwind complexity by separating prompts, model parameters, and mo
 
 ### Quicknav
 
-- [Getting Started](#install)
-
-  - [Create an AIConfig](https://aiconfig.lastmileai.dev/docs/overview/create-an-aiconfig)
-  - [Run a prompt](https://aiconfig.lastmileai.dev/docs/overview/run-aiconfig)
-  - [Pass data into prompts](https://aiconfig.lastmileai.dev/docs/overview/parameters)
-  - [Prompt chains](https://aiconfig.lastmileai.dev/docs/overview/define-prompt-chain)
-  - [Callbacks and monitoring](https://aiconfig.lastmileai.dev/docs/overview/monitoring-aiconfig)
-
-- [SDK cheatsheet](#aiconfig-sdk)
-- [Cookbooks and guides](#cookbooks)
-  - [CLI Chatbot](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Wizard-GPT)
-  - [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
-  - [Prompt routing](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Basic-Prompt-Routing)
-  - [OpenAI function calling](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI)
-  - [Chain of Verification](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Chain-of-Verification)
-- [Supported models](#supported-models)
-  - [LLaMA example](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/llama)
-  - [Hugging Face (Mistral-7B) example](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/HuggingFace)
-  - [PaLM](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Multi-LLM-Consistency)
-- [Extensibility](#extensibility)
-- [Contributing](#contributing-to-aiconfig)
-- [Roadmap](#roadmap)
-- [FAQ](#faqs)
+<ul style="margin-bottom:0; padding-bottom:0;">
+  <li><a href="#install">Getting Started</a></li>
+  <ul style="margin-bottom:0; padding-bottom:0;">
+    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/create-an-aiconfig">Create an AIConfig</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/run-aiconfig">Run a prompt</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/parameters">Pass data into prompts</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/define-prompt-chain">Prompt Chains</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/monitoring-aiconfig">Callbacks and monitoring</a></li>
+  </ul>
+  <li><a href="#aiconfig-sdk">SDK Cheatsheet</a></li>
+  <li><a href="#cookbooks">Cookbooks and guides</a></li>
+  <ul style="margin-bottom:0; padding-bottom:0;">
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Wizard-GPT">CLI Chatbot</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig">RAG with AIConfig</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Basic-Prompt-Routing">Prompt routing</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI">OpenAI function calling</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Chain-of-Verification">Chain of Verification</a></li>
+  </ul>
+  <li><a href="#supported-models">Supported models</a></li>
+  <ul style="margin-bottom:0; padding-bottom:0;">
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/llama">LLaMA2 example</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/HuggingFace">Hugging Face (Mistral-7B) example</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Multi-LLM-Consistency">PaLM</a></li>
+  </ul>
+  <li><a href="#extensibility">Extensibility</a></li>
+  <li><a href="#contributing-to-aiconfig">Contributing</a></li>
+  <li><a href="#roadmap">Roadmap</a></li>
+  <li><a href="#faqs">FAQ</a></li>
+</ul>
 
 ## Features
 
@@ -105,14 +111,12 @@ In this quickstart, you will create a customizable NYC travel itinerary using `a
 
 This AIConfig contains a prompt chain to get a list of travel activities from an LLM and then generate an itinerary in an order specified by the user.
 
-### Video Tutorial
-
 > **Link to tutorial code: [here](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Getting-Started)**
 
 <p align="center">
 <video controls height="480" width="800">
-    <source src="https://github.com/lastmile-ai/aiconfig/assets/25641935/d3d41ad2-ab66-4eb6-9deb-012ca283ff81"/>
-  </video>
+  <source src="https://github.com/lastmile-ai/aiconfig/assets/25641935/d3d41ad2-ab66-4eb6-9deb-012ca283ff81"/>
+</video>
 </p>
 
 ### Download `travel.aiconfig.json`
@@ -243,8 +247,8 @@ We can iterate on an `aiconfig` using a notebook-like editor called an **AI Work
 
 <p align="center">
 <video controls height="480" width="800">
-    <source src="https://github.com/lastmile-ai/aiconfig/assets/81494782/5d901493-bbda-4f8e-93c7-dd9a91bf242e"/>
-  </video>
+  <source src="https://github.com/lastmile-ai/aiconfig/assets/81494782/5d901493-bbda-4f8e-93c7-dd9a91bf242e"/>
+</video>
 </p>
 
 Try out the workbook playground here: **[NYC Travel Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9)**
