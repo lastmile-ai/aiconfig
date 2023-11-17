@@ -1,7 +1,10 @@
 from abc import abstractmethod
 import copy
-from typing import TYPE_CHECKING, Dict, Optional
-from aiconfig.schema import (
+from typing import TYPE_CHECKING, Dict, List, Optional
+
+from ..model_parser import InferenceOptions
+from ..callback import CallbackEvent
+from ..schema import (
     AIConfig,
     ExecuteResult,
     ExecuteResult,
@@ -27,16 +30,15 @@ class PaLMTextParser(ParameterizedModelParser):
         """
         Returns an identifier for the model (e.g. llama-2, gpt-4, etc.).
         """
-        return "PaLM Chat"
+        return "models/text-bison-001"
 
     async def serialize(
         self,
         prompt_name: str,
-        prompt: str,
         model_name: str,
         inference_settings: Dict,
         parameters: Optional[Dict],
-        **kwargs
+        **kwargs,
     ) -> Prompt:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
@@ -54,11 +56,13 @@ class PaLMTextParser(ParameterizedModelParser):
             metadata=PromptMetadata(
                 model=ModelMetadata(name=model_name, settings=inference_settings),
                 parameters=parameters,
-                **kwargs
+                **kwargs,
             ),
         )
 
-    def deserialize(self, prompt: Prompt, aiconfig: AIConfig, params: Optional[Dict] = {}) -> Dict:
+    async def deserialize(
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}
+    ) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
         and constructs the completion params for that model.
@@ -74,17 +78,15 @@ class PaLMTextParser(ParameterizedModelParser):
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
 
-        supported_keys = {"maxOutputTokens", "topP", "topK", "model", "temperature"}
-        completion_data = {}
-        for key in supported_keys:
-            if key in model_settings:
-                completion_data[key] = model_settings[key]
+        completion_data = refine_chat_completion_params(model_settings)
 
         # pass in the user prompt
         completion_data["prompt"] = resolved_prompt
         return completion_data
 
-    def run_inference(self, prompt: Prompt, aiconfig, parameters) -> ExecuteResult:
+    async def run_inference(
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters
+    ) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -96,14 +98,24 @@ class PaLMTextParser(ParameterizedModelParser):
         Returns:
             ExecuteResult: The response from the model.
         """
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_run_start",
+                __name__,
+                {"prompt": prompt, "options": options, "parameters": parameters},
+            )
+        )
         # TODO: check api key here
-        completion_data = self.deserialize(prompt, aiconfig, parameters)
+        completion_data = await self.deserialize(prompt, aiconfig, parameters)
         completion = palm.generate_text(**completion_data)
 
         # construct output object
         output = ExecuteResult(output=completion.predictions[0].content, response=completion)
 
         prompt.add_output(output)
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs})
+        )
         return output
 
     def get_output_text(self, prompt: Prompt, aiconfig) -> str:
@@ -118,17 +130,16 @@ class PaLMChatParser(ParameterizedModelParser):
         """
         Returns an identifier for the model (e.g. llama-2, gpt-4, etc.).
         """
-        return "PaLM Chat"
+        return "models/chat-bison-001"
 
     async def serialize(
         self,
         prompt_name: str,
-        prompt: str,
-        model_name: str,
-        inference_settings: Dict,
+        data: Dict,
+        ai_config: "AIConfigRuntime",
         parameters: Optional[Dict],
-        **kwargs
-    ) -> Prompt:
+        **kwargs,
+    ) -> List[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
@@ -139,13 +150,22 @@ class PaLMChatParser(ParameterizedModelParser):
         Returns:
             str: Serialized representation of the prompt and inference settings.
         """
-        Prompt(
+
+        event = CallbackEvent(
+            "on_serialize_start",
+            __name__,
+            {"prompt_name": prompt_name, "data": data, "parameters": parameters, "kwargs": kwargs},
+        )
+        await ai_config.callback_manager.run_callbacks(event)
+
+        model_metadata = ai_config.get_model_metadata(data, self.id())
+        return Prompt(
             name=prompt_name,
-            input=prompt,
+            input=data,
             metadata=PromptMetadata(
-                model=ModelMetadata(name=model_name, settings=inference_settings),
+                model=model_metadata,
                 parameters=parameters,
-                **kwargs
+                **kwargs,
             ),
         )
 
@@ -190,7 +210,9 @@ class PaLMChatParser(ParameterizedModelParser):
 
                     # check if prompt has an output. PaLM Api requires this
                     if len(previous_prompt.outputs) > 0:
-                        resolved_previous_prompt = resolve_parameters({}, previous_prompt, aiconfig)
+                        resolved_previous_prompt = resolve_parameters(
+                            {}, previous_prompt, aiconfig
+                        )
                         completion_data["messages"].append(
                             {"content": resolved_previous_prompt, "author": "0"}
                         )
@@ -208,7 +230,9 @@ class PaLMChatParser(ParameterizedModelParser):
         completion_data["messages"].append({"content": resolved_prompt, "author": "0"})
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig, options, parameters) -> Output:
+    async def run_inference(
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters
+    ) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -220,6 +244,14 @@ class PaLMChatParser(ParameterizedModelParser):
         Returns:
             ExecuteResult: The response from the model.
         """
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_run_start",
+                __name__,
+                {"prompt": prompt, "options": options, "parameters": parameters},
+            )
+        )
+
         # TODO: check and handle api key here
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         response = palm.chat(**completion_data)
@@ -230,12 +262,15 @@ class PaLMChatParser(ParameterizedModelParser):
                     "output_type": "execute_result",
                     "data": candidate,
                     "execution_count": i,
-                    "metadata": {"response": response}
+                    "metadata": {"response": response},
                 }
             )
             outputs.append(output)
 
         prompt.outputs = outputs
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs})
+        )
         return prompt.outputs
 
     def get_output_text(

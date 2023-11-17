@@ -19,6 +19,9 @@ from .util.params import resolve_prompt
 from .util.config_utils import get_api_key_from_environment
 from .registry import ModelParserRegistry
 
+# Model Parsers
+from .default_parsers.palm import PaLMTextParser, PaLMChatParser
+
 # Callback Utilities
 from .callback import (
     Callback,
