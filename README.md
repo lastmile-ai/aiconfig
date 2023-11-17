@@ -113,7 +113,7 @@ This AIConfig contains a prompt chain to get a list of travel activities from an
 
 > **Link to tutorial code: [here](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Getting-Started)**
 
-https://github.com/lastmile-ai/aiconfig/assets/25641935/d3d41ad2-ab66-4eb6-9deb-012ca283ff81
+https://github.com/lastmile-ai/aiconfig/assets/81494782/805173d1-0f83-44c5-b570-c776bb7dba66
 
 ### Download `travel.aiconfig.json`
 
