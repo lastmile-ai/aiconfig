@@ -66,12 +66,10 @@ def construct_stream_output(
 ) -> Output:
     """
     Constructs the output for a stream response.
-
     Args:
         response (TextGenerationStreamResponse): The response from the model.
         response_includes_details (bool): Whether or not the response includes details.
         options (InferenceOptions): The inference options. Used to determine the stream callback.
-
     """
     accumulated_message = ""
     for iteration in response:
@@ -132,20 +130,14 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         Args:
             model_id (str): The model ID of the model to use.
             no_token (bool): Whether or not to require an API token. Set to False if you don't have an api key.
-
         Returns:
             HuggingFaceTextParser: The HuggingFaceTextParser object.
-
         Usage:
-
         1. Create a new model parser object with the model ID of the model to use.
                 parser = HuggingFaceTextParser("mistralai/Mistral-7B-Instruct-v0.1", use_api_token=False)
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
-
         If use_api_token is set to True, then the model parser will require an API token to be set in the environment variable HUGGING_FACE_API_TOKEN.
-
-
         """
         super().__init__()
 
@@ -172,11 +164,9 @@ class HuggingFaceTextParser(ParameterizedModelParser):
     ) -> Prompt:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
-
         Args:
             prompt (str): The prompt to be serialized.
             inference_settings (dict): Model-specific inference settings to be serialized.
-
         Returns:
             str: Serialized representation of the prompt and inference settings.
         """
@@ -202,10 +192,8 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
         and constructs the completion params for that model.
-
         Args:
             serialized_data (str): Serialized data from the .aiconfig.
-
         Returns:
             dict: Model-specific completion parameters.
         """
@@ -224,11 +212,9 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
-
         Args:
             prompt (str): The input prompt.
             inference_settings (dict): Model-specific inference settings.
-
         Returns:
             InferenceResponse: The response from the model.
         """

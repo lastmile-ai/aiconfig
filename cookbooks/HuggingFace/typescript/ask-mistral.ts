@@ -7,27 +7,26 @@ import {
   AIConfigRuntime,
   InferenceOptions,
   InferenceCallbackHandlers,
+  ModelParserRegistry,
 } from "aiconfig";
 
-import { HuggingFaceTextGenerationModelParser } from "./hf";
+import { HuggingFaceTextGenerationModelParser } from "../../../extensions/HuggingFace/typescript/lib/hf";
 
 async function main() {
   const textGenerationModelParser = new HuggingFaceTextGenerationModelParser();
 
-  // reguster type error updated in unpublished version
-  // @ts-ignore: Unreachable code error
-  AIConfigRuntime.registerModelParser(textGenerationModelParser, [
-    "HuggingFaceTextParser",
-  ]);
-
   const config = AIConfigRuntime.load("../Mistral-aiconfig.json");
+
+  ModelParserRegistry.registerModelParser(
+    new HuggingFaceTextGenerationModelParser()
+  );
 
   function consoleLogCallback(
     data: string,
     accumulatedMessage: string,
     index: number
   ) {
-    console.log(data);
+    process.stdout.write(data);
   }
 
   const callbacks: InferenceCallbackHandlers = {

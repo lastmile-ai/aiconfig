@@ -93,10 +93,10 @@ yarn add aiconfig
 
 ### Python
 
-#### `pip` or `poetry`
+#### `pip3` or `poetry`
 
 ```bash
-pip install python-aiconfig
+pip3 install python-aiconfig
 ```
 
 ```bash
@@ -104,6 +104,16 @@ poetry add python-aiconfig
 ```
 
 [Detailed installation instructions](https://aiconfig.lastmileai.dev/docs/getting-started/#installation).
+
+### Set your OpenAI API Key
+
+> **Note**: Make sure to specify the API keys (such as [`OPENAI_API_KEY`](https://platform.openai.com/api-keys)) in your environment before proceeding.
+
+In your CLI, set the environment variable:
+
+```bash
+export OPENAI_API_KEY=my_key
+```
 
 ## Getting Started
 
@@ -115,7 +125,7 @@ This AIConfig contains a prompt chain to get a list of travel activities from an
 
 > **Link to tutorial code: [here](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Getting-Started)**
 
-https://github.com/lastmile-ai/aiconfig/assets/25641935/d3d41ad2-ab66-4eb6-9deb-012ca283ff81
+https://github.com/lastmile-ai/aiconfig/assets/81494782/805173d1-0f83-44c5-b570-c776bb7dba66
 
 ### Download `travel.aiconfig.json`
 
@@ -162,22 +172,44 @@ https://github.com/lastmile-ai/aiconfig/assets/25641935/d3d41ad2-ab66-4eb6-9deb-
 
 ### Run the `get_activities` prompt.
 
-> **Note**: Make sure to specify the API keys (such as `OPENAI_API_KEY`) in your environment before proceeding.
-
 You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
 
+Create a new file called `app.py` and and enter the following code:
+
 ```python
-from aiconfig import AIConfigRuntime
+import asyncio
+from aiconfig import AIConfigRuntime, InferenceOptions
 
-# Load the aiconfig
-config = AIConfigRuntime.load('travel.aiconfig.json')
+async def main():
+  # Load the aiconfig
+  config = AIConfigRuntime.load('travel.aiconfig.json')
 
-# Run a single prompt (with streaming)
-inference_options = InferenceOptions(stream=True)
-await config.run("get_activities", params=None, inference_options)
+  # Run a single prompt (with streaming)
+  inference_options = InferenceOptions(stream=True)
+  await config.run("get_activities", options=inference_options)
+
+asyncio.run(main())
+```
+
+Now run this in your terminal with the command:
+
+```bash
+python3 app.py
 ```
 
 ### Run the `gen_itinerary` prompt.
+
+In your `app.py` file, change the last line to below:
+
+```python
+await config.run("gen_itinerary", params=None, options=inference_options)
+```
+
+Re-run the command in your terminal:
+
+```bash
+python3 app.py
+```
 
 This prompt depends on the output of `get_activities`. It also takes in parameters (user input) to determine the customized itinerary.
 
@@ -215,10 +247,7 @@ Let's run this with AIConfig:
 Replace `config.run` above with this:
 
 ```python
-await config.run_with_dependencies(
-    "gen_itinerary",
-    params={"order_by": "duration"},
-    inference_options)
+await config.run("gen_itinerary", params={"order_by": "duration"}, options=inference_options, run_with_dependencies=True)
 ```
 
 Notice how simple the syntax is to perform a fairly complex task - running 2 different prompts across 2 different models and chaining one's output as part of the input of another.
@@ -231,7 +260,7 @@ Let's save the AIConfig back to disk, and serialize the outputs from the latest 
 
 ```python
 # Save the aiconfig to disk. and serialize outputs from the model run
-config.save('updated.aiconfig.json', include_output=True)
+config.save('updated.aiconfig.json', include_outputs=True)
 ```
 
 ### Edit `aiconfig` in a notebook editor
@@ -370,16 +399,16 @@ config.set_metadata("key", data, "prompt_name")
 
 Note: if `"prompt_name"` is specified, the metadata is updated specifically for that prompt. Otherwise, the global metadata is updated.
 
-### `AIConfigRuntime.registerModelParser`
+### Register new `ModelParser`
 
-Use the `AIConfigRuntime.registerModelParser` if you want to use a different `ModelParser`, or configure AIConfig to work with an additional model.
+Use the `AIConfigRuntime.register_model_parser` if you want to use a different `ModelParser`, or configure AIConfig to work with an additional model.
 
-AIConfig uses the model name string to retrieve the right `ModelParser` for a given Prompt (see `AIConfigRuntime.getModelParser`), so you can register a different ModelParser for the same ID to override which `ModelParser` handles a Prompt.
+AIConfig uses the model name string to retrieve the right `ModelParser` for a given Prompt (see `AIConfigRuntime.get_model_parser`), so you can register a different ModelParser for the same ID to override which `ModelParser` handles a Prompt.
 
 For example, suppose I want to use `MyOpenAIModelParser` to handle `gpt-4` prompts. I can do the following at the start of my application:
 
 ```python
-AIConfigRuntime.registerModelParser(myModelParserInstance, ["gpt-4"])
+AIConfigRuntime.register_model_parser(myModelParserInstance, ["gpt-4"])
 ```
 
 ### Callback events

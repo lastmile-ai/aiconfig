@@ -21,7 +21,7 @@ from huggingface_hub.inference._text_generation import (
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
-    from aiconfig.Config import AIConfigRuntime
+    from aiconfig import AIConfigRuntime
 
 
 # Step 1: define Helpers
@@ -122,7 +122,7 @@ def construct_regular_output(response, response_includes_details: bool) -> Outpu
     return output
 
 
-class HuggingFaceTextParser(ParameterizedModelParser):
+class HuggingFaceTextGenerationModelParser(ParameterizedModelParser):
     """
     A model parser for HuggingFace text generation models.
     """
@@ -160,7 +160,7 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         """
         Returns an identifier for the Model Parser
         """
-        return "HuggingFaceTextParser"
+        return "HuggingFaceTextGenerationModelParser"
 
     def serialize(
         self,
