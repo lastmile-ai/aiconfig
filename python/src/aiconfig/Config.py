@@ -34,6 +34,7 @@ gpt_models = [
 for model in gpt_models:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
 ModelParserRegistry.register_model_parser(PaLMChatParser())
+ModelParserRegistry.register_model_parser(PaLMTextParser())
 ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
 
 class AIConfigRuntime(AIConfig):
