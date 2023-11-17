@@ -22,6 +22,14 @@ You can use any generative AI model with the `aiconfig` format. All you need to 
 - **deserialize** existing `aiconfig` `Prompts` for that model into the data that the model accepts (e.g. OpenAI chat completion params).
 - **run** inference using a model (e.g. calling the OpenAI API or a model running locally).
 
+:::tip
+See some existing `aiconfig` extensions to learn how to build your own:
+
+- [LLaMA2 extension](https://github.com/lastmile-ai/aiconfig/tree/main/extensions/llama)
+- [Hugging Face extension](https://github.com/lastmile-ai/aiconfig/tree/main/extensions/HuggingFace)
+
+:::
+
 ### Define a custom `ModelParser`
 
 In this guide, you will learn the basics of defining your own custom `ModelParser` for use in the AIConfig library. `ModelParser`s play a crucial role in managing and interacting with AI models within the AIConfig SDK. You can create custom `ModelParser`s to suit your specific needs and integrate them seamlessly into AIConfig.
