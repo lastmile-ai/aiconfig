@@ -515,13 +515,21 @@ All that’s needed to use a model with AIConfig is a ModelParser that knows
 
 For more details, see [Extensibility](https://aiconfig.lastmileai.dev/docs/extensibility).
 
-### Why should I use `aiconfig` instead of things like hydra or [configurator](https://pypi.org/project/configurator/)?
+### When should I store outputs in an `aiconfig`?
+
+The `AIConfigRuntime` object is used to interact with an aiconfig programmatically (see [SDK usage guide](#aiconfig-sdk)). As you run prompts, this object keeps track of the outputs returned from the model.
+
+You can choose to serialize these outputs back into the `aiconfig` by using the `config.save(include_outputs=True)` API. This can be useful for preserving context -- think of it like session state.
+
+For example, you can use aiconfig to create a chatbot, and use the same format to save the chat history so it can be resumed for the next session.
+
+You can also choose to save outputs to a _different_ file than the original config -- `config.save("history.aiconfig.json", include_outputs=True)`.
+
+### Why should I use `aiconfig` instead of things like [configurator](https://pypi.org/project/configurator/)?
 
 It helps to have a [standardized format](http://aiconfig.lastmileai.dev/docs/overview/ai-config-format) specifically for storing generative AI prompts, inference results, model parameters and arbitrary metadata, as opposed to a general-purpose configuration schema.
 
 With that standardization, you just need a layer that knows how to serialize/deserialize from that format into whatever the inference endpoints require.
-
-Having a shared format allows an extension ecosystem to be built around it. For example, here’s how aiconfig interops with openai models: https://github.com/lastmile-ai/aiconfig/blob/main/python/src/aiconfig/default_parsers/openai.py, and this is how it handles huggingface textgen models: https://github.com/lastmile-ai/aiconfig/blob/main/python/src/aiconfig/default_parsers/hf.py. With this shared ModelParser contract, anyone can add support for any model as long as it fits the aiconfig schema.
 
 ### This looks similar to `ipynb` for Jupyter notebooks
 
