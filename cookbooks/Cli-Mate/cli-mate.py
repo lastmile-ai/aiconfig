@@ -1,8 +1,13 @@
+from dataclasses import dataclass
+from textwrap import dedent
 import warnings
+
+from result import Err, Ok, Result
 
 warnings.filterwarnings("ignore")
 
 import asyncio
+from asyncio import AbstractEventLoop
 import argparse
 import signal
 import sys
@@ -81,12 +86,110 @@ async def mod_code(
     return 0
 
 
+@dataclass
+class Help:
+    pass
+
+
+@dataclass
+class Run:
+    user_input: str
+
+
+class Reload:
+    # TODO
+    # if should_reload and source_code_file is not None:
+    # user_input = deprefix(user_input.strip(), "reload")
+    # with open(source_code_file.strip(), "r", encoding="utf8") as file:
+    #     source_code = file.read()
+    #     llm_input = f"QUERY ABOUT SOURCE CODE:\n{user_input}\nSOURCE CODE:\n```{source_code}\n```"
+    pass
+
+
+class Clear:
+    pass
+
+
+class Pass:
+    pass
+
+
+class MultilineToggle:
+    pass
+
+
+Command = Pass | Help | Run | Reload | Clear | MultilineToggle
+
+
+def _get_command(user_input: str) -> Command:
+    normed = user_input.strip().lower()
+    if normed in ["h", "help", "?"]:
+        return Help()
+    elif normed in ["r", "reload"]:
+        return Reload()
+    elif normed in ["c", "clear"]:
+        return Clear()
+    elif normed in ["m", "multiline"]:
+        return MultilineToggle()
+    else:
+        return Run(user_input=user_input)
+
+
+def _print_help():
+    print(
+        dedent(
+            """
+        Exit loop: Ctrl-D
+        Toggle multiline input mode: m or multiline
+        Clear screen: c or clear
+        Reload source code: r or reload
+            """
+        )
+    )
+
+
+async def _run_llm(
+    runtime: AIConfigRuntime, llm_input: str
+) -> Result[ExecuteResult, str]:
+    # Dynamically generate the prompt name and prompt object
+    new_prompt_name = f"prompt{len(runtime.prompts)+1}"  # Prompt{number of prompts}
+    new_prompt = Prompt(name=new_prompt_name, input=llm_input)
+
+    # Add the new prompt and run the model
+    runtime.add_prompt(new_prompt.name, new_prompt)
+
+    def callback(delta: Any, _: Any, __: int):
+        if state["interrupt"]:
+            raise InterruptException()
+
+        print(delta.get("content", ""), end="", flush=True)
+
+    options = InferenceOptions(stream=True, stream_callback=callback)
+    state["interrupt"] = False
+    try:
+        result = await runtime.run(new_prompt_name, {}, options=options)
+        print(flush=True)
+        return Ok(result)
+    except InterruptException:
+        return Err("interrupted")
+
+
+async def _get_raw_input(
+    event_loop: AbstractEventLoop, session: PromptSession[str], is_multiline: bool
+) -> str:
+    def _prompt():  # type: ignore
+        return session.prompt(
+            "> ",
+            multiline=is_multiline,
+        )
+
+    return await event_loop.run_in_executor(None, _prompt)
+
+
 async def loop(aiconfig_path: str, source_code_file: str | None):
     runtime = AIConfigRuntime.load(aiconfig_path)
     event_loop = asyncio.get_event_loop()
-
     session = PromptSession()
-
     state["interrupt"] = False
 
     def signal_handler(_: int, __: FrameType | None):
@@ -95,52 +198,47 @@ async def loop(aiconfig_path: str, source_code_file: str | None):
 
     signal.signal(signal.SIGINT, signal_handler)
 
-    i = 0
+    is_multiline = False
+    print("Enter 'h', 'help', or '?' for help.", flush=True)
     while True:
         try:
-            user_input = await event_loop.run_in_executor(
-                None, session.prompt, "Query: [ctrl-D to exit] "
-            )
+            raw_input = await _get_raw_input(event_loop, session, is_multiline)
         except KeyboardInterrupt:
             continue
         except EOFError:
             print("Exiting")
             break
 
-        if user_input.strip() == "":
-            continue
+        command = _get_command(raw_input)
 
-        should_reload = user_input.strip().startswith("reload") or i == 0
-        if should_reload and source_code_file is not None:
-            user_input = deprefix(user_input.strip(), "reload")
-            with open(source_code_file.strip(), "r", encoding="utf8") as file:
-                source_code = file.read()
-                prompt = f"QUERY ABOUT SOURCE CODE:\n{user_input}\nSOURCE CODE:\n```{source_code}\n```"
-        else:
-            prompt = user_input
-
-        # Dynamically generate the prompt name and prompt object
-        new_prompt_name = f"prompt{len(runtime.prompts)+1}"  # Prompt{number of prompts}
-        new_prompt = Prompt(name=new_prompt_name, input=prompt)
-
-        # Add the new prompt and run the model
-        runtime.add_prompt(new_prompt.name, new_prompt)
-
-        def callback(delta: Any, _: Any, __: int):
-            if state["interrupt"]:
-                raise InterruptException()
-
-            print(delta.get("content", ""), end="", flush=True)
-
-        options = InferenceOptions(stream=True, stream_callback=callback)
-        state["interrupt"] = False
-        try:
-            result = await runtime.run(new_prompt_name, {}, options=options)
-            # print(f"{result=}")
-            print(flush=True)
-            i += 1
-        except InterruptException:
-            continue
+        match command:
+            case Pass():
+                pass
+            case Help():
+                _print_help()
+            case MultilineToggle():
+                is_multiline = not is_multiline
+                print(f"Multiline input mode: {'on' if is_multiline else 'off'}")
+                if is_multiline:
+                    print("Hit option-enter to submit.")
+            case Run(user_input=user_input):
+                prompt = f"""
+                    INSTRUCTIONS: respond to the following query as concisely as possible.
+                    Do not output more tokens than necessary.
+                    QUERY: {user_input}
+                    """
+                llm_res = await _run_llm(runtime, prompt)
+                match llm_res:
+                    case Ok(_):
+                        # TODO somethign with res?
+                        pass
+                    case Err(msg):
+                        print(msg)
+            case Reload():
+                # TODO
+                pass
+            case Clear():
+                print("\033c", end="")
 
 
 async def main():
