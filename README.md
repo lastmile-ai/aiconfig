@@ -73,7 +73,7 @@ AIConfig helps unwind complexity by separating prompts, model parameters, and mo
 - [x] **Streaming** supported out of the box, allowing you to get playground-like streaming wherever you use `aiconfig`.
 - [x] **Notebook editor**. [AI Workbooks editor](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9) to visually create your `aiconfig`, and use the SDK to connect it to your application code.
 
-## Install
+## Install & Setup
 
 Install with your favorite package manager for Node or Python.
 
@@ -102,6 +102,16 @@ poetry add python-aiconfig
 ```
 
 [Detailed installation instructions](https://aiconfig.lastmileai.dev/docs/getting-started/#installation).
+
+### Set your OpenAI API Key
+
+> **Note**: Make sure to specify the API keys (such as [`OPENAI_API_KEY`](https://platform.openai.com/api-keys)) in your environment before proceeding.
+
+In your CLI, set the environment variable:
+
+```bash
+export OPENAI_API_KEY=my_key
+```
 
 ## Getting Started
 
@@ -159,14 +169,6 @@ https://github.com/lastmile-ai/aiconfig/assets/81494782/805173d1-0f83-44c5-b570-
 ```
 
 ### Run the `get_activities` prompt.
-
-> **Note**: Make sure to specify the API keys (such as [`OPENAI_API_KEY`](https://platform.openai.com/api-keys)) in your environment before proceeding.
-
-In your CLI, set the environment variable:
-
-```bash
-export OPENAI_API_KEY=my_key
-```
 
 You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
 
