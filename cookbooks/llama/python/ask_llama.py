@@ -1,15 +1,33 @@
 import asyncio
+import sys
 
 from aiconfig.model_parser import InferenceOptions
 from llama import LlamaModelParser
 
 from aiconfig import AIConfigRuntime
+import argparse
 
 
 async def main():
-    llama_model_parser = LlamaModelParser(
-        model_path="models/llama-2-7b-chat.Q4_K_M.gguf"
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--aiconfig-path",
+        type=str,
+        required=True,
+        help="Relative or absolute path to aiconfig json, e.g. cookbooks/llama/llama-aiconfig.json",
     )
+    parser.add_argument(
+        "--model-path",
+        type=str,
+        required=True,
+        help="Relative or absolute path to model",
+    )
+    args = parser.parse_args()
+    return await run(args.aiconfig_path, args.model_path)
+
+
+async def run(aiconfig_path: str, model_path: str):
+    llama_model_parser = LlamaModelParser(model_path=model_path)
 
     for lm in [
         "llama-2-7b-chat",
@@ -18,7 +36,7 @@ async def main():
     ]:
         AIConfigRuntime.register_model_parser(llama_model_parser, lm)
 
-    config = AIConfigRuntime.load("cookbooks/llama/llama-aiconfig.json")
+    config = AIConfigRuntime.load(aiconfig_path)
 
     def stream_callback(data, accumulated_message, index):
         print(data, end="", flush=True)
@@ -38,9 +56,9 @@ async def main():
     await config.run("prompt13b", params={}, options=inference_options)
 
     print("\n\nRunning prompt13b_code...")
-    code_res = await config.run("prompt13b_code", params={}, options=inference_options)
-    print(f"\n\n\n\nCode response:\n{code_res}")
+    await config.run("prompt13b_code", params={}, options=inference_options)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    res = asyncio.run(main())
+    sys.exit(res)
