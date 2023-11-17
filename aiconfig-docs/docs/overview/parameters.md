@@ -215,7 +215,7 @@ This will return the fully-resolved completion params that will be passed to the
 Because parameters can be passed in to prompts programmatically, exactly what gets passed in can be dynamic. For the example above you could have a dropdown of possible SQL languagesin your app, and you can set the `sql_langauge` parameter to the value selected by a user.
 
 :::tip
-This pattern can be used to apply Retrieval Augmented Generation (RAG) techniques with `aiconfig`. For more details, see the [RAG cookbook](/docs/cookbooks/aiconfig-rag).
+This pattern can be used to apply Retrieval Augmented Generation (RAG) techniques with `aiconfig`. For more details, see the [RAG cookbook](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig).
 :::
 
 ## What gets parameterized

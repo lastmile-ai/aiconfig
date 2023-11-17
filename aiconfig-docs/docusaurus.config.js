@@ -2,14 +2,12 @@
 // Note: type annotations allow type checking and IDEs autocompletion
 
 const { themes } = require("prism-react-renderer");
-const lightTheme = themes.github;
-const darkTheme = themes.dracula;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: "AIConfig",
   tagline:
-    "Gen AI prompts, models and settings as source-control friendly configs",
+    "Config-driven, source control friendly AI application development framework",
   favicon: "img/favicon-light-theme.ico",
 
   // Set the production url of your site here
@@ -39,9 +37,6 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl: "https://github.com/lastmile-ai/aiconfig/aiconfig-docs",
         },
         theme: {
           customCss: require.resolve("./src/css/custom.scss"),

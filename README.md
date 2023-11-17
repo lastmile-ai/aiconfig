@@ -1,5 +1,5 @@
 <div align="center"><picture>
-  <img alt="aiconfig" src="aiconfig-docs/static/img/readme_logo.png">
+  <img alt="aiconfig" src="aiconfig-docs/static/img/readme_logo.png" />
 </picture></div>
 <br/>
 
@@ -7,17 +7,63 @@
 ![Node](https://github.com/lastmile-ai/aiconfig/actions/workflows/pr_typescript.yml/badge.svg)
 ![Docs](https://github.com/lastmile-ai/aiconfig/actions/workflows/test-deploy-docs.yml/badge.svg)
 
-<!-- <div align="right"><a href="https://aiconfig.lastmileai.dev">Go to Docs</a></div> -->
+> Full documentation: **[aiconfig.lastmileai.dev](https://aiconfig.lastmileai.dev/)**
 
 ## Overview
 
-AIConfig is a source-control friendly way to manage prompts and model parameters for generative AI.
+AIConfig saves prompts, models and model parameters as source control friendly configs. This allows you to iterate on prompts and model parameters _separately from your application code_.
 
-1. **Prompts as configs**: a [standardized JSON format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to store generative AI model settings, prompt inputs/outputs, and flexible metadata. This allows you to iterate on prompts and model parameters _separately from your application code_.
+1. **Prompts as configs**: a [standardized JSON format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to store generative AI model settings, prompt inputs/outputs, and flexible metadata.
 2. **Model-agnostic SDK**: Python & Node SDKs to use `aiconfig` in your application code. AIConfig is designed to be **model-agnostic** and **multi-modal**, so you can extend it to work with any generative AI model, including text, image and audio.
 3. **AI Workbook editor**: A [notebook-like playground](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9) to edit `aiconfig` files visually, run prompts, tweak models and model settings, and chain things together.
 
-> Full documentation: **[aiconfig.lastmileai.dev](https://aiconfig.lastmileai.dev/)**
+### What problem it solves
+
+Today, application code is tightly coupled with the gen AI settings for the application -- prompts, parameters, and model-specific logic is all jumbled in with app code.
+
+- results in increased complexity
+- makes it hard to iterate on the prompts or try different models easily
+- makes it hard to evaluate prompt/model performance
+
+AIConfig helps unwind complexity by separating prompts, model parameters, and model-specific logic from your application.
+
+- simplifies application code -- simply call `config.run()`
+- open the `aiconfig` in a playground to iterate quickly
+- version control and evaluate the `aiconfig` - it's the AI artifact for your application.
+
+![AIConfig flow](aiconfig-docs/static/img/aiconfig_dataflow.png)
+
+### Quicknav
+
+<ul style="margin-bottom:0; padding-bottom:0;">
+  <li><a href="#install">Getting Started</a></li>
+  <ul style="margin-bottom:0; padding-bottom:0;">
+    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/create-an-aiconfig">Create an AIConfig</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/run-aiconfig">Run a prompt</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/parameters">Pass data into prompts</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/define-prompt-chain">Prompt Chains</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/monitoring-aiconfig">Callbacks and monitoring</a></li>
+  </ul>
+  <li><a href="#aiconfig-sdk">SDK Cheatsheet</a></li>
+  <li><a href="#cookbooks">Cookbooks and guides</a></li>
+  <ul style="margin-bottom:0; padding-bottom:0;">
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Wizard-GPT">CLI Chatbot</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig">RAG with AIConfig</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Basic-Prompt-Routing">Prompt routing</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI">OpenAI function calling</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Chain-of-Verification">Chain of Verification</a></li>
+  </ul>
+  <li><a href="#supported-models">Supported models</a></li>
+  <ul style="margin-bottom:0; padding-bottom:0;">
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/llama">LLaMA2 example</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/HuggingFace">Hugging Face (Mistral-7B) example</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Multi-LLM-Consistency">PaLM</a></li>
+  </ul>
+  <li><a href="#extensibility">Extensibility</a></li>
+  <li><a href="#contributing-to-aiconfig">Contributing</a></li>
+  <li><a href="#roadmap">Roadmap</a></li>
+  <li><a href="#faqs">FAQ</a></li>
+</ul>
 
 ## Features
 
@@ -55,17 +101,23 @@ pip install python-aiconfig
 poetry add python-aiconfig
 ```
 
-[Detailed installation instructions](https://aiconfig.lastmileai.dev/docs/introduction/getting-started/#installation).
+[Detailed installation instructions](https://aiconfig.lastmileai.dev/docs/getting-started/#installation).
 
-## Getting Started - your first AIConfig
+## Getting Started
 
-> **We cover Python instructions here, for Node.js please see the [detailed Getting Started guide](https://aiconfig.lastmileai.dev/docs/introduction/getting-started)**
+> We cover Python instructions here, for Node.js please see the [detailed Getting Started guide](https://aiconfig.lastmileai.dev/docs/getting-started)
 
 In this quickstart, you will create a customizable NYC travel itinerary using `aiconfig`.
 
-This AIConfig contains a prompt chain to get a list of travel activities from an LLM and then customize the activities based on user preferences.
+This AIConfig contains a prompt chain to get a list of travel activities from an LLM and then generate an itinerary in an order specified by the user.
+
+> **Link to tutorial code: [here](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Getting-Started)**
+
+https://github.com/lastmile-ai/aiconfig/assets/25641935/d3d41ad2-ab66-4eb6-9deb-012ca283ff81
 
 ### Download `travel.aiconfig.json`
+
+> **Note**: Don't worry if you don't understand all the pieces of this yet, we'll go over it step by step.
 
 ```json
 {
@@ -112,12 +164,10 @@ This AIConfig contains a prompt chain to get a list of travel activities from an
 
 You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
 
-#### Python
-
 ```python
-from aiconfig import AIConfigRuntime, InferenceOptions
+from aiconfig import AIConfigRuntime
 
-# Load the aiconfig. You can also use AIConfigRuntime.loadJSON({})
+# Load the aiconfig
 config = AIConfigRuntime.load('travel.aiconfig.json')
 
 # Run a single prompt (with streaming)
@@ -160,12 +210,9 @@ Observe the following:
 
 Let's run this with AIConfig:
 
-#### Python
-
 Replace `config.run` above with this:
 
 ```python
-inference_options = InferenceOptions(stream=True)
 await config.run_with_dependencies(
     "gen_itinerary",
     params={"order_by": "duration"},
@@ -173,6 +220,8 @@ await config.run_with_dependencies(
 ```
 
 Notice how simple the syntax is to perform a fairly complex task - running 2 different prompts across 2 different models and chaining one's output as part of the input of another.
+
+The code will just run `get_activities`, then pipe its output as an input to `gen_itinerary`, and finally run `gen_itinerary`.
 
 ### Save the AIConfig
 
@@ -183,7 +232,7 @@ Let's save the AIConfig back to disk, and serialize the outputs from the latest 
 config.save('updated.aiconfig.json', include_output=True)
 ```
 
-## Edit `aiconfig` in a notebook editor
+### Edit `aiconfig` in a notebook editor
 
 We can iterate on an `aiconfig` using a notebook-like editor called an **AI Workbook**. Now that we have an `aiconfig` file artifact that encapsulates the generative AI part of our application, we can iterate on it separately from the application code that uses it.
 
@@ -192,19 +241,31 @@ We can iterate on an `aiconfig` using a notebook-like editor called an **AI Work
 3. Click dropdown from '+ New Workbook' and select 'Create from AIConfig'
 4. Upload `travel.aiconfig.json`
 
-<p align="center">
-<video controls height="480" width="800">
-    <source src="https://github.com/lastmile-ai/aiconfig/assets/81494782/5d901493-bbda-4f8e-93c7-dd9a91bf242e"/>
-  </video>
-</p>
+https://github.com/lastmile-ai/aiconfig/assets/81494782/5d901493-bbda-4f8e-93c7-dd9a91bf242e
 
 Try out the workbook playground here: **[NYC Travel Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9)**
 
 > **We are working on a local editor that you can run yourself. For now, please use the hosted version on https://lastmileai.dev.**
 
-<!-- <video controls><source src="https://s3.amazonaws.com/publicdata.lastmileai.com/workbook_editor_480.mov"/></video> -->
+### Additional Guides
 
-## OpenAI Introspection API
+There is a lot you can do with `aiconfig`. We have several other tutorials to help get you started:
+
+- [Create an AIConfig from scratch](https://aiconfig.lastmileai.dev/docs/overview/create-an-aiconfig)
+- [Run a prompt](https://aiconfig.lastmileai.dev/docs/overview/run-aiconfig)
+- [Pass data into prompts](https://aiconfig.lastmileai.dev/docs/overview/parameters)
+- [Prompt chains](https://aiconfig.lastmileai.dev/docs/overview/define-prompt-chain)
+- [Callbacks and monitoring](https://aiconfig.lastmileai.dev/docs/overview/monitoring-aiconfig)
+
+Here are some example uses:
+
+- [CLI Chatbot](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Wizard-GPT)
+- [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
+- [Prompt routing](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Basic-Prompt-Routing)
+- [OpenAI function calling](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI)
+- [Chain of thought](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Chain-of-Verification)
+
+### OpenAI Introspection API
 
 If you are already using OpenAI completion API's in your application, you can get started very quickly to start saving the messages in an `aiconfig`.
 
@@ -213,28 +274,45 @@ Simply add the following lines to your `import`:
 ```python
 import openai
 from aiconfig.ChatCompletion import create_and_save_to_config
- openai.ChatCompletion.create = create_and_save_to_config
+new_config = AIConfigRuntime.create("my_aiconfig", "This is my new AIConfig")
+openai.chat.completions.create = create_and_save_to_config(aiconfig=new_config)
 ```
 
-Now you can continue using `openai` completion API as normal. By default, the data will get serialized to an `aiconfig.json`.
+Now you can continue using `openai` completion API as normal. When you want to save the config, just call `new_config.save()` and all your openai completion calls will get serialized to disk.
+
+> [**Detailed guide here**](https://aiconfig.lastmileai.dev/docs/overview/create-an-aiconfig#openai-api-python-wrapper)
 
 ## Supported Models
 
 AIConfig supports the following model models out of the box:
 
 - OpenAI chat models (GPT-3, GPT-3.5, GPT-4)
+- LLaMA2 (running locally)
 - Google PaLM models (PaLM chat)
 - Hugging Face text generation models (e.g. Mistral-7B)
 
-The `aiconfig` data model is model-agnostic and multi-modal. If you need to use a model that isn't provided out of the box, you can implement a `ModelParser` for it (see [Extending AIConfig](#extending-aiconfig)).
+### Examples
+
+- [OpenAI](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI)
+- [LLaMA example](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/llama)
+- [Hugging Face (Mistral-7B) example](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/HuggingFace)
+- [PaLM](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Multi-LLM-Consistency)
+
+> If you need to use a model that isn't provided out of the box, you can implement a `ModelParser` for it (see [Extending AIConfig](#extending-aiconfig)). **We welcome [contributions](https://aiconfig.lastmileai.dev/docs/contributing)**
+
+## AIConfig Schema
+
+[AIConfig specification](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format)
 
 ## AIConfig SDK
+
+> Read the [Usage Guide](https://aiconfig.lastmileai.dev/docs/usage-guide) for more details.
 
 The AIConfig SDK supports CRUD operations for prompts, models, parameters and metadata. Here are some common examples.
 
 The root interface is the `AIConfigRuntime` object. That is the entrypoint for interacting with an AIConfig programmatically.
 
-Let's go over a few key CRUD operations to give a glimpse
+Let's go over a few key CRUD operations to give a glimpse.
 
 ### AIConfig `create`
 
@@ -270,7 +348,7 @@ config.run("prompt_name", params)
 
 ### `run_with_dependencies`
 
-There's a variant of `run` called `run_with_dependencies` -- this re-runs all prompt dependencies.
+This is a variant of `run` -- this re-runs all prompt dependencies.
 For example, in [`travel.aiconfig.json`](#download-travelaiconfigjson), the `gen_itinerary` prompt references the output of the `get_activities` prompt using `{{get_activities.output}}`.
 
 Running this function will first execute `get_activities`, and use its output to resolve the `gen_itinerary` prompt before executing it.
@@ -282,10 +360,10 @@ config.run_with_dependencies("gen_itinerary")
 
 ### Updating metadata and parameters
 
-Use the `get/setMetadata` and `get/setParameter` methods to interact with metadata and parameters (`setParameter` is just syntactic sugar to update `"metadata.parameters"`)
+Use the `get/set_metadata` and `get/set_parameter` methods to interact with metadata and parameters (`set_parameter` is just syntactic sugar to update `"metadata.parameters"`)
 
 ```python
-config.setMetadata("key", data, "prompt_name")
+config.set_metadata("key", data, "prompt_name")
 ```
 
 Note: if `"prompt_name"` is specified, the metadata is updated specifically for that prompt. Otherwise, the global metadata is updated.
@@ -302,219 +380,40 @@ For example, suppose I want to use `MyOpenAIModelParser` to handle `gpt-4` promp
 AIConfigRuntime.registerModelParser(myModelParserInstance, ["gpt-4"])
 ```
 
-## Extending AIConfig
+### Callback events
 
-AIConfig is designed to be customized and extended for your use-case. There are some key extension points for AIConfig:
-
-### Bring your own Model
-
-You can use any generative AI model with the `aiconfig` format. All you need to do is define a `ModelParser` class. This class is responsible for 3 key operations:
-
-- **serialize** prompts, model parameters and inference outputs into an `aiconfig`.
-- **deserialize** existing `aiconfig` `Prompts` for that model into the data that the model accepts (e.g. OpenAI chat completion params).
-- **run** inference using a model (e.g. calling the OpenAI API or a model running locally).
-
-# Defining Your Own Model Parser
-
-In this guide, you will learn the basics of defining your own custom Model Parser for use in the AIConfig library. Model Parsers play a crucial role in managing and interacting with AI models within the AIConfig SDK. You can create custom Model Parsers to suit your specific needs and integrate them seamlessly into AIConfig.
-
-## ModelParser Class
-
-The `ModelParser` is an abstract base class that serves as the foundation for all Model Parsers. It defines a set of methods and behaviors that any Model Parser implementation must adhere to. Below are the key methods defined in the `ModelParser` class:
-
-- `id()`
-  Returns an identifier for the model parser (e.g., "OpenAIModelParser, HuggingFaceTextGeneration", etc.).
-- `serialize()`
-  Serialize a prompt and additional metadata/model settings into a `Prompt` object that can be saved in the AIConfig.
-- `deserialize()`
-  Deserialize a `Prompt` object loaded from an AIConfig into a structure that can be used for model inference.
-- `run()`
-  Execute model inference based on completion data constructed in the `deserialize()` method. It saves the response or output in `prompt.outputs`.
-- `get_output_text()`: Get the output text from the output object containing model inference response.
-- `get_model_settings()`: Extract the AI model's settings from the AIConfig
-
-## Model Parser Extensibility
-
-When defining your custom Model Parser, you can inherit from the `ModelParser` class and override its methods as needed to customize the behavior for your specific AI models. This extensibility allows you to seamlessly integrate your Model Parser into the AIConfig framework and manage AI models with ease.
-
-Here are some helpful resources to get started:
-
-1. `ModelParser` class ([Python](https://github.com/lastmile-ai/aiconfig/blob/main/python/src/aiconfig/model_parser.py), [TypeScript](https://github.com/lastmile-ai/aiconfig/blob/main/typescript/lib/modelParser.ts)).
-2. OpenAI Chat `ModelParser` ([Python](https://github.com/lastmile-ai/aiconfig/blob/main/python/src/aiconfig/default_parsers/openai.py#L25), [TypeScript](https://github.com/lastmile-ai/aiconfig/blob/main/typescript/lib/parsers/openai.ts#L261))
-
-### Parameterized Model Parser
-
-In some cases, you may want to create a specialized Model Parser that handles parameterization of prompts. The `ParameterizedModelParser` is an abstract subclass of `ModelParser` that provides additional methods and utilities for parameterization.
-
-#### Quick Note On Parameterization:
-
-In AIConfig, parameters refer to the handlebar syntax used by prompt inputs to denote a placeholder for another value. See # Parameters and Chaining Prompts section
-
-### Model Parser Extensibility with Parameterization
-
-When defining your own custom Model Parser, you can choose to inherit from the `ParameterizedModelParser` class to take advantage of the parameterization features provided by AIConfig. This allows you to create model parsers that can handle prompts with placeholders and dynamically replace them with actual values during serialization and deserialization.
-
-By incorporating parameterization into your model parser, you can create AIConfigs that are more flexible and adaptable to different use cases, as well as facilitate the customization of prompt templates to meet specific requirements.
-
-Another notable benefit of using parameterization is the ability to leverage the `run_with_dependencies` feature. The `run_with_dependencies` API method allows you to execute prompts with resolved dependencies and prompt references, providing more advanced control over the model's behavior.
-
-The `ParameterizedModelParser` class and associated helper utilities empower you to harness the power of parameterization in your AI configuration management, offering greater flexibility and control over how prompts are processed and used in model inference.
-
-### Helper Utils provided with the Parameterized Model Parser Class
-
-The `ParameterizedModelParser` class extends the capabilities of the base `ModelParser` and includes the following methods:
-
-- Python `resolve_prompt_template()` TypeScript: `resolve_prompt_template()`
-  Resolves a templated string with provided parameters, allowing for dynamic prompt generation.
-- Python `get_prompt_template()` TypeScript: `get_prompt_template()`
-  An overrideable method that returns a template for a prompt. Customize this method to specify how prompt templates are extracted from prompts.
-
-### General Helper Utilities for Parameterization
-
-To facilitate parameterization, AIConfig provides a set of helper utilities:
-
-- Python: `resolve_parameters()` TypeScript: `resolveParameters()`
-  Resolves parameters within a given string by substituting placeholders with actual values.
-- Python: `resolve_prompt_string()` TypeScript: `resolve_prompt_string()`
-  Resolves a templated string with parameters, similar to the `resolve_prompt_template()` method of the `ParameterizedModelParser` class.
-- Python: `resolve_parametrized_prompt()` TypeScript: `resolve_parametrized_prompt() `
-  Resolves a parametrized prompt by substituting parameter placeholders with their corresponding values.
-- Python: `resolve_system_prompt()` TypeScript: `resolve_system_prompt() `
-  Resolves system prompts, often used in multi-turn conversations, by applying parameterization to system prompt templates.
-
-These utilities enable dynamic parameterization of prompts and customization of prompt templates to meet specific requirements.
-
-## Callback handlers
-
-The AIConfig SDK has a `CallbackManager` class which can be used to register callbacks that trace prompt resolution, serialization, deserialization, and inference. This lets you get a stack trace of what's going on under the covers, which is especially useful for complex control flow operations.
-
-Anyone can register a callback, and filter for the events they care about. You can subsequently use these callbacks to integrate with your own monitoring and observability systems.
-
-Video: https://github.com/lastmile-ai/aiconfig/assets/141073967/ce909fc4-881f-40d9-9c67-78a6682b3063
-
-#### Structure of a Callback Event
-
-Each callback event is an object of the CallbackEvent type, containing:
-
-name: The name of the event (e.g., "on_resolve_start").
-file: The source file where the event is triggered
-data: An object containing relevant data for the event, such as parameters or results.
-ts_ns: An optional timestamp in nanoseconds.
-
-#### Writing Custom Callbacks
-
-Custom callbacks are functions that conform to the Callback type. They receive a CallbackEvent object containing event details, and return a Promise. Here's an example of a simple logging callback:
-
-```typescript
-const myLoggingCallback: Callback = async (event: CallbackEvent) => {
-  console.log(`Event triggered: ${event.name}`, event);
-};
-```
+Use callback events to trace and monitor what's going on -- helpful for debugging and observability.
 
 ```python
-async def my_logging_callback(event: CallbackEvent) -> None:
-  print(f"Event triggered: {event.name}", event)
-```
+from aiconfig import AIConfigRuntime, CallbackEvent, CallbackManager
+config = AIConfigRuntime.load('aiconfig.json')
 
-Sample output:
-
-```
-Event triggered: on_resolve_start
-CallbackEventModel(name='on_resolve_start', file='/Users/John/Projects/aiconfig/python/src/aiconfig/Config.py', data={'prompt_name': 'get_activities', 'params': None}, ts_ns=1700094936363867000)
-Event triggered: on_deserialize_start
-```
-
-#### Setting up a CallbackManager and Registering Callbacks
-
-To register this callback with the AIConfigRuntime, include it in the array of callbacks when creating a CallbackManager:
-
-```typescript
-const myCustomCallback: Callback = async (event: CallbackEvent) => {
-  console.log(`Event triggered: ${event.name}`, event);
-};
-
-const callbackManager = new CallbackManager([myCustomCallback]);
-aiConfigRuntimeInstance.setCallbackManager(callbackManager);
-```
-
-```python
 async def my_custom_callback(event: CallbackEvent) -> None:
   print(f"Event triggered: {event.name}", event)
 
 callback_manager = CallbackManager([my_custom_callback])
-aiconfigRuntimeInstance.set_callback_manager(callback_manager)
+config.set_callback_manager(callback_manager)
+
+await config.run("prompt_name")
 ```
 
-#### Triggering Callbacks
+[**Read more** here](https://aiconfig.lastmileai.dev/docs/overview/monitoring-aiconfig)
 
-Callbacks are automatically triggered at specific points in the AIConfigRuntime flow. For example, when the resolve method is called on an AIConfigRuntime instance, it triggers on_resolve_start and on_resolve_end events, which are then passed to the CallbackManager to execute any associated callbacks.
+## Extensibility
 
-Sample implementation inside source code:
+AIConfig is designed to be customized and extended for your use-case. The [Extensibility](/docs/extensibility) guide goes into more detail.
 
-```typescript
-  public async resolve(promptName: string, params: JSONObject = {}) {
-    const startEvent = {
-      name: "on_resolve_start",
-      file: __filename,
-      data: { promptName, params },
-    } as CallbackEvent;
-    await this.callbackManager.runCallbacks(startEvent);
+Currently, there are 3 core ways to extend AIConfig:
 
-    /** Method Implementation*/
+1. [Supporting other models](https://aiconfig.lastmileai.dev/docs/extensibility#1-bring-your-own-model) - define a ModelParser extension
+2. [Callback event handlers](https://aiconfig.lastmileai.dev/docs/extensibility#2-callback-handlers) - tracing and monitoring
+3. [Custom metadata](https://aiconfig.lastmileai.dev/docs/extensibility#3-custom-metadata) - save custom fields in `aiconfig`
 
-    const endEvent = {
-      name: "on_resolve_end",
-      file: __filename,
-      data: { result: resolvedPrompt },
-    };
-    await this.callbackManager.runCallbacks(endEvent);
-    return resolvedPrompt;
-  }
-```
+## Contributing to `aiconfig`
 
-```python
-async def resolve(
-    self,
-    prompt_name: str,
-    params: Optional[dict] = None,
-    **kwargs,
-):
-    event = CallbackEvent("on_resolve_start", __file__, {"prompt_name": prompt_name, "params": params})
-    await self.callback_manager.run_callbacks(event)
+This is our first open-source project and we'd love your help.
 
-    """Method Implementation"""
-
-    event = CallbackEvent("on_resolve_complete", __name__, {"result": response})
-    await self.callback_manager.run_callbacks(event)
-    return response
-
-```
-
-Similarly, ModelParsers should trigger their own events when serializing, deserializing, and running inference. These events are also passed to the CallbackManager to execute any associated callbacks.
-
-#### Handling Callbacks with Timers
-
-The CallbackManager uses a timeout mechanism to ensure callbacks do not hang indefinitely. If a callback does not complete within the specified timeout, it is aborted, and an error is logged. This timeout can be adjusted in the CallbackManager constructor and defaults to 5 if not specified.
-
-```typescript
-const customTimeout = 10; // 10 seconds
-const callbackManager = new CallbackManager(callbacks, customTimeout);
-```
-
-```python
-custom_timeout = 10; # 10 seconds
-callback_manager = CallbackManager([my_logging_callback], custom_timeout)
-```
-
-#### Error Handling
-
-Custom callbacks should include error handling to manage exceptions. Errors thrown within callbacks are caught by the CallbackManager and can be logged or handled as needed.
-
-## Custom metadata
-
-You can store any kind of JSON-serializable metadata in an `aiconfig`. See the [metadata schema details](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format#metadata) to learn more.
-
-To add metadata, use the `config.setMetadata` API (available in both Python and TypeScript).
+See our [contributing guidelines](https://aiconfig.lastmileai.dev/docs/contributing) -- we would especially love help adding support for additional models that the community wants.
 
 ## Cookbooks
 
@@ -522,21 +421,125 @@ We provide several guides to demonstrate the power of `aiconfig`.
 
 > **See the [`cookbooks`](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks) folder for examples to clone.**
 
+### Chatbot
+
+- [Wizard GPT](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Wizard-GPT) - speak to a wizard on your CLI
+
+- [CLI-mate](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Cli-Mate) - help you make code-mods interactively on your codebase.
+
+### Retrieval Augmented Generated (RAG)
+
+- [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
+
+At its core, RAG is about passing data into prompts. Read how to [pass data](/docs/overview/parameters) with AIConfig.
+
+### Function calling
+
+- [OpenAI function calling](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI)
+
+### Prompt routing
+
+- [Prompt routing](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Basic-Prompt-Routing)
+
+### Chain of Thought
+
+A variant of chain-of-thought is Chain of Verification, used to help reduce hallucinations. Check out the aiconfig cookbook for CoVe:
+
+- [Chain of Verification](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Chain-of-Verification)
+
+### Using local LLaMA2 with `aiconfig`
+
+- [LLaMA example](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/llama)
+
+### Hugging Face text generation
+
+- [Hugging Face (Mistral-7B) example](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/HuggingFace)
+
+### Google PaLM
+
+- [PaLM](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Multi-LLM-Consistency)
+
 ## Roadmap
 
-aiconfig -- for prompt, model and parameter management
+This project is under active development.
 
-- Motivation
-- Why use aiconfig
-- Getting Started
-- Core Components
-- Capabilities
-  - Version Control
-  - Model parser
-  - Routing
-  - Evaluation
-- Debugging
-- Roadmap
-  - Multi-modal model support (use with image, audio generation models as well as multi-modal models like GPT-V)
-  - Routing
-  - Evaluation
+If you'd like to help, please see the [contributing guidelines](#contributing-to-aiconfig).
+
+Please create issues for additional capabilities you'd like to see.
+
+Here's what's already on our roadmap:
+
+- Evaluation interfaces: allow `aiconfig` artifacts to be evaluated with user-defined eval functions.
+  - We are also considering integrating with existing evaluation frameworks.
+- Local editor for `aiconfig`: enable you to interact with aiconfigs more intuitively.
+- OpenAI Assistants API support
+- Multi-modal ModelParsers:
+  - GPT4-V support
+  - DALLE-3
+  - Whisper
+  - HuggingFace image generation
+
+## FAQs
+
+### How should I edit an `aiconfig` file?
+
+Editing a configshould be done either programmatically via SDK or via the UI (workbooks):
+
+- [Programmatic](https://github.com/lastmile-ai/aiconfig/blob/main/cookbooks/Create-AIConfig-Programmatically/create_aiconfig_programmatically.ipynb) editing.
+
+- [Edit with a workbook](#edit-aiconfig-in-a-notebook-editor) editor: this is similar to editing an ipynb file as a notebook (most people never touch the json ipynb directly)
+
+You should only edit the `aiconfig` by hand for minor modifications, like tweaking a prompt string or updating some metadata.
+
+### Does this support custom endpoints?
+
+Out of the box, AIConfig already supports all OpenAI GPT\* models, Google’s PaLM model and any “textgeneration” model on Hugging Face (like Mistral). See [Supported Models](#supported-models) for more details.
+
+Additionally, you can install `aiconfig` [extensions](https://github.com/lastmile-ai/aiconfig/tree/main/extensions) for additional models (see question below).
+
+### Is OpenAI function calling supported?
+
+Yes. [This example](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI) goes through how to do it.
+
+We are also working on adding support for the Assistants API.
+
+### How can I use aiconfig with my own model endpoint?
+
+Model support is implemented as “ModelParser”s in the AIConfig SDK, and the idea is that anyone, including you, can define a ModelParser (and even publish it as an extension package).
+
+All that’s needed to use a model with AIConfig is a ModelParser that knows
+
+- how to serialize data from a model into the aiconfig format
+- how to deserialize data from an aiconfig into the type the model expects
+- how to run inference for model.
+
+For more details, see [Extensibility](https://aiconfig.lastmileai.dev/docs/extensibility).
+
+### When should I store outputs in an `aiconfig`?
+
+The `AIConfigRuntime` object is used to interact with an aiconfig programmatically (see [SDK usage guide](#aiconfig-sdk)). As you run prompts, this object keeps track of the outputs returned from the model.
+
+You can choose to serialize these outputs back into the `aiconfig` by using the `config.save(include_outputs=True)` API. This can be useful for preserving context -- think of it like session state.
+
+For example, you can use aiconfig to create a chatbot, and use the same format to save the chat history so it can be resumed for the next session.
+
+You can also choose to save outputs to a _different_ file than the original config -- `config.save("history.aiconfig.json", include_outputs=True)`.
+
+### Why should I use `aiconfig` instead of things like [configurator](https://pypi.org/project/configurator/)?
+
+It helps to have a [standardized format](http://aiconfig.lastmileai.dev/docs/overview/ai-config-format) specifically for storing generative AI prompts, inference results, model parameters and arbitrary metadata, as opposed to a general-purpose configuration schema.
+
+With that standardization, you just need a layer that knows how to serialize/deserialize from that format into whatever the inference endpoints require.
+
+### This looks similar to `ipynb` for Jupyter notebooks
+
+We believe that notebooks are a perfect iteration environment for generative AI -- they are flexible, multi-modal, and collaborative.
+
+The multi-modality and flexibility offered by notebooks and [`ipynb`](https://ipython.org/ipython-doc/3/notebook/nbformat.html) offers a good interaction model for generative AI. The `aiconfig` file format is extensible like `ipynb`, and AI Workbook editor allows rapid iteration in a notebook-like IDE.
+
+_AI Workbooks are to AIConfig what Jupyter notebooks are to `ipynb`_
+
+There are 2 areas where we are going beyond what notebooks offer:
+
+1. `aiconfig` is more **source-control friendly** than `ipynb`. `ipynb` stores binary data (images, etc.) by encoding it in the file, while `aiconfig` recommends using file URI references instead.
+2. `aiconfig` can be imported and **connected to application code** using the AIConfig SDK.
