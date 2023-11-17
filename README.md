@@ -91,10 +91,10 @@ yarn add aiconfig
 
 ### Python
 
-#### `pip` or `poetry`
+#### `pip3` or `poetry`
 
 ```bash
-pip install python-aiconfig
+pip3 install python-aiconfig
 ```
 
 ```bash
@@ -164,6 +164,8 @@ https://github.com/lastmile-ai/aiconfig/assets/81494782/805173d1-0f83-44c5-b570-
 
 You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
 
+Create a new file called `app.py` and and enter the following code:
+
 ```python
 from aiconfig import AIConfigRuntime
 
@@ -175,7 +177,25 @@ inference_options = InferenceOptions(stream=True)
 await config.run("get_activities", params=None, inference_options)
 ```
 
+Now run this in your terminal with the command:
+
+```bash
+python3 app.py
+```
+
 ### Run the `gen_itinerary` prompt.
+
+In your `app.py` file, change the last line to below:
+
+```python
+await config.run("gen_itinerary", params=None, options=inference_options)
+```
+
+Re-run the command in your terminal:
+
+```bash
+python3 app.py
+```
 
 This prompt depends on the output of `get_activities`. It also takes in parameters (user input) to determine the customized itinerary.
 
