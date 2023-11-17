@@ -165,7 +165,7 @@ https://github.com/lastmile-ai/aiconfig/assets/81494782/805173d1-0f83-44c5-b570-
 In your CLI, set the environment variable:
 
 ```bash
-set OPENAI_API_KEY=my_key
+export OPENAI_API_KEY=my_key
 ```
 
 You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
@@ -223,11 +223,7 @@ Let's run this with AIConfig:
 Replace `config.run` above with this:
 
 ```python
-await config.run(
-  "gen_itinerary",
-  params={"order_by": "duration"},
-  options=inference_options,
-  run_with_dependencies=True)
+await config.run("gen_itinerary", params={"order_by": "duration"}, options=inference_options, run_with_dependencies=True)
 ```
 
 Notice how simple the syntax is to perform a fairly complex task - running 2 different prompts across 2 different models and chaining one's output as part of the input of another.
