@@ -368,16 +368,16 @@ config.set_metadata("key", data, "prompt_name")
 
 Note: if `"prompt_name"` is specified, the metadata is updated specifically for that prompt. Otherwise, the global metadata is updated.
 
-### `AIConfigRuntime.registerModelParser`
+### Register new `ModelParser`
 
-Use the `AIConfigRuntime.registerModelParser` if you want to use a different `ModelParser`, or configure AIConfig to work with an additional model.
+Use the `AIConfigRuntime.register_model_parser` if you want to use a different `ModelParser`, or configure AIConfig to work with an additional model.
 
-AIConfig uses the model name string to retrieve the right `ModelParser` for a given Prompt (see `AIConfigRuntime.getModelParser`), so you can register a different ModelParser for the same ID to override which `ModelParser` handles a Prompt.
+AIConfig uses the model name string to retrieve the right `ModelParser` for a given Prompt (see `AIConfigRuntime.get_model_parser`), so you can register a different ModelParser for the same ID to override which `ModelParser` handles a Prompt.
 
 For example, suppose I want to use `MyOpenAIModelParser` to handle `gpt-4` prompts. I can do the following at the start of my application:
 
 ```python
-AIConfigRuntime.registerModelParser(myModelParserInstance, ["gpt-4"])
+AIConfigRuntime.register_model_parser(myModelParserInstance, ["gpt-4"])
 ```
 
 ### Callback events
