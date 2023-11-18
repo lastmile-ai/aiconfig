@@ -140,20 +140,23 @@ export class HuggingFaceTextGenerationParser extends ParameterizedModelParser<Te
     // if no options are passed in, don't stream because streaming is dependent on a callback handler
     const stream = options ? (options.stream ? options.stream : true) : false;
 
+    let output: Output | undefined;
+
     if (stream) {
       const response = await this.hfClient.textGenerationStream(
         textGenerationArgs
       );
-      const output = await ConstructStreamOutput(
+      output = await ConstructStreamOutput(
         response,
         options as InferenceOptions
       );
-      return output;
     } else {
       const response = await this.hfClient.textGeneration(textGenerationArgs);
-      const output = constructOutput(response);
-      return output;
+      output = constructOutput(response);
     }
+
+    prompt.outputs = [output];
+    return prompt.outputs;
   }
 
   public getOutputText(
