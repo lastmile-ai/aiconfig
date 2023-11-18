@@ -551,3 +551,15 @@ There are 2 areas where we are going beyond what notebooks offer:
 
 1. `aiconfig` is more **source-control friendly** than `ipynb`. `ipynb` stores binary data (images, etc.) by encoding it in the file, while `aiconfig` recommends using file URI references instead.
 2. `aiconfig` can be imported and **connected to application code** using the AIConfig SDK.
+
+### How is AIConfig _simultaneously_ like Jupyter notebooks and source-controllable configuration?
+
+AIConfig has two broad classes of use case that use the storage format slightly differently:
+(a) Production dev cycle
+(b) Quick iteration, collaboration
+
+Both (a) and (b) are backed by the same standardized format. In the case of (a), AIConfig stores and read your app's configs in one source-controllable place. This includes model providers/names (llama, gpt-4, etc.), inference control parameters such as temperature, prompt templates, dependencies between different model calls (chains or DAGs), and any relevant custom config or metadata you'd like to store.
+
+In the case of (b), AIConfig creates an artifact similar to a collab or Jupyter noteobok. It stores all the same configs as in (a), but also the specific data (inputs, intermediates, and outputs) that you used to experiment with your changes. This can help your collaborators (or yourself in the future) understand your configs and continue iterating, without necessarily rerunning every step. When you and your collaborators are happy with a change, you can then export your new config version and go back to mode (a), pushing the new config back into the production dev cycle.
+
+[a diagram here would be helpful where there is a large production R&D loop for mode (a) and a smaller loop for mode (b). They form a sort of figure 8, intersecting in one node. (a) loop includes a node for AIConfig library and (b) contains one for workbooks.]
