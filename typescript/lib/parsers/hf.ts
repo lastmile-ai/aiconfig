@@ -240,7 +240,8 @@ export class HuggingFaceTextGenerationParser extends ParameterizedModelParser<Te
     }
 
     if (output.output_type === "execute_result") {
-      return output.data as string;
+      return (output.data as TextGenerationOutput | TextGenerationStreamOutput)
+        .generated_text as string;
     } else {
       return "";
     }
