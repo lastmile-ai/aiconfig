@@ -11,7 +11,15 @@
 
 ## Overview
 
-AIConfig saves prompts, models and model parameters as source control friendly configs. This allows you to iterate on prompts and model parameters _separately from your application code_.
+AIConfig is an SDK that eases the development of LLM apps in two broad ways, each roughly corresponding to a class of use cases:
+(a) Separates your configs such as prompts, model versions, and temperature from your app logic, allowing you to build and maintain clearer and more robust LLM-based production apps.
+(b) Allows you to quickly iterate and collaborate on those configs outside your app, without committing your changes to your production repo.
+
+Both (a) and (b) are backed by a standardized JSON format. In the case of (a), AIConfig stores and read your app's configs in one source-controllable place. This includes model providers/names (llama, gpt-4, etc.), inference control parameters such as temperature, prompt templates, dependencies between different model calls (chains or DAGs), and any relevant custom config or metadata you'd like to store.
+
+In the case of (b), AIConfig creates an artifact similar to a collab or Jupyter noteobok. It stores all the same configs as in (a), but also the specific data (inputs, intermediates, and outputs) that you used to experiment with your changes. This can help your collaborators (or yourself in the future) understand your configs and continue iterating, without necessarily rerunning every step. When you and your collaborators are happy with a change, you can then export your new config version and go back to mode (a), pushing the new config back into the production dev cycle.
+
+[a diagram here would be helpful where there is a large production R&D loop for mode (a) and a smaller loop for mode (b). They form a sort of figure 8, intersecting in one node. (a) loop includes a node for AIConfig library and (b) contains one for workbooks.]
 
 1. **Prompts as configs**: a [standardized JSON format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to store generative AI model settings, prompt inputs/outputs, and flexible metadata.
 2. **Model-agnostic SDK**: Python & Node SDKs to use `aiconfig` in your application code. AIConfig is designed to be **model-agnostic** and **multi-modal**, so you can extend it to work with any generative AI model, including text, image and audio.
