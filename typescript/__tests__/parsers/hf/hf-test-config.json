@@ -1,0 +1,52 @@
+{
+    "name": "Exploring NYC through Mistral Config",
+    "description": "",
+    "schema_version": "latest",
+    "metadata": {
+        "parameters": {},
+        "models": {
+            "mistralai/Mistral-7B-v0.1": {
+                "model": "mistralai/Mistral-7B-v0.1",
+                "top_p": 0.9,
+                "temperature": 0.9
+            }
+        },
+        "default_model": "mistralai/Mistral-7B-v0.1",
+        "model_parsers": {
+            "mistralai/Mistral-7B-v0.1": "HuggingFaceTextGenerationParser"
+        }
+    },
+    "prompts": [
+        {
+            "name": "prompt1",
+            "input": "What are 5 interesting things to do in NYC?"
+        },
+        {
+            "name": "prompt2",
+            "input": "What are 5 interesting things to do in Rome?",
+            "metadata": {
+                "model": {
+                    "name": "mistralai/Mistral-7B-v0.1",
+                    "settings": {
+                        "top_p": 0.7
+                    }
+                }
+            }
+        },
+        {
+            "name": "promptWithParams",
+            "input": "What are 5 interesting things to do in {{city}}?",
+            "metadata": {
+                "model": {
+                    "name": "mistralai/Mistral-7B-v0.1",
+                    "settings": {
+                        "do_sample": false
+                    }
+                },
+                "parameters": {
+                    "city": "London"
+                }
+            }
+        }
+    ]
+}

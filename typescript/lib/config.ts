@@ -887,7 +887,7 @@ export class AIConfigRuntime implements AIConfig {
   }
 
   /**
-   * Generates a ModelMetadata object from the inferene settings by extracting the settings that override the global settings.
+   * Generates a ModelMetadata object from the inference settings by extracting the settings that override the global settings.
    *
    * @param inferenceSettings - The inference settings to be used for the model.
    * @param modelName - The unique identifier for the model.
