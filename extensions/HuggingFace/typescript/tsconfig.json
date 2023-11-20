@@ -4,12 +4,13 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
-    "outDir": "dist",
+    "outDir": "./dist",
     "resolveJsonModule": true,
     "rootDir": ".",
     "strict": true,
     "target": "es6",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "exclude": ["dist", "docs", "node_modules"]
 }
