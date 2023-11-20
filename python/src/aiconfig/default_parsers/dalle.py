@@ -88,8 +88,7 @@ class DallE3ImageGenerationParser(ParameterizedModelParser):
         return "dall-e-3"
 
 
-    # TODO: Test this sometime from getting a response from the API and saving it to a file
-    def serialize(
+    async def serialize(
         self,
         prompt_name: str,
         data: Any,

@@ -1,0 +1,32 @@
+{
+    "name": "Panda Eating Dumplings Image Generator",
+    "description": "Testing Dall-E 3 image generation",
+    "schema_version": "latest",
+    "metadata": {
+      "models": {
+        "dall-e-3": {
+          "model": "dall-e-3",
+          "system_prompt": "What color do you want to see as a background?"
+        }
+      },
+      "default_model": "dall-e-3"
+    },
+    "prompts": [
+      {
+        "name": "panda_eating_dumplings",
+        "input": "Panda eating dumplings on a {{color}} mountain",
+        "metadata": {
+          "model": {
+            "name": "dall-e-3",
+            "settings": {
+                "n": 1,
+                "size": "1024x1024"
+            }
+          },
+          "parameters": {
+            "color": "yellow"
+          }
+        }
+      }
+    ]
+  }
