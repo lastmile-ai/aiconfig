@@ -1,8 +1,17 @@
 {
   "name": "typescript",
   "version": "1.0.0",
-  "main": "main.ts",
   "license": "MIT",
+  "main": "./dist/hf.js",
+  "types": "./dist/hf.d.ts",
+  "files": [
+      "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json",
+    "compile": "tsc -p ./tsconfig.json",
+    "lint": "eslint --max-warnings"
+  },
   "dependencies": {
     "@huggingface/inference": "^2.6.4",
     "@types/node": "^20.9.0",
