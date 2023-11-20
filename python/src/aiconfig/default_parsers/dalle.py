@@ -50,7 +50,7 @@ def refine_image_completion_params(model_settings):
     return completion_data
 
 
-def construct_regular_output(image_data: Image, execution_count: int) -> Output:
+def construct_output(image_data: Image, execution_count: int) -> Output:
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
@@ -125,7 +125,7 @@ class DallE3ImageGenerationParser(ParameterizedModelParser):
 
     # TODO (rossdanlm): Update documentation for args
     async def deserialize(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", _options, params: Optional[Dict] = {}
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}
     ) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
@@ -146,7 +146,7 @@ class DallE3ImageGenerationParser(ParameterizedModelParser):
         completion_data["prompt"] = resolved_prompt
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig, options, parameters) -> Output:
+    async def run_inference(self, prompt: Prompt, aiconfig, _options, parameters) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -164,26 +164,17 @@ class DallE3ImageGenerationParser(ParameterizedModelParser):
         if not self.client:
             self.client = OpenAI(api_key=openai.api_key)
 
-        completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
-
-        # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
-        stream = (options.stream if options else False) and (
-            not "stream" in completion_data or completion_data.get("stream") != False
-        )
+        completion_data = await self.deserialize(prompt, aiconfig, parameters)
 
         print("Calling image generation. This can take several seconds, please hold on...")
         response : ImagesResponse = self.client.images.generate(**completion_data)
 
         outputs = []
-        if not stream:
-            # ImageResponse object also contains a "created" field for timestamp, should I store that somewhere?
-            # Ex: response=ImagesResponse(created=1700347843, data=[...])
-            for execution_count, image_data in enumerate(response.data):
-                output = construct_regular_output(image_data, execution_count)
-                outputs.append(output)
-        else:
-            # TODO (rossdamlm): Enable streaming next diff
-            raise Exception("Sorry, streaming not supported yet for Dall-E AIConfigs.")
+        # ImageResponse object also contains a "created" field for timestamp, should I store that somewhere?
+        # Ex: response=ImagesResponse(created=1700347843, data=[...])
+        for execution_count, image_data in enumerate(response.data):
+            output = construct_output(image_data, execution_count)
+            outputs.append(output)
 
         prompt.outputs = outputs
         return prompt.outputs
