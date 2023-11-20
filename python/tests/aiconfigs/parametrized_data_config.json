@@ -1,4 +1,5 @@
 {
+    "$schema": "https://github.com/lastmile-ai/aiconfig/raw/main/schema/aiconfig.schema.json",
     "name": "gpt4 as your data engineer",
     "description": "",
     "schema_version": "latest",
@@ -42,7 +43,6 @@
                         "top_p": 1,
                         "max_tokens": 3000,
                         "temperature": 1
-                        
                     }
                 }
             }

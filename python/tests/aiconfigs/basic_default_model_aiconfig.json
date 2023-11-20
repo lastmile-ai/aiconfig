@@ -1,4 +1,5 @@
 {
+    "$schema": "https://github.com/lastmile-ai/aiconfig/raw/main/schema/aiconfig.schema.json",
     "name": "exploring nyc through chatgpt config",
     "description": "",
     "schema_version": "latest",
@@ -19,7 +20,8 @@
     "prompts": [
         {
             "name": "prompt1",
-            "input": "Hi! Tell me 10 cool things to do in NYC."
+            "input": "Hi! Tell me 10 cool things to do in NYC.",
+            "metadata": {}
         }
     ]
 }

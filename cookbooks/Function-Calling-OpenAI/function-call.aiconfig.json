@@ -1,4 +1,5 @@
 {
+  "$schema": "https://github.com/lastmile-ai/aiconfig/raw/main/schema/aiconfig.schema.json",
   "name": "function-call-demo",
   "description": "this is a demo AIConfig to show function calling using OpenAI",
   "schema_version": "latest",

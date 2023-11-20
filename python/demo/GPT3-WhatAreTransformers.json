@@ -1,4 +1,5 @@
 {
+    "$schema": "https://github.com/lastmile-ai/aiconfig/raw/main/schema/aiconfig.schema.json",
     "name": "gpt4 as your data engineer",
     "description": "",
     "schema_version": "latest",
