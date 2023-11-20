@@ -13,10 +13,10 @@ import {
   ExecuteResult,
   AIConfigRuntime,
   InferenceOptions,
+  ParameterizedModelParser,
 } from "aiconfig";
-import { CompletionCreateParams } from "openai/resources";
+
 import _ from "lodash";
-import * as aiconfig from "aiconfig";
 import { JSONObject } from "aiconfig/dist/common";
 
 export function getAPIKeyFromEnv(apiKeyName: string) {
@@ -32,7 +32,7 @@ export function getAPIKeyFromEnv(apiKeyName: string) {
  * Set the environment variable HUGGING_FACE_API_TOKEN to use your HuggingFace API token.
  * A HuggingFace API token is not required to use this model parser.
  */
-export class HuggingFaceTextGenerationModelParser extends aiconfig.ParameterizedModelParser<TextGenerationArgs> {
+export class HuggingFaceTextGenerationModelParser extends ParameterizedModelParser<TextGenerationArgs> {
   private hfClient: HfInference | undefined;
   _id = "HuggingFaceTextGenerationModelParser";
 
@@ -209,7 +209,7 @@ async function ConstructStreamOutput(
 
     output = {
       output_type: "execute_result",
-      data: delta,
+      data: accumulatedMessage,
       execution_count: index,
       metadata: metadata,
     } as ExecuteResult;
@@ -223,7 +223,7 @@ function constructOutput(response: TextGenerationOutput): Output {
 
   const output = {
     output_type: "execute_result",
-    data: data,
+    data: data.generated_text,
     execution_count: 0,
     metadata: metadata,
   } as ExecuteResult;
