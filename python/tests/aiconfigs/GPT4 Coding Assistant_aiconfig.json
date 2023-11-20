@@ -1,4 +1,5 @@
 {
+    "$schema": "https://github.com/lastmile-ai/aiconfig/raw/main/schema/aiconfig.schema.json",
     "name": "GPT4 Coding Assistant",
     "schema_version": "latest",
     "metadata": {},

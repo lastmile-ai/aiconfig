@@ -1,4 +1,5 @@
 {
+    "$schema": "https://github.com/lastmile-ai/aiconfig/raw/main/schema/aiconfig.schema.json",
     "name": "gpt4 as your data engineer",
     "schema_version": "latest",
     "metadata": {
@@ -26,10 +27,8 @@
             "input": "Write me a {{sql_language}} query to get this final output: {{output_data}}. Use the tables relationships defined here: {{table_relationships}}.",
             "metadata": {
                 "model": {
-                    "name": "gpt-3.5-turbo",
-                    "settings": null
+                    "name": "gpt-3.5-turbo"
                 },
-                "tags": null,
                 "parameters": {}
             }
         },
@@ -46,7 +45,6 @@
                         "temperature": 1
                     }
                 },
-                "tags": null,
                 "parameters": {}
             }
         },
@@ -55,7 +53,6 @@
             "input": "How do transformers work?",
             "metadata": {
                 "model": "gpt-3.5-turbo",
-                "tags": null,
                 "parameters": {}
             }
         }

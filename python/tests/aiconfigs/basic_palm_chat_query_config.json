@@ -1,12 +1,12 @@
 {
+    "$schema": "https://github.com/lastmile-ai/aiconfig/raw/main/schema/aiconfig.schema.json",
     "name": "exploring nyc through chatgpt config",
     "description": "",
     "schema_version": "latest",
     "metadata": {
         "parameters": {},
         "models": {
-            "palm-chat": {
-            }
+            "palm-chat": {}
         }
     },
     "prompts": [
@@ -21,4 +21,3 @@
         }
     ]
 }
-

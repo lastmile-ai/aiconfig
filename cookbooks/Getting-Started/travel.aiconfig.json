@@ -1,4 +1,5 @@
 {
+  "$schema": "https://github.com/lastmile-ai/aiconfig/raw/main/schema/aiconfig.schema.json",
   "name": "NYC Trip Planner",
   "description": "Intrepid explorer with ChatGPT and AIConfig",
   "schema_version": "latest",
@@ -20,7 +21,8 @@
   "prompts": [
     {
       "name": "get_activities",
-      "input": "Tell me 10 fun attractions to do in NYC."
+      "input": "Tell me 10 fun attractions to do in NYC.",
+      "metadata": {}
     },
     {
       "name": "gen_itinerary",
@@ -34,5 +36,3 @@
     }
   ]
 }
-
-

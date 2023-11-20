@@ -1,4 +1,5 @@
 {
+  "$schema": "https://github.com/lastmile-ai/aiconfig/raw/main/schema/aiconfig.schema.json",
   "name": "create_programmatically_demo",
   "schema_version": "latest",
   "metadata": {
