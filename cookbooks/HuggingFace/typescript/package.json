@@ -6,7 +6,8 @@
   "dependencies": {
     "@huggingface/inference": "^2.6.4",
     "@types/node": "^20.9.0",
-    "aiconfig": "^1.0.2",
+    "aiconfig": "^1.0.1",
+    "aiconfig-extension-huggingface-textgeneration": "/Users/ankush/Projects/aiconfig/extensions/HuggingFace/typescript/aiconfig-extension-huggingface-textgeneration-v1.0.0.tgz",
     "typescript": "^5.2.2"
   },
   "devDependencies": {
