@@ -51,12 +51,23 @@ def refine_image_completion_params(model_settings):
 
 
 def construct_output(image_data: Image, execution_count: int) -> Output:
+    mime_type : Optional[str] = None
+    data : Optional[str] = None
+    
+    if image_data.b64_json:
+        mime_type = "text/plain"
+        data = image_data.b64_json
+    elif image_data.url:
+        mime_type = "image/png"
+        data = image_data.url
+
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": image_data.b64_json or image_data.url,
+            "data": data,
             "execution_count": execution_count,
             "metadata": {"revised_prompt": image_data.revised_prompt},
+            "mime_type": mime_type,
         }
     )
     return output
