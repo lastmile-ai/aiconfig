@@ -3,6 +3,7 @@ import sys
 import os
 from aiconfig.callback import CallbackEvent, CallbackManager
 from .default_parsers.hf import HuggingFaceTextGenerationParser
+from .default_parsers.dalle import DallE3ImageGenerationParser
 import requests
 from typing import ClassVar, Dict, List, Optional
 
@@ -36,6 +37,7 @@ for model in gpt_models:
 ModelParserRegistry.register_model_parser(PaLMChatParser())
 ModelParserRegistry.register_model_parser(PaLMTextParser())
 ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
+ModelParserRegistry.register_model_parser(DallE3ImageGenerationParser())
 
 class AIConfigRuntime(AIConfig):
     # A mapping of model names to their respective parsers
