@@ -7,10 +7,10 @@
 
 ## Testing
 
-To run the tests in this repo,
+To run the tests in this repo:
 
 1. Navigate to the aiconfig directory
-2. Install required testing dependencies `pip install -r requirements_dev.txt`
+2. Install additional testing dependencies: `pip install -r requirements-dev.txt`. These aren't included by default when we clone the repo so you need to add these explicitly for the tests to run. See the requirements-dev.txt file to see what packages pip will install.
 3. "install" the aiconfig source package with `pip install -e .` The -e flag links the package to your local src. Any changes made are automatically updated.
 4. run tests `pytest`
 5. run linter `flake8`
