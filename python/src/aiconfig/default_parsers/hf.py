@@ -167,7 +167,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         """
         return "HuggingFaceTextGenerationParser"
 
-    def serialize(
+    async def serialize(
         self,
         prompt_name: str,
         data: Any,
