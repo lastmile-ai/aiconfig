@@ -333,6 +333,8 @@ class AIConfig(BaseModel):
             prompt_name (str): The name of the prompt to add.
             prompt_data (Prompt): The prompt object containing the prompt data.
         """
+        if prompt_name is None:
+            prompt_name = prompt_data.name
         if prompt_name in self.prompt_index:
             raise Exception(
                 "Prompt with name {} already exists. Use`update_prompt()`".format(prompt_name)
