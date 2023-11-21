@@ -2,20 +2,21 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-import asyncio
 import argparse
+import asyncio
+import os
 import signal
 import sys
 from types import FrameType
 from typing import Any
-from dotenv import load_dotenv
-import openai
-import os
-from aiconfig import AIConfigRuntime
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult, Prompt
 
+import openai
+from aiconfig.model_parser import InferenceOptions
+from dotenv import load_dotenv
 from prompt_toolkit import PromptSession
+
+from aiconfig import AIConfigRuntime
+from aiconfig.schema import ExecuteResult, Prompt
 
 
 def deprefix(s: str, pfx: str) -> str:

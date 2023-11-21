@@ -1,12 +1,10 @@
 import json
-import sys
 import os
-from aiconfig.callback import CallbackEvent, CallbackManager
-from .default_parsers.hf import HuggingFaceTextGenerationParser
-from .default_parsers.dalle import DalleImageGenerationParser
-import requests
+import sys
 from typing import ClassVar, Dict, List, Optional
 
+import requests
+from aiconfig.callback import CallbackEvent, CallbackManager
 from aiconfig.default_parsers.openai import (
     ChatGPTParser,
     DefaultOpenAIParser,
@@ -15,34 +13,41 @@ from aiconfig.default_parsers.openai import (
 )
 from aiconfig.default_parsers.palm import PaLMChatParser, PaLMTextParser
 from aiconfig.model_parser import InferenceOptions, ModelParser
+
+from .default_parsers.dalle import DalleImageGenerationParser
+from .default_parsers.hf import HuggingFaceTextGenerationParser
+from .registry import (
+    ModelParserRegistry,
+    update_model_parser_registry_with_config_runtime,
+)
 from .schema import AIConfig, ConfigMetadata, Prompt
-from .registry import ModelParserRegistry, update_model_parser_registry_with_config_runtime
 
 gpt_models = [
-        "gpt-4",
-        "GPT-4",
-        "gpt-4-0314",
-        "gpt-4-0613",
-        "gpt-4-32k",
-        "gpt-4-32k-0314",
-        "gpt-4-32k-0613",
-        "gpt-3.5-turbo",
-        "gpt-3.5-turbo-16k",
-        "gpt-3.5-turbo-0301",
-        "gpt-3.5-turbo-0613",
-        "gpt-3.5-turbo-16k-0613",
-    ]
+    "gpt-4",
+    "GPT-4",
+    "gpt-4-0314",
+    "gpt-4-0613",
+    "gpt-4-32k",
+    "gpt-4-32k-0314",
+    "gpt-4-32k-0613",
+    "gpt-3.5-turbo",
+    "gpt-3.5-turbo-16k",
+    "gpt-3.5-turbo-0301",
+    "gpt-3.5-turbo-0613",
+    "gpt-3.5-turbo-16k-0613",
+]
 for model in gpt_models:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
 ModelParserRegistry.register_model_parser(PaLMChatParser())
 ModelParserRegistry.register_model_parser(PaLMTextParser())
 ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
 dalle_image_generation_models = [
-        "dall-e-2",
-        "dall-e-3",
-    ]
+    "dall-e-2",
+    "dall-e-3",
+]
 for model in dalle_image_generation_models:
     ModelParserRegistry.register_model_parser(DalleImageGenerationParser(model))
+
 
 class AIConfigRuntime(AIConfig):
     # A mapping of model names to their respective parsers
@@ -127,7 +132,9 @@ class AIConfigRuntime(AIConfig):
             resp = requests.get(url, headers=headers)
 
             if resp.status_code != 200:
-                raise Exception(f"Failed to load workbook. Status code: {resp.status_code}")
+                raise Exception(
+                    f"Failed to load workbook. Status code: {resp.status_code}"
+                )
 
             data = resp.json()
 
@@ -135,7 +142,13 @@ class AIConfigRuntime(AIConfig):
             update_model_parser_registry_with_config_runtime(aiconfigruntime)
             return aiconfigruntime
 
-    async def serialize(self, model_name: str, data: Dict,  prompt_name: str, params: Optional[dict] = None) -> List[Prompt]:
+    async def serialize(
+        self,
+        model_name: str,
+        data: Dict,
+        prompt_name: str,
+        params: Optional[dict] = None,
+    ) -> List[Prompt]:
         """
         Serializes the completion params into a Prompt object. Inverse of the 'resolve' function.
 
@@ -147,7 +160,16 @@ class AIConfigRuntime(AIConfig):
         returns:
             Prompt | List[Prompt]: A prompt or list of prompts representing the input data
         """
-        event = CallbackEvent("on_serialize_start", __name__, {model_name: model_name, "data": data, "prompt_name": prompt_name, "params": params})
+        event = CallbackEvent(
+            "on_serialize_start",
+            __name__,
+            {
+                model_name: model_name,
+                "data": data,
+                "prompt_name": prompt_name,
+                "params": params,
+            },
+        )
         await self.callback_manager.run_callbacks(event)
 
         if not params:
@@ -181,7 +203,9 @@ class AIConfigRuntime(AIConfig):
         Returns:
             str: The resolved prompt.
         """
-        event = CallbackEvent("on_resolve_start", __file__, {"prompt_name": prompt_name, "params": params})
+        event = CallbackEvent(
+            "on_resolve_start", __file__, {"prompt_name": prompt_name, "params": params}
+        )
         await self.callback_manager.run_callbacks(event)
 
         if not params:
@@ -199,7 +223,7 @@ class AIConfigRuntime(AIConfig):
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
         response = await model_provider.deserialize(prompt_data, self, params)
-        
+
         event = CallbackEvent("on_resolve_complete", __name__, {"result": response})
         await self.callback_manager.run_callbacks(event)
         return response
@@ -207,7 +231,7 @@ class AIConfigRuntime(AIConfig):
     async def run(
         self,
         prompt_name: str,
-        params: Optional[dict] = None,        
+        params: Optional[dict] = None,
         options: Optional[InferenceOptions] = None,
         **kwargs,
     ):
@@ -221,7 +245,16 @@ class AIConfigRuntime(AIConfig):
         Returns:
             object: The response object returned by the AI-model's API.
         """
-        event = CallbackEvent("on_run_start", __name__, {"prompt_name": prompt_name, "params": params, "options": options, "kwargs": kwargs})
+        event = CallbackEvent(
+            "on_run_start",
+            __name__,
+            {
+                "prompt_name": prompt_name,
+                "params": params,
+                "options": options,
+                "kwargs": kwargs,
+            },
+        )
         await self.callback_manager.run_callbacks(event)
 
         if not params:
@@ -238,7 +271,14 @@ class AIConfigRuntime(AIConfig):
         model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
-        response = await model_provider.run(prompt_data, self, options, params, callback_manager = self.callback_manager, **kwargs)
+        response = await model_provider.run(
+            prompt_data,
+            self,
+            options,
+            params,
+            callback_manager=self.callback_manager,
+            **kwargs,
+        )
 
         event = CallbackEvent("on_run_complete", __name__, {"result": response})
         await self.callback_manager.run_callbacks(event)
@@ -260,7 +300,7 @@ class AIConfigRuntime(AIConfig):
         """
         # AIConfig json should only contain the core data fields. These are auxiliary fields that should not be persisted
         exclude_options = {
-            "prompt_index": True, 
+            "prompt_index": True,
             "file_path": True,
             "callback_manager": True,
         }
@@ -284,14 +324,16 @@ class AIConfigRuntime(AIConfig):
                 indent=2,
             )
 
-    def get_output_text(self, prompt: str | Prompt, output: Optional[dict] = None) -> str:
+    def get_output_text(
+        self, prompt: str | Prompt, output: Optional[dict] = None
+    ) -> str:
         """
         Get the string representing the output from a prompt (if any)
 
         Args:
             prompt (str | Prompt): The prompt to get the output text from.
             output (dict, optional): The output to get the output text from.
-        
+
         Returns:
             str: The output text from the prompt.
         """
@@ -331,5 +373,7 @@ class AIConfigRuntime(AIConfig):
 
     def set_callback_manager(self, callback_manager: CallbackManager):
         if callback_manager is None:
-            raise ValueError("callback_manager cannot be None. Create a new CallbackManager with No callbacks instead.")
+            raise ValueError(
+                "callback_manager cannot be None. Create a new CallbackManager with No callbacks instead."
+            )
         self.callback_manager = callback_manager

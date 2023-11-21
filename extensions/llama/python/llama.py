@@ -1,13 +1,13 @@
 from typing import Any
-from aiconfig import Output, Prompt
+
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult
-
+from aiconfig.util.params import resolve_prompt
 from llama_cpp import CreateCompletionResponse, Llama
 
-from aiconfig.util.params import resolve_prompt
+from aiconfig import Output, Prompt
+from aiconfig.schema import ExecuteResult
 
 
 class LlamaModelParser(ParameterizedModelParser):

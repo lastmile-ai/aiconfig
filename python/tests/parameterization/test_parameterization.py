@@ -14,8 +14,9 @@ Test cases:
 8. No params
 """
 
-from aiconfig import AIConfigRuntime
 import pytest
+
+from aiconfig import AIConfigRuntime
 
 config1 = {
     "name": "test config",
@@ -31,12 +32,18 @@ config1 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
             },
         }
     ],
 }
+
+
 @pytest.mark.asyncio
 async def test_global_params_only():
     config = config1
@@ -45,7 +52,8 @@ async def test_global_params_only():
 
     prompt_from_resolved_params = resolved_params["messages"][0]["content"]
     assert prompt_from_resolved_params == "Hello, Tanya WorldWide"
-    
+
+
 config2 = {
     "name": "test config",
     "description": "",
@@ -60,21 +68,28 @@ config2 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {"name": "Tanya Local"},
             },
         }
     ],
 }
+
+
 @pytest.mark.asyncio
 async def test_prompt_params_only():
     config = config2
     ai_config = AIConfigRuntime(**config)
     resolved_params = await ai_config.resolve("prompt1", {})
-    
+
     prompt_from_resolved_params = resolved_params["messages"][0]["content"]
     assert prompt_from_resolved_params == "Hello, Tanya Local"
+
 
 config3 = {
     "name": "test config",
@@ -90,20 +105,26 @@ config3 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {},
             },
         }
     ],
 }
+
+
 @pytest.mark.asyncio
 async def test_prompt_params_only():
     config = config3
     ai_config = AIConfigRuntime(**config)
     params = {"name": "Tanya User"}
     resolved_params = await ai_config.resolve("prompt1", params)
-    
+
     prompt_from_resolved_params = resolved_params["messages"][0]["content"]
     assert prompt_from_resolved_params == "Hello, Tanya User"
 
@@ -122,22 +143,29 @@ config4 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {"name": "Tanya Local"},
             },
         }
     ],
 }
+
+
 @pytest.mark.asyncio
 async def test_prompt_params_and_user_defined_params():
     config = config4
     ai_config = AIConfigRuntime(**config)
     params = {"name": "Tanya User"}
     resolved_params = await ai_config.resolve("prompt1", params)
-    
+
     prompt_from_resolved_params = resolved_params["messages"][0]["content"]
     assert prompt_from_resolved_params == "Hello, Tanya User"
+
 
 config5 = {
     "name": "test config",
@@ -153,22 +181,29 @@ config5 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {},
             },
         }
     ],
 }
+
+
 @pytest.mark.asyncio
 async def test_global_params_and_user_defined_params():
     config = config5
     ai_config = AIConfigRuntime(**config)
     params = {"name": "Tanya User"}
     resolved_params = await ai_config.resolve("prompt1", params)
-    
+
     prompt_from_resolved_params = resolved_params["messages"][0]["content"]
     assert prompt_from_resolved_params == "Hello, Tanya User"
+
 
 config6 = {
     "name": "test config",
@@ -184,7 +219,11 @@ config6 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {"name": "Tanya Local"},
             },
@@ -192,14 +231,16 @@ config6 = {
     ],
 }
 
+
 @pytest.mark.asyncio
 async def test_global_params_and_local_params():
     config = config6
     ai_config = AIConfigRuntime(**config)
     resolved_params = await ai_config.resolve("prompt1", {})
-    
+
     prompt_from_resolved_params = resolved_params["messages"][0]["content"]
     assert prompt_from_resolved_params == "Hello, Tanya Local"
+
 
 config7 = {
     "name": "test config",
@@ -215,7 +256,11 @@ config7 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {"name": "Tanya Local"},
             },
@@ -223,15 +268,17 @@ config7 = {
     ],
 }
 
+
 @pytest.mark.asyncio
 async def test_global_params_and_local_params():
     config = config7
     ai_config = AIConfigRuntime(**config)
     params = {"name": "Tanya User"}
     resolved_params = await ai_config.resolve("prompt1", params)
-    
+
     prompt_from_resolved_params = resolved_params["messages"][0]["content"]
     assert prompt_from_resolved_params == "Hello, Tanya User"
+
 
 config8 = {
     "name": "test config",
@@ -247,7 +294,11 @@ config8 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {},
             },
@@ -255,12 +306,13 @@ config8 = {
     ],
 }
 
+
 @pytest.mark.asyncio
 async def test_no_params():
     config = config8
     ai_config = AIConfigRuntime(**config)
     resolved_params = await ai_config.resolve("prompt1", {})
-    
+
     prompt_from_resolved_params = resolved_params["messages"][0]["content"]
     # Expect no name because no name parameter was passed in
     assert prompt_from_resolved_params == "Hello, "
