@@ -2,6 +2,7 @@ import openai
 import pytest
 import os
 
+from openai.types import ImagesResponse, Image
 from openai.types.chat import ChatCompletion
 
 
@@ -88,6 +89,30 @@ def mock_openai_chat_completion(**kwargs):
             return response
     raise Exception("Unexpected arguments:\n {}".format(kwargs))
 
+
+def mock_openai_dalle_image_response(**kwargs):
+    response_map_list = [
+        # Define the response for each set of input parameters. Format: [[input_params, response]]
+        # Example 1
+        [
+            {
+                "model": "dall-e-3",
+                "n": 1,
+                "size": "1024x1024",
+                "prompt": "Panda eating dumplings on a yellow mountain",
+            },
+            ImagesResponse(
+                **{
+                    "created": 1700542907,
+                    "data": [Image(**{"base64": None, "revised_prompt": "A black and white panda bear delicately nibbling on a delightful feast of plump dumplings. The panda is situated on a scenic, rugged mountain that displays a unique yellow hue. It's a serene and playful scene as the panda thoroughly enjoys its flavorful meal against the eye-catching backdrop of the vibrant yellow mountain.", "url": 'https://oaidalleapiprodscus.blob.core.windows.net/private/org-o8J42XpAe8XLnxJ01WbOsM4M/user-AT3ivBdlHeOcDX62AOM5Je23/img-0TgfmMRhqq6ebTAdGNkpSrvr.png?st=2023-11-20T23%3A37%3A36Z&se=2023-11-21T01%3A37%3A36Z&sp=r&sv=2021-08-06&sr=b&rscd=inline&rsct=image/png&skoid=6aaadede-4fb3-4698-a8f6-684d7786b067&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2023-11-20T20%3A19%3A16Z&ske=2023-11-21T20%3A19%3A16Z&sks=b&skv=2021-08-06&sig=8gEDsXUZLC8531CxqshfgFpI31Kd92OigXPZ/7DaTjE%3D'})],
+                }
+            )
+        ],
+    ]
+    for input_params, response in response_map_list:
+        if kwargs == input_params:
+            return response
+    raise Exception("Unexpected arguments:\n {}".format(kwargs))
 
 @pytest.fixture
 def set_temporary_env_vars():
