@@ -44,7 +44,7 @@ $ yarn add aiconfig
 <TabItem value="pip">
 
 ```bash
-$ pip install python-aiconfig
+$ pip install --user python-aiconfig
 ```
 
 </TabItem>
@@ -80,7 +80,7 @@ Clone the tutorial code used below from [**here**](https://github.com/lastmile-a
 
 This AIConfig `travel.aiconfig.json` contains a prompt chain to get a list of travel activities from an LLM and then customize the activities based on user preferences (defined as parameters of the prompt). It also contains the specific models and model parameters for the LLMs.
 
-Download AIConfig [here](https://github.com/lastmile-ai/aiconfig/blob/main/cookbook/Getting-Started/travel.aiconfig.json).
+Download AIConfig [here](https://github.com/lastmile-ai/aiconfig/blob/main/cookbooks/Getting-Started/travel.aiconfig.json).
 
 <details>
 <summary>`travel.aiconfig.json`</summary>
@@ -155,13 +155,17 @@ async function travelWithGPT() {
 <TabItem value="python">
 
 ```python title="app.py"
+import asyncio
 from aiconfig import AIConfigRuntime, InferenceOptions
 
-# Load the aiconfig.
-config = AIConfigRuntime.load('travel.aiconfig.json')
+async def main():
+  # Load the aiconfig
+  config = AIConfigRuntime.load('travel.aiconfig.json')
 
-# Run a single prompt
-await config.run("get_activities")
+  # Run a single prompt
+  await config.run("get_activities")
+
+asyncio.run(main())
 ```
 
 </TabItem>

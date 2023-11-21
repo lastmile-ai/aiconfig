@@ -3,6 +3,7 @@ import sys
 import os
 from aiconfig.callback import CallbackEvent, CallbackManager
 from .default_parsers.hf import HuggingFaceTextGenerationParser
+from .default_parsers.dalle import DalleImageGenerationParser
 import requests
 from typing import ClassVar, Dict, List, Optional
 
@@ -36,6 +37,12 @@ for model in gpt_models:
 ModelParserRegistry.register_model_parser(PaLMChatParser())
 ModelParserRegistry.register_model_parser(PaLMTextParser())
 ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
+dalle_image_generation_models = [
+        "dall-e-2",
+        "dall-e-3",
+    ]
+for model in dalle_image_generation_models:
+    ModelParserRegistry.register_model_parser(DalleImageGenerationParser(model))
 
 class AIConfigRuntime(AIConfig):
     # A mapping of model names to their respective parsers

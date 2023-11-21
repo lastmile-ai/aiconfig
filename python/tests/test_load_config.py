@@ -29,6 +29,38 @@ async def test_load_basic_chatgpt_query_config(set_temporary_env_vars):
         "messages": [{"content": "Hi! Tell me 10 cool things to do in NYC.", "role": "user"}],
     }
 
+@pytest.mark.asyncio
+async def test_load_basic_dalle2_config(set_temporary_env_vars):
+    """Test loading a basic Dall-E 2 config"""
+    config_relative_path = "aiconfigs/basic_dalle2_config.json"
+    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
+    config = AIConfigRuntime.load(config_absolute_path)
+
+    data_for_inference = await config.resolve("panda_eating_dumplings")
+
+    assert data_for_inference == {
+        "model": "dall-e-2",
+        'n': 4,
+        'prompt': 'Panda eating dumplings on a yellow mountain',
+        'size': '1024x1024'
+    }
+
+@pytest.mark.asyncio
+async def test_load_basic_dalle3_config(set_temporary_env_vars):
+    """Test loading a basic Dall-E 3 config"""
+    config_relative_path = "aiconfigs/basic_dalle3_config.json"
+    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
+    config = AIConfigRuntime.load(config_absolute_path)
+
+    data_for_inference = await config.resolve("panda_eating_dumplings")
+
+    assert data_for_inference == {
+        "model": "dall-e-3",
+        'n': 1,
+        'prompt': 'Panda eating dumplings on a yellow mountain',
+        'size': '1024x1024'
+    }
+
 
 @pytest.mark.asyncio
 async def test_chained_gpt_config(set_temporary_env_vars):
