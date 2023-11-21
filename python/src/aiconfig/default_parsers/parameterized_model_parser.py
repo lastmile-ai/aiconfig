@@ -1,19 +1,15 @@
 # TODO: plaese improve the file name on this file. This is an abstract class that handles parameterization for a model parser.
 
 
+import typing
 from abc import abstractmethod
 from typing import Dict, Optional
-import typing
-from aiconfig import AIConfig, ExecuteResult, JSONObject, Prompt, PromptInput
 
 from aiconfig.model_parser import InferenceOptions, ModelParser
-from aiconfig.util.params import (
-    resolve_parameters,
-    resolve_parametrized_prompt,
-    resolve_prompt_string,
-)
-from aiconfig.util.params import get_dependency_graph, resolve_parametrized_prompt
 from aiconfig.registry import ModelParserRegistry
+from aiconfig.util.params import get_dependency_graph, resolve_parameters, resolve_parametrized_prompt, resolve_prompt_string
+
+from aiconfig import AIConfig, ExecuteResult, JSONObject, Prompt, PromptInput
 
 if typing.TYPE_CHECKING:
     from aiconfig import AIConfigRuntime
@@ -46,12 +42,7 @@ class ParameterizedModelParser(ModelParser):
         pass
 
     async def run(
-        self,
-        prompt: Prompt,
-        aiconfig: AIConfig,
-        options: Optional[InferenceOptions] = None,
-        parameters: Dict = {},
-        **kwargs
+        self, prompt: Prompt, aiconfig: AIConfig, options: Optional[InferenceOptions] = None, parameters: Dict = {}, **kwargs
     ) -> ExecuteResult:
         # maybe use prompt metadata instead of kwargs?
         if kwargs.get("run_with_dependencies", False):
@@ -59,9 +50,7 @@ class ParameterizedModelParser(ModelParser):
         else:
             return await self.run_inference(prompt, aiconfig, options, parameters)
 
-    async def run_with_dependencies(
-        self, prompt: Prompt, aiconfig: AIConfig, options=None, parameters: Dict = {}
-    ) -> ExecuteResult:
+    async def run_with_dependencies(self, prompt: Prompt, aiconfig: AIConfig, options=None, parameters: Dict = {}) -> ExecuteResult:
         """
         Executes the AI model with the resolved dependencies and prompt references and returns the API response.
 

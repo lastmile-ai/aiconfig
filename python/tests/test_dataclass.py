@@ -1,4 +1,3 @@
-
 from aiconfig.schema import ModelMetadata, Prompt, PromptInput, PromptMetadata
 
 
@@ -12,6 +11,7 @@ def test_get_raw_prompt_from_prompt_object_string_input():
         ),
     )
     assert prompt.get_raw_prompt_from_config() == "This is a basic prompt"
+
 
 def test_get_raw_prompt_from_prompt_object_prompt_input():
     # prompt object is constructed with input as a PromptInput object

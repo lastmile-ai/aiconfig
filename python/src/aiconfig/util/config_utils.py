@@ -1,13 +1,13 @@
+import copy
 import os
 from typing import TYPE_CHECKING
 
-import copy
-
-
 if TYPE_CHECKING:
-    from ..schema import AIConfig
-    from aiconfig.schema import InferenceSettings
     from aiconfig.Config import AIConfigRuntime
+
+    from aiconfig.schema import InferenceSettings
+
+    from ..schema import AIConfig
 
 
 def get_api_key_from_environment(api_key_name: str):
@@ -17,9 +17,7 @@ def get_api_key_from_environment(api_key_name: str):
     return os.environ[api_key_name]
 
 
-def extract_override_settings(
-    config_runtime: "AIConfig", inference_settings: "InferenceSettings", model_id: str
-):
+def extract_override_settings(config_runtime: "AIConfig", inference_settings: "InferenceSettings", model_id: str):
     """
     Extract inference settings with overrides based on inference settings.
 
@@ -43,8 +41,7 @@ def extract_override_settings(
         override_settings = {
             key: copy.deepcopy(inference_settings[key])
             for key in inference_settings
-            if key not in global_model_settings
-            or global_model_settings.get(key) != inference_settings[key]
+            if key not in global_model_settings or global_model_settings.get(key) != inference_settings[key]
         }
         return override_settings
     return inference_settings
