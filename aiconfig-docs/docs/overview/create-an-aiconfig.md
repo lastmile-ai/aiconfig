@@ -71,30 +71,34 @@ async function createAIConfig() {
 :::
 
 ```python title="app.py"
+import asyncio
 from aiconfig import AIConfigRuntime
 
-new_config = AIConfigRuntime.create("my_aiconfig", "This is my new AIConfig")
+async def main():
+    new_config = AIConfigRuntime.create("my_aiconfig", "This is my new AIConfig")
 
-# OpenAI completion params
-model = "gpt-4-0613"
-data = {
-    "model": model,
-    "messages": [
-      { "role": "user", "content": "Say this is a test" },
-      { "role": "assistant", "content": "This is a test." },
-      { "role": "user", "content": "What do you say?" }
-    ]
-}
+    # OpenAI completion params
+    model = "gpt-4"
+    data = {
+        "model": model,
+        "messages": [
+          { "role": "user", "content": "Say this is a test" },
+          { "role": "assistant", "content": "This is a test." },
+          { "role": "user", "content": "What do you say?" }
+        ]
+    }
 
-# Serialize the data into the aiconfig format.
-results = await new_config.serialize(model, data, "results")
+    # Serialize the data into the aiconfig format.
+    results = await new_config.serialize(model, data, "results")
 
-# Add the prompts to the aiconfig
-for i, prompt in enumerate(results):
-    new_config.add_prompt(f"prompt_{i}", prompt)
+    # Add the prompts to the aiconfig
+    for i, prompt in enumerate(results):
+        new_config.add_prompt(f"prompt_{i}", prompt)
 
-# Save the aiconfig to disk
-new_config.save('new.aiconfig.json', include_output=True)
+    # Save the aiconfig to disk
+    new_config.save('new.aiconfig.json', include_outputs=True)
+
+asyncio.run(main())
 ```
 
 </TabItem>
