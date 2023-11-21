@@ -62,14 +62,18 @@ def test_get_model_settings(ai_config_runtime: AIConfigRuntime):
             Prompt(
                 name="test",
                 input="test",
-                metadata=PromptMetadata(model=ModelMetadata(name="fakemodel", settings=None)),
+                metadata=PromptMetadata(
+                    model=ModelMetadata(name="fakemodel", settings=None)
+                ),
             )
         ],
     )
 
     prompt = aiconfig.prompts[0]
 
-    assert mock_model_parser.get_model_settings(prompt, aiconfig) == {"fake_setting": "True"}
+    assert mock_model_parser.get_model_settings(prompt, aiconfig) == {
+        "fake_setting": "True"
+    }
 
     with pytest.raises(IndexError, match=r"Prompt '.*' not in config"):
         prompt = Prompt(

@@ -16,7 +16,14 @@ class ModelParser(ABC):
         pass
 
     @abstractmethod
-    async def serialize(self, prompt_name: str, data: Any, ai_config: "AIConfigRuntime", parameters: Optional[Dict] = None, **kwargs) -> Prompt:
+    async def serialize(
+        self,
+        prompt_name: str,
+        data: Any,
+        ai_config: "AIConfigRuntime",
+        parameters: Optional[Dict] = None,
+        **kwargs,
+    ) -> Prompt:
         """
         Serialize a prompt and additional metadata/model settings into a Prompt object that can be saved in the AIConfig.
 
@@ -76,7 +83,12 @@ class ModelParser(ABC):
         pass
 
     @abstractmethod
-    def get_output_text(self, prompt: Prompt, aiconfig: "AIConfigRuntime", output: Optional[Output] = None) -> str:
+    def get_output_text(
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        output: Optional[Output] = None,
+    ) -> str:
         """
         Get the output text from the model inference response.
 
@@ -89,7 +101,9 @@ class ModelParser(ABC):
         """
         pass
 
-    def get_model_settings(self, prompt: Prompt, aiconfig: "AIConfigRuntime") -> Dict[str, Any]:
+    def get_model_settings(
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime"
+    ) -> Dict[str, Any]:
         """
         Extracts the AI model's settings from the configuration. If both prompt and config level settings are defined, merge them with prompt settings taking precedence.
 
@@ -103,7 +117,10 @@ class ModelParser(ABC):
             return aiconfig.get_global_settings(self.id())
 
         # Check if the prompt exists in the config
-        if prompt.name not in aiconfig.prompt_index or aiconfig.prompt_index[prompt.name] != prompt:
+        if (
+            prompt.name not in aiconfig.prompt_index
+            or aiconfig.prompt_index[prompt.name] != prompt
+        ):
             raise IndexError(f"Prompt '{prompt.name}' not in config.")
 
         model_metadata = prompt.metadata.model if prompt.metadata else None
@@ -112,7 +129,9 @@ class ModelParser(ABC):
             # Use Default Model
             default_model = aiconfig.get_default_model()
             if not default_model:
-                raise KeyError(f"No default model specified in AIConfigMetadata, and prompt `{prompt.name}` does not specify a model.")
+                raise KeyError(
+                    f"No default model specified in AIConfigMetadata, and prompt `{prompt.name}` does not specify a model."
+                )
             return aiconfig.get_global_settings(default_model)
         elif isinstance(model_metadata, str):
             # Use Global settings
@@ -121,7 +140,11 @@ class ModelParser(ABC):
             # Merge config and prompt settings with prompt settings taking precedent
             model_settings = {}
             global_settings = aiconfig.get_global_settings(model_metadata.name)
-            prompt_setings = prompt.metadata.model.settings if prompt.metadata.model.settings is not None else {}
+            prompt_setings = (
+                prompt.metadata.model.settings
+                if prompt.metadata.model.settings is not None
+                else {}
+            )
 
             model_settings.update(global_settings)
             model_settings.update(prompt_setings)
@@ -133,7 +156,11 @@ def print_stream_callback(data, accumulated_data, index: int):
     """
     Default streamCallback function that prints the output to the console.
     """
-    print("\ndata: {}\naccumulated_data:{}\nindex:{}\n".format(data, accumulated_data, index))
+    print(
+        "\ndata: {}\naccumulated_data:{}\nindex:{}\n".format(
+            data, accumulated_data, index
+        )
+    )
 
 
 def print_stream_delta(data, accumulated_data, index: int):
@@ -151,7 +178,12 @@ class InferenceOptions:
     Options that determine how to run inference for the prompt (e.g., whether to stream the output or not, callbacks, etc.)
     """
 
-    def __init__(self, stream_callback: Callable[[Any, Any, int], Any] = print_stream_delta, stream=True, **kwargs):
+    def __init__(
+        self,
+        stream_callback: Callable[[Any, Any, int], Any] = print_stream_delta,
+        stream=True,
+        **kwargs,
+    ):
         super().__init__()
 
         """ 

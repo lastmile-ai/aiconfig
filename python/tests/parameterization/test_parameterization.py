@@ -32,7 +32,11 @@ config1 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
             },
         }
@@ -64,7 +68,11 @@ config2 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {"name": "Tanya Local"},
             },
@@ -97,7 +105,11 @@ config3 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {},
             },
@@ -131,7 +143,11 @@ config4 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {"name": "Tanya Local"},
             },
@@ -165,7 +181,11 @@ config5 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {},
             },
@@ -199,7 +219,11 @@ config6 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {"name": "Tanya Local"},
             },
@@ -232,7 +256,11 @@ config7 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {"name": "Tanya Local"},
             },
@@ -266,7 +294,11 @@ config8 = {
             "metadata": {
                 "model": {
                     "name": "gpt-3.5-turbo",
-                    "settings": {"model": "gpt-3.5-turbo", "top_p": 1, "temperature": 1},
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "top_p": 1,
+                        "temperature": 1,
+                    },
                 },
                 "parameters": {},
             },
