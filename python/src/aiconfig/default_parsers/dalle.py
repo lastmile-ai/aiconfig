@@ -57,6 +57,7 @@ def construct_output(image_data: Image, execution_count: int) -> Output:
             "data": image_data.b64_json or image_data.url,
             "execution_count": execution_count,
             "metadata": {"revised_prompt": image_data.revised_prompt},
+            "mime_type": "image/png",
         }
     )
     return output
