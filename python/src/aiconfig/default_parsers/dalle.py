@@ -57,39 +57,48 @@ def construct_output(image_data: Image, execution_count: int) -> Output:
             "data": image_data.b64_json or image_data.url,
             "execution_count": execution_count,
             "metadata": {"revised_prompt": image_data.revised_prompt},
+            "mime_type": "image/png",
         }
     )
     return output
 
 
-class DallE3ImageGenerationParser(ParameterizedModelParser):
+class DalleImageGenerationParser(ParameterizedModelParser):
     """
-    A model parser for Dall-E 3 text-->image generation models.
+    A model parser for Dall-E 2 and Dall-E 3 text-->image generation models.
     """
     
-    def __init__(self):
+    def __init__(self, model_id: str = "dall-e-3"):
         """
         Usage:
 
         1. Create a new model parser object
-                parser = DallE3ImageGenerationParser()
+                parser = DalleImageGenerationParser("dall-e-3")
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
 
         The model parser will require an API token to be set in the environment variable OPENAI_API_KEY.
         """
         super().__init__()
+
+        supported_models = {
+            "dall-e-2",
+            "dall-e-3",
+        }
+        if model_id.lower() not in supported_models:
+            raise ValueError('{model_id}' + " is not a valid model ID for Dall-E image generation. Supported models: {supported_models}.")
+        self.model_id = model_id
+        
         self.client = None
 
     def id(self) -> str:
         """
         Returns an identifier for the model (e.g. dall-e-2, dall-e-3, etc.).
         """
-        return "dall-e-3"
+        return self.model_id
 
 
-    # TODO: Test this sometime from getting a response from the API and saving it to a file
-    def serialize(
+    async def serialize(
         self,
         prompt_name: str,
         data: Any,
