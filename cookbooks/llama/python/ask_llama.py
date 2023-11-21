@@ -7,7 +7,9 @@ from aiconfig import AIConfigRuntime
 
 
 async def main():
-    llama_model_parser = LlamaModelParser(model_path="models/llama-2-7b-chat.Q4_K_M.gguf")
+    llama_model_parser = LlamaModelParser(
+        model_path="models/llama-2-7b-chat.Q4_K_M.gguf"
+    )
 
     for lm in [
         "llama-2-7b-chat",

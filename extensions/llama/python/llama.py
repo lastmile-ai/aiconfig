@@ -28,7 +28,9 @@ class LlamaModelParser(ParameterizedModelParser):
         out = Prompt(name=prompt_name, input=data)
         return [out]
 
-    async def deserialize(self, prompt: Prompt, aiconfig: AIConfigRuntime, params: dict | None = None) -> dict:
+    async def deserialize(
+        self, prompt: Prompt, aiconfig: AIConfigRuntime, params: dict | None = None
+    ) -> dict:
         resolved = resolve_prompt(prompt, params, aiconfig)
 
         try:
@@ -36,7 +38,11 @@ class LlamaModelParser(ParameterizedModelParser):
         except AttributeError:
             remember_chat_context = False
 
-        model_input = f"CONTEXT:\n{self.history()}\nQUESTION:\n{resolved}" if remember_chat_context else resolved
+        model_input = (
+            f"CONTEXT:\n{self.history()}\nQUESTION:\n{resolved}"
+            if remember_chat_context
+            else resolved
+        )
         return {"model_input": model_input}
 
     def id(self) -> str:
@@ -87,7 +93,9 @@ class LlamaModelParser(ParameterizedModelParser):
 
             return ExecuteResult(output_type="execute_result", data=texts, metadata={})
 
-    def get_output_text(self, prompt: Prompt, aiconfig: AIConfigRuntime, output: Output | None = None) -> str:
+    def get_output_text(
+        self, prompt: Prompt, aiconfig: AIConfigRuntime, output: Output | None = None
+    ) -> str:
         match output:
             case ExecuteResult(data=d):
                 return d

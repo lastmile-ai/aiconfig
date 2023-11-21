@@ -167,7 +167,9 @@ class AIConfig(BaseModel):
         Adds model settings to config level metadata
         """
         if model_name in self.metadata.models:
-            raise Exception(f"Model '{model_name}' already exists. Use `update_model()`.")
+            raise Exception(
+                f"Model '{model_name}' already exists. Use `update_model()`."
+            )
         self.metadata.models[model_name] = model_settings
 
     def delete_model(self, model_name: str):
@@ -197,7 +199,9 @@ class AIConfig(BaseModel):
             # If the prompt doesn't have a model, use the default model
             default_model = self.metadata.default_model
             if not default_model:
-                raise Exception(f"No model specified in AIConfig metadata, prompt {prompt.name} does not specify a model.")
+                raise Exception(
+                    f"No model specified in AIConfig metadata, prompt {prompt.name} does not specify a model."
+                )
             return default_model
         if isinstance(prompt.metadata.model, str):
             return prompt.metadata.model
@@ -250,7 +254,9 @@ class AIConfig(BaseModel):
         else:
             return self.metadata
 
-    def set_parameter(self, parameter_name: str, parameter_value, prompt_name: Optional[str] = None):
+    def set_parameter(
+        self, parameter_name: str, parameter_value, prompt_name: Optional[str] = None
+    ):
         """
         Sets a parameter in the AI configuration metadata. If a prompt_name is specified, it adds the parameter to
         a specific prompt's metadata in the AI configuration. Otherwise, it adds the parameter to the global metadata.
@@ -271,7 +277,12 @@ class AIConfig(BaseModel):
         target_metadata = self.get_metadata(prompt_name)
         target_metadata.parameters[parameter_name] = parameter_value
 
-    def update_parameter(self, parameter_name: str, parameter_value: str, prompt_name: Optional[str] = None):
+    def update_parameter(
+        self,
+        parameter_name: str,
+        parameter_value: str,
+        prompt_name: Optional[str] = None,
+    ):
         """
         Updates a parameter in the AI configuration metadata. If a prompt_name is specified, it updates the parameter
         in a specific prompt's metadata in the AI configuration. Otherwise, it updates the parameter in the global
@@ -314,7 +325,11 @@ class AIConfig(BaseModel):
             Prompt: The prompt object.
         """
         if prompt_name not in self.prompt_index:
-            raise IndexError("Prompt '{}' not found in config, available prompts are:\n {}".format(prompt_name, list(self.prompt_index.keys())))
+            raise IndexError(
+                "Prompt '{}' not found in config, available prompts are:\n {}".format(
+                    prompt_name, list(self.prompt_index.keys())
+                )
+            )
         return self.prompt_index[prompt_name]
 
     def add_prompt(self, prompt_name: str, prompt_data: Prompt):
@@ -328,7 +343,11 @@ class AIConfig(BaseModel):
         if prompt_name is None:
             prompt_name = prompt_data.name
         if prompt_name in self.prompt_index:
-            raise Exception("Prompt with name {} already exists. Use`update_prompt()`".format(prompt_name))
+            raise Exception(
+                "Prompt with name {} already exists. Use`update_prompt()`".format(
+                    prompt_name
+                )
+            )
 
         prompt_data.name = prompt_name
         self.prompt_index[prompt_name] = prompt_data
@@ -343,7 +362,11 @@ class AIConfig(BaseModel):
             prompt_data (Prompt): The prompt object containing the updated prompt data.
         """
         if prompt_name not in self.prompt_index:
-            raise IndexError("Prompt not found in config, available prompts are:\n {}".format(list(self.prompt_index.keys())))
+            raise IndexError(
+                "Prompt not found in config, available prompts are:\n {}".format(
+                    list(self.prompt_index.keys())
+                )
+            )
 
         self.prompt_index[prompt_name] = prompt_data
         # update prompt list
@@ -360,13 +383,19 @@ class AIConfig(BaseModel):
             prompt_name (str): The name of the prompt to delete.
         """
         if prompt_name not in self.prompt_index:
-            raise IndexError("Prompt not found in config, available prompts are:\n {}".format(list(self.prompt_index.keys())))
+            raise IndexError(
+                "Prompt not found in config, available prompts are:\n {}".format(
+                    list(self.prompt_index.keys())
+                )
+            )
 
         del self.prompt_index[prompt_name]
         # remove from prompt list
         self.prompts = [prompt for prompt in self.prompts if prompt.name != prompt_name]
 
-    def get_model_metadata(self, inference_settings: InferenceSettings, model_id: str) -> ModelMetadata:
+    def get_model_metadata(
+        self, inference_settings: InferenceSettings, model_id: str
+    ) -> ModelMetadata:
         """
         Generate a model metadata object based on the provided inference settings
 
@@ -380,15 +409,21 @@ class AIConfig(BaseModel):
             ModelMetadata: The model metadata.
         """
 
-        overriden_settings = extract_override_settings(self, inference_settings, model_id)
+        overriden_settings = extract_override_settings(
+            self, inference_settings, model_id
+        )
 
         if not overriden_settings:
             model_metadata = ModelMetadata(**{"name": model_id})
         else:
-            model_metadata = ModelMetadata(**{"name": model_id, "settings": overriden_settings})
+            model_metadata = ModelMetadata(
+                **{"name": model_id, "settings": overriden_settings}
+            )
         return model_metadata
 
-    def update_model(self, model_metadata: Dict | ModelMetadata, prompt_name: Optional[str] = None):
+    def update_model(
+        self, model_metadata: Dict | ModelMetadata, prompt_name: Optional[str] = None
+    ):
         """
         Updates model settings in AIconfig-level metadata
 
@@ -398,7 +433,9 @@ class AIConfig(BaseModel):
         """
         if isinstance(model_metadata, dict):
             if "name" not in model_metadata:
-                raise KeyError("Cannot update model. Model metadata must contain a 'name' element. Optionally, it may contain a 'settings' element.")
+                raise KeyError(
+                    "Cannot update model. Model metadata must contain a 'name' element. Optionally, it may contain a 'settings' element."
+                )
             model_metadata = ModelMetadata(**model_metadata)
         if prompt_name:
             prompt = self.get_prompt(prompt_name)
@@ -422,7 +459,9 @@ class AIConfig(BaseModel):
         if prompt_name:
             prompt = self.get_prompt(prompt_name)
             if not prompt:
-                raise IndexError(f"Cannot set metadata property '{key}' for prompt {prompt_name}. Prompt {prompt_name} does not exist in AIConfig.")
+                raise IndexError(
+                    f"Cannot set metadata property '{key}' for prompt {prompt_name}. Prompt {prompt_name} does not exist in AIConfig."
+                )
             setattr(prompt.metadata, key, value)
         else:
             setattr(self.metadata, key, value)
@@ -438,11 +477,15 @@ class AIConfig(BaseModel):
         if prompt_name:
             prompt = self.get_prompt(prompt_name)
             if not prompt:
-                raise IndexError(f"Cannot delete metadata. Prompt '{prompt_name}' not found in config.")
+                raise IndexError(
+                    f"Cannot delete metadata. Prompt '{prompt_name}' not found in config."
+                )
             if hasattr(prompt.metadata, key):
                 delattr(prompt.metadata, key)
             else:
-                raise KeyError(f"Metadata '{key}' does not exist for Prompt {prompt_name}.")
+                raise KeyError(
+                    f"Metadata '{key}' does not exist for Prompt {prompt_name}."
+                )
         else:
             if hasattr(self.metadata, key):
                 delattr(self.metadata, key)
@@ -462,7 +505,9 @@ class AIConfig(BaseModel):
         """
         prompt = self.get_prompt(prompt_name)
         if not prompt:
-            raise IndexError(f"Cannot out output. Prompt '{prompt_name}' not found in config.")
+            raise IndexError(
+                f"Cannot out output. Prompt '{prompt_name}' not found in config."
+            )
         if overwrite or not output:
             prompt.outputs = [output]
         else:
