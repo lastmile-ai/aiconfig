@@ -11,3 +11,4 @@ huggingface_hub
 result
 nest_asyncio
 prompt_toolkit
+lastmile_utils==0.0.2
