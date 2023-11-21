@@ -57,12 +57,13 @@ def construct_output(image_data: Image, execution_count: int) -> Output:
             "data": image_data.b64_json or image_data.url,
             "execution_count": execution_count,
             "metadata": {"revised_prompt": image_data.revised_prompt},
+            "mime_type": "image/png",
         }
     )
     return output
 
 
-class DallEImageGenerationParser(ParameterizedModelParser):
+class DalleImageGenerationParser(ParameterizedModelParser):
     """
     A model parser for Dall-E 2 and Dall-E 3 text-->image generation models.
     """
@@ -72,7 +73,7 @@ class DallEImageGenerationParser(ParameterizedModelParser):
         Usage:
 
         1. Create a new model parser object
-                parser = DallEImageGenerationParser("dall-e-3")
+                parser = DalleImageGenerationParser("dall-e-3")
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
 
