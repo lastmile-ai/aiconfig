@@ -44,7 +44,7 @@ $ yarn add aiconfig
 <TabItem value="pip">
 
 ```bash
-$ pip install python-aiconfig
+$ pip install --user python-aiconfig
 ```
 
 </TabItem>
