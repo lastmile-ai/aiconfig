@@ -337,6 +337,8 @@ class AIConfig(BaseModel):
             raise Exception(
                 "Prompt with name {} already exists. Use`update_prompt()`".format(prompt_name)
             )
+        
+        prompt_data.name = prompt_name
         self.prompt_index[prompt_name] = prompt_data
         self.prompts.append(prompt_data)
 
