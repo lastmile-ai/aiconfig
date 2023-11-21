@@ -1,24 +1,16 @@
 import copy
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-# Type hint imports
-from aiconfig import (
-    ExecuteResult,
-    Output,
-    Prompt,
-    PromptMetadata,
-)
-
-# ModelParser Utils
-from aiconfig import ParameterizedModelParser
-from aiconfig import resolve_prompt
-from aiconfig import InferenceOptions
-from aiconfig.util.config_utils import get_api_key_from_environment
 import openai
+from aiconfig.util.config_utils import get_api_key_from_environment
 from openai import OpenAI
 
 # Dall-E API imports
-from openai.types import ImagesResponse, Image
+from openai.types import Image, ImagesResponse
+
+# ModelParser Utils
+# Type hint imports
+from aiconfig import ExecuteResult, InferenceOptions, Output, ParameterizedModelParser, Prompt, PromptMetadata, resolve_prompt
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -27,20 +19,14 @@ if TYPE_CHECKING:
 
 # Step 1: define Helpers
 
+
 # TODO: Centralize this into utils function with the HuggingFaceTextParser class
 def refine_image_completion_params(model_settings):
     """
     Refines the completion params for the Dall-E request API. Removes any unsupported params.
     The supported keys were found by looking at the OpenAI Dall-E API: https://platform.openai.com/docs/api-reference/images/create?lang=python`
     """
-    supported_keys = {
-        "model",
-        "n",
-        "quality",
-        "response_format",
-        "size",
-        "style"
-    }
+    supported_keys = {"model", "n", "quality", "response_format", "size", "style"}
 
     completion_data = {}
     for key in model_settings:
@@ -67,7 +53,7 @@ class DalleImageGenerationParser(ParameterizedModelParser):
     """
     A model parser for Dall-E 2 and Dall-E 3 text-->image generation models.
     """
-    
+
     def __init__(self, model_id: str = "dall-e-3"):
         """
         Usage:
@@ -86,9 +72,9 @@ class DalleImageGenerationParser(ParameterizedModelParser):
             "dall-e-3",
         }
         if model_id.lower() not in supported_models:
-            raise ValueError('{model_id}' + " is not a valid model ID for Dall-E image generation. Supported models: {supported_models}.")
+            raise ValueError("{model_id}" + " is not a valid model ID for Dall-E image generation. Supported models: {supported_models}.")
         self.model_id = model_id
-        
+
         self.client = None
 
     def id(self) -> str:
@@ -96,7 +82,6 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         Returns an identifier for the model (e.g. dall-e-2, dall-e-3, etc.).
         """
         return self.model_id
-
 
     async def serialize(
         self,
@@ -133,9 +118,7 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         return [prompt]
 
     # TODO (rossdanlm): Update documentation for args
-    async def deserialize(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}
-    ) -> Dict:
+    async def deserialize(self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
         and constructs the completion params for that model.
@@ -176,7 +159,7 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
 
         print("Calling image generation. This can take several seconds, please hold on...")
-        response : ImagesResponse = self.client.images.generate(**completion_data)
+        response: ImagesResponse = self.client.images.generate(**completion_data)
 
         outputs = []
         # ImageResponse object also contains a "created" field for timestamp, should I store that somewhere?
@@ -188,9 +171,7 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         prompt.outputs = outputs
         return prompt.outputs
 
-    def get_output_text(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", output: Optional[Output] = None
-    ) -> str:
+    def get_output_text(self, prompt: Prompt, aiconfig: "AIConfigRuntime", output: Optional[Output] = None) -> str:
         if not output:
             output = aiconfig.get_latest_output(prompt)
 

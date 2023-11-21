@@ -1,7 +1,8 @@
-from typing import Dict, List
 import typing
+from typing import Dict, List
 
 from aiconfig.schema import Prompt
+
 from .model_parser import ModelParser
 
 if typing.TYPE_CHECKING:
@@ -86,10 +87,7 @@ class ModelParserRegistry:
         """
         returns a dictionary of model names and their correspondings model parser ids
         """
-        return {
-            model_name: model_parser.id()
-            for model_name, model_parser in ModelParserRegistry._parsers.items()
-        }
+        return {model_name: model_parser.id() for model_name, model_parser in ModelParserRegistry._parsers.items()}
 
 
 def update_model_parser_registry_with_config_runtime(config_runtime: "AIConfigRuntime"):

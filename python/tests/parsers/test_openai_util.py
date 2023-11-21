@@ -1,15 +1,13 @@
-from aiconfig import Prompt
-from aiconfig import PromptMetadata, ExecuteResult
-from aiconfig.Config import AIConfigRuntime
-from aiconfig import Prompt
-from aiconfig.default_parsers.openai import add_prompt_as_message, refine_chat_completion_params
-from mock import patch
 import openai
 import pytest
+from aiconfig.Config import AIConfigRuntime
+from aiconfig.default_parsers.openai import add_prompt_as_message, refine_chat_completion_params
+from mock import patch
 
-from ..util.file_path_utils import get_absolute_file_path_from_relative
+from aiconfig import ExecuteResult, Prompt, PromptMetadata
 
 from ..conftest import mock_openai_chat_completion
+from ..util.file_path_utils import get_absolute_file_path_from_relative
 
 
 def test_refine_chat_completion_params():
@@ -59,9 +57,7 @@ async def test_serialize(set_temporary_env_vars):
         }
 
         aiconfig = AIConfigRuntime.create()
-        serialized_prompts = await aiconfig.serialize(
-            "gpt-3.5-turbo", completion_params, prompt_name="the prompt"
-        )
+        serialized_prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, prompt_name="the prompt")
         new_prompt = serialized_prompts[0]
 
         # assert prompt serialized correctly into config
