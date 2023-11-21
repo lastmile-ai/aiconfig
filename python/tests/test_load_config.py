@@ -1,15 +1,15 @@
 # import ai_config_tools Config class
 
 import os
-from aiconfig import AIConfigRuntime
-from mock import patch
+
 import openai
 import pytest
+from mock import patch
 
-from .util.file_path_utils import get_absolute_file_path_from_relative
+from aiconfig import AIConfigRuntime
+
 from .conftest import set_temporary_env_vars
-import os
-import pytest
+from .util.file_path_utils import get_absolute_file_path_from_relative
 
 
 @pytest.mark.asyncio
@@ -29,6 +29,7 @@ async def test_load_basic_chatgpt_query_config(set_temporary_env_vars):
         "messages": [{"content": "Hi! Tell me 10 cool things to do in NYC.", "role": "user"}],
     }
 
+
 @pytest.mark.asyncio
 async def test_load_basic_dalle2_config(set_temporary_env_vars):
     """Test loading a basic Dall-E 2 config"""
@@ -38,12 +39,8 @@ async def test_load_basic_dalle2_config(set_temporary_env_vars):
 
     data_for_inference = await config.resolve("panda_eating_dumplings")
 
-    assert data_for_inference == {
-        "model": "dall-e-2",
-        'n': 4,
-        'prompt': 'Panda eating dumplings on a yellow mountain',
-        'size': '1024x1024'
-    }
+    assert data_for_inference == {"model": "dall-e-2", "n": 4, "prompt": "Panda eating dumplings on a yellow mountain", "size": "1024x1024"}
+
 
 @pytest.mark.asyncio
 async def test_load_basic_dalle3_config(set_temporary_env_vars):
@@ -54,12 +51,7 @@ async def test_load_basic_dalle3_config(set_temporary_env_vars):
 
     data_for_inference = await config.resolve("panda_eating_dumplings")
 
-    assert data_for_inference == {
-        "model": "dall-e-3",
-        'n': 1,
-        'prompt': 'Panda eating dumplings on a yellow mountain',
-        'size': '1024x1024'
-    }
+    assert data_for_inference == {"model": "dall-e-3", "n": 1, "prompt": "Panda eating dumplings on a yellow mountain", "size": "1024x1024"}
 
 
 @pytest.mark.asyncio

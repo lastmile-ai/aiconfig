@@ -1,7 +1,7 @@
-import openai
-import pytest
 import os
 
+import openai
+import pytest
 from openai.types.chat import ChatCompletion
 
 
@@ -54,9 +54,7 @@ def mock_openai_chat_completion(**kwargs):
                 "temperature": 1,
                 "top_p": 1,
                 "stream": False,
-                "messages": [
-                    {"content": "Hi! Tell me 10 cool things to do in NYC.", "role": "user"}
-                ],
+                "messages": [{"content": "Hi! Tell me 10 cool things to do in NYC.", "role": "user"}],
             },
             ChatCompletion(
                 **{

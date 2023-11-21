@@ -1,6 +1,7 @@
-from aiconfig.schema import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
-from aiconfig.Config import AIConfigRuntime
 import pytest
+from aiconfig.Config import AIConfigRuntime
+
+from aiconfig.schema import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
 
 from ..util.mock_parser import MockModelParser
 
@@ -68,9 +69,7 @@ def test_get_model_settings(ai_config_runtime: AIConfigRuntime):
 
     prompt = aiconfig.prompts[0]
 
-    assert mock_model_parser.get_model_settings(prompt, aiconfig) == {
-        "fake_setting": "True"
-    }
+    assert mock_model_parser.get_model_settings(prompt, aiconfig) == {"fake_setting": "True"}
 
     with pytest.raises(IndexError, match=r"Prompt '.*' not in config"):
         prompt = Prompt(

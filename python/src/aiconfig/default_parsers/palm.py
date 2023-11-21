@@ -1,23 +1,16 @@
-from abc import abstractmethod
 import copy
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Dict, List, Optional
 
-from ..model_parser import InferenceOptions
-from ..callback import CallbackEvent
-from ..schema import (
-    AIConfig,
-    ExecuteResult,
-    ExecuteResult,
-    ModelMetadata,
-    Output,
-    Prompt,
-    PromptMetadata,
-)
+import google.generativeai as palm
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_parameters, resolve_prompt, resolve_system_prompt
-import google.generativeai as palm
 from google.generativeai.text import Completion
+
+from ..callback import CallbackEvent
+from ..model_parser import InferenceOptions
+from ..schema import AIConfig, ExecuteResult, ModelMetadata, Output, Prompt, PromptMetadata
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
@@ -78,9 +71,7 @@ class PaLMTextParser(ParameterizedModelParser):
 
         return prompts
 
-    async def deserialize(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}
-    ) -> Dict:
+    async def deserialize(self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
         and constructs the completion params for that model.
@@ -91,9 +82,7 @@ class PaLMTextParser(ParameterizedModelParser):
         Returns:
             dict: Model-specific completion parameters.
         """
-        await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params})
-        )
+        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params}))
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
 
@@ -104,14 +93,10 @@ class PaLMTextParser(ParameterizedModelParser):
         # pass in the user prompt
         completion_data["prompt"] = prompt_str
 
-        await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data})
-        )
+        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data}))
         return completion_data
 
-    async def run_inference(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters
-    ) -> Output:
+    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -147,18 +132,16 @@ class PaLMTextParser(ParameterizedModelParser):
             output = ExecuteResult(
                 output_type="execute_result",
                 execution_count=i,
-                data= candidate.get("output"),
+                data=candidate.get("output"),
                 metadata=candidate,
             )
             outputs.append(output)
 
         prompt.outputs = outputs
-        await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs})
-        )
+        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs}))
         return outputs
 
-    def get_output_text(self, prompt: Prompt, aiconfig: 'AIConfigRuntime', output: Optional[Output] = None) -> str:
+    def get_output_text(self, prompt: Prompt, aiconfig: "AIConfigRuntime", output: Optional[Output] = None) -> str:
         if output is not None:
             return output.data
         else:
@@ -222,9 +205,7 @@ class PaLMChatParser(ParameterizedModelParser):
         event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
         await ai_config.callback_manager.run_callbacks(event)
 
-    async def deserialize(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}
-    ) -> Dict:
+    async def deserialize(self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
         and constructs the completion params for that model.
@@ -235,9 +216,7 @@ class PaLMChatParser(ParameterizedModelParser):
         Returns:
             dict: Model-specific completion parameters.
         """
-        await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params})
-        )
+        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params}))
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
 
         # Build Completion data
@@ -250,8 +229,7 @@ class PaLMChatParser(ParameterizedModelParser):
 
         # Default to always use chat contextjkl;
         if not hasattr(prompt.metadata, "remember_chat_context") or (
-            hasattr(prompt.metadata, "remember_chat_context")
-            and prompt.metadata.remember_chat_context != False
+            hasattr(prompt.metadata, "remember_chat_context") and prompt.metadata.remember_chat_context != False
         ):
             # handle chat history. check previous prompts for the same model. if same model, add prompt and its output to completion data if it has a completed output
             for i, previous_prompt in enumerate(aiconfig.prompts):
@@ -266,32 +244,22 @@ class PaLMChatParser(ParameterizedModelParser):
 
                     # check if prompt has an output. PaLM Api requires this
                     if len(previous_prompt.outputs) > 0:
-                        resolved_previous_prompt = resolve_parameters(
-                            {}, previous_prompt, aiconfig
-                        )
-                        completion_data["messages"].append(
-                            {"content": resolved_previous_prompt, "author": "0"}
-                        )
+                        resolved_previous_prompt = resolve_parameters({}, previous_prompt, aiconfig)
+                        completion_data["messages"].append({"content": resolved_previous_prompt, "author": "0"})
 
                         completion_data["messages"].append(
                             {
-                                "content": aiconfig.get_output_text(
-                                    previous_prompt, aiconfig.get_latest_output(previous_prompt)
-                                ),
+                                "content": aiconfig.get_output_text(previous_prompt, aiconfig.get_latest_output(previous_prompt)),
                                 "author": "1",
                             }
                         )
 
         # pass in the user prompt
         completion_data["messages"].append({"content": resolved_prompt, "author": "0"})
-        await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data})
-        )
+        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data}))
         return completion_data
 
-    async def run_inference(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters
-    ) -> Output:
+    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -327,14 +295,10 @@ class PaLMChatParser(ParameterizedModelParser):
             outputs.append(output)
 
         prompt.outputs = outputs
-        await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs})
-        )
+        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs}))
         return prompt.outputs
 
-    def get_output_text(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", output: Optional[Output] = None
-    ) -> str:
+    def get_output_text(self, prompt: Prompt, aiconfig: "AIConfigRuntime", output: Optional[Output] = None) -> str:
         if not output:
             output = aiconfig.get_latest_output(prompt)
 

@@ -14,23 +14,22 @@ usage:
         openai.ChatCompletion.create = create_and_save_to_config('my-aiconfig.json')
         ```
 """
+import asyncio
 import copy
 import types
 from typing import Dict, List, Optional
-from aiconfig.default_parsers.openai import multi_choice_message_reducer
-from aiconfig.schema import ExecuteResult, Output, Prompt
-from aiconfig.Config import AIConfigRuntime
-import openai
-import asyncio
 
 import nest_asyncio
+import openai
+from aiconfig.Config import AIConfigRuntime
+from aiconfig.default_parsers.openai import multi_choice_message_reducer
+
+from aiconfig.schema import ExecuteResult, Output, Prompt
 
 openai_chat_completion_create = openai.chat.completions.create
 
 
-def create_and_save_to_config(
-    config_file_path: Optional[str] = None, aiconfig: Optional[AIConfigRuntime] = None
-):
+def create_and_save_to_config(config_file_path: Optional[str] = None, aiconfig: Optional[AIConfigRuntime] = None):
     """
     Overrides OpenAI's ChatCompletion.create method to serialize prompts and save them along with their outputs to a configuration file.
 
@@ -124,10 +123,7 @@ def validate_and_add_prompts_to_config(prompts: List[Prompt], aiconfig) -> None:
         in_config = False
         for config_prompt in aiconfig.prompts:
             # check for duplicates (same input and settings.)
-            if (
-                config_prompt.input == new_prompt.input
-                and new_prompt.metadata == config_prompt.metadata
-            ):
+            if config_prompt.input == new_prompt.input and new_prompt.metadata == config_prompt.metadata:
                 in_config = True
                 # update outputs if different
                 if config_prompt.outputs != new_prompt.outputs:
@@ -153,9 +149,7 @@ def extract_outputs_from_response(response) -> List[Output]:
 
     response = response.model_dump(exclude_none=True)
 
-    response_without_choices = {
-        key: copy.deepcopy(value) for key, value in response.items() if key != "choices"
-    }
+    response_without_choices = {key: copy.deepcopy(value) for key, value in response.items() if key != "choices"}
     for i, choice in enumerate(response.get("choices")):
         response_without_choices.update({"finish_reason": choice.get("finish_reason")})
         output = ExecuteResult(
