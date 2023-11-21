@@ -2,7 +2,17 @@
 import asyncio
 import logging
 import time
-from typing import Any, Awaitable, Callable, Coroutine, Final, List, Sequence, TypeAlias, Union
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Coroutine,
+    Final,
+    List,
+    Sequence,
+    TypeAlias,
+    Union,
+)
 
 from pydantic import BaseModel, ConfigDict
 
@@ -33,7 +43,9 @@ Callback = Callable[[CallbackEvent], Awaitable[Any]]
 Result: TypeAlias = Union[Ok[Any], Err[Any]]
 
 
-async def execute_coroutine_with_timeout(coroutine: Coroutine[Any, Any, Any], timeout: int) -> Result:
+async def execute_coroutine_with_timeout(
+    coroutine: Coroutine[Any, Any, Any], timeout: int
+) -> Result:
     """
     Execute a coroutine with a timeout, return an Ok result or an Err on Exception
 
@@ -111,7 +123,9 @@ def create_logging_callback(log_file: str = None) -> Callback:
         name = "my-logger"
         log_file = "aiconfig.log"
 
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         handler = logging.FileHandler(log_file)
         handler.setFormatter(formatter)
 

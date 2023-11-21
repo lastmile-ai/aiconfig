@@ -5,13 +5,21 @@ from typing import ClassVar, Dict, List, Optional
 
 import requests
 from aiconfig.callback import CallbackEvent, CallbackManager
-from aiconfig.default_parsers.openai import ChatGPTParser, DefaultOpenAIParser, GPT3TurboParser, GPT4Parser
+from aiconfig.default_parsers.openai import (
+    ChatGPTParser,
+    DefaultOpenAIParser,
+    GPT3TurboParser,
+    GPT4Parser,
+)
 from aiconfig.default_parsers.palm import PaLMChatParser, PaLMTextParser
 from aiconfig.model_parser import InferenceOptions, ModelParser
 
 from .default_parsers.dalle import DalleImageGenerationParser
 from .default_parsers.hf import HuggingFaceTextGenerationParser
-from .registry import ModelParserRegistry, update_model_parser_registry_with_config_runtime
+from .registry import (
+    ModelParserRegistry,
+    update_model_parser_registry_with_config_runtime,
+)
 from .schema import AIConfig, ConfigMetadata, Prompt
 
 gpt_models = [
@@ -124,7 +132,9 @@ class AIConfigRuntime(AIConfig):
             resp = requests.get(url, headers=headers)
 
             if resp.status_code != 200:
-                raise Exception(f"Failed to load workbook. Status code: {resp.status_code}")
+                raise Exception(
+                    f"Failed to load workbook. Status code: {resp.status_code}"
+                )
 
             data = resp.json()
 
@@ -132,7 +142,13 @@ class AIConfigRuntime(AIConfig):
             update_model_parser_registry_with_config_runtime(aiconfigruntime)
             return aiconfigruntime
 
-    async def serialize(self, model_name: str, data: Dict, prompt_name: str, params: Optional[dict] = None) -> List[Prompt]:
+    async def serialize(
+        self,
+        model_name: str,
+        data: Dict,
+        prompt_name: str,
+        params: Optional[dict] = None,
+    ) -> List[Prompt]:
         """
         Serializes the completion params into a Prompt object. Inverse of the 'resolve' function.
 
@@ -144,7 +160,16 @@ class AIConfigRuntime(AIConfig):
         returns:
             Prompt | List[Prompt]: A prompt or list of prompts representing the input data
         """
-        event = CallbackEvent("on_serialize_start", __name__, {model_name: model_name, "data": data, "prompt_name": prompt_name, "params": params})
+        event = CallbackEvent(
+            "on_serialize_start",
+            __name__,
+            {
+                model_name: model_name,
+                "data": data,
+                "prompt_name": prompt_name,
+                "params": params,
+            },
+        )
         await self.callback_manager.run_callbacks(event)
 
         if not params:
@@ -152,7 +177,9 @@ class AIConfigRuntime(AIConfig):
 
         model_parser = ModelParserRegistry.get_model_parser(model_name)
         if not model_parser:
-            raise ValueError(f"Unable to serialize data: `{data}`\n Model Parser for model {model_name} does not exist.")
+            raise ValueError(
+                f"Unable to serialize data: `{data}`\n Model Parser for model {model_name} does not exist."
+            )
 
         prompts = await model_parser.serialize(prompt_name, data, self, params)
 
@@ -176,14 +203,20 @@ class AIConfigRuntime(AIConfig):
         Returns:
             str: The resolved prompt.
         """
-        event = CallbackEvent("on_resolve_start", __file__, {"prompt_name": prompt_name, "params": params})
+        event = CallbackEvent(
+            "on_resolve_start", __file__, {"prompt_name": prompt_name, "params": params}
+        )
         await self.callback_manager.run_callbacks(event)
 
         if not params:
             params = {}
 
         if prompt_name not in self.prompt_index:
-            raise IndexError("Prompt not found in config, available prompts are:\n {}".format(list(self.prompt_index.keys())))
+            raise IndexError(
+                "Prompt not found in config, available prompts are:\n {}".format(
+                    list(self.prompt_index.keys())
+                )
+            )
 
         prompt_data = self.prompt_index[prompt_name]
         model_name = self.get_model_name(prompt_data)
@@ -212,20 +245,40 @@ class AIConfigRuntime(AIConfig):
         Returns:
             object: The response object returned by the AI-model's API.
         """
-        event = CallbackEvent("on_run_start", __name__, {"prompt_name": prompt_name, "params": params, "options": options, "kwargs": kwargs})
+        event = CallbackEvent(
+            "on_run_start",
+            __name__,
+            {
+                "prompt_name": prompt_name,
+                "params": params,
+                "options": options,
+                "kwargs": kwargs,
+            },
+        )
         await self.callback_manager.run_callbacks(event)
 
         if not params:
             params = {}
 
         if prompt_name not in self.prompt_index:
-            raise IndexError("Prompt not found in config, available prompts are:\n {}".format(list(self.prompt_index.keys())))
+            raise IndexError(
+                "Prompt not found in config, available prompts are:\n {}".format(
+                    list(self.prompt_index.keys())
+                )
+            )
 
         prompt_data = self.prompt_index[prompt_name]
         model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
-        response = await model_provider.run(prompt_data, self, options, params, callback_manager=self.callback_manager, **kwargs)
+        response = await model_provider.run(
+            prompt_data,
+            self,
+            options,
+            params,
+            callback_manager=self.callback_manager,
+            **kwargs,
+        )
 
         event = CallbackEvent("on_run_complete", __name__, {"result": response})
         await self.callback_manager.run_callbacks(event)
@@ -271,7 +324,9 @@ class AIConfigRuntime(AIConfig):
                 indent=2,
             )
 
-    def get_output_text(self, prompt: str | Prompt, output: Optional[dict] = None) -> str:
+    def get_output_text(
+        self, prompt: str | Prompt, output: Optional[dict] = None
+    ) -> str:
         """
         Get the string representing the output from a prompt (if any)
 
@@ -310,11 +365,15 @@ class AIConfigRuntime(AIConfig):
         """
         if model_id not in ModelParserRegistry.parser_ids():
             raise IndexError(
-                "Model parser '{}' not found in registry, available model parsers are:\n {}".format(model_id, ModelParserRegistry.parser_ids())
+                "Model parser '{}' not found in registry, available model parsers are:\n {}".format(
+                    model_id, ModelParserRegistry.parser_ids()
+                )
             )
         return ModelParserRegistry.get_model_parser(model_id)
 
     def set_callback_manager(self, callback_manager: CallbackManager):
         if callback_manager is None:
-            raise ValueError("callback_manager cannot be None. Create a new CallbackManager with No callbacks instead.")
+            raise ValueError(
+                "callback_manager cannot be None. Create a new CallbackManager with No callbacks instead."
+            )
         self.callback_manager = callback_manager

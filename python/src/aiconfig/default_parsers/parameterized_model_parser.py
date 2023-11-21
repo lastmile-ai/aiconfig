@@ -7,7 +7,12 @@ from typing import Dict, Optional
 
 from aiconfig.model_parser import InferenceOptions, ModelParser
 from aiconfig.registry import ModelParserRegistry
-from aiconfig.util.params import get_dependency_graph, resolve_parameters, resolve_parametrized_prompt, resolve_prompt_string
+from aiconfig.util.params import (
+    get_dependency_graph,
+    resolve_parameters,
+    resolve_parametrized_prompt,
+    resolve_prompt_string,
+)
 
 from aiconfig import AIConfig, ExecuteResult, JSONObject, Prompt, PromptInput
 
@@ -42,15 +47,24 @@ class ParameterizedModelParser(ModelParser):
         pass
 
     async def run(
-        self, prompt: Prompt, aiconfig: AIConfig, options: Optional[InferenceOptions] = None, parameters: Dict = {}, **kwargs
+        self,
+        prompt: Prompt,
+        aiconfig: AIConfig,
+        options: Optional[InferenceOptions] = None,
+        parameters: Dict = {},
+        **kwargs,
     ) -> ExecuteResult:
         # maybe use prompt metadata instead of kwargs?
         if kwargs.get("run_with_dependencies", False):
-            return await self.run_with_dependencies(prompt, aiconfig, options, parameters)
+            return await self.run_with_dependencies(
+                prompt, aiconfig, options, parameters
+            )
         else:
             return await self.run_inference(prompt, aiconfig, options, parameters)
 
-    async def run_with_dependencies(self, prompt: Prompt, aiconfig: AIConfig, options=None, parameters: Dict = {}) -> ExecuteResult:
+    async def run_with_dependencies(
+        self, prompt: Prompt, aiconfig: AIConfig, options=None, parameters: Dict = {}
+    ) -> ExecuteResult:
         """
         Executes the AI model with the resolved dependencies and prompt references and returns the API response.
 
@@ -62,7 +76,9 @@ class ParameterizedModelParser(ModelParser):
         Returns:
             ExecuteResult: An Object containing the response from the AI model.
         """
-        dependency_graph = get_dependency_graph(prompt, aiconfig.prompts, aiconfig.prompt_index)
+        dependency_graph = get_dependency_graph(
+            prompt, aiconfig.prompts, aiconfig.prompt_index
+        )
 
         # Create a set to keep track of visited prompts
         visited_prompts = set()
@@ -120,7 +136,11 @@ class ParameterizedModelParser(ModelParser):
         """
         if isinstance(prompt.input, str):
             return prompt.input
-        elif isinstance(prompt.input, PromptInput) and isinstance(prompt.input.data, str):
+        elif isinstance(prompt.input, PromptInput) and isinstance(
+            prompt.input.data, str
+        ):
             return prompt.input.data
         else:
-            raise Exception(f"Cannot get prompt template string from prompt input: {prompt.input}")
+            raise Exception(
+                f"Cannot get prompt template string from prompt input: {prompt.input}"
+            )

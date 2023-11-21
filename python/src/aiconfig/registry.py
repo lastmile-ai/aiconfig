@@ -87,7 +87,10 @@ class ModelParserRegistry:
         """
         returns a dictionary of model names and their correspondings model parser ids
         """
-        return {model_name: model_parser.id() for model_name, model_parser in ModelParserRegistry._parsers.items()}
+        return {
+            model_name: model_parser.id()
+            for model_name, model_parser in ModelParserRegistry._parsers.items()
+        }
 
 
 def update_model_parser_registry_with_config_runtime(config_runtime: "AIConfigRuntime"):
@@ -100,7 +103,9 @@ def update_model_parser_registry_with_config_runtime(config_runtime: "AIConfigRu
     if not config_runtime.metadata.model_parsers:
         return
     for model_id, model_parser_id in config_runtime.metadata.model_parsers.items():
-        retrieved_model_parser = ModelParserRegistry.get_model_parser(model_parser_id)  # Fix
+        retrieved_model_parser = ModelParserRegistry.get_model_parser(
+            model_parser_id
+        )  # Fix
         if retrieved_model_parser is None:
             error_message = (
                 f"Unable to load AIConfig: It specifies {config_runtime.metadata.model_parsers}, "

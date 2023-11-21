@@ -13,6 +13,17 @@ from .default_parsers.parameterized_model_parser import ParameterizedModelParser
 # ModelParser Utilities
 from .model_parser import InferenceOptions, ModelParser
 from .registry import ModelParserRegistry
-from .schema import AIConfig, ConfigMetadata, ExecuteResult, JSONObject, ModelMetadata, Output, Prompt, PromptInput, PromptMetadata, SchemaVersion
+from .schema import (
+    AIConfig,
+    ConfigMetadata,
+    ExecuteResult,
+    JSONObject,
+    ModelMetadata,
+    Output,
+    Prompt,
+    PromptInput,
+    PromptMetadata,
+    SchemaVersion,
+)
 from .util.config_utils import get_api_key_from_environment
 from .util.params import resolve_prompt
