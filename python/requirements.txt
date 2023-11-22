@@ -11,3 +11,5 @@ huggingface_hub
 result
 nest_asyncio
 prompt_toolkit
+mock
+pytest-asyncio
