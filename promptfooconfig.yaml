@@ -1,0 +1,16 @@
+prompts: [prompt.txt]
+providers:
+  - exec:python cookbooks/Getting-Started/travel.py
+tests:
+  - description: "Test if output is equal to the expected value"
+    vars:
+      question: Empire State Building is on fifth avenue. What is the cross street?
+    assert:
+      - type: python
+        value: output.lower().find('34th street') != -1
+  - description: "Test if output is equal to the expected value"
+    vars:
+      question: "who is rossdan's roommate?"
+    assert:
+      - type: python
+        value: output.lower().find('ankush') != -1
