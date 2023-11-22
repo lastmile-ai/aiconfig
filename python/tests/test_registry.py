@@ -1,9 +1,11 @@
 import copy
-from aiconfig.schema import Prompt
+
+import pytest
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.model_parser import ModelParser
 from aiconfig.registry import ModelParserRegistry
-import pytest
+
+from aiconfig.schema import Prompt
 
 from .util.mock_parser import MockModelParser
 

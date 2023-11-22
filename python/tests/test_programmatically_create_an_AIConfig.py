@@ -1,6 +1,7 @@
-from aiconfig.util.config_utils import extract_override_settings
 import pytest
 from aiconfig.Config import AIConfigRuntime
+from aiconfig.util.config_utils import extract_override_settings
+
 from aiconfig.schema import (
     AIConfig,
     ConfigMetadata,

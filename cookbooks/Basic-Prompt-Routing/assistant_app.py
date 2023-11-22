@@ -1,9 +1,11 @@
-from aiconfig import AIConfigRuntime
-from dotenv import load_dotenv
-import streamlit as st
 import asyncio
 import os
+
 import openai
+import streamlit as st
+from dotenv import load_dotenv
+
+from aiconfig import AIConfigRuntime
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")

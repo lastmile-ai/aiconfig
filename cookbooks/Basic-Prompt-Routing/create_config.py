@@ -1,5 +1,4 @@
-from aiconfig import AIConfigRuntime
-from aiconfig import Prompt
+from aiconfig import AIConfigRuntime, Prompt
 
 aiconfig = AIConfigRuntime.create("assistant_config", "teaching assistant config")
 

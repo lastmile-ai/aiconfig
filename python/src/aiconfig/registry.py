@@ -1,7 +1,8 @@
-from typing import Dict, List
 import typing
+from typing import Dict, List
 
 from aiconfig.schema import Prompt
+
 from .model_parser import ModelParser
 
 if typing.TYPE_CHECKING:

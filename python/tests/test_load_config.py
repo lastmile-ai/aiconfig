@@ -1,15 +1,15 @@
 # import ai_config_tools Config class
 
 import os
-from aiconfig import AIConfigRuntime
-from mock import patch
+
 import openai
 import pytest
+from mock import patch
 
-from .util.file_path_utils import get_absolute_file_path_from_relative
+from aiconfig import AIConfigRuntime
+
 from .conftest import set_temporary_env_vars
-import os
-import pytest
+from .util.file_path_utils import get_absolute_file_path_from_relative
 
 
 @pytest.mark.asyncio

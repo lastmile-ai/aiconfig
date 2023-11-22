@@ -1,6 +1,7 @@
-from aiconfig.schema import Prompt, PromptMetadata
-from aiconfig.Config import AIConfigRuntime
 import pytest
+from aiconfig.Config import AIConfigRuntime
+
+from aiconfig.schema import Prompt, PromptMetadata
 
 
 @pytest.mark.asyncio

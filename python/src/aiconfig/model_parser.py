@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Optional, Callable
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
 from aiconfig.schema import AIConfig, ExecuteResult, Output, Prompt
-
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
