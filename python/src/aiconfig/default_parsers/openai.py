@@ -235,7 +235,7 @@ class OpenAIInference(ParameterizedModelParser):
         # const stream = options?.stream ?? completionParams.stream ?? true;
         stream = True  # Default value
 
-        if options is not None and options.stream:
+        if options is not None and options.stream is not None:
             stream = options.stream
         elif "stream" in completion_data:
             stream = completion_data["stream"]
