@@ -1,0 +1,16 @@
+prompts: [prompt.txt]
+providers:
+  - exec:python travel.py
+tests:
+  - description: "Test if output is equal to the expected value"
+    vars:
+      question: Empire State Building is on fifth avenue. What is the cross street?
+    assert:
+      - type: python
+        value: output.lower().find('34th street') != -1
+  - description: "Test if output is equal to the expected value"
+    vars:
+      question: "which is the best borough?"
+    assert:
+      - type: python
+        value: output == "Brooklyn"
