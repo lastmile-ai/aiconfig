@@ -315,7 +315,7 @@ Now you can continue using `openai` completion API as normal. When you want to s
 
 ## Supported Models
 
-AIConfig supports the following model models out of the box:
+AIConfig supports the following models out of the box:
 
 - OpenAI chat models (GPT-3, GPT-3.5, GPT-4)
 - LLaMA2 (running locally)
