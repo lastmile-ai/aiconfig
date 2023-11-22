@@ -1,7 +1,8 @@
-from aiconfig.schema import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
-from aiconfig.Config import AIConfigRuntime
 import pytest
+from aiconfig.Config import AIConfigRuntime
 from aiconfig.util.params import collect_prompt_references
+
+from aiconfig.schema import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
 
 from .util.file_path_utils import get_absolute_file_path_from_relative
 
@@ -39,7 +40,9 @@ def test_collect_prompt_references():
     # input is an aiconfig with a 4 prompts. Test collects prompt references for the 3rd prompt
     # collect_prompt_references should return references to 1 and 2. 3 is the prompt we are collecting references for, 4 is after. Both are expected to be skipped
     config_relative_path = "aiconfigs/GPT4 Coding Assistant_aiconfig.json"
-    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
+    config_absolute_path = get_absolute_file_path_from_relative(
+        __file__, config_relative_path
+    )
     aiconfig = AIConfigRuntime.load(config_absolute_path)
 
     prompt3 = aiconfig.prompts[2]
