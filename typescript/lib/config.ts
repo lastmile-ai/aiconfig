@@ -488,6 +488,8 @@ export class AIConfigRuntime implements AIConfig {
       );
     }
 
+    prompt.name = name;
+
     this.prompts.push(prompt);
   }
 
