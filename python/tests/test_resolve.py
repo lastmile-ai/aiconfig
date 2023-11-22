@@ -1,7 +1,8 @@
-from aiconfig import AIConfigRuntime
-from mock import patch
 import openai
 import pytest
+from mock import patch
+
+from aiconfig import AIConfigRuntime
 
 from .util.file_path_utils import get_absolute_file_path_from_relative
 

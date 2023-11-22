@@ -14,16 +14,17 @@ usage:
         openai.ChatCompletion.create = create_and_save_to_config('my-aiconfig.json')
         ```
 """
+import asyncio
 import copy
 import types
 from typing import Dict, List, Optional
-from aiconfig.default_parsers.openai import multi_choice_message_reducer
-from aiconfig.schema import ExecuteResult, Output, Prompt
-from aiconfig.Config import AIConfigRuntime
-import openai
-import asyncio
 
 import nest_asyncio
+import openai
+from aiconfig.Config import AIConfigRuntime
+from aiconfig.default_parsers.openai import multi_choice_message_reducer
+
+from aiconfig.schema import ExecuteResult, Output, Prompt
 
 openai_chat_completion_create = openai.chat.completions.create
 
