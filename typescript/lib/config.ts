@@ -488,6 +488,8 @@ export class AIConfigRuntime implements AIConfig {
       );
     }
 
+    prompt.name = name;
+
     this.prompts.push(prompt);
   }
 
@@ -544,7 +546,10 @@ export class AIConfigRuntime implements AIConfig {
         );
       }
 
-      prompt.metadata.model = modelMetadata;
+      prompt.metadata = {
+        ...prompt.metadata,
+        model: modelMetadata,
+      };
     } else {
       if (!this.metadata.models) {
         this.metadata.models = {};
@@ -568,7 +573,10 @@ export class AIConfigRuntime implements AIConfig {
         );
       }
 
-      prompt.metadata.model = modelMetadata;
+      prompt.metadata = {
+        ...prompt.metadata,
+        model: modelMetadata,
+      };
     } else {
       if (!this.metadata.models) {
         this.metadata.models = {};
@@ -639,11 +647,13 @@ export class AIConfigRuntime implements AIConfig {
         );
       }
 
-      if (prompt.metadata.parameters == null) {
-        prompt.metadata.parameters = {};
-      }
-
-      prompt.metadata.parameters[name] = value;
+      prompt.metadata = {
+        ...prompt.metadata,
+        parameters: {
+          ...prompt.metadata?.parameters,
+          [name]: value,
+        },
+      };
     } else {
       if (this.metadata.parameters == null) {
         this.metadata.parameters = {};
@@ -670,7 +680,7 @@ export class AIConfigRuntime implements AIConfig {
         );
       }
 
-      if (prompt.metadata.parameters == null) {
+      if (prompt.metadata?.parameters == null) {
         return;
       }
 
@@ -699,7 +709,10 @@ export class AIConfigRuntime implements AIConfig {
         );
       }
 
-      prompt.metadata[key] = value;
+      prompt.metadata = {
+        ...prompt.metadata,
+        [key]: value,
+      };
     } else {
       this.metadata[key] = value;
     }
@@ -719,7 +732,7 @@ export class AIConfigRuntime implements AIConfig {
         );
       }
 
-      delete prompt.metadata[key];
+      delete prompt.metadata?.[key];
     } else {
       delete this.metadata[key];
     }

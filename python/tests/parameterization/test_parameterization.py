@@ -14,8 +14,9 @@ Test cases:
 8. No params
 """
 
-from aiconfig import AIConfigRuntime
 import pytest
+
+from aiconfig import AIConfigRuntime
 
 config1 = {
     "name": "test config",

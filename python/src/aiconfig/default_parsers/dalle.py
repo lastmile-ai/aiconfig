@@ -1,24 +1,24 @@
 import copy
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-# Type hint imports
-from aiconfig import (
-    ExecuteResult,
-    Output,
-    Prompt,
-    PromptMetadata,
-)
-
-# ModelParser Utils
-from aiconfig import ParameterizedModelParser
-from aiconfig import resolve_prompt
-from aiconfig import InferenceOptions
-from aiconfig.util.config_utils import get_api_key_from_environment
 import openai
+from aiconfig.util.config_utils import get_api_key_from_environment
 from openai import OpenAI
 
 # Dall-E API imports
-from openai.types import ImagesResponse, Image
+from openai.types import Image, ImagesResponse
+
+# ModelParser Utils
+# Type hint imports
+from aiconfig import (
+    ExecuteResult,
+    InferenceOptions,
+    Output,
+    ParameterizedModelParser,
+    Prompt,
+    PromptMetadata,
+    resolve_prompt,
+)
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
