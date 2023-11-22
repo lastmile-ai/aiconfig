@@ -9,12 +9,13 @@ import {
   Prompt,
   Output,
   PromptInput,
+  ParameterizedModelParser,
   ModelMetadata,
   ExecuteResult,
   AIConfigRuntime,
   InferenceOptions,
+  CallbackEvent
 } from "aiconfig";
-import { CompletionCreateParams } from "openai/resources";
 import _ from "lodash";
 import * as aiconfig from "aiconfig";
 import { JSONObject } from "aiconfig/dist/common";
@@ -32,7 +33,7 @@ export function getAPIKeyFromEnv(apiKeyName: string) {
  * Set the environment variable HUGGING_FACE_API_TOKEN to use your HuggingFace API token.
  * A HuggingFace API token is not required to use this model parser.
  */
-export class HuggingFaceTextGenerationModelParser extends aiconfig.ParameterizedModelParser<TextGenerationArgs> {
+export class HuggingFaceTextGenerationModelParser extends ParameterizedModelParser<TextGenerationArgs> {
   private hfClient: HfInference | undefined;
   _id = "HuggingFaceTextGenerationModelParser";
 
@@ -46,29 +47,50 @@ export class HuggingFaceTextGenerationModelParser extends aiconfig.Parameterized
     aiConfig: AIConfigRuntime,
     params?: JSONObject | undefined
   ): Prompt | Prompt[] {
+    const startEvent = {
+      name: "on_serialize_start",
+      file: __filename,
+      data: {
+        promptName,
+        data,
+        params,
+      },
+    } as CallbackEvent;
+    aiConfig.callbackManager.runCallbacks(startEvent);
+
     const input: PromptInput = data.inputs;
 
     let modelMetadata: ModelMetadata | string;
-    const promptModelMetadata: JSONObject = { ...data.parameters };
 
     // Check if AIConfig already has the model settings in its metadata
     const modelName = data.model ?? this.id;
 
     modelMetadata = aiConfig.getModelMetadata(
       data.parameters as JSONObject,
-      this.id
+      modelName
     );
 
-    const prompt: Prompt = {
-      name: promptName,
-      input,
-      metadata: {
-        model: modelMetadata,
-        parameters: params ?? {},
+    const prompts: Prompt[] = [
+      {
+        name: promptName,
+        input,
+        metadata: {
+          model: modelMetadata,
+          parameters: params ?? {},
+        },
+      },
+    ];
+
+    const endEvent = {
+      name: "on_serialize_end",
+      file: __filename,
+      data: {
+        result: prompts,
       },
     };
+    aiConfig.callbackManager.runCallbacks(endEvent);
 
-    return [prompt];
+    return prompts;
   }
 
   public refineCompletionParams(
@@ -120,6 +142,16 @@ export class HuggingFaceTextGenerationModelParser extends aiconfig.Parameterized
     aiConfig: AIConfigRuntime,
     params?: JSONObject | undefined
   ): TextGenerationArgs {
+    const startEvent = {
+      name: "on_deserialize_start",
+      file: __filename,
+      data: {
+        prompt,
+        params,
+      },
+    } as CallbackEvent;
+    aiConfig.callbackManager.runCallbacks(startEvent);
+
     // Resolve the prompt template with the given parameters, and update the completion params
     const resolvedPrompt = this.resolvePromptTemplate(
       prompt.input as string,
@@ -130,7 +162,21 @@ export class HuggingFaceTextGenerationModelParser extends aiconfig.Parameterized
 
     // Build the text generation args
     const modelMetadata = this.getModelSettings(prompt, aiConfig) ?? {};
-    return this.refineCompletionParams(resolvedPrompt, modelMetadata);
+    const completionParams = this.refineCompletionParams(
+      resolvedPrompt,
+      modelMetadata
+    );
+
+    const endEvent = {
+      name: "on_deserialize_end",
+      file: __filename,
+      data: {
+        result: completionParams,
+      },
+    } as CallbackEvent;
+    aiConfig.callbackManager.runCallbacks(endEvent);
+
+    return completionParams;
   }
 
   public async run(
@@ -139,6 +185,17 @@ export class HuggingFaceTextGenerationModelParser extends aiconfig.Parameterized
     options?: InferenceOptions | undefined,
     params?: JSONObject | undefined
   ): Promise<Output | Output[]> {
+    const startEvent = {
+      name: "on_run_start",
+      file: __filename,
+      data: {
+        prompt,
+        options,
+        params,
+      },
+    } as CallbackEvent;
+    await aiConfig.callbackManager.runCallbacks(startEvent);
+
     const textGenerationArgs = this.deserialize(prompt, aiConfig, params);
 
     if (!this.hfClient) {
@@ -148,20 +205,33 @@ export class HuggingFaceTextGenerationModelParser extends aiconfig.Parameterized
     // if no options are passed in, don't stream because streaming is dependent on a callback handler
     const stream = options ? (options.stream ? options.stream : true) : false;
 
+    let output: Output | undefined;
+
     if (stream) {
       const response = await this.hfClient.textGenerationStream(
         textGenerationArgs
       );
-      const output = await ConstructStreamOutput(
+      output = await ConstructStreamOutput(
         response,
         options as InferenceOptions
       );
-      return output;
     } else {
       const response = await this.hfClient.textGeneration(textGenerationArgs);
-      const output = constructOutput(response);
-      return output;
+      output = constructOutput(response);
     }
+
+    prompt.outputs = [output];
+
+    const endEvent = {
+      name: "on_run_end",
+      file: __filename,
+      data: {
+        result: prompt.outputs,
+      },
+    } as CallbackEvent;
+    await aiConfig.callbackManager.runCallbacks(endEvent);
+
+    return prompt.outputs;
   }
 
   public getOutputText(
@@ -178,7 +248,8 @@ export class HuggingFaceTextGenerationModelParser extends aiconfig.Parameterized
     }
 
     if (output.output_type === "execute_result") {
-      return output.data as string;
+      return (output.data as TextGenerationOutput | TextGenerationStreamOutput)
+        .generated_text as string;
     } else {
       return "";
     }
