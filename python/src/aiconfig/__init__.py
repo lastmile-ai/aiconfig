@@ -1,3 +1,8 @@
+from .model_parser import ModelParser, InferenceOptions
+# ModelParser Utilities
+from .default_parsers.parameterized_model_parser import ParameterizedModelParser
+
+
 # Core Data Classes
 from .schema import (
     AIConfig,
@@ -12,9 +17,6 @@ from .schema import (
     SchemaVersion,
 )
 
-# ModelParser Utilities
-from .model_parser import ModelParser, InferenceOptions
-from .default_parsers.parameterized_model_parser import ParameterizedModelParser
 from .util.params import resolve_prompt
 from .util.config_utils import get_api_key_from_environment
 from .registry import ModelParserRegistry
