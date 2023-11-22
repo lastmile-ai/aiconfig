@@ -23,6 +23,10 @@
       "input": "Tell me 10 fun attractions to do in NYC."
     },
     {
+      "name": "get_activities_parametrized",
+      "input": "{{the_query}}"
+    },
+    {
       "name": "gen_itinerary",
       "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
       "metadata": {
@@ -34,5 +38,3 @@
     }
   ]
 }
-
-
