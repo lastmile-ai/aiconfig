@@ -139,7 +139,7 @@ describe("HuggingFaceTextGeneration ModelParser", () => {
     expect(prompt.input).toEqual(
       "What are 5 interesting things to do in Toronto?"
     );
-    expect(prompt.metadata.model).toEqual({
+    expect(prompt.metadata?.model).toEqual({
       name: "mistralai/Mistral-7B-v0.1",
       settings: {
         temperature: 0.8,
