@@ -1,19 +1,11 @@
-from abc import abstractmethod
 import copy
-from typing import Dict, List, Optional, Union
-from typing import TYPE_CHECKING, Any, Dict, Optional
-from aiconfig import schema
-from aiconfig.model_parser import InferenceOptions
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
+import openai
 from aiconfig.callback import CallbackEvent
-from aiconfig.schema import (
-    ExecuteResult,
-    ModelMetadata,
-    Output,
-    Prompt,
-    PromptInput,
-    PromptMetadata,
-)
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import (
     resolve_parameters,
@@ -22,7 +14,15 @@ from aiconfig.util.params import (
     resolve_system_prompt,
 )
 
-import openai
+from aiconfig import schema
+from aiconfig.schema import (
+    ExecuteResult,
+    ModelMetadata,
+    Output,
+    Prompt,
+    PromptInput,
+    PromptMetadata,
+)
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime

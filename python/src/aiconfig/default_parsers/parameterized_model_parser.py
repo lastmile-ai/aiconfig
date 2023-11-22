@@ -1,19 +1,20 @@
 # TODO: plaese improve the file name on this file. This is an abstract class that handles parameterization for a model parser.
 
 
+import typing
 from abc import abstractmethod
 from typing import Dict, Optional
-import typing
-from aiconfig import AIConfig, ExecuteResult, JSONObject, Prompt, PromptInput
 
 from aiconfig.model_parser import InferenceOptions, ModelParser
+from aiconfig.registry import ModelParserRegistry
 from aiconfig.util.params import (
+    get_dependency_graph,
     resolve_parameters,
     resolve_parametrized_prompt,
     resolve_prompt_string,
 )
-from aiconfig.util.params import get_dependency_graph, resolve_parametrized_prompt
-from aiconfig.registry import ModelParserRegistry
+
+from aiconfig import AIConfig, ExecuteResult, JSONObject, Prompt, PromptInput
 
 if typing.TYPE_CHECKING:
     from aiconfig import AIConfigRuntime

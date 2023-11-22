@@ -1,6 +1,11 @@
-from aiconfig.schema import Prompt, PromptMetadata
-from aiconfig.util.params import find_dependencies_in_prompt, get_dependency_graph, get_parameters_in_template
 import pytest
+from aiconfig.util.params import (
+    find_dependencies_in_prompt,
+    get_dependency_graph,
+    get_parameters_in_template,
+)
+
+from aiconfig.schema import Prompt, PromptMetadata
 
 """ Test cases for the get_parameters_in_template function."""
 @pytest.fixture
