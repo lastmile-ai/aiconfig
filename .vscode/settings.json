@@ -25,7 +25,9 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
-    "python.formatting.provider": "none",
-    "python.formatting.blackArgs": ["--line-length", "99"]
-  }
+    "editor.rulers": [88]
+  },
+  "black-formatter.args": ["--line-length=88"],
+  // example: "--disable=C0114,C0115,C0116"
+  "pylint.args": []
 }
