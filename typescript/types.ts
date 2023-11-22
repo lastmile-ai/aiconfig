@@ -113,7 +113,7 @@ export type Prompt = {
    */
   input: PromptInput;
 
-  metadata: {
+  metadata?: {
     /**
      * Parameter definitions that are accessible to this prompt.
      * These parameters can be referenced in the prompt using {{param_name}} handlebars syntax.
