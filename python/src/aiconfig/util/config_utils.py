@@ -1,13 +1,13 @@
+import copy
 import os
 from typing import TYPE_CHECKING
 
-import copy
-
-
 if TYPE_CHECKING:
-    from ..schema import AIConfig
-    from aiconfig.schema import InferenceSettings
     from aiconfig.Config import AIConfigRuntime
+
+    from aiconfig.schema import InferenceSettings
+
+    from ..schema import AIConfig
 
 
 def get_api_key_from_environment(api_key_name: str):

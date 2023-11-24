@@ -2,7 +2,7 @@
 
 ## Overview
 
-This package is a lightweight ModelParser extension for AIConfig which provides support for running local GGUF LLaMA models in AIConfig prompts. All GGUF LLaMA models from https://huggingface.co/TheBloke?search_models=gguf should be supported. Under the hood, this package leverages [node-llama-cpp](https://withcatai.github.io/node-llama-cpp/) for prompt execution.
+This package is a lightweight ModelParser extension for [AIConfig](https://github.com/lastmile-ai/aiconfig) which provides support for running local GGUF LLaMA models in AIConfig prompts. All GGUF LLaMA models from https://huggingface.co/TheBloke?search_models=gguf should be supported. Under the hood, this package leverages [node-llama-cpp](https://withcatai.github.io/node-llama-cpp/) for prompt execution.
 
 ## Install
 
@@ -50,7 +50,7 @@ const response = await config.run("promptName");
 
 ## Testing Package Before Publishing
 
-Before publishing the package, ensure it works locally within the [`ask-llama.ts` cookbook](../../../cookbooks/llama/typescript/ask-llama.ts).
+Before publishing the package, ensure it works locally within the [`ask-llama.ts` cookbook](https://github.com/lastmile-ai/aiconfig/blob/main/cookbooks/llama/typescript/ask-llama.ts).
 
 Note, if a local tarball already exists, remove it before continuing. e.g.:
 

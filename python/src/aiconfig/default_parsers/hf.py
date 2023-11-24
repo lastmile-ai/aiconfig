@@ -1,25 +1,24 @@
 import copy
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-# Type hint imports
-from aiconfig import (
-    ExecuteResult,
-    Output,
-    Prompt,
-    PromptMetadata,
-)
-
-# ModelParser Utils
-from aiconfig import ParameterizedModelParser
-from aiconfig import get_api_key_from_environment
-from aiconfig import resolve_prompt
-from aiconfig import InferenceOptions
-
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
 from huggingface_hub.inference._text_generation import (
     TextGenerationResponse,
     TextGenerationStreamResponse,
+)
+
+# ModelParser Utils
+# Type hint imports
+from aiconfig import (
+    ExecuteResult,
+    InferenceOptions,
+    Output,
+    ParameterizedModelParser,
+    Prompt,
+    PromptMetadata,
+    get_api_key_from_environment,
+    resolve_prompt,
 )
 
 # Circuluar Dependency Type Hints
@@ -167,7 +166,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         """
         return "HuggingFaceTextGenerationParser"
 
-    def serialize(
+    async def serialize(
         self,
         prompt_name: str,
         data: Any,
@@ -193,7 +192,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         # Prompt is handled, remove from data
         data.pop("prompt", None)
 
-        model_metadata = ai_config.generate_model_metadata(data, self.id())
+        model_metadata = ai_config.get_model_metadata(data, self.id())
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
