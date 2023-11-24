@@ -7,18 +7,20 @@ from aiconfig import AIConfigRuntime
 
 
 async def main():
+    # Step 1. We assume you have a local model file.
+    # Step 2. We assume you have prepared an AIConfig.
+    aiconfig_path = "cookbooks/llama/llama-aiconfig.json"
+
+    # Step 3. Instantiate a model parser with your local model file.
     llama_model_parser = LlamaModelParser(
         model_path="models/llama-2-7b-chat.Q4_K_M.gguf"
     )
 
-    for lm in [
-        "llama-2-7b-chat",
-        "llama-2-13b-chat",
-        "codeup-llama-2-13b-chat-hf",
-    ]:
-        AIConfigRuntime.register_model_parser(llama_model_parser, lm)
+    # 4. Register the model parser with the model name (see file path).
+    AIConfigRuntime.register_model_parser(llama_model_parser, "llama-2-7b-chat")
 
-    config = AIConfigRuntime.load("cookbooks/llama/llama-aiconfig.json")
+    # 5. Use the AIConfigRuntime API to load and run your prompt(s).
+    config = AIConfigRuntime.load(aiconfig_path)
 
     def stream_callback(data, accumulated_message, index):
         print(data, end="", flush=True)
