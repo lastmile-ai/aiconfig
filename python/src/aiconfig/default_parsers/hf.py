@@ -7,19 +7,14 @@ from huggingface_hub.inference._text_generation import (
     TextGenerationResponse,
     TextGenerationStreamResponse,
 )
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import ExecuteResult, Output, Prompt
+from aiconfig.util.config_utils import get_api_key_from_environment
 
 # ModelParser Utils
 # Type hint imports
-from aiconfig import (
-    ExecuteResult,
-    InferenceOptions,
-    Output,
-    ParameterizedModelParser,
-    Prompt,
-    PromptMetadata,
-    get_api_key_from_environment,
-    resolve_prompt,
-)
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
