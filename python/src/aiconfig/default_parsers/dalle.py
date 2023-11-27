@@ -3,14 +3,14 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import openai
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.util.params import resolve_prompt
 from openai import OpenAI
 
 # Dall-E API imports
 from openai.types import Image, ImagesResponse
 
-from aiconfig.util.params import resolve_prompt
+from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 # ModelParser Utils
 # Type hint imports

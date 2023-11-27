@@ -7,7 +7,6 @@ from typing import Dict, Optional
 
 from aiconfig.model_parser import InferenceOptions, ModelParser
 from aiconfig.registry import ModelParserRegistry
-from aiconfig.schema import AIConfig, ExecuteResult, JSONObject, Prompt, PromptInput
 from aiconfig.util.params import (
     get_dependency_graph,
     resolve_parameters,
@@ -15,6 +14,7 @@ from aiconfig.util.params import (
     resolve_prompt_string,
 )
 
+from aiconfig.schema import AIConfig, ExecuteResult, JSONObject, Prompt, PromptInput
 
 if typing.TYPE_CHECKING:
     from aiconfig import AIConfigRuntime

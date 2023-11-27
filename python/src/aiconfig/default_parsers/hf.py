@@ -1,17 +1,18 @@
 import copy
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.util.config_utils import get_api_key_from_environment
+
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
 from huggingface_hub.inference._text_generation import (
     TextGenerationResponse,
     TextGenerationStreamResponse,
 )
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 
-from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import ExecuteResult, Output, Prompt
-from aiconfig.util.config_utils import get_api_key_from_environment
 
 # ModelParser Utils
 # Type hint imports
