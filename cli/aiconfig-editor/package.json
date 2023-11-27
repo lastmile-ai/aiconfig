@@ -23,7 +23,9 @@
     "@mantine/prism": "^6.0.7",
     "@mantine/spotlight": "^6.0.7",
     "@mantine/tiptap": "^6.0.7",
+    "aiconfig": "^1.0.1",
     "next": "14.0.2",
+    "node-fetch": "^3.3.2",
     "react": "^18",
     "react-dom": "^18",
     "ufetch": "^1.6.0"
