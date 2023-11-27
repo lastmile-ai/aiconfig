@@ -11,7 +11,7 @@ type FeatureItem = {
 const FeatureList: FeatureItem[] = [
   {
     title: "Prompts as Config",
-    //Svg: require("@site/static/img/undraw_docusaurus_mountain.svg").default,
+    Svg: require("@site/static/img/prompts_as_config.svg").default,
     description: (
       <>
         Iterate on prompts and model parameters separately from application
@@ -22,7 +22,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: "Source Control Friendly",
-    //Svg: require("@site/static/img/undraw_docusaurus_tree.svg").default,
+    Svg: require("@site/static/img/source_control_friendly.svg").default,
     description: (
       <>
         Standardized JSON format to store generative AI model settings, prompt
@@ -33,7 +33,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: "Multi-modal and model-agnostic",
-    //Svg: require("@site/static/img/undraw_docusaurus_react.svg").default,
+    Svg: require("@site/static/img/multi_modal.svg").default,
     description: (
       <>
         Extensible SDK allows you to use aiconfig with any model from any

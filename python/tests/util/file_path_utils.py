@@ -1,5 +1,6 @@
 import os
 
+
 def get_absolute_file_path_from_relative(working_file_path: str, relative_file_path: str) -> str:
     """
     Returns the absolute file path of a file given its relative file path and the file path of the calling file.

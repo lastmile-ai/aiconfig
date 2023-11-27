@@ -1,7 +1,7 @@
 # Building a Generative AI App (Berkeley x LastMile AI)
 
 This workshop walks you through how to build a generative AI app with open-source LastMile AI tools.
-Workshop Date: November 14, 2023
+Workshop Date: November 17, 2023
 
 ## Tools
 
@@ -17,10 +17,10 @@ We are building an AI teaching assistant app to showcase prompt engineering, pro
 
 1. Go to [LastMile AI](https://lastmileai.dev) and sign up for a free account to get access to AI Workbooks.
 2. Create a [new workbook](https://lastmileai.dev/workbooks/workshop), experiment with some prompts, parameters, and system prompt.
-3. Go to this [AI Workbook](https://lastmileai.dev/workbooks/clowg4ywg00daqpf2cvyz9z0g).
+3. Go to this [AI Workbook](https://lastmileai.dev/workbooks/clp1pp4ut0001pevg26halowt).
 4. Download the AIConfig .json.
-5. Clone the same [AI Workbook](https://lastmileai.dev/workbooks/clowg4ywg00daqpf2cvyz9z0g) and follow the workshop.
-6. Clone this [Google Colab Notebook](https://colab.research.google.com/drive/1bhG2YbBI4q3ZhoEZ_LdflLf-AkV9WWc9): File > Save a Copy in Drive. Rename to `{Your Name} LastMile Workshop`.
+5. Clone the same [AI Workbook](https://lastmileai.dev/workbooks/clp1pp4ut0001pevg26halowt) and follow the workshop.
+6. Clone this [Google Colab Notebook](https://colab.research.google.com/drive/1TJElvL1u_N3SmKsiSh-NMxyIu41DgJ_a#scrollTo=arj-rect6Z9r): File > Save a Copy in Drive. Rename to `{Your Name} LastMile Workshop`.
 
 ## Tutorial
 
@@ -30,7 +30,7 @@ We are building an AI teaching assistant app to showcase prompt engineering, pro
 
 ## Apply for Raffle
 
-Submit your Workshop Colab Notebook to this [spreadsheet](https://docs.google.com/spreadsheets/d/1c38NgDS0IIlYyuiHuCnCU_iWYE1TsxVwkOt_iMM9cdg/edit#gid=0).
+Submit your Workshop Colab Notebook to this [spreadsheet](https://docs.google.com/spreadsheets/d/1mm_enz6Yh-qh3Sb3COteXmn2XUZEUQ_dhbQ0ECwTTYk/edit#gid=0).
 
 ## Win a $100 Amazon Gift Card - Berkeley LastMile Challenge
 

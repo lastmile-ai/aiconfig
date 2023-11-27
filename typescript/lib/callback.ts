@@ -21,13 +21,17 @@ async function withTimeout(
   promise: Promise<any>,
   timeout: number
 ): Promise<any> {
+  let timer: NodeJS.Timeout | undefined;
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => {
+    timer = setTimeout(() => {
       reject(new Error("Timeout"));
     }, timeout * 1000);
   });
 
-  return Promise.race([promise, timeoutPromise]);
+  return Promise.race([
+    promise.finally(() => clearTimeout(timer)),
+    timeoutPromise,
+  ]);
 }
 
 export class CallbackManager {
