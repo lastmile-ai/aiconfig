@@ -52,7 +52,7 @@ async def execute_coroutine_with_timeout(
     Args:
         coroutine: The coroutine to execute
         timeout: The timeout in seconds
-    
+
     Returns:
         An Ok result if the coroutine executes successfully or an Err on Exception
     """
@@ -73,6 +73,7 @@ class CallbackEventModel(Record):
     Data class that represents an event that triggers a callback. A copy of CallbackEvent
     but backed by a pydantic model for easy serialization.
     """
+
     name: str
     file: str
     data: Any
@@ -83,6 +84,7 @@ class CallbackManager:
     """
     Manages a sequence of callbacks to be executed in response to Events
     """
+
     def __init__(self, callbacks: Sequence[Callback], timeout: int = None) -> None:
         if timeout is None:
             timeout = DEFAULT_TIMEOUT
@@ -117,11 +119,13 @@ def create_logging_callback(log_file: str = None) -> Callback:
         log_file = "callbacks.log"
 
     def setup_logger():
-        level=logging.DEBUG
+        level = logging.DEBUG
         name = "my-logger"
-        log_file='aiconfig.log'
+        log_file = "aiconfig.log"
 
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         handler = logging.FileHandler(log_file)
         handler.setFormatter(formatter)
 
@@ -134,5 +138,5 @@ def create_logging_callback(log_file: str = None) -> Callback:
 
     def callback_handler(event):
         logger.info(f"Callback called. event\n: {event}")
-    
+
     return callback_handler

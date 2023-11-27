@@ -62,7 +62,9 @@ def test_get_model_settings(ai_config_runtime: AIConfigRuntime):
             Prompt(
                 name="test",
                 input="test",
-                metadata=PromptMetadata(model=ModelMetadata(name="fakemodel", settings=None)),
+                metadata=PromptMetadata(
+                    model=ModelMetadata(name="fakemodel", settings=None)
+                ),
             )
         ],
     )
