@@ -1,6 +1,6 @@
 # AIConfig CLI
 
-Development:
+Development
 
 ```
 yarn && cd aiconfig-editor && yarn && cd ..
