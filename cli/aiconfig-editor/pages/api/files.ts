@@ -8,27 +8,44 @@ type Data = {
   files: EditorFile[];
 };
 
+type Error = {
+  error: string;
+};
+
 type RequestBody = {
   path?: string;
 };
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse<Data | Error>
 ) {
-  // TODO: Check method == POST to validate
+  if (req.method !== "POST") {
+    return res.status(500).json({ error: "Method not allowed" });
+  }
 
   const body: RequestBody = req.body;
 
-  console.log(body);
-  if (body.path) {
-    // TODO: Impl
-    return res.status(200).json({ files: [] });
-  } else {
-    const files = (await fs.readdir(path.join(process.cwd(), "."), {
-      withFileTypes: true,
-    })) as unknown as EditorFile[];
+  const relativePath = body.path ? body.path : ".";
 
-    return res.status(200).json({ files });
-  }
+  const directoryToRead = path.isAbsolute(relativePath)
+    ? relativePath
+    : path.join(process.cwd(), relativePath);
+
+  const files = await fs.readdir(path.join(directoryToRead), {
+    withFileTypes: true,
+  });
+
+  const filesResponse = files.map((file) => {
+    const extension = path.extname(file.name);
+
+    return {
+      name: file.name,
+      extension,
+      path: file.path,
+      isDirectory: file.isDirectory(),
+    };
+  });
+
+  return res.status(200).json({ files: filesResponse });
 }
