@@ -58,7 +58,12 @@ class PaLMTextParser(ParameterizedModelParser):
         event = CallbackEvent(
             "on_serialize_start",
             __name__,
-            {"prompt_name": prompt_name, "data": data, "parameters": parameters, "kwargs": kwargs},
+            {
+                "prompt_name": prompt_name,
+                "data": data,
+                "parameters": parameters,
+                "kwargs": kwargs,
+            },
         )
 
         prompt_template = data.get("prompt", "")
@@ -96,7 +101,9 @@ class PaLMTextParser(ParameterizedModelParser):
             dict: Model-specific completion parameters.
         """
         await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params})
+            CallbackEvent(
+                "on_deserialize_start", __name__, {"prompt": prompt, "params": params}
+            )
         )
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
@@ -109,12 +116,18 @@ class PaLMTextParser(ParameterizedModelParser):
         completion_data["prompt"] = prompt_str
 
         await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data})
+            CallbackEvent(
+                "on_deserialize_complete", __name__, {"output": completion_data}
+            )
         )
         return completion_data
 
     async def run_inference(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        options: InferenceOptions,
+        parameters,
     ) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
@@ -151,7 +164,7 @@ class PaLMTextParser(ParameterizedModelParser):
             output = ExecuteResult(
                 output_type="execute_result",
                 execution_count=i,
-                data= candidate.get("output"),
+                data=candidate.get("output"),
                 metadata=candidate,
             )
             outputs.append(output)
@@ -162,7 +175,12 @@ class PaLMTextParser(ParameterizedModelParser):
         )
         return outputs
 
-    def get_output_text(self, prompt: Prompt, aiconfig: 'AIConfigRuntime', output: Optional[Output] = None) -> str:
+    def get_output_text(
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        output: Optional[Output] = None,
+    ) -> str:
         if output is not None:
             return output.data
         else:
@@ -203,7 +221,12 @@ class PaLMChatParser(ParameterizedModelParser):
         event = CallbackEvent(
             "on_serialize_start",
             __name__,
-            {"prompt_name": prompt_name, "data": data, "parameters": parameters, "kwargs": kwargs},
+            {
+                "prompt_name": prompt_name,
+                "data": data,
+                "parameters": parameters,
+                "kwargs": kwargs,
+            },
         )
         await ai_config.callback_manager.run_callbacks(event)
 
@@ -240,7 +263,9 @@ class PaLMChatParser(ParameterizedModelParser):
             dict: Model-specific completion parameters.
         """
         await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params})
+            CallbackEvent(
+                "on_deserialize_start", __name__, {"prompt": prompt, "params": params}
+            )
         )
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
 
@@ -280,7 +305,8 @@ class PaLMChatParser(ParameterizedModelParser):
                         completion_data["messages"].append(
                             {
                                 "content": aiconfig.get_output_text(
-                                    previous_prompt, aiconfig.get_latest_output(previous_prompt)
+                                    previous_prompt,
+                                    aiconfig.get_latest_output(previous_prompt),
                                 ),
                                 "author": "1",
                             }
@@ -289,12 +315,18 @@ class PaLMChatParser(ParameterizedModelParser):
         # pass in the user prompt
         completion_data["messages"].append({"content": resolved_prompt, "author": "0"})
         await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data})
+            CallbackEvent(
+                "on_deserialize_complete", __name__, {"output": completion_data}
+            )
         )
         return completion_data
 
     async def run_inference(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        options: InferenceOptions,
+        parameters,
     ) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
@@ -337,7 +369,10 @@ class PaLMChatParser(ParameterizedModelParser):
         return prompt.outputs
 
     def get_output_text(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", output: Optional[Output] = None
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        output: Optional[Output] = None,
     ) -> str:
         if not output:
             output = aiconfig.get_latest_output(prompt)
