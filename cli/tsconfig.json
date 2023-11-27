@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+      "declaration": true,
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "noImplicitAny": true,
+      "outDir": "dist",
+      "resolveJsonModule": true,
+      "rootDir": ".",
+      "strict": true,
+      "target": "es6",
+      "esModuleInterop": true
+    },
+    "exclude": ["dist", "docs", "bin", "node_modules", "aiconfig-editor"]
+  }
+  
