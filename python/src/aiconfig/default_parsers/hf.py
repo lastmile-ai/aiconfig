@@ -196,12 +196,18 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **kwargs),
+            metadata=PromptMetadata(
+                model=model_metadata, parameters=parameters, **kwargs
+            ),
         )
         return [prompt]
 
     async def deserialize(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options, params: Optional[Dict] = {}
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        options,
+        params: Optional[Dict] = {},
     ) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
@@ -224,7 +230,9 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
 
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig, options, parameters) -> Output:
+    async def run_inference(
+        self, prompt: Prompt, aiconfig, options, parameters
+    ) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -261,7 +269,10 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         return prompt.outputs
 
     def get_output_text(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", output: Optional[Output] = None
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        output: Optional[Output] = None,
     ) -> str:
         if not output:
             output = aiconfig.get_latest_output(prompt)
