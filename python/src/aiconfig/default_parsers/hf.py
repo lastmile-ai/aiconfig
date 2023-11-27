@@ -1,17 +1,18 @@
 import copy
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.util.config_utils import get_api_key_from_environment
+
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
 from huggingface_hub.inference._text_generation import (
     TextGenerationResponse,
     TextGenerationStreamResponse,
 )
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 
-from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import ExecuteResult, Output, Prompt
-from aiconfig.util.config_utils import get_api_key_from_environment
 
 # ModelParser Utils
 # Type hint imports
@@ -191,12 +192,18 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **kwargs),
+            metadata=PromptMetadata(
+                model=model_metadata, parameters=parameters, **kwargs
+            ),
         )
         return [prompt]
 
     async def deserialize(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options, params: Optional[Dict] = {}
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        options,
+        params: Optional[Dict] = {},
     ) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
@@ -219,7 +226,9 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
 
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig, options, parameters) -> Output:
+    async def run_inference(
+        self, prompt: Prompt, aiconfig, options, parameters
+    ) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -256,7 +265,10 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         return prompt.outputs
 
     def get_output_text(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", output: Optional[Output] = None
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        output: Optional[Output] = None,
     ) -> str:
         if not output:
             output = aiconfig.get_latest_output(prompt)

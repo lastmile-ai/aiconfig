@@ -10,6 +10,7 @@ from aiconfig import AIConfigRuntime
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+
 # Get assistant response based on user prompt (prompt routing)
 async def assistant_response(prompt):
     config = AIConfigRuntime.load("assistant_aiconfig.json")
@@ -24,12 +25,17 @@ async def assistant_response(prompt):
     prompt_completion = await config.run(dest_prompt, params)
     response = config.get_output_text(dest_prompt)
 
-    return(response)
+    return response
+
 
 # Streamlit Setup
 st.title("AI Teaching Assistant")
-st.markdown("Ask a math, physics, or general question. Based on your question, an AI math prof, physics prof, or general assistant will respond.")
-st.markdown("**This is a simple demo of prompt routing - based on your question, an LLM decides which AI teacher responds.**")
+st.markdown(
+    "Ask a math, physics, or general question. Based on your question, an AI math prof, physics prof, or general assistant will respond."
+)
+st.markdown(
+    "**This is a simple demo of prompt routing - based on your question, an LLM decides which AI teacher responds.**"
+)
 
 # Chat setup
 if "messages" not in st.session_state:
@@ -51,5 +57,3 @@ if prompt := st.chat_input("Ask a math, physics, or general question"):
         st.markdown(response)
 
     st.session_state.messages.append({"role": "assistant", "content": response})
-
-
