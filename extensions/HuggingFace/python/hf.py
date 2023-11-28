@@ -124,7 +124,7 @@ def construct_regular_output(response, response_includes_details: bool) -> Outpu
     return output
 
 
-class HuggingFaceTextParser(ParameterizedModelParser):
+class HuggingFaceTextGenerationModelParserExtension(ParameterizedModelParser):
     """
     A model parser for HuggingFace text generation models.
     """
@@ -162,7 +162,7 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         """
         Returns an identifier for the Model Parser
         """
-        return "HuggingFaceTextParser"
+        return "HuggingFaceTextGenerationModelParserExtension"
 
     def serialize(
         self,
