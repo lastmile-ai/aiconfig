@@ -3,6 +3,7 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import openai
+from pydantic import BaseModel
 from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
@@ -242,12 +243,14 @@ class OpenAIInference(ParameterizedModelParser):
 
         completion_data["stream"] = stream
 
-        response = openai.chat.completions.create(**completion_data)
+        response = list(openai.chat.completions.create(**completion_data))
+        print(f"{response=}")
         outputs = []
 
         if not stream:
             # # OpenAI>1.0.0 uses pydantic models for response
-            response = response.model_dump(exclude_none=True)
+            response = response.model_dump(exclude_none=True) \
+                if isinstance(response, BaseModel) else response
             response_without_choices = {
                 key: copy.deepcopy(value) for key, value in response.items() if key != "choices"
             }
