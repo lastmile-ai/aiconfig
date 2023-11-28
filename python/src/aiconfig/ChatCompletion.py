@@ -80,12 +80,12 @@ def create_and_save_to_config(
                 stream_outputs = {}
                 messages = {}
                 for chunk in response:
-                    chunk = chunk.model_dump(exclude_none=True)
+                    chunk_dict = chunk.model_dump(exclude_none=True)
 
                     # streaming only returns one chunk, one choice at a time. The order in which the choices are returned is not guaranteed.
-                    messages = multi_choice_message_reducer(messages, chunk)
+                    messages = multi_choice_message_reducer(messages, chunk_dict)
 
-                    for i, choice in enumerate(chunk["choices"]):
+                    for i, choice in enumerate(chunk_dict["choices"]):
                         index = choice.get("index")
                         accumulated_message_for_choice = messages.get(index, {})
                         output = ExecuteResult(
