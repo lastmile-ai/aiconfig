@@ -15,6 +15,7 @@ from aiconfig.model_parser import InferenceOptions, ModelParser
 
 from .default_parsers.dalle import DalleImageGenerationParser
 from .default_parsers.hf import HuggingFaceTextGenerationParser
+from .default_parsers.hugging_face_transformers.text_generation import HuggingFaceTextGenerationTransformer
 from .registry import (
     ModelParserRegistry,
     update_model_parser_registry_with_config_runtime,
@@ -40,6 +41,7 @@ for model in gpt_models:
 ModelParserRegistry.register_model_parser(PaLMChatParser())
 ModelParserRegistry.register_model_parser(PaLMTextParser())
 ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
+ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationTransformer('gpt2'))
 dalle_image_generation_models = [
     "dall-e-2",
     "dall-e-3",
