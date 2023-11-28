@@ -6,13 +6,7 @@ from abc import abstractmethod
 from typing import Dict, Optional
 
 from aiconfig.model_parser import InferenceOptions, ModelParser
-from aiconfig.registry import ModelParserRegistry
-from aiconfig.util.params import (
-    get_dependency_graph,
-    resolve_parameters,
-    resolve_parametrized_prompt,
-    resolve_prompt_string,
-)
+from aiconfig.util.params import get_dependency_graph, resolve_prompt_string
 
 from aiconfig.schema import AIConfig, ExecuteResult, JSONObject, Prompt, PromptInput
 

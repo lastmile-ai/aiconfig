@@ -2,7 +2,6 @@ import re
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Set
 
-import cachetools
 from aiconfig.registry import ModelParserRegistry
 from pybars import Compiler
 

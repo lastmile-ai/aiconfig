@@ -5,7 +5,7 @@ from pprint import pprint
 
 from aiconfig.model_parser import InferenceOptions
 
-from aiconfig import AIConfigRuntime, Prompt, PromptInput
+from aiconfig import AIConfigRuntime, PromptInput
 
 
 async def function_calling():
