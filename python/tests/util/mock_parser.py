@@ -16,5 +16,6 @@ class MockModelParser(ModelParser):
 
     def run(**kwargs):
         return
+
     def get_output_text():
         return
