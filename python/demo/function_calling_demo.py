@@ -1,11 +1,11 @@
 import copy
 import json
 import uuid
-from aiconfig import AIConfigRuntime
-from aiconfig import Prompt
-from aiconfig import PromptInput
-from aiconfig.model_parser import InferenceOptions
 from pprint import pprint
+
+from aiconfig.model_parser import InferenceOptions
+
+from aiconfig import AIConfigRuntime, Prompt, PromptInput
 
 
 async def function_calling():

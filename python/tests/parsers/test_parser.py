@@ -1,6 +1,7 @@
-from aiconfig.schema import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
-from aiconfig.Config import AIConfigRuntime
 import pytest
+from aiconfig.Config import AIConfigRuntime
+
+from aiconfig.schema import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
 
 from ..util.mock_parser import MockModelParser
 

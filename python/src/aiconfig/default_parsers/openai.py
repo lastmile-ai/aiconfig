@@ -1,19 +1,12 @@
-from abc import abstractmethod
 import copy
-from typing import Dict, List, Optional, Union
-from typing import TYPE_CHECKING, Any, Dict, Optional
-from aiconfig import schema
-from aiconfig.model_parser import InferenceOptions
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
+import openai
+from pydantic import BaseModel
 from aiconfig.callback import CallbackEvent
-from aiconfig.schema import (
-    ExecuteResult,
-    ModelMetadata,
-    Output,
-    Prompt,
-    PromptInput,
-    PromptMetadata,
-)
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import (
     resolve_parameters,
@@ -22,7 +15,15 @@ from aiconfig.util.params import (
     resolve_system_prompt,
 )
 
-import openai
+from aiconfig import schema
+from aiconfig.schema import (
+    ExecuteResult,
+    ModelMetadata,
+    Output,
+    Prompt,
+    PromptInput,
+    PromptMetadata,
+)
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
@@ -235,7 +236,7 @@ class OpenAIInference(ParameterizedModelParser):
         # const stream = options?.stream ?? completionParams.stream ?? true;
         stream = True  # Default value
 
-        if options is not None and options.stream:
+        if options is not None and options.stream is not None:
             stream = options.stream
         elif "stream" in completion_data:
             stream = completion_data["stream"]
@@ -244,10 +245,12 @@ class OpenAIInference(ParameterizedModelParser):
 
         response = openai.chat.completions.create(**completion_data)
         outputs = []
-
         if not stream:
             # # OpenAI>1.0.0 uses pydantic models for response
-            response = response.model_dump(exclude_none=True)
+            response = response.model_dump(exclude_none=True) \
+                if isinstance(response, BaseModel) else response
+            
+            print(f"{type(response)=}, {response=}")
             response_without_choices = {
                 key: copy.deepcopy(value) for key, value in response.items() if key != "choices"
             }
@@ -266,9 +269,10 @@ class OpenAIInference(ParameterizedModelParser):
         else:
             outputs = {}
             messages = {}
-            for chunk in response:
+            for chunk in response:                
                 # OpenAI>1.0.0 uses pydantic models. Chunk is of type ChatCompletionChunk; type is not directly importable from openai Library, will require some diffing
-                chunk = chunk.model_dump(exclude_none=True)
+                response = response.model_dump(exclude_none=True) \
+                    if isinstance(response, BaseModel) else response
                 # streaming only returns one chunk, one choice at a time (before 1.0.0). The order in which the choices are returned is not guaranteed.
                 messages = multi_choice_message_reducer(messages, chunk)
 

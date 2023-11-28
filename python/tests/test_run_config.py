@@ -1,10 +1,10 @@
-from aiconfig.Config import AIConfigRuntime
-from mock import patch
 import openai
 import pytest
+from aiconfig.Config import AIConfigRuntime
+from mock import patch
 
+from .conftest import mock_openai_chat_completion, set_temporary_env_vars
 from .util.file_path_utils import get_absolute_file_path_from_relative
-from .conftest import set_temporary_env_vars, mock_openai_chat_completion
 
 
 @pytest.mark.asyncio
