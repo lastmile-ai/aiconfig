@@ -7,3 +7,5 @@ export * from "./lib/parameterizedModelParser";
 export * from "./lib/parsers/openai";
 export * from "./lib/parsers/hf";
 export * from "./lib/utils";
+export * from "./lib/callback";
+export * from "./lib/parameterize";

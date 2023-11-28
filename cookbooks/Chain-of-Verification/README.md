@@ -1,23 +1,29 @@
-# Chain of Verification Pipeline (CoVe)
+# Chain-of-Verification (CoVe) Template
 
-Given a user query, a LLM generates a baseline response that may contain inaccuracies, e.g. factual hallucinations. To improve this, CoVe first generates a
-plan of a set of verification questions to ask, and then executes that plan by answering them and hence
-checking for agreement. We find that individual verification questions are typically answered with
-higher accuracy than the original accuracy of the facts in the original longform generation. Finally,
-the revised response takes into account the verifications. 
+This template provides a structured Colab notebook designed to implement the CoVe technique, a prompt engineering method aimed at reducing hallucinations in responses from large language models (LLMs).
 
-Steps as outlined from [CoVe paper](https://arxiv.org/pdf/2309.11495.pdf): 
-1. Generate Baseline Response 
-2. Plan Verification 
-3. Execute Verification
-4. Generate Final Verified Response
+### Overview
 
-![diagram](https://external-preview.redd.it/research-paper-meta-chain-of-verification-reduces-v0-HwB5qAQbMLEgMwIeDsL5uxKb3HUM-ekY0NdXIqaTupY.jpg?auto=webp&s=d442818b5624061de5d4776a6512784524045065)
+The CoVe technique enhances the reliability of LLMs by generating a baseline response to a user query and then validating the information through a series of verification questions. This iterative process helps to correct any errors in the initial response, leading to more accurate and trustworthy outputs. **[ Link to Paper](https://arxiv.org/pdf/2309.11495.pdf)**
 
+### Getting Started
 
-## How to build CoVe pipeline? 
-This cookbook walks through the example above (verifying politician birthplace location) using AI Config: 
+To use this template, follow these simple steps:
 
-1. **Start with an AI workbook to prototype your prompt chains.** For this example, the baseline prompt is "Name 25 politicians born in NY, New York", the verification prompt is "Where was {{politician}} born?", and the final verified response prompt should cross-check the response from the baseline prompt (list of 25 politicians) and the answer to the verification prompt. While the first two prompts are simple, the last one might require some iteration with the system prompt to do the cross-check. Here is the [AI Workbook](https://lastmileai.dev/workbooks/clon69opk00c1qrfiighw3k92). 
-2. **Download AIConfig .json from AI Workbook.** The AIConfig will contain the prompts, chaining logic, and model parameters in a json format that we can then easily using to create the CoVE pipeline. Here is the downloaded .json from the workbook - [cove_demo_config.json](https://raw.githubusercontent.com/lastmile-ai/aiconfig/main/cookbook/Chain-of-Verification/cove_config.json).
-3. **Create pipeline for chain-of-verification.** Use notebook (or code) to chain prompts from AIConfig .json and add logic (ex. for-loop to run verification prompt for each of the 25 politicians). Here is the [Colab notebook](https://colab.research.google.com/drive/1h_Cneit5S2wI4nVPKI8AWGzTadFHwDk3#scrollTo=51w-3OZC_Z97). 
+1. **Download AIConfig File**: Download the AIConfig `cove_template_config.json` [here](https://github.com/lastmile-ai/aiconfig/blob/main/cookbooks/Chain-of-Verification/cove_template_config.json). This AIConfig contains the necessary prompt templates and model parameters to run the CoVe pipeline.
+2. **Follow Colab Notebook Instructions:** Open the provided Colab notebook and follow the detailed instructions within. The notebook will guide you through the process of setting up your environment and executing the CoVe technique for your use case.
+
+Colab Notebooks
+
+- [CoVe GPT4 Template](https://colab.research.google.com/drive/1h_Cneit5S2wI4nVPKI8AWGzTadFHwDk3#scrollTo=k3tsITZhVFp-)
+
+### Prerequisites
+
+Before you begin, ensure you have the following:
+
+1. OpenAI API Key - if you're using the GPT4 template notebook, you'll need an OpenAI API key that you'll need to load to Colab.
+2. The `cove_template_config.json` file downloaded.
+
+### Support & Questions
+
+If you encounter any issues or have questions regarding the CoVe template, please open an issue in the AIConfig repo and we will be happy to assist you. Alternatively, ask us directly on Discord! https://discord.com/invite/xBhNKTetGx

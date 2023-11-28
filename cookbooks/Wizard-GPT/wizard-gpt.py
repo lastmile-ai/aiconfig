@@ -1,6 +1,7 @@
-from aiconfig import AIConfigRuntime, Prompt, InferenceOptions
 import asyncio
-import os
+
+from aiconfig import AIConfigRuntime, InferenceOptions, Prompt
+
 
 async def main():
     while True:

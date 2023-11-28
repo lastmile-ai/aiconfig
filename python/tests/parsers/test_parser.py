@@ -1,6 +1,7 @@
-from aiconfig.schema import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
-from aiconfig.Config import AIConfigRuntime
 import pytest
+from aiconfig.Config import AIConfigRuntime
+
+from aiconfig.schema import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
 
 from ..util.mock_parser import MockModelParser
 
@@ -61,7 +62,9 @@ def test_get_model_settings(ai_config_runtime: AIConfigRuntime):
             Prompt(
                 name="test",
                 input="test",
-                metadata=PromptMetadata(model=ModelMetadata(name="fakemodel", settings=None)),
+                metadata=PromptMetadata(
+                    model=ModelMetadata(name="fakemodel", settings=None)
+                ),
             )
         ],
     )
@@ -78,4 +81,4 @@ def test_get_model_settings(ai_config_runtime: AIConfigRuntime):
             input="doesn't exist",
             metadata=PromptMetadata(model="doesn't exist"),
         )
-        settings = mock_model_parser.get_model_settings(prompt, aiconfig)
+        mock_model_parser.get_model_settings(prompt, aiconfig)

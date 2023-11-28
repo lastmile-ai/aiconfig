@@ -1,5 +1,7 @@
 # Getting Started with AI Config
 
+[![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1aZiEgiPiIDPmy7iD4xPcNw0BBcfC2e1S)
+
 AIConfig is a source-control friendly way to manage your prompts, models and model parameters as configs. It allows you to store and iterate on generative AI model behavior separately from your application code.
 
 ## Instructions
@@ -10,7 +12,7 @@ Follow the tutorial to get started [here](https://aiconfig.lastmileai.dev/docs/g
 
 Tutorial Implementation:
 
-- [Python - Google Colab notebook](https://colab.research.google.com/drive/1DxuzME4qyK91-PzQiWoi1RkeDs7_X4g7)
+- [Python - Google Colab notebook](https://colab.research.google.com/drive/1aZiEgiPiIDPmy7iD4xPcNw0BBcfC2e1S)
 - Typescript (to be added)
 
 Files:

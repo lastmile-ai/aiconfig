@@ -1,3 +1,8 @@
 huggingface_hub
 python-AIConfig
 asyncio
+
+#Pytorch
+torch
+torchvision
+torchaudio

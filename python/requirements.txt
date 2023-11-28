@@ -11,3 +11,6 @@ huggingface_hub
 result
 nest_asyncio
 prompt_toolkit
+mock
+pytest-asyncio
+lastmile_utils==0.0.3

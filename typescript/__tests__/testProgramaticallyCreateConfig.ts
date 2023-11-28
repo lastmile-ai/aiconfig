@@ -69,7 +69,6 @@ describe("ExtractOverrideSettings function", () => {
       initialSettings,
       modelId
     );
-    console.log("overidess: ", override);
 
     expect(override).toEqual({});
   });
