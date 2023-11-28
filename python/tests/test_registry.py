@@ -2,7 +2,6 @@ import copy
 
 import pytest
 from aiconfig.Config import AIConfigRuntime
-from aiconfig.model_parser import ModelParser
 from aiconfig.registry import ModelParserRegistry
 
 from aiconfig.schema import Prompt

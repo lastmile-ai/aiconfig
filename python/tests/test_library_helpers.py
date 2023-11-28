@@ -2,8 +2,6 @@ import pytest
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.util.params import collect_prompt_references
 
-from aiconfig.schema import ConfigMetadata, ModelMetadata, Prompt, PromptMetadata
-
 from .util.file_path_utils import get_absolute_file_path_from_relative
 
 """

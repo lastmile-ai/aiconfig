@@ -4,7 +4,7 @@ from aiconfig.Config import AIConfigRuntime
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.util.params import resolve_prompt
-from llama_cpp import CreateCompletionResponse, Llama
+from llama_cpp import Llama
 
 from aiconfig import Output, Prompt
 from aiconfig.schema import ExecuteResult

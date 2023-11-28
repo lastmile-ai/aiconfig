@@ -3,7 +3,7 @@ import pytest
 from aiconfig.Config import AIConfigRuntime
 from mock import patch
 
-from .conftest import mock_openai_chat_completion, set_temporary_env_vars
+from .conftest import mock_openai_chat_completion
 from .util.file_path_utils import get_absolute_file_path_from_relative
 
 

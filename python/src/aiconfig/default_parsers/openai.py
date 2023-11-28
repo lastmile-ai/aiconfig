@@ -8,22 +8,13 @@ from aiconfig.default_parsers.parameterized_model_parser import ParameterizedMod
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import (
-    resolve_parameters,
     resolve_prompt,
     resolve_prompt_string,
     resolve_system_prompt,
 )
 from pydantic import BaseModel
 
-from aiconfig import schema
-from aiconfig.schema import (
-    ExecuteResult,
-    ModelMetadata,
-    Output,
-    Prompt,
-    PromptInput,
-    PromptMetadata,
-)
+from aiconfig.schema import ExecuteResult, Output, Prompt, PromptInput, PromptMetadata
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
