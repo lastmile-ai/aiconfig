@@ -3,7 +3,7 @@ import os
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from aiconfig.Config import AIConfigRuntime
+    pass
 
     from aiconfig.schema import InferenceSettings
 

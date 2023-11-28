@@ -2,24 +2,12 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 
 import google.generativeai as palm
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.util.config_utils import get_api_key_from_environment
-from aiconfig.util.params import (
-    resolve_parameters,
-    resolve_prompt,
-    resolve_system_prompt,
-)
+from aiconfig.util.params import resolve_parameters, resolve_prompt
 from google.generativeai.text import Completion
 
 from ..callback import CallbackEvent
 from ..model_parser import InferenceOptions
-from ..schema import (
-    AIConfig,
-    ExecuteResult,
-    ModelMetadata,
-    Output,
-    Prompt,
-    PromptMetadata,
-)
+from ..schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime

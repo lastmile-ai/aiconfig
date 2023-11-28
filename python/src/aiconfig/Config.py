@@ -4,12 +4,7 @@ from typing import Dict, List, Optional
 
 import requests
 from aiconfig.callback import CallbackEvent, CallbackManager
-from aiconfig.default_parsers.openai import (
-    ChatGPTParser,
-    DefaultOpenAIParser,
-    GPT3TurboParser,
-    GPT4Parser,
-)
+from aiconfig.default_parsers.openai import DefaultOpenAIParser
 from aiconfig.default_parsers.palm import PaLMChatParser, PaLMTextParser
 from aiconfig.model_parser import InferenceOptions, ModelParser
 
@@ -19,7 +14,7 @@ from .registry import (
     ModelParserRegistry,
     update_model_parser_registry_with_config_runtime,
 )
-from .schema import AIConfig, ConfigMetadata, Prompt
+from .schema import AIConfig, Prompt
 
 gpt_models = [
     "gpt-4",
