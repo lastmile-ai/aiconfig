@@ -1,0 +1,208 @@
+import copy
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from transformers import pipeline
+
+from aiconfig.util.params import resolve_prompt
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+
+from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+
+# Circuluar Dependency Type Hints
+if TYPE_CHECKING:
+    from aiconfig.Config import AIConfigRuntime
+
+
+# Step 1: define Helpers
+def refine_chat_completion_params(model_settings: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Refines the completion params for the HF text generation api. Removes any unsupported params.
+    The supported keys were found by looking at the HF text generation api. `huggingface_hub.InferenceClient.text_generation()`
+    """
+
+    supported_keys = {
+        "details",
+        "stream",
+        "model",
+        "do_sample",
+        "max_new_tokens",
+        "best_of",
+        "repetition_penalty",
+        "return_full_text",
+        "seed",
+        "stop_sequences",
+        "temperature",
+        "top_k",
+        "top_p",
+        "truncate",
+        "typical_p",
+        "watermark",
+        "decoder_input_details",
+    }
+
+    completion_data = {}
+    for key in model_settings:
+        if key.lower() in supported_keys:
+            completion_data[key.lower()] = model_settings[key]
+
+    return completion_data
+
+
+def construct_regular_output(result: Dict[str, str], execution_count: int, response_includes_details: bool) -> Output:
+    """
+    Construct regular output per response result, without streaming enabled
+    """
+    metadata : Dict[str, str] = {}
+    data = result["generated_text"]
+    if response_includes_details and "details" in result:
+        metadata = {"details": result["details"]}
+
+    output = ExecuteResult(
+        **{
+            "output_type": "execute_result",
+            "data": data,
+            "execution_count": execution_count,
+            "metadata": metadata,
+        }
+    )
+    return output
+
+
+class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
+    """
+    A model parser for HuggingFace models of type text generation task using transformers.
+    """
+
+    MODEL = "gpt2" #TODO (rossdanlm): Do not use hardcoded model for text generation
+
+    def __init__(self, model_id: Optional[str] = None):
+        """
+        Args:
+            model_id (str): The model name of the model to use.
+
+        Returns:
+            HuggingFaceTextParser: The HuggingFaceTextParser object.
+
+        Usage:
+
+        1. Create a new model parser object with the model ID of the model to use.
+                parser = HuggingFaceTextParser("mistralai/Mistral-7B-Instruct-v0.1")
+        2. Add the model parser to the registry.
+                config.register_model_parser(parser)
+        """
+        super().__init__()
+        self.model_id = model_id
+        self.generator = pipeline('text-generation', model = self.MODEL)
+
+    def id(self) -> str:
+        """
+        Returns an identifier for the Model Parser
+        """
+        return self.model_id or "HuggingFaceTextGenerationTransformer"
+
+    async def serialize(
+        self,
+        prompt_name: str,
+        data: Any,
+        ai_config: "AIConfigRuntime",
+        parameters: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ) -> Prompt:
+        """
+        Defines how a prompt and model inference settings get serialized in the .aiconfig.
+
+        Args:
+            prompt (str): The prompt to be serialized.
+            inference_settings (dict): Model-specific inference settings to be serialized.
+
+        Returns:
+            str: Serialized representation of the prompt and inference settings.
+        """
+        data = copy.deepcopy(data)
+
+        # assume data is completion params for HF text generation
+        prompt_input = data["prompt"]
+
+        # Prompt is handled, remove from data
+        data.pop("prompt", None)
+
+        model_metadata = ai_config.get_model_metadata(data, self.id())
+        prompt = Prompt(
+            name=prompt_name,
+            input=prompt_input,
+            metadata=PromptMetadata(
+                model=model_metadata, parameters=parameters, **kwargs
+            ),
+        )
+        return prompt
+
+    async def deserialize(
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        _options,
+        params: Optional[Dict[str, Any]] = {},
+    ) -> Dict[str, Any]:
+        """
+        Defines how to parse a prompt in the .aiconfig for a particular model
+        and constructs the completion params for that model.
+
+        Args:
+            serialized_data (str): Serialized data from the .aiconfig.
+
+        Returns:
+            dict: Model-specific completion parameters.
+        """
+        resolved_prompt = resolve_prompt(prompt, params, aiconfig)
+
+        # Build Completion data
+        model_settings = self.get_model_settings(prompt, aiconfig)
+
+        completion_data = refine_chat_completion_params(model_settings)
+
+        completion_data["prompt"] = resolved_prompt
+
+        return completion_data
+
+    async def run_inference(
+        self, prompt: Prompt, aiconfig : "AIConfigRuntime", options, parameters: Dict[str, Any]
+    ) -> List[Output]:
+        """
+        Invoked to run a prompt in the .aiconfig. This method should perform
+        the actual model inference based on the provided prompt and inference settings.
+
+        Args:
+            prompt (str): The input prompt.
+            inference_settings (dict): Model-specific inference settings.
+
+        Returns:
+            InferenceResponse: The response from the model.
+        """
+        completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
+
+        resolved_prompt : str = completion_data["prompt"]
+        response : List[Any] = self.generator(resolved_prompt)
+        outputs : List[Output] = []
+        for count, result in enumerate(response):
+            output = construct_regular_output(result, count, response_includes_details=False)
+            outputs.append(output)
+
+        prompt.outputs = outputs
+        return prompt.outputs
+
+    def get_output_text(
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        output: Optional[Output] = None,
+    ) -> str:
+        if not output:
+            output = aiconfig.get_latest_output(prompt)
+
+        if not output:
+            return ""
+
+        if output.output_type == "execute_result":
+            if isinstance(output.data, str):
+                return output.data
+        else:
+            return ""
