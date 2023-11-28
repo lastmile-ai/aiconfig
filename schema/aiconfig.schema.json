@@ -113,7 +113,6 @@
         },
         "required": [
           "input",
-          "metadata",
           "name"
         ]
       }

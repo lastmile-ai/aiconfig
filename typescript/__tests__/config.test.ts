@@ -142,15 +142,15 @@ describe("Loading an AIConfig", () => {
     expect(prompt1.input).toEqual(
       "I need to create a JSON representation of a list of products for our e-commerce website. Please provide the JSON structure with placeholders for product details. Product names: MacBook, Apple Watch"
     );
-    expect(prompt1.metadata.model).toBe("gpt-3.5-turbo");
-    expect(prompt1.metadata.parameters).toEqual({ products: "Thunderbolt" });
+    expect(prompt1.metadata?.model).toBe("gpt-3.5-turbo");
+    expect(prompt1.metadata?.parameters).toEqual({ products: "Thunderbolt" });
 
     const prompt2 = prompts[1];
     expect(prompt2.input).toEqual(
       "Now, fill in the placeholders with the details of three products, including their names, prices, and descriptions."
     );
-    expect(prompt2.metadata.model).toBe("gpt-3.5-turbo");
-    expect(prompt2.metadata.parameters).toEqual({ products: "Thunderbolt" });
+    expect(prompt2.metadata?.model).toBe("gpt-3.5-turbo");
+    expect(prompt2.metadata?.parameters).toEqual({ products: "Thunderbolt" });
   });
 
   test("serialize a prompt chain with different settings", async () => {
@@ -197,21 +197,21 @@ describe("Loading an AIConfig", () => {
       "I need to create a JSON representation of a list of products for our e-commerce website. Please provide the JSON structure with placeholders for product details. Product names: MacBook, Apple Watch"
     );
     // Prompt Model metadata should override just the differences from the global model metadata
-    expect(prompt1.metadata.model).toEqual({
+    expect(prompt1.metadata?.model).toEqual({
       name: "gpt-3.5-turbo",
       settings: { temperature: 0.75, max_tokens: 3250 },
     });
-    expect(prompt1.metadata.parameters).toEqual({ products: "Thunderbolt" });
+    expect(prompt1.metadata?.parameters).toEqual({ products: "Thunderbolt" });
 
     const prompt2 = prompts[1];
     expect(prompt2.input).toEqual(
       "Now, fill in the placeholders with the details of three products, including their names, prices, and descriptions."
     );
-    expect(prompt1.metadata.model).toEqual({
+    expect(prompt1.metadata?.model).toEqual({
       name: "gpt-3.5-turbo",
       settings: { temperature: 0.75, max_tokens: 3250 },
     });
-    expect(prompt2.metadata.parameters).toEqual({ products: "Thunderbolt" });
+    expect(prompt2.metadata?.parameters).toEqual({ products: "Thunderbolt" });
   });
 });
 
