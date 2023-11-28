@@ -1,5 +1,5 @@
 import copy
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import openai
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
@@ -151,7 +151,7 @@ class DalleImageGenerationParser(ParameterizedModelParser):
 
     async def run_inference(
         self, prompt: Prompt, aiconfig, _options, parameters
-    ) -> Output:
+    ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
