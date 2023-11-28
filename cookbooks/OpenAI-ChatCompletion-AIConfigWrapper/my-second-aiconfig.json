@@ -1,0 +1,42 @@
+{
+  "name": "",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {}
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "prompt_0",
+      "input": "Tell me a riveting story",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo",
+          "settings": {
+            "model": "gpt-3.5-turbo",
+            "top_p": 1,
+            "max_tokens": 3000,
+            "temperature": 1,
+            "stream": true
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": {
+            "content": "Once upon a time, in a small and peaceful village, there lived a young girl named Lily. Lily was always looking for adventure and excitement in her otherwise mundane life. One day, as she walked through the dense forest on the outskirts of the village, she stumbled upon an old, mysterious book lying on the ground.\n\nCuriosity got the better of her, and Lily picked up the book to examine it. The worn-out cover had a strange symbol engraved on it. Intrigued, she opened the book and found pages filled with cryptic symbols and ancient writings that she couldn't decipher.\n\nDetermined to uncover the secrets hidden within the book, Lily embarked on a journey to seek the help of an old sage who lived atop a nearby mountain. Legends whispered that the sage possessed wisdom that surpassed generations.\n\nAfter a long and arduous climb, Lily finally reached the sage's humble abode. She was greeted by an elderly man with a long white beard and eyes twinkling with wisdom. Lily explained her quest and showed him the mysterious book. The sage examined the pages carefully and revealed that the book contained ancient spells and enchantments. He warned Lily about the great power it wielded.\n\nFascinated by the possibilities, Lily decided to learn the magical arts with the sage's guidance. Day after day, they delved deeper into the book's secrets, unraveling spells and understanding their consequences. Lily discovered her innate talent for magic and became an exceptional sorceress.\n\nHowever, the more Lily studied the book, the more she became consumed by its power. Its allure was irresistible, manipulating her intentions. The ancient writings tempted her with promises, urging her to use its magic for personal gain. Lily's once-noble quest for knowledge turned into a quest for power.\n\nThe neighboring kingdom had long been at war, and the villagers suffered greatly. Lily, now intoxicated by the book's power, decided to take matters into her own hands. She summoned powerful storms, conjured illusions, and raised an army of enchanted creatures. With her newfound strength, she attacked the kingdom, intending to seize control and bring about peace by force.\n\nBut as the battle raged on, Lily soon realized the devastation and chaos she had unleashed upon innocent lives. The once peaceful village was now in ruins, and the people she had sworn to protect were fleeing in terror. Overwhelmed by guilt and regret, she knew she had lost her way.\n\nIn an act of redemption, Lily used the last of her strength to seal the book's power, sacrificing her own magical abilities. She spent years aiding in the kingdom's reconstruction, helping the people heal from the wounds of war. The villagers saw her transformation and forgave her, acknowledging her once again as their protector.\n\nFrom that day forward, Lily devoted her life to the service of others. She became a symbol of hope and taught the importance of using power responsibly. The book, now locked away, served as a reminder of the dangers of unchecked ambition.\n\nAnd so, the village thrived under Lily's wise leadership, with peace and harmony restored. Her story spread throughout the land, reminding everyone of the importance of staying true to oneself and using power for the greater good.",
+            "role": "assistant"
+          },
+          "metadata": {
+            "finish_reason": "stop"
+          }
+        }
+      ]
+    }
+  ]
+}

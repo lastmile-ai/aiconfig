@@ -80,12 +80,12 @@ def create_and_save_to_config(
                 stream_outputs = {}
                 messages = {}
                 for chunk in response:
-                    chunk = chunk.model_dump(exclude_none=True)
+                    chunk_dict = chunk.model_dump(exclude_none=True)
 
                     # streaming only returns one chunk, one choice at a time. The order in which the choices are returned is not guaranteed.
-                    messages = multi_choice_message_reducer(messages, chunk)
+                    messages = multi_choice_message_reducer(messages, chunk_dict)
 
-                    for i, choice in enumerate(chunk["choices"]):
+                    for i, choice in enumerate(chunk_dict["choices"]):
                         index = choice.get("index")
                         accumulated_message_for_choice = messages.get(index, {})
                         output = ExecuteResult(
@@ -192,3 +192,47 @@ def async_run_serialize_helper(aiconfig: AIConfigRuntime, request_kwargs: Dict):
     else:
         serialized_prompts = asyncio.run(run_and_await_serialize())
     return serialized_prompts
+
+
+import openai
+
+from typing import Any
+
+class WrapModule:
+    def __init__(self, real_module, mock_key, mock_value) -> None:
+        self.real_module = real_module
+        self.mock_key = mock_key
+        self.mock_value = mock_value
+        
+    def __getattr__(self, key) -> Any:
+        if key == self.mock_key:
+            return self.mock_value
+        else:
+            return getattr(self.real_module, key)
+        
+
+    def __repr__(self):
+        return f"WrapModule(\n{self.real_module},\n{self.mock_key},\n{self.mock_value})"
+    
+    def __str__(self) -> str:
+        return repr(self)
+
+
+def make_wrap_module(real_module, mock_path, mock_value):
+    parts = mock_path.split(".")
+    if len(parts) == 1:
+        return WrapModule(real_module, parts[0], mock_value)
+    else:
+        first, rest = parts[0], ".".join(parts[1:])
+        return WrapModule(
+            real_module,
+            first,
+            make_wrap_module(getattr(real_module, first), rest, mock_value)
+        )
+
+
+def get_wrapped_openai(config_file_path):
+    return make_wrap_module(
+        openai, "chat.completions.create", 
+        create_and_save_to_config(config_file_path=config_file_path),
+    )
