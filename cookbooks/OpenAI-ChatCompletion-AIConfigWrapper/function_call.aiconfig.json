@@ -1,0 +1,129 @@
+{
+  "name": "",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {}
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "prompt_0",
+      "input": "What is the weather like in Boston?",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo-0613",
+          "settings": {
+            "model": "gpt-3.5-turbo-0613",
+            "functions": [
+              {
+                "name": "get_current_weather",
+                "description": "Get the current weather in a given location",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "location": {
+                      "type": "string",
+                      "description": "The city and state, e.g. San Francisco, CA"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "celsius",
+                        "fahrenheit"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "location"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "role": "assistant",
+            "content": "null",
+            "function_call": {
+              "name": "get_current_weather",
+              "arguments": "{\n  \"location\": \"Boston, MA\"\n}"
+            }
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "name": "prompt_1",
+      "input": {
+        "role": "function",
+        "name": "get_current_weather",
+        "content": "{'temperature': 22, 'unit': 'celsius', 'description': 'Sunny'}"
+      },
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo-0613",
+          "settings": {
+            "model": "gpt-3.5-turbo-0613",
+            "functions": [
+              {
+                "name": "get_current_weather",
+                "description": "Get the current weather in a given location",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "location": {
+                      "type": "string",
+                      "description": "The city and state, e.g. San Francisco, CA"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "celsius",
+                        "fahrenheit"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "location"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": {
+            "content": "The current weather in Boston is sunny with a temperature of 22 degrees Celsius.",
+            "role": "assistant"
+          },
+          "metadata": {
+            "id": "chatcmpl-8Q6DhG62tvHke8XUvlzw4jyUvUbDu",
+            "created": 1701231129,
+            "model": "gpt-3.5-turbo-0613",
+            "object": "chat.completion",
+            "usage": {
+              "completion_tokens": 17,
+              "prompt_tokens": 134,
+              "total_tokens": 151
+            },
+            "finish_reason": "stop"
+          }
+        }
+      ]
+    }
+  ]
+}
