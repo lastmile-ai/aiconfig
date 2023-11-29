@@ -28,6 +28,7 @@ dependencies = [
   "huggingface_hub",
   "result",
   "nest_asyncio",
+  "lastmile_utils>=0.0.5"
   ]
 
 [project.urls]
