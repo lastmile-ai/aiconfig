@@ -10,7 +10,7 @@ import {
 } from "openai/resources/chat";
 import * as path from "path";
 import { AIConfigRuntime } from "../lib/config";
-import { Prompt } from "../types";
+import { Prompt, PromptInput } from "../types";
 import { uniqueId } from "lodash";
 
 // This example is taken from https://github.com/openai/openai-node/blob/v4/examples/function-call-stream.ts
@@ -236,10 +236,14 @@ async function functionCallingWithAIConfig() {
 
     // TODO: saqadri - simplify adding a new prompt
     const existingPrompt = aiConfig.getPrompt("recommendBook")!;
+    const input: PromptInput = {
+      attachments: [],
+      data: newMessage,
+    };
     const newPrompt: Prompt = {
       ...existingPrompt,
       name: promptToRun,
-      input: newMessage,
+      input,
       outputs: undefined,
     };
 
