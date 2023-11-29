@@ -59,9 +59,23 @@ class PromptMetadata(BaseModel):
     class Config:
         extra = "allow"
 
+class Attachment(BaseModel):
+    '''
+    Attachment used to pass data in PromptInput for non-text inputs (ex: image, audio)
+    '''
+    # The data representing the attachment
+    data: Any
+    # The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
+    mime_type: Optional[str] = None
+    # Output metadata
+    metadata: Dict[str, Any]
 
 class PromptInput(BaseModel):
-    # Any additional inputs to the model
+    # Attachements can be used to pass in non-text inputs (ex: image, audio)
+    attachments: List[Attachment] = []
+
+    # Freeform data for the overall prompt input (ex: document answering question 
+    # requires both images (attachments) and question (data))
     data: Optional[Any] = None
 
     class Config:
