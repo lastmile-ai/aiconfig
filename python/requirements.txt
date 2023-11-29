@@ -14,3 +14,9 @@ prompt_toolkit
 mock
 pytest-asyncio
 lastmile_utils==0.0.3
+transformers
+
+#Pytorch
+torch
+torchvision
+torchaudio
