@@ -1,0 +1,10 @@
+name: Python Tests on Merge
+
+# Triggers the workflow on push on main
+on:
+  push:
+    branches: [main]
+
+jobs:
+  trigger-another-workflow:
+    uses: ./.github/workflows/pr_python.yml
