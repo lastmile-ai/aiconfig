@@ -12,7 +12,6 @@ from aiconfig.util.params import (
     resolve_prompt_string,
     resolve_system_prompt,
 )
-from pydantic import BaseModel
 
 from aiconfig.schema import ExecuteResult, Output, Prompt, PromptInput, PromptMetadata
 
@@ -263,13 +262,8 @@ class OpenAIInference(ParameterizedModelParser):
         outputs = []
         if not stream:
             # # OpenAI>1.0.0 uses pydantic models for response
-            response = (
-                response.model_dump(exclude_none=True)
-                if isinstance(response, BaseModel)
-                else response
-            )
+            response = response.model_dump(exclude_none=True)
 
-            print(f"{type(response)=}, {response=}")
             response_without_choices = {
                 key: copy.deepcopy(value)
                 for key, value in response.items()
@@ -294,11 +288,7 @@ class OpenAIInference(ParameterizedModelParser):
             messages = {}
             for chunk in response:
                 # OpenAI>1.0.0 uses pydantic models. Chunk is of type ChatCompletionChunk; type is not directly importable from openai Library, will require some diffing
-                response = (
-                    response.model_dump(exclude_none=True)
-                    if isinstance(response, BaseModel)
-                    else response
-                )
+                chunk = chunk.model_dump(exclude_none=True)
                 # streaming only returns one chunk, one choice at a time (before 1.0.0). The order in which the choices are returned is not guaranteed.
                 messages = multi_choice_message_reducer(messages, chunk)
 
