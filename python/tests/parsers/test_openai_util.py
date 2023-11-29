@@ -1,10 +1,7 @@
 import openai
 import pytest
 from aiconfig.Config import AIConfigRuntime
-from aiconfig.default_parsers.openai import (
-    add_prompt_as_message,
-    refine_chat_completion_params,
-)
+from aiconfig.default_parsers.openai import refine_chat_completion_params
 from mock import patch
 
 from aiconfig import ExecuteResult, Prompt, PromptMetadata

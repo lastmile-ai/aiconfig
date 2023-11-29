@@ -1,7 +1,6 @@
 import asyncio
 
 from aiconfig.model_parser import InferenceOptions
-from hf import HuggingFaceTextParser
 
 from aiconfig import AIConfigRuntime
 

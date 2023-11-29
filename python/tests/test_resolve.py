@@ -1,6 +1,4 @@
-import openai
 import pytest
-from mock import patch
 
 from aiconfig import AIConfigRuntime
 

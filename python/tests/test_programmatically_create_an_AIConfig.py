@@ -6,7 +6,6 @@ from aiconfig.schema import (
     AIConfig,
     ConfigMetadata,
     ExecuteResult,
-    InferenceSettings,
     ModelMetadata,
     Prompt,
     PromptMetadata,

@@ -1,6 +1,5 @@
 import os
 
-import openai
 import pytest
 from openai.types.chat import ChatCompletion
 

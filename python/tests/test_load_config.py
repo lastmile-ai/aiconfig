@@ -1,13 +1,10 @@
 # import ai_config_tools Config class
 
 
-import openai
 import pytest
-from mock import patch
 
 from aiconfig import AIConfigRuntime
 
-from .conftest import set_temporary_env_vars
 from .util.file_path_utils import get_absolute_file_path_from_relative
 
 
