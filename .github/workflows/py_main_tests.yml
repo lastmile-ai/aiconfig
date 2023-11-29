@@ -1,0 +1,17 @@
+name: Python Tests on Merge
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  trigger-another-workflow:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Another Workflow
+        uses: actions/checkout@v2 
+      - name: Trigger Workflow
+        with:
+          workflow: pr_python.yml  # Specify the name of the workflow you want to trigger
