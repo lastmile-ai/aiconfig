@@ -37,6 +37,7 @@ class CallbackEvent:
         self.data = data
         self.ts_ns = ts_ns
 
+test = 2
 
 # Type Aliases
 Callback = Callable[[CallbackEvent], Awaitable[Any]]
