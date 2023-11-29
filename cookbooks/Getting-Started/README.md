@@ -10,6 +10,10 @@ Follow the tutorial to get started [here](https://aiconfig.lastmileai.dev/docs/g
 
 ## Resources
 
+Tutorial Video
+
+[![Watch the video](https://img.youtube.com/vi/X_Z-M2ZcpjA/default.jpg)](https://www.youtube.com/watch?v=X_Z-M2ZcpjA)
+
 Tutorial Implementation:
 
 - [Python - Google Colab notebook](https://colab.research.google.com/drive/1aZiEgiPiIDPmy7iD4xPcNw0BBcfC2e1S)
