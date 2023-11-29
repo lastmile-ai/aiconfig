@@ -1,11 +1,11 @@
 import copy
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from transformers import pipeline
+from transformers import AutoTokenizer, pipeline, TextIteratorStreamer
 
-from aiconfig.util.params import resolve_prompt
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-
+from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+from aiconfig.util.params import resolve_prompt
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -95,6 +95,35 @@ def construct_regular_output(result: Dict[str, str], execution_count: int, respo
             "metadata": metadata,
         }
     )
+    return output
+
+def construct_stream_output(
+    streamer: TextIteratorStreamer,
+    execution_count: int,
+    options: InferenceOptions,
+) -> Output:
+    """
+    Constructs the output for a stream response.
+
+    Args:
+        streamer (TextIteratorStreamer): Streams the output. See https://huggingface.co/docs/transformers/v4.35.2/en/internal/generation_utils#transformers.TextIteratorStreamer
+        execution_count (int): Index of the output result (we can return a list instead of single value)
+        options (InferenceOptions): The inference options. Used to determine the stream callback.
+
+    """
+    accumulated_message = ""
+    output = ExecuteResult(
+            **{
+                "output_type": "execute_result",
+                "data": accumulated_message,
+                "execution_count": execution_count,
+                "metadata": {},
+            }
+        )
+    for new_text in streamer:
+        accumulated_message += new_text
+        options.stream_callback(new_text, accumulated_message, execution_count)
+        output.data = accumulated_message
     return output
 
 
@@ -195,7 +224,7 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         return completion_data
 
     async def run_inference(
-        self, prompt: Prompt, aiconfig : "AIConfigRuntime", options, parameters: Dict[str, Any]
+        self, prompt: Prompt, aiconfig : "AIConfigRuntime", options : InferenceOptions, parameters: Dict[str, Any]
     ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
@@ -209,12 +238,28 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
             InferenceResponse: The response from the model.
         """
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
-
         completion_data["text_inputs"] = completion_data.pop("prompt", None)
+
+        # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
+        streamer = None
+        stream = (options.stream if options else False) and (
+            not "stream" in completion_data or completion_data.get("stream") != False
+        )
+        if stream:
+            tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained(self.MODEL)
+            streamer = TextIteratorStreamer(tokenizer)
+            completion_data["streamer"] = streamer
+
+
         response : List[Any] = self.generator(**completion_data)
         outputs : List[Output] = []
         for count, result in enumerate(response):
-            output = construct_regular_output(result, count, response_includes_details=False)
+            if not stream:
+                output = construct_regular_output(result, count, response_includes_details=False)
+            else:
+                if not streamer:
+                    raise ValueError("stream option is selected but streamer is not initialized")
+                output = construct_stream_output(streamer, count, options)
             outputs.append(output)
 
         prompt.outputs = outputs
