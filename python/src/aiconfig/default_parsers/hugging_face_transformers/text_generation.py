@@ -20,23 +20,54 @@ def refine_chat_completion_params(model_settings: Dict[str, Any]) -> Dict[str, A
     """
 
     supported_keys = {
-        "details",
-        "stream",
-        "model",
-        "do_sample",
+        "max_length",
         "max_new_tokens",
-        "best_of",
-        "repetition_penalty",
-        "return_full_text",
-        "seed",
-        "stop_sequences",
+        "min_length",
+        "min_new_tokens",
+        "early_stopping",
+        "max_time",
+        "do_sample",
+        "num_beams",
+        "num_beam_groups",
+        "penalty_alpha",
+        "use_cache",
         "temperature",
         "top_k",
         "top_p",
-        "truncate",
         "typical_p",
-        "watermark",
-        "decoder_input_details",
+        "epsilon_cutoff",
+        "eta_cutoff",
+        "diversity_penalty",
+        "repetition_penalty",
+        "encoder_repetition_penalty",
+        "length_penalty",
+        "no_repeat_ngram_size",
+        "bad_words_ids",
+        "force_words_ids",
+        "renormalize_logits",
+        "constraints",
+        "forced_bos_token_id",
+        "forced_eos_token_id",
+        "remove_invalid_values",
+        "exponential_decay_length_penalty",
+        "suppress_tokens",
+        "begin_suppress_tokens",
+        "forced_decoder_ids",
+        "sequence_bias",
+        "guidance_scale",
+        "low_memory",
+        "num_return_sequences",
+        "output_attentions",
+        "output_hidden_states",
+        "output_scores",
+        "return_dict_in_generate",
+        "pad_token_id",
+        "bos_token_id",
+        "eos_token_id",
+        "encoder_no_repeat_ngram_size",
+        "decoder_start_token_id",
+        "num_assistant_tokens",
+        "num_assistant_tokens_schedule"
     }
 
     completion_data = {}
@@ -179,8 +210,8 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         """
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
 
-        resolved_prompt : str = completion_data["prompt"]
-        response : List[Any] = self.generator(resolved_prompt)
+        completion_data["text_inputs"] = completion_data.pop("prompt", None)
+        response : List[Any] = self.generator(**completion_data)
         outputs : List[Output] = []
         for count, result in enumerate(response):
             output = construct_regular_output(result, count, response_includes_details=False)
