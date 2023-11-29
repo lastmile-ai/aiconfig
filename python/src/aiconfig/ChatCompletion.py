@@ -16,8 +16,10 @@ usage:
 """
 import asyncio
 import copy
-from typing import Any, Dict, List, Optional
+from types import ModuleType
+from typing import Any, Dict, Generator, List, Optional, cast
 
+import lastmile_utils.lib.core.api as cu
 import nest_asyncio
 import openai
 from aiconfig.Config import AIConfigRuntime
@@ -29,7 +31,9 @@ openai_chat_completion_create = openai.chat.completions.create
 
 
 def create_and_save_to_config(
-    config_file_path: Optional[str] = None, aiconfig: Optional[AIConfigRuntime] = None, aiconfig_settings : Dict[str, Any] = {}
+    config_file_path: Optional[str] = None,
+    aiconfig: Optional[AIConfigRuntime] = None,
+    aiconfig_settings: Dict[str, Any] = {},
 ):
     """
     Overrides OpenAI's ChatCompletion.create method to serialize prompts and save them along with their outputs to a configuration file.
@@ -199,3 +203,135 @@ def async_run_serialize_helper(aiconfig: AIConfigRuntime, request_kwargs: Dict):
     else:
         serialized_prompts = asyncio.run(run_and_await_serialize())
     return serialized_prompts
+
+
+# TODO type this
+def create_and_save_to_config_v2(
+    output_aiconfig_ref: str | AIConfigRuntime,
+    openai_api: Any | None = None,
+    aiconfig_settings: dict[str, Any] | None = None,
+) -> Any:
+    """
+    Return a drop-in replacement for openai chat completion create
+    with the side effect of saving an AIConfig to the given aiconfig reference.
+
+    output_aiconfig_ref: path to aiconfig json or an AIConfigRuntime object.
+    openai_api: openai module or instance of openai.Client
+    """
+    if openai_api is None:
+        openai_api = openai
+
+    def _get_aiconfig_runtime(output_aiconfig_path: str) -> AIConfigRuntime:
+        try:
+            return AIConfigRuntime.load(output_aiconfig_path)
+        except IOError:
+            return AIConfigRuntime.create(**(aiconfig_settings or {}))
+
+    output_aiconfig = (
+        output_aiconfig_ref
+        if isinstance(output_aiconfig_ref, AIConfigRuntime)
+        else _get_aiconfig_runtime(output_aiconfig_ref)
+    )
+
+    output_config_file_path = (
+        output_aiconfig_ref
+        if isinstance(output_aiconfig_ref, str)
+        else output_aiconfig_ref.file_path
+    )
+
+    # TODO: openai makes it hard to statically annotate.
+    def _create_chat_completion_with_config_saving(*args, **kwargs) -> Any:  # type: ignore
+        response = openai_api.chat.completions.create(*args, **kwargs)
+
+        serialized_prompts = async_run_serialize_helper(output_aiconfig, kwargs)
+
+        # serialize output from response
+        outputs = []
+
+        # Check if response is a stream
+        stream = kwargs.get("stream", False) is True and isinstance(
+            response, openai.Stream
+        )
+
+        # Convert Response to output for last prompt
+        if not stream:
+            outputs = extract_outputs_from_response(response)
+
+            # Add outputs to last prompt
+            serialized_prompts[-1].outputs = outputs
+
+            validate_and_add_prompts_to_config(serialized_prompts, output_aiconfig)
+
+            # Save config to file
+            output_aiconfig.save(output_config_file_path, include_outputs=True)
+
+            # Return original response
+            return response
+        else:
+            # If response is a stream, build the output as the stream iterated through. do_logic() becomes a generator.
+
+            # TODO: type
+            def generate_streamed_response() -> Generator[Any, None, None]:
+                stream_outputs = {}
+                messages = {}
+                for chunk in response:
+                    chunk_dict = chunk.model_dump(exclude_none=True)  # type: ignore [fixme]
+
+                    # streaming only returns one chunk, one choice at a time. The order in which the choices are returned is not guaranteed.
+                    messages = multi_choice_message_reducer(messages, chunk_dict)
+
+                    for choice in chunk_dict["choices"]:
+                        index = choice.get("index")
+                        accumulated_message_for_choice = messages.get(index, {})
+                        output = ExecuteResult(
+                            output_type="execute_result",
+                            data=copy.deepcopy(accumulated_message_for_choice),
+                            execution_count=index,
+                            metadata={"finish_reason": choice.get("finish_reason")},
+                        )
+                        stream_outputs[index] = output
+                    yield chunk
+                stream_outputs = [
+                    stream_outputs[i] for i in sorted(list(stream_outputs.keys()))
+                ]
+
+                # Add outputs to last prompt
+                serialized_prompts[-1].outputs = stream_outputs
+
+                validate_and_add_prompts_to_config(serialized_prompts, output_aiconfig)
+
+                # Save config to file
+                output_aiconfig.save(output_config_file_path, include_outputs=True)
+
+            return generate_streamed_response()
+
+    return _create_chat_completion_with_config_saving
+
+
+def get_completion_create_wrapped_openai(
+    output_aiconfig_ref: str | AIConfigRuntime,
+) -> ModuleType:
+    api = openai
+    new_module = cu.make_wrap_object(
+        api,
+        "chat.completions.create",
+        create_and_save_to_config_v2(
+            output_aiconfig_ref=output_aiconfig_ref, openai_api=api
+        ),
+    )
+    return cast(ModuleType, new_module)
+
+
+def get_completion_create_wrapped_openai_client(
+    output_aiconfig_ref: str | AIConfigRuntime,
+) -> openai.OpenAI:
+    api = openai.Client()
+    client = cu.make_wrap_object(
+        api,
+        "chat.completions.create",
+        create_and_save_to_config_v2(
+            output_aiconfig_ref=output_aiconfig_ref, openai_api=api
+        ),
+    )
+
+    return cast(openai.OpenAI, client)

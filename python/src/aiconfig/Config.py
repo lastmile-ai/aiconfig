@@ -284,7 +284,9 @@ class AIConfigRuntime(AIConfig):
     #    @param saveOptions Options that determine how to save the AIConfig to the file.
     #    */
 
-    def save(self, json_config_filepath: str = None, include_outputs: bool = True):
+    def save(
+        self, json_config_filepath: str | None = None, include_outputs: bool = True
+    ):
         """
         Save the AI Configuration to a JSON file.
 
