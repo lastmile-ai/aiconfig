@@ -32,6 +32,7 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
 
   public serialize(
     promptName: string,
+    // TODO (rossdanlm): Generalize this openai serializer to work with multi-modal inputs, not just text completion
     data: CompletionCreateParams,
     aiConfig: AIConfigRuntime,
     params?: JSONObject
@@ -42,6 +43,7 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
       input = data.prompt;
     } else {
       input = {
+        attachments: [],
         data: data.prompt,
       };
     }
@@ -274,7 +276,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     } else if (typeof prompt.input?.data === "string") {
       return prompt.input?.data;
     } else {
-      const message = prompt.input as Chat.ChatCompletionMessageParam;
+      const message = prompt.input?.data as Chat.ChatCompletionMessageParam;
       return message.content ?? "";
     }
   }
@@ -361,8 +363,11 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
           }
         }
 
-        const input: PromptInput =
-          message.role === "user" ? message.content ?? "" : { ...message };
+        const input: PromptInput = {
+          attachments: [],
+          data:
+            message.role === "user" ? message.content ?? "" : { ...message },
+        };
 
         const prompt: Prompt = {
           name: `${promptName}_${prompts.length + 1}`,

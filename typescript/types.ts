@@ -72,8 +72,31 @@ export type SchemaVersion =
   | "v1"
   | "latest";
 
+export type Attachment = {
+  /**
+   * The data representing the attachment
+   */
+  data: any;
+
+  /**
+   * The MIME type of the result. If not specified, the MIME type will be
+   * assumed to be plain text
+   */
+  mime_type: string | undefined;
+
+  /**
+   * Attachment metadata
+   */
+  metadata?: JSONValue;
+};
+
 export type PromptInput =
   | {
+      /**
+       * Attachements can be used to pass in non-text inputs (ex: image, audio)
+       */
+      attachments: Attachment[];
+
       /**
        * Input to the model. This can represent a single input, or multiple inputs.
        * The structure of the data object is up to the ModelParser. For example,
