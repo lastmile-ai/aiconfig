@@ -16,7 +16,7 @@ usage:
 """
 import asyncio
 import copy
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import nest_asyncio
 import openai
@@ -29,7 +29,7 @@ openai_chat_completion_create = openai.chat.completions.create
 
 
 def create_and_save_to_config(
-    config_file_path: Optional[str] = None, aiconfig: Optional[AIConfigRuntime] = None
+    config_file_path: Optional[str] = None, aiconfig: Optional[AIConfigRuntime] = None, aiconfig_settings : Dict[str, Any] = {}
 ):
     """
     Overrides OpenAI's ChatCompletion.create method to serialize prompts and save them along with their outputs to a configuration file.
@@ -45,7 +45,7 @@ def create_and_save_to_config(
         try:
             aiconfig = AIConfigRuntime.load(config_file_path)
         except:
-            aiconfig = AIConfigRuntime.create()
+            aiconfig = AIConfigRuntime.create(**aiconfig_settings)
 
     def _create_chat_completion_with_config_saving(*args, **kwargs):
         response = openai_chat_completion_create(*args, **kwargs)
