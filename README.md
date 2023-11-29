@@ -3,11 +3,10 @@
 </picture></div>
 <br/>
 
-![Python](https://github.com/lastmile-ai/aiconfig/actions/workflows/pr_python.yml/badge.svg)
+![Python](https://github.com/lastmile-ai/aiconfig/actions/workflows/main_python.yml/badge.svg)
 ![Node](https://github.com/lastmile-ai/aiconfig/actions/workflows/pr_typescript.yml/badge.svg)
 ![Docs](https://github.com/lastmile-ai/aiconfig/actions/workflows/test-deploy-docs.yml/badge.svg)
-[![Discord](https://img.shields.io/badge/Discord-LastMile%20AI-Blue?color=rgb(37%2C%20150%2C%20190))](https://discord.gg/qMqgzDae)
-
+[![Discord](<https://img.shields.io/badge/Discord-LastMile%20AI-Blue?color=rgb(37%2C%20150%2C%20190)>)](https://discord.gg/qMqgzDae)
 
 > Full documentation: **[aiconfig.lastmileai.dev](https://aiconfig.lastmileai.dev/)**
 
