@@ -20,7 +20,9 @@ def test_refine_chat_completion_params():
         "system_prompt": "system_prompt",
         "random_attribute": "value_doesn't_matter",
     }
-    refined_params = refine_chat_completion_params(model_settings_with_stream_and_system_prompt)
+    refined_params = refine_chat_completion_params(
+        model_settings_with_stream_and_system_prompt
+    )
 
     assert "system_prompt" not in refined_params
     assert "stream" in refined_params
@@ -30,9 +32,13 @@ def test_refine_chat_completion_params():
 
 @pytest.mark.asyncio
 async def test_get_output_text(set_temporary_env_vars):
-    with patch.object(openai.chat.completions, "create", side_effect=mock_openai_chat_completion):
+    with patch.object(
+        openai.chat.completions, "create", side_effect=mock_openai_chat_completion
+    ):
         config_relative_path = "../aiconfigs/basic_chatgpt_query_config.json"
-        config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
+        config_absolute_path = get_absolute_file_path_from_relative(
+            __file__, config_relative_path
+        )
         aiconfig = AIConfigRuntime.load(config_absolute_path)
 
         await aiconfig.run("prompt1", {})
@@ -47,7 +53,9 @@ async def test_get_output_text(set_temporary_env_vars):
 
 @pytest.mark.asyncio
 async def test_serialize(set_temporary_env_vars):
-    with patch.object(openai.chat.completions, "create", side_effect=mock_openai_chat_completion):
+    with patch.object(
+        openai.chat.completions, "create", side_effect=mock_openai_chat_completion
+    ):
         # Test with one input prompt and system. No output
         completion_params = {
             "model": "gpt-3.5-turbo",
@@ -101,7 +109,9 @@ async def test_serialize(set_temporary_env_vars):
             ],
         }
 
-        serialized_prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
+        serialized_prompts = await aiconfig.serialize(
+            "gpt-3.5-turbo", completion_params, "prompt"
+        )
         new_prompt = serialized_prompts[0]
 
         assert new_prompt == Prompt(
@@ -128,7 +138,10 @@ async def test_serialize(set_temporary_env_vars):
                 ExecuteResult(
                     output_type="execute_result",
                     execution_count=None,
-                    data={"role": "assistant", "content": "Hello! How can I assist you today?"},
+                    data={
+                        "role": "assistant",
+                        "content": "Hello! How can I assist you today?",
+                    },
                     metadata={},
                 )
             ],
@@ -155,7 +168,10 @@ async def test_serialize(set_temporary_env_vars):
                                 "type": "string",
                                 "description": "The city and state, e.g. San Francisco, CA",
                             },
-                            "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+                            "unit": {
+                                "type": "string",
+                                "enum": ["celsius", "fahrenheit"],
+                            },
                         },
                         "required": ["location"],
                     },
@@ -163,7 +179,9 @@ async def test_serialize(set_temporary_env_vars):
             ],
         }
 
-        serialized_prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
+        serialized_prompts = await aiconfig.serialize(
+            "gpt-3.5-turbo", completion_params, "prompt"
+        )
         new_prompt = serialized_prompts[0]
         assert new_prompt == Prompt(
             name="prompt",
@@ -243,7 +261,10 @@ async def test_serialize(set_temporary_env_vars):
                                 "type": "string",
                                 "description": "The city and state, e.g. San Francisco, CA",
                             },
-                            "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+                            "unit": {
+                                "type": "string",
+                                "enum": ["celsius", "fahrenheit"],
+                            },
                         },
                         "required": ["location"],
                     },
@@ -274,7 +295,10 @@ async def test_serialize(set_temporary_env_vars):
                                             "description": "The city and state, e.g. San Francisco, CA",
                                             "type": "string",
                                         },
-                                        "unit": {"enum": ["celsius", "fahrenheit"], "type": "string"},
+                                        "unit": {
+                                            "enum": ["celsius", "fahrenheit"],
+                                            "type": "string",
+                                        },
                                     },
                                     "required": ["location"],
                                     "type": "object",

@@ -16,7 +16,6 @@ usage:
 """
 import asyncio
 import copy
-import types
 from typing import Dict, List, Optional
 
 import nest_asyncio
@@ -57,7 +56,9 @@ def create_and_save_to_config(
         outputs = []
 
         # Check if response is a stream
-        stream = kwargs.get("stream", False) is True and isinstance(response, openai.Stream)
+        stream = kwargs.get("stream", False) is True and isinstance(
+            response, openai.Stream
+        )
 
         # Convert Response to output for last prompt
         if not stream:
@@ -93,12 +94,16 @@ def create_and_save_to_config(
                                 "output_type": "execute_result",
                                 "data": copy.deepcopy(accumulated_message_for_choice),
                                 "execution_count": index,
-                                "metadata": {"finish_reason": choice.get("finish_reason")},
+                                "metadata": {
+                                    "finish_reason": choice.get("finish_reason")
+                                },
                             }
                         )
                         stream_outputs[index] = output
                     yield chunk
-                stream_outputs = [stream_outputs[i] for i in sorted(list(stream_outputs.keys()))]
+                stream_outputs = [
+                    stream_outputs[i] for i in sorted(list(stream_outputs.keys()))
+                ]
 
                 # Add outputs to last prompt
                 serialized_prompts[-1].outputs = stream_outputs
@@ -181,7 +186,9 @@ def async_run_serialize_helper(aiconfig: AIConfigRuntime, request_kwargs: Dict):
     serialized_prompts = None
 
     async def run_and_await_serialize():
-        result = await aiconfig.serialize(request_kwargs.get("model"), request_kwargs, "prompt")
+        result = await aiconfig.serialize(
+            request_kwargs.get("model"), request_kwargs, "prompt"
+        )
         return result
 
     # serialize prompts from ChatCompletion kwargs
