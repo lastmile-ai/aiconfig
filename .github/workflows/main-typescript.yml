@@ -1,0 +1,28 @@
+name: Node.js Tests
+# Triggers the workflow on push on main. This is the same as pr_typescript.yml but does not run on every PR.
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: |
+          cd typescript && yarn install
+      # - name: Lint
+      #   run: |
+      #     cd typescript && yarn lint
+      - name: Test
+        run: |
+          cd typescript && yarn test
+      - name: Compile
+        run: |
+          cd typescript && yarn compile
