@@ -1,6 +1,5 @@
 import os
 
-import openai
 import pytest
 from openai.types.chat import ChatCompletion
 
@@ -43,7 +42,11 @@ def mock_openai_chat_completion(**kwargs):
                     "model": "gpt-3.5-turbo-0613",
                     "object": "chat.completion",
                     "system_fingerprint": None,
-                    "usage": {"completion_tokens": 297, "prompt_tokens": 53, "total_tokens": 350},
+                    "usage": {
+                        "completion_tokens": 297,
+                        "prompt_tokens": 53,
+                        "total_tokens": 350,
+                    },
                 }
             ),
         ],
@@ -55,7 +58,10 @@ def mock_openai_chat_completion(**kwargs):
                 "top_p": 1,
                 "stream": False,
                 "messages": [
-                    {"content": "Hi! Tell me 10 cool things to do in NYC.", "role": "user"}
+                    {
+                        "content": "Hi! Tell me 10 cool things to do in NYC.",
+                        "role": "user",
+                    }
                 ],
             },
             ChatCompletion(
@@ -77,7 +83,11 @@ def mock_openai_chat_completion(**kwargs):
                     "model": "gpt-3.5-turbo-0613",
                     "object": "chat.completion",
                     "system_fingerprint": None,
-                    "usage": {"prompt_tokens": 20, "completion_tokens": 379, "total_tokens": 399},
+                    "usage": {
+                        "prompt_tokens": 20,
+                        "completion_tokens": 379,
+                        "total_tokens": 399,
+                    },
                 }
             ),
         ],

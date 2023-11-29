@@ -1,13 +1,11 @@
 import asyncio
 
 from aiconfig.model_parser import InferenceOptions
-from hf import HuggingFaceTextParser
 
 from aiconfig import AIConfigRuntime
 
 
 async def main():
-
     config = AIConfigRuntime.load("../Mistral-aiconfig.json")
 
     def stream_callback(data, accumulated_message, index):

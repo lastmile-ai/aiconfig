@@ -2,7 +2,6 @@ import re
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Set
 
-import cachetools
 from aiconfig.registry import ModelParserRegistry
 from pybars import Compiler
 
@@ -228,6 +227,7 @@ def get_prompt_template(prompt: Prompt, aiconfig: "AIConfigRuntime"):
     model_parser = ModelParserRegistry.get_model_parser_for_prompt(prompt, aiconfig)
     # Circular type reference
     from ..default_parsers.parameterized_model_parser import ParameterizedModelParser
+
     if isinstance(model_parser, ParameterizedModelParser):
         return model_parser.get_prompt_template(prompt, aiconfig)
 
@@ -236,7 +236,9 @@ def get_prompt_template(prompt: Prompt, aiconfig: "AIConfigRuntime"):
     elif isinstance(prompt.input.data, str):
         return prompt.input.data
     else:
-        raise Exception(f"Cannot get prompt template string from prompt: {prompt.input}")
+        raise Exception(
+            f"Cannot get prompt template string from prompt: {prompt.input}"
+        )
 
 
 def collect_prompt_references(current_prompt: Prompt, ai_config: "AIConfigRuntime"):
@@ -275,7 +277,10 @@ def resolve_prompt(
 
 
 def resolve_system_prompt(
-    current_prompt: Prompt, system_prompt: str, input_params: Dict, ai_config: "AIConfigRuntime"
+    current_prompt: Prompt,
+    system_prompt: str,
+    input_params: Dict,
+    ai_config: "AIConfigRuntime",
 ) -> str:
     """
     Parameterizes a system prompt using provided prompt and parameters, references to other prompts, and parameters stored in config..
@@ -284,7 +289,10 @@ def resolve_system_prompt(
 
 
 def resolve_prompt_string(
-    current_prompt: Prompt, input_params: Dict, ai_config: "AIConfigRuntime", prompt_string: str
+    current_prompt: Prompt,
+    input_params: Dict,
+    ai_config: "AIConfigRuntime",
+    prompt_string: str,
 ) -> str:
     """
     Parameterizes a prompt using provided parameters, references to other prompts, and parameters stored in config..
