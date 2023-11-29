@@ -1,11 +1,19 @@
 import copy
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from transformers import AutoTokenizer, pipeline, TextIteratorStreamer
 
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+
 from aiconfig.util.params import resolve_prompt
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+
+from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+
+# HuggingFace API imports
+from transformers import AutoTokenizer, pipeline, TextStreamer
+from huggingface_hub.inference._text_generation import (
+    TextGenerationResponse,
+    TextGenerationStreamResponse,
+)
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -98,32 +106,50 @@ def construct_regular_output(result: Dict[str, str], execution_count: int, respo
     return output
 
 def construct_stream_output(
-    streamer: TextIteratorStreamer,
-    execution_count: int,
+    response: TextGenerationStreamResponse,
+    response_includes_details: bool,
     options: InferenceOptions,
 ) -> Output:
     """
     Constructs the output for a stream response.
 
     Args:
-        streamer (TextIteratorStreamer): Streams the output. See https://huggingface.co/docs/transformers/v4.35.2/en/internal/generation_utils#transformers.TextIteratorStreamer
-        execution_count (int): Index of the output result (we can return a list instead of single value)
+        response (TextGenerationStreamResponse): The response from the model.
+        response_includes_details (bool): Whether or not the response includes details.
         options (InferenceOptions): The inference options. Used to determine the stream callback.
 
     """
+    # Generate a BaseStreamer obj: streamer - Streamer object that will be used to 
+    # stream the generated sequences. Generated tokens are passed through 
+    # streamer.put(token_ids) and the streamer is responsible for any further processing.
+
     accumulated_message = ""
-    output = ExecuteResult(
+    for iteration in response:
+        metadata = {}
+        data = iteration
+        if response_includes_details:
+            iteration: TextGenerationStreamResponse
+            data = iteration.token.text
+            metadata = {"token": iteration.token, "details": iteration.details}
+        else:
+            data: str
+
+        # Reduce
+        accumulated_message += data
+
+        index = 0  # HF Text Generation api doesn't support multiple outputs
+        delta = data
+        options.stream_callback(delta, accumulated_message, index)
+
+        output = ExecuteResult(
             **{
                 "output_type": "execute_result",
-                "data": accumulated_message,
-                "execution_count": execution_count,
-                "metadata": {},
+                "data": copy.deepcopy(accumulated_message),
+                "execution_count": index,
+                "metadata": metadata,
             }
         )
-    for new_text in streamer:
-        accumulated_message += new_text
-        options.stream_callback(new_text, accumulated_message, execution_count)
-        output.data = accumulated_message
+
     return output
 
 
@@ -132,26 +158,32 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
     A model parser for HuggingFace models of type text generation task using transformers.
     """
 
-    def __init__(self):
+    MODEL = "gpt2" #TODO (rossdanlm): Do not use hardcoded model for text generation
+
+    def __init__(self, model_id: Optional[str] = None):
         """
+        Args:
+            model_id (str): The model name of the model to use.
+
         Returns:
-            HuggingFaceTextGenerationTransformer
+            HuggingFaceTextParser: The HuggingFaceTextParser object.
 
         Usage:
 
         1. Create a new model parser object with the model ID of the model to use.
-                parser = HuggingFaceTextGenerationTransformer()
+                parser = HuggingFaceTextParser("mistralai/Mistral-7B-Instruct-v0.1")
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
         """
         super().__init__()
-        self.generator = pipeline('text-generation')
+        self.model_id = model_id
+        self.generator = pipeline('text-generation', model = self.MODEL)
 
     def id(self) -> str:
         """
         Returns an identifier for the Model Parser
         """
-        return "HuggingFaceTextGenerationTransformer"
+        return self.model_id or "HuggingFaceTextGenerationTransformer"
 
     async def serialize(
         self,
@@ -206,17 +238,19 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         Returns:
             dict: Model-specific completion parameters.
         """
+        resolved_prompt = resolve_prompt(prompt, params, aiconfig)
+
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
+
         completion_data = refine_chat_completion_params(model_settings)
-        
-        #Add resolved prompt
-        resolved_prompt = resolve_prompt(prompt, params, aiconfig)
+
         completion_data["prompt"] = resolved_prompt
+
         return completion_data
 
     async def run_inference(
-        self, prompt: Prompt, aiconfig : "AIConfigRuntime", options : InferenceOptions, parameters: Dict[str, Any]
+        self, prompt: Prompt, aiconfig : "AIConfigRuntime", options, parameters: Dict[str, Any]
     ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
@@ -233,32 +267,44 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         completion_data["text_inputs"] = completion_data.pop("prompt", None)
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
-        streamer = None
-        stream = (options.stream if options else False) and (
+        stream = True or (options.stream if options else False) and (
             not "stream" in completion_data or completion_data.get("stream") != False
         )
         if stream:
-            # TODO (rossdanlm): I noticed that some models are incohorent when used as a tokenizer for streaming
-            # mistralai/Mistral-7B-v0.1 is able to generate text no problem, but doesn't make sense when it tries to tokenize
-            # in these cases, I would use `gpt2`. I'm wondering if there's a heuristic 
-            # we can use to determine if a model is applicable for being used as a tokenizer
-            # For now I can just default the line below to gpt2? Maybe we can also define it somehow in the aiconfig?
-            model = aiconfig.get_model_name(prompt)
-            tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained(model)
-            streamer = TextIteratorStreamer(tokenizer)
+            tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained(self.MODEL)
+            streamer = TextStreamer(tokenizer)
             completion_data["streamer"] = streamer
 
 
         response : List[Any] = self.generator(**completion_data)
+        print(type(response[0]))
         outputs : List[Output] = []
         for count, result in enumerate(response):
-            if not stream:
-                output = construct_regular_output(result, count, response_includes_details=False)
-            else:
-                if not streamer:
-                    raise ValueError("stream option is selected but streamer is not initialized")
-                output = construct_stream_output(streamer, count, options)
-            outputs.append(output)
+                if not stream:
+                    output = construct_regular_output(result, count, response_includes_details=False)
+                    outputs.append(output)
+                else:
+                    print(f"{response=}")
+                    output = construct_regular_output(result, count, response_includes_details=False)
+                    outputs.append(output)
+                    # output = construct_stream_output(result, count, response_includes_details=False)
+                    # print(output)
+                    # outputs.append(output)
+
+
+        # if not stream:
+        #     for count, result in enumerate(response):
+        #         output = construct_regular_output(result, count, response_includes_details=False)
+        #         outputs.append(output)
+        # else:
+        #     # tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained("gpt2")
+        #     # streamer = TextStreamer(tokenizer)
+        #     output = construct_regular_output(result, count, response_includes_details=False)
+
+        #     # Handles stream callback
+        #     output = construct_stream_output(response, response_is_detailed, options)
+        #     outputs.append(output)
+
 
         prompt.outputs = outputs
         return prompt.outputs
@@ -269,10 +315,10 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         aiconfig: "AIConfigRuntime",
         output: Optional[Output] = None,
     ) -> str:
-        if output is None:
+        if not output:
             output = aiconfig.get_latest_output(prompt)
 
-        if output is None:
+        if not output:
             return ""
 
         if output.output_type == "execute_result":
