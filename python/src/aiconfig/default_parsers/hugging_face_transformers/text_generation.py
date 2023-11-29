@@ -1,11 +1,19 @@
 import copy
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from transformers import pipeline
+
 
 from aiconfig.util.params import resolve_prompt
+from aiconfig.model_parser import InferenceOptions
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 
 from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+
+# HuggingFace API imports
+from transformers import AutoTokenizer, pipeline, TextStreamer
+from huggingface_hub.inference._text_generation import (
+    TextGenerationResponse,
+    TextGenerationStreamResponse,
+)
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -20,23 +28,54 @@ def refine_chat_completion_params(model_settings: Dict[str, Any]) -> Dict[str, A
     """
 
     supported_keys = {
-        "details",
-        "stream",
-        "model",
-        "do_sample",
+        "max_length",
         "max_new_tokens",
-        "best_of",
-        "repetition_penalty",
-        "return_full_text",
-        "seed",
-        "stop_sequences",
+        "min_length",
+        "min_new_tokens",
+        "early_stopping",
+        "max_time",
+        "do_sample",
+        "num_beams",
+        "num_beam_groups",
+        "penalty_alpha",
+        "use_cache",
         "temperature",
         "top_k",
         "top_p",
-        "truncate",
         "typical_p",
-        "watermark",
-        "decoder_input_details",
+        "epsilon_cutoff",
+        "eta_cutoff",
+        "diversity_penalty",
+        "repetition_penalty",
+        "encoder_repetition_penalty",
+        "length_penalty",
+        "no_repeat_ngram_size",
+        "bad_words_ids",
+        "force_words_ids",
+        "renormalize_logits",
+        "constraints",
+        "forced_bos_token_id",
+        "forced_eos_token_id",
+        "remove_invalid_values",
+        "exponential_decay_length_penalty",
+        "suppress_tokens",
+        "begin_suppress_tokens",
+        "forced_decoder_ids",
+        "sequence_bias",
+        "guidance_scale",
+        "low_memory",
+        "num_return_sequences",
+        "output_attentions",
+        "output_hidden_states",
+        "output_scores",
+        "return_dict_in_generate",
+        "pad_token_id",
+        "bos_token_id",
+        "eos_token_id",
+        "encoder_no_repeat_ngram_size",
+        "decoder_start_token_id",
+        "num_assistant_tokens",
+        "num_assistant_tokens_schedule"
     }
 
     completion_data = {}
@@ -64,6 +103,53 @@ def construct_regular_output(result: Dict[str, str], execution_count: int, respo
             "metadata": metadata,
         }
     )
+    return output
+
+def construct_stream_output(
+    response: TextGenerationStreamResponse,
+    response_includes_details: bool,
+    options: InferenceOptions,
+) -> Output:
+    """
+    Constructs the output for a stream response.
+
+    Args:
+        response (TextGenerationStreamResponse): The response from the model.
+        response_includes_details (bool): Whether or not the response includes details.
+        options (InferenceOptions): The inference options. Used to determine the stream callback.
+
+    """
+    # Generate a BaseStreamer obj: streamer - Streamer object that will be used to 
+    # stream the generated sequences. Generated tokens are passed through 
+    # streamer.put(token_ids) and the streamer is responsible for any further processing.
+
+    accumulated_message = ""
+    for iteration in response:
+        metadata = {}
+        data = iteration
+        if response_includes_details:
+            iteration: TextGenerationStreamResponse
+            data = iteration.token.text
+            metadata = {"token": iteration.token, "details": iteration.details}
+        else:
+            data: str
+
+        # Reduce
+        accumulated_message += data
+
+        index = 0  # HF Text Generation api doesn't support multiple outputs
+        delta = data
+        options.stream_callback(delta, accumulated_message, index)
+
+        output = ExecuteResult(
+            **{
+                "output_type": "execute_result",
+                "data": copy.deepcopy(accumulated_message),
+                "execution_count": index,
+                "metadata": metadata,
+            }
+        )
+
     return output
 
 
@@ -178,13 +264,47 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
             InferenceResponse: The response from the model.
         """
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
+        completion_data["text_inputs"] = completion_data.pop("prompt", None)
 
-        resolved_prompt : str = completion_data["prompt"]
-        response : List[Any] = self.generator(resolved_prompt)
+        # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
+        stream = True or (options.stream if options else False) and (
+            not "stream" in completion_data or completion_data.get("stream") != False
+        )
+        if stream:
+            tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained(self.MODEL)
+            streamer = TextStreamer(tokenizer)
+            completion_data["streamer"] = streamer
+
+
+        response : List[Any] = self.generator(**completion_data)
+        print(type(response[0]))
         outputs : List[Output] = []
         for count, result in enumerate(response):
-            output = construct_regular_output(result, count, response_includes_details=False)
-            outputs.append(output)
+                if not stream:
+                    output = construct_regular_output(result, count, response_includes_details=False)
+                    outputs.append(output)
+                else:
+                    print(f"{response=}")
+                    output = construct_regular_output(result, count, response_includes_details=False)
+                    outputs.append(output)
+                    # output = construct_stream_output(result, count, response_includes_details=False)
+                    # print(output)
+                    # outputs.append(output)
+
+
+        # if not stream:
+        #     for count, result in enumerate(response):
+        #         output = construct_regular_output(result, count, response_includes_details=False)
+        #         outputs.append(output)
+        # else:
+        #     # tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained("gpt2")
+        #     # streamer = TextStreamer(tokenizer)
+        #     output = construct_regular_output(result, count, response_includes_details=False)
+
+        #     # Handles stream callback
+        #     output = construct_stream_output(response, response_is_detailed, options)
+        #     outputs.append(output)
+
 
         prompt.outputs = outputs
         return prompt.outputs
@@ -195,10 +315,10 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         aiconfig: "AIConfigRuntime",
         output: Optional[Output] = None,
     ) -> str:
-        if output is None:
+        if not output:
             output = aiconfig.get_latest_output(prompt)
 
-        if output is None:
+        if not output:
             return ""
 
         if output.output_type == "execute_result":

@@ -1,0 +1,45 @@
+{
+  "name": "Text Generation Test",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {
+      "fake_model": {
+        "model": "mistralai/Mistral-7B-v0.1",
+        "max_tokens": 3000,
+        "system_prompt": "You are an expert travel coordinator with exquisite taste."
+      }
+    },
+    "model_parsers": {
+      "mistralai/Mistral-7B-v0.1": "HuggingFaceTextGenerationTransformer"
+    }
+  },
+  "description": "Intrepid explorer with ChatGPT and AIConfig",
+  "prompts": [
+    {
+      "name": "gen_story",
+      "input": "I was walking in {{place}} when all of a sudden",
+      "metadata": {
+        "model": {
+          "name": "mistralai/Mistral-7B-v0.1",
+          "settings": {
+            "num_return_sequences": 1,
+            "max_new_tokens": 200,
+            "min_new_tokens": 190
+          }
+        },
+        "parameters": {
+          "place": "New York"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "I was walking in New York when all of a sudden there were three of them, one was standing with a big bottle of water in his hand, the other two were having a conversation about it, another was giving a speech for the first time and had been walking through town and there was a young man in the crowd saying to them, 'You're talking to me? Just take it easy!' So when one of the young guys had his hand, one of the older two took it and he started going through the crowd, the other two were in a crowd like people walked up and down the steps.\n\nThey had taken something along the line and there was another guy in the crowd saying, 'You're a little different than our crowd,' and the others were walking up all the way down the steps. The man in the crowd was talking about the whole 'crowd control.' So when the young guy asked him where, when and how the crowd was being distributed by one group, he said, 'Come here. It's happening now",
+          "metadata": {}
+        }
+      ]
+    }
+  ]
+}

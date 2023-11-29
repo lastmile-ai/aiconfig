@@ -1,34 +1,34 @@
 {
-  "name": "NYC Trip Planner",
+  "name": "Text Generation Test",
   "description": "Intrepid explorer with ChatGPT and AIConfig",
   "schema_version": "latest",
   "metadata": {
     "models": {
-      "gpt-3.5-turbo": {
-        "model": "gpt-3.5-turbo",
-        "top_p": 1,
-        "temperature": 1
-      },
-      "gpt-4": {
-        "model": "gpt-4",
+      "fake_model": {
+        "model": "mistralai/Mistral-7B-v0.1",
         "max_tokens": 3000,
         "system_prompt": "You are an expert travel coordinator with exquisite taste."
       }
     },
-    "default_model": "gpt-3.5-turbo"
+    "model_parsers": {
+      "mistralai/Mistral-7B-v0.1": "HuggingFaceTextGenerationTransformer"
+    }
   },
   "prompts": [
     {
-      "name": "get_activities",
-      "input": "Tell me 10 fun attractions to do in NYC."
-    },
-    {
-      "name": "gen_itinerary",
-      "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
+      "name": "gen_story",
+      "input": "I was walking in {{place}} when all of a sudden",
       "metadata": {
-        "model": "gpt-4",
+        "model": {
+          "name": "mistralai/Mistral-7B-v0.1",
+          "settings": {
+              "num_return_sequences": 1,
+              "max_new_tokens": 200,
+              "min_new_tokens": 190
+            }
+          },
         "parameters": {
-          "order_by": "geographic location"
+          "place": "New York"
         }
       }
     }
