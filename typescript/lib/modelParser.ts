@@ -1,3 +1,4 @@
+import { buildGenerator } from "typescript-json-schema";
 import { JSONObject } from "../common";
 import { Output, Prompt } from "../types";
 import { AIConfigRuntime } from "./config";
@@ -29,6 +30,10 @@ export type InferenceCallbackHandlers = {
 
   [k: string]: any;
 };
+
+
+I break the build
+
 
 /**
  * This is an abstract class that defines how to deserialize a prompt and run inference for it using a model.
