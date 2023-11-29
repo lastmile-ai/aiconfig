@@ -1,0 +1,51 @@
+{
+  "name": "",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {}
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "prompt_0",
+      "input": "Hi there!",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo",
+          "settings": {
+            "model": "gpt-3.5-turbo",
+            "top_p": 1,
+            "max_tokens": 3000,
+            "temperature": 1,
+            "stream": false
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": {
+            "content": "Hello! How can I assist you today?",
+            "role": "assistant"
+          },
+          "metadata": {
+            "id": "chatcmpl-8Q6CbqacvPn8Y6p2e3tbTO0xm01Ik",
+            "created": 1701231061,
+            "model": "gpt-3.5-turbo-0613",
+            "object": "chat.completion",
+            "usage": {
+              "completion_tokens": 9,
+              "prompt_tokens": 10,
+              "total_tokens": 19
+            },
+            "finish_reason": "stop"
+          }
+        }
+      ]
+    }
+  ]
+}
