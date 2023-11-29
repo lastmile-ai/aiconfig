@@ -133,32 +133,23 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
 
     def __init__(self):
         """
-    A model parser for HuggingFace models of type text generation task using transformers.
-    """
-
-    MODEL = "gpt2" #TODO (rossdanlm): Do not use hardcoded model for text generation
-
-    def __init__(self, model_id: Optional[str] = None):
-        """
-        Args:
-            model_id (str): The model name of the model to use.
         Returns:
-            HuggingFaceTextParser: The HuggingFaceTextParser object.
+            HuggingFaceTextGenerationTransformer
+
         Usage:
         1. Create a new model parser object with the model ID of the model to use.
-                parser = HuggingFaceTextParser("mistralai/Mistral-7B-Instruct-v0.1")
+                parser = HuggingFaceTextGenerationTransformer()
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
         """
         super().__init__()
-        self.model_id = model_id
-        self.generator = pipeline('text-generation', model = self.MODEL)
+        self.generator = pipeline('text-generation')
 
     def id(self) -> str:
         """
         Returns an identifier for the Model Parser
         """
-        return self.model_id or "HuggingFaceTextGenerationTransformer"
+        return "HuggingFaceTextGenerationTransformer"
 
     async def serialize(
         self,
@@ -245,7 +236,13 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
             not "stream" in completion_data or completion_data.get("stream") != False
         )
         if stream:
-            tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained(self.MODEL)
+            # TODO (rossdanlm): I noticed that some models are incohorent when used as a tokenizer for streaming
+            # mistralai/Mistral-7B-v0.1 is able to generate text no problem, but doesn't make sense when it tries to tokenize
+            # in these cases, I would use `gpt2`. I'm wondering if there's a heuristic 
+            # we can use to determine if a model is applicable for being used as a tokenizer
+            # For now I can just default the line below to gpt2? Maybe we can also define it somehow in the aiconfig?
+            model = aiconfig.get_model_name(prompt)
+            tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained(model)
             streamer = TextIteratorStreamer(tokenizer)
             completion_data["streamer"] = streamer
 

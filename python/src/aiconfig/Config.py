@@ -36,7 +36,7 @@ for model in gpt_models:
 ModelParserRegistry.register_model_parser(PaLMChatParser())
 ModelParserRegistry.register_model_parser(PaLMTextParser())
 ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
-ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationTransformer('gpt2'))
+ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationTransformer())
 dalle_image_generation_models = [
     "dall-e-2",
     "dall-e-3",
