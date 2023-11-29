@@ -5,3 +5,4 @@ pytest-cov
 pytest-mock
 pytest-asyncio
 mock
+transformers
