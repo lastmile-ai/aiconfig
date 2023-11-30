@@ -5,3 +5,9 @@ pytest-cov
 pytest-mock
 pytest-asyncio
 mock
+transformers
+
+#Pytorch
+torch
+torchvision
+torchaudio
