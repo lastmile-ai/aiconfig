@@ -15,20 +15,7 @@ classifiers = [
   "Programming Language :: Python :: 3",
 ]
 
-dependencies = [
-  "requests==2.30.0",
-  "black",
-  "flake8",
-  "pytest",
-  "pydantic>=2.1",
-  "pybars3",
-  "google-generativeai",
-  "openai>=1.0.0",
-  "python-dotenv",
-  "huggingface_hub",
-  "result",
-  "nest_asyncio",
-  ]
+dependencies = {file = ["requirements.txt"]}
 
 [project.urls]
 "Homepage" = "https://github.com/lastmile-ai/aiconfig"
