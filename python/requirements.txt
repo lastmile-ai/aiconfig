@@ -15,10 +15,3 @@ prompt_toolkit
 mock
 pytest-asyncio
 lastmile_utils==0.0.3
-transformers
-
-# TODO (rossdanlm): remove from core lib after moving to extension: https://github.com/lastmile-ai/aiconfig/pull/344
-transformers
-torch
-torchvision
-torchaudio
