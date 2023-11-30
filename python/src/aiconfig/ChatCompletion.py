@@ -29,7 +29,9 @@ openai_chat_completion_create = openai.chat.completions.create
 
 
 def create_and_save_to_config(
-    config_file_path: Optional[str] = None, aiconfig: Optional[AIConfigRuntime] = None, aiconfig_settings : Dict[str, Any] = {}
+    config_file_path: Optional[str] = None,
+    aiconfig: Optional[AIConfigRuntime] = None,
+    aiconfig_settings: Dict[str, Any] = {},
 ):
     """
     Overrides OpenAI's ChatCompletion.create method to serialize prompts and save them along with their outputs to a configuration file.
