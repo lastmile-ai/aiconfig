@@ -1,11 +1,12 @@
 import copy
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from transformers import pipeline
+from transformers import AutoTokenizer, pipeline, TextIteratorStreamer
+import threading
 
-from aiconfig.util.params import resolve_prompt
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-
+from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+from aiconfig.util.params import resolve_prompt
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -20,23 +21,54 @@ def refine_chat_completion_params(model_settings: Dict[str, Any]) -> Dict[str, A
     """
 
     supported_keys = {
-        "details",
-        "stream",
-        "model",
-        "do_sample",
+        "max_length",
         "max_new_tokens",
-        "best_of",
-        "repetition_penalty",
-        "return_full_text",
-        "seed",
-        "stop_sequences",
+        "min_length",
+        "min_new_tokens",
+        "early_stopping",
+        "max_time",
+        "do_sample",
+        "num_beams",
+        "num_beam_groups",
+        "penalty_alpha",
+        "use_cache",
         "temperature",
         "top_k",
         "top_p",
-        "truncate",
         "typical_p",
-        "watermark",
-        "decoder_input_details",
+        "epsilon_cutoff",
+        "eta_cutoff",
+        "diversity_penalty",
+        "repetition_penalty",
+        "encoder_repetition_penalty",
+        "length_penalty",
+        "no_repeat_ngram_size",
+        "bad_words_ids",
+        "force_words_ids",
+        "renormalize_logits",
+        "constraints",
+        "forced_bos_token_id",
+        "forced_eos_token_id",
+        "remove_invalid_values",
+        "exponential_decay_length_penalty",
+        "suppress_tokens",
+        "begin_suppress_tokens",
+        "forced_decoder_ids",
+        "sequence_bias",
+        "guidance_scale",
+        "low_memory",
+        "num_return_sequences",
+        "output_attentions",
+        "output_hidden_states",
+        "output_scores",
+        "return_dict_in_generate",
+        "pad_token_id",
+        "bos_token_id",
+        "eos_token_id",
+        "encoder_no_repeat_ngram_size",
+        "decoder_start_token_id",
+        "num_assistant_tokens",
+        "num_assistant_tokens_schedule"
     }
 
     completion_data = {}
@@ -47,23 +79,45 @@ def refine_chat_completion_params(model_settings: Dict[str, Any]) -> Dict[str, A
     return completion_data
 
 
-def construct_regular_output(result: Dict[str, str], execution_count: int, response_includes_details: bool) -> Output:
+def construct_regular_output(result: Dict[str, str], execution_count: int) -> Output:
     """
     Construct regular output per response result, without streaming enabled
     """
-    metadata : Dict[str, str] = {}
-    data = result["generated_text"]
-    if response_includes_details and "details" in result:
-        metadata = {"details": result["details"]}
-
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": data,
+            "data": result["generated_text"],
             "execution_count": execution_count,
-            "metadata": metadata,
+            "metadata": {},
         }
     )
+    return output
+
+def construct_stream_output(
+    streamer: TextIteratorStreamer,
+    options: InferenceOptions,
+) -> Output:
+    """
+    Constructs the output for a stream response.
+
+    Args:
+        streamer (TextIteratorStreamer): Streams the output. See https://huggingface.co/docs/transformers/v4.35.2/en/internal/generation_utils#transformers.TextIteratorStreamer
+        options (InferenceOptions): The inference options. Used to determine the stream callback.
+
+    """
+    accumulated_message = ""
+    output = ExecuteResult(
+            **{
+                "output_type": "execute_result",
+                "data": accumulated_message,
+                "execution_count": 0, #Multiple outputs are not supported for streaming
+                "metadata": {},
+            }
+        )
+    for new_text in streamer:
+        accumulated_message += new_text
+        options.stream_callback(new_text, accumulated_message, 0)
+        output.data = accumulated_message
     return output
 
 
@@ -72,32 +126,25 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
     A model parser for HuggingFace models of type text generation task using transformers.
     """
 
-    MODEL = "gpt2" #TODO (rossdanlm): Do not use hardcoded model for text generation
-
-    def __init__(self, model_id: Optional[str] = None):
+    def __init__(self):
         """
-        Args:
-            model_id (str): The model name of the model to use.
-
         Returns:
-            HuggingFaceTextParser: The HuggingFaceTextParser object.
+            HuggingFaceTextGenerationTransformer
 
         Usage:
-
         1. Create a new model parser object with the model ID of the model to use.
-                parser = HuggingFaceTextParser("mistralai/Mistral-7B-Instruct-v0.1")
+                parser = HuggingFaceTextGenerationTransformer()
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
         """
         super().__init__()
-        self.model_id = model_id
-        self.generator = pipeline('text-generation', model = self.MODEL)
+        self.generator = pipeline('text-generation')
 
     def id(self) -> str:
         """
         Returns an identifier for the Model Parser
         """
-        return self.model_id or "HuggingFaceTextGenerationTransformer"
+        return "HuggingFaceTextGenerationTransformer"
 
     async def serialize(
         self,
@@ -152,19 +199,17 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         Returns:
             dict: Model-specific completion parameters.
         """
-        resolved_prompt = resolve_prompt(prompt, params, aiconfig)
-
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
-
         completion_data = refine_chat_completion_params(model_settings)
-
+        
+        #Add resolved prompt
+        resolved_prompt = resolve_prompt(prompt, params, aiconfig)
         completion_data["prompt"] = resolved_prompt
-
         return completion_data
 
     async def run_inference(
-        self, prompt: Prompt, aiconfig : "AIConfigRuntime", options, parameters: Dict[str, Any]
+        self, prompt: Prompt, aiconfig : "AIConfigRuntime", options : InferenceOptions, parameters: Dict[str, Any]
     ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
@@ -178,12 +223,41 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
             InferenceResponse: The response from the model.
         """
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
+        completion_data["text_inputs"] = completion_data.pop("prompt", None)
 
-        resolved_prompt : str = completion_data["prompt"]
-        response : List[Any] = self.generator(resolved_prompt)
+        # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
+        streamer = None
+        stream = (options.stream if options else False) and (
+            not "stream" in completion_data or completion_data.get("stream") != False
+        )
+        if stream:
+            # TODO (rossdanlm): I noticed that some models are incohorent when used as a tokenizer for streaming
+            # mistralai/Mistral-7B-v0.1 is able to generate text no problem, but doesn't make sense when it tries to tokenize
+            # in these cases, I would use `gpt2`. I'm wondering if there's a heuristic 
+            # we can use to determine if a model is applicable for being used as a tokenizer
+            # For now I can just default the line below to gpt2? Maybe we can also define it somehow in the aiconfig?
+            model = aiconfig.get_model_name(prompt)
+            tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained(model)
+            streamer = TextIteratorStreamer(tokenizer)
+            completion_data["streamer"] = streamer
+
         outputs : List[Output] = []
-        for count, result in enumerate(response):
-            output = construct_regular_output(result, count, response_includes_details=False)
+        output = None
+        if not stream:
+            response : List[Any] = self.generator(**completion_data)
+            for count, result in enumerate(response):
+                output = construct_regular_output(result, count)
+        else:
+            if completion_data.get("num_return_sequences", 1) > 1:
+                raise ValueError("Sorry, TextIteratorStreamer does not support multiple return sequences, please set `num_return_sequences` to 1")
+            if not streamer:
+                raise ValueError("Stream option is selected but streamer is not initialized")
+            
+            # Cannot call `self.generator` directly otherwise response will be blocking
+            thread = threading.Thread(target=self.generator, kwargs=completion_data)
+            thread.start()
+            output = construct_stream_output(streamer, options)
+        if output is not None:
             outputs.append(output)
 
         prompt.outputs = outputs
