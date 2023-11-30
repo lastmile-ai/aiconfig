@@ -11,8 +11,8 @@ import { getAPIKeyFromEnv } from "../utils";
  * Model Parser for PaLM Text Generation. PaLM API Currently does not support streaming
  * models/chat-bison-001
  */
-class PaLMParser extends ParameterizedModelParser {
-  private client: DiscussServiceClient | null;
+export class PaLMParser extends ParameterizedModelParser {
+  private client: DiscussServiceClient | null = null;
 
   //constructor
   public constructor() {
@@ -20,10 +20,10 @@ class PaLMParser extends ParameterizedModelParser {
   }
 
   public serialize(promptName: string, data: JSONObject, aiConfig: AIConfigRuntime, params?: JSONObject | undefined): Prompt | Prompt[] {
-    throw new Error("Method not implemented.");
+    return [];
   }
   public async deserialize(prompt: Prompt, aiConfig: AIConfigRuntime, params?: JSONObject | undefined): JSONObject {
-    throw new Error("Method not implemented.");
+    return {};
   }
   public async run(
     prompt: Prompt,
@@ -42,15 +42,8 @@ class PaLMParser extends ParameterizedModelParser {
 
     const response = await this.client.generateMessage(completionParams);
 
-    console.log(inspect(response, false, null, true /* enable colors */));
-
-
+    const util = require("util");
+    console.log(util.inspect(response, false, null, true /* enable colors */));
   }
-  public getOutputText(aiConfig: AIConfigRuntime, output?: Output | undefined, prompt?: Prompt | undefined): string {
-    throw new Error("Method not implemented.");
-  }
+  public getOutputText(aiConfig: AIConfigRuntime, output?: Output | undefined, prompt?: Prompt | undefined): string {}
 }
-function inspect(response: Promise<[import("@google-ai/generativelanguage/build/protos/protos").google.ai.generativelanguage.v1beta2.IGenerateMessageResponse, import("@google-ai/generativelanguage/build/protos/protos").google.ai.generativelanguage.v1beta2.IGenerateMessageRequest | undefined, {} | undefined]>, arg1: boolean, arg2: null, arg3: boolean): any {
-    throw new Error("Function not implemented.");
-}
-
