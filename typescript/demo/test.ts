@@ -1,7 +1,7 @@
 
 
-const { DiscussServiceClient } = require("@google-ai/generativelanguage");
-const { GoogleAuth } = require("google-auth-library");
+import { DiscussServiceClient } from "@google-ai/generativelanguage";
+import { GoogleAuth } from "google-auth-library";
 
 const MODEL_NAME = "models/chat-bison-001";
 const API_KEY = process.env.API_KEY;
