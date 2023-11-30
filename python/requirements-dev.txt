@@ -5,9 +5,3 @@ pytest-cov
 pytest-mock
 pytest-asyncio
 mock
-
-# TODO (rossdanlm): remove from core lib after moving to extension: https://github.com/lastmile-ai/aiconfig/pull/344
-transformers
-torch
-torchvision
-torchaudio
