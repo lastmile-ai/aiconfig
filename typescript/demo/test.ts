@@ -1,13 +1,12 @@
-
-
 import { DiscussServiceClient } from "@google-ai/generativelanguage";
 import { GoogleAuth } from "google-auth-library";
+import { AIConfigRuntime } from "../lib/config";
 
 const MODEL_NAME = "models/chat-bison-001";
 const API_KEY = process.env.API_KEY;
 
 const client = new DiscussServiceClient({
-  authClient: new GoogleAuth().fromAPIKey(API_KEY),
+  authClient: new GoogleAuth().fromAPIKey("AIzaSyDV_YJfFrOP3hORJvtg8rA4NSlWqobc9dM"),
 });
 
 async function main() {
@@ -23,8 +22,7 @@ async function main() {
         {
           input: { content: "What is the capital of California?" },
           output: {
-            content:
-              `If the capital of California is what you seek,
+            content: `If the capital of California is what you seek,
 Sacramento is where you ought to peek.`,
           },
         },
@@ -34,7 +32,15 @@ Sacramento is where you ought to peek.`,
     },
   });
 
-  console.log(result[0].candidates[0].content);
+  const util = require('util')
+  console.log(util.inspect(result, false, null, true /* enable colors */))
+  
 }
 
 main();
+
+async function run(){
+    const config = AIConfigRuntime.load()
+}
+
+run()
