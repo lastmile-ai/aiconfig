@@ -313,8 +313,12 @@ class OpenAIInference(ParameterizedModelParser):
                     outputs[index] = output
             outputs = [outputs[i] for i in sorted(list(outputs.keys()))]
 
-        # rewrite or extend list of outputs?
-        prompt.outputs = outputs
+        # # rewrite or extend list of outputs?
+        # prompt.outputs = outputs
+
+        # Append new output to prompt's outputs list
+        for output in outputs:
+            prompt.add_output(output) 
 
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs})
