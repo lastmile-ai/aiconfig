@@ -1,0 +1,33 @@
+{
+  "name": "AIConfig Coding Assistant with PaLM",
+  "schema_version": "latest",
+  "metadata": {
+    "models": {
+      "gpt-4": {
+        "model": "gpt-4",
+        "top_p": 1,
+        "temperature": 1,
+        "system_prompt": "answer succintly. No bs. Just straight to the point, provide a quick answer with no explanation. If the answer is it doesn't exist, provide alternatives\n",
+        "presence_penalty": 0,
+        "frequency_penalty": 0
+      }
+    },
+    "parameters": {
+      "question": "what is the typescript equivalent of pass in python"
+    }
+  },
+  "prompts": [
+    {
+      "name": "cell_1",
+      "input": "{{question}}",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {}
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      }
+    }
+  ]
+}
