@@ -1,0 +1,8 @@
+python-aiconfig
+lastmile_utils==0.0.3
+transformers
+
+#Pytorch
+torch
+torchvision
+torchaudio
