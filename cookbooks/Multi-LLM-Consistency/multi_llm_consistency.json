@@ -12,7 +12,7 @@
         "presence_penalty": 0,
         "frequency_penalty": 0
       },
-      "ChatGPT": {
+      "gpt-3.5-turbo": {
         "model": "gpt-3.5-turbo",
         "top_p": 1,
         "max_tokens": 4096,
@@ -53,7 +53,7 @@
       "input": "{{input_question}}",
       "metadata": {
         "model": {
-          "name": "ChatGPT",
+          "name": "gpt-3.5-turbo",
           "settings": {}
         },
         "parameters": {},
@@ -65,7 +65,7 @@
       "input": "{{ few_shot_prompting_examples }}\n\n{{input_question}}",
       "metadata": {
         "model": {
-          "name": "PaLM",
+          "name": "models/text-bison-001",
           "settings": {}
         },
         "parameters": {},
