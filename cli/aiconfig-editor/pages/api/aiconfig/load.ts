@@ -1,12 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { AIConfigRuntime } from "aiconfig";
+import { AIConfig, AIConfigRuntime } from "aiconfig";
+import { ErrorResponse } from "@/src/shared/serverTypes";
 
 type Data = {
-  aiconfig: any;
-};
-
-type Error = {
-  error: string;
+  aiconfig: AIConfig;
 };
 
 type RequestBody = {
@@ -15,7 +12,7 @@ type RequestBody = {
 
 export default function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data | Error>
+  res: NextApiResponse<Data | ErrorResponse>
 ) {
   if (req.method !== "POST") {
     return res.status(500).json({ error: "Method not allowed" });
