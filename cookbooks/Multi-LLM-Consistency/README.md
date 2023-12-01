@@ -20,4 +20,4 @@ This cookbook walks through the example above (quorum based consistency for a tr
 Here is the [AI Workbook](https://lastmileai.dev/workbooks/cloox6crb005hqr1i9c31qqmy).
 
 2. **Download AIConfig .json from AI Workbook.** The AIConfig will contain the prompts, chaining logic, and model parameters in a json format that we can then easily using to create the CoVE pipeline. Here is the downloaded .json from the workbook - [multi_llm_consistency.json](https://drive.google.com/file/d/1GcSF1ZmvcBp6LcDNzIcwH1ytpQmHac95/view?usp=drive_link).
-3. **Create pipeline for chain-of-verification.** Use notebook (or code) with `aiconfig` library with the `multi_llm_consistency.json` and optionally, add custom quorum evaluator. Here is the [Colab notebook](https://colab.research.google.com/drive/1OZEOhXsVTen0q7yA414Bx-Gth0r9xbX3#scrollTo=RDkePRKCS8rU). 
+3. **Create pipeline for chain-of-verification.** Use notebook (or code) with `aiconfig` library with the `multi_llm_consistency.json` and optionally, add custom quorum evaluator. Here is the [Colab notebook](https://colab.research.google.com/drive/1QYGyiIIfx9nmLp4QFUkebygUF5R8RNwj#scrollTo=nat03JkI9Dw2). 
