@@ -1,27 +1,25 @@
 {
-  "name": "Multi-LLM Consistency Prompting & LLM-based Quorum",
+  "name": "Multi-LLM Consistency",
   "schema_version": "latest",
   "metadata": {
     "models": {
-      "GPT-4": {
+      "gpt-4": {
         "model": "gpt-4",
         "top_p": 1,
-        "max_tokens": 4096,
         "temperature": 1,
         "system_prompt": "{{ few_shot_prompting_examples }}",
         "presence_penalty": 0,
         "frequency_penalty": 0
       },
-      "ChatGPT": {
+      "gpt-3.5-turbo": {
         "model": "gpt-3.5-turbo",
         "top_p": 1,
-        "max_tokens": 4096,
         "temperature": 1,
         "system_prompt": "{{ few_shot_prompting_examples }}",
         "presence_penalty": 0,
         "frequency_penalty": 0
       },
-      "PaLM": {
+      "models/text-bison-001": {
         "topK": 40,
         "topP": 0.95,
         "model": "models/text-bison-001",
@@ -41,7 +39,7 @@
       "input": "{{input_question}}",
       "metadata": {
         "model": {
-          "name": "GPT-4",
+          "name": "gpt-4",
           "settings": {}
         },
         "parameters": {},
@@ -53,7 +51,7 @@
       "input": "{{input_question}}",
       "metadata": {
         "model": {
-          "name": "ChatGPT",
+          "name": "gpt-3.5-turbo",
           "settings": {}
         },
         "parameters": {},
@@ -65,7 +63,7 @@
       "input": "{{ few_shot_prompting_examples }}\n\n{{input_question}}",
       "metadata": {
         "model": {
-          "name": "PaLM",
+          "name": "models/text-bison-001",
           "settings": {}
         },
         "parameters": {},
@@ -77,7 +75,7 @@
       "input": "What is the majority across across these outputs:\n1. {{ gpt4-execution.output }}\n2. {{gpt3.5-execution.output }}\n3. {{palm-execution.output }}",
       "metadata": {
         "model": {
-          "name": "GPT-4",
+          "name": "gpt-4",
           "settings": {}
         },
         "parameters": {},
