@@ -1,35 +1,9 @@
-import { Container, Text, Group, Button, Textarea } from "@mantine/core";
+import PromptContainer from "@/src/components/prompt/PromptContainer";
+import { Container, Text, Group, Button } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { AIConfig } from "aiconfig";
+import { AIConfig, PromptInput } from "aiconfig";
 import router from "next/router";
 import { useCallback, useState } from "react";
-
-type CellProps = {
-  index: number;
-  prompt: {
-    name: string;
-    input: string; // TODO: Should this be | string[] and something else too?
-    metadata: any;
-  };
-  onChangePrompt: (i: number, newPrompt: string) => void;
-};
-
-function CellEditor({ prompt, index, onChangePrompt }: CellProps) {
-  // TODO: Show prompt name & metadata inside of settings editor later
-
-  return (
-    <div style={{ marginTop: 16 }}>
-      <Group style={{ float: "right" }} m="sm">
-        <Text>{prompt.name}</Text>
-        <Button>Settings</Button>
-      </Group>
-      <Textarea
-        value={prompt.input}
-        onChange={(e: any) => onChangePrompt(index, e.target.value)}
-      />
-    </div>
-  );
-}
 
 type Props = {
   aiconfig: AIConfig;
@@ -60,19 +34,18 @@ export default function EditorContainer({
     }
   }, [aiconfig, onSave]);
 
-  const onChangePrompt = useCallback(
-    (i: number, newPrompt: string) => {
+  // TODO: Move to EditorContext and update to handle non-text inputs
+  const onChangePromptInput = useCallback(
+    (i: number, newPromptInput: PromptInput) => {
       // TODO: This is super basic, should probably update to reducer, etc.
       // Also not optimized, etc.
 
       const newPrompts = [...aiconfig.prompts];
-      newPrompts[i].input = newPrompt;
+      newPrompts[i].input = newPromptInput;
       setAIConfig({ ...aiconfig, prompts: newPrompts });
     },
     [aiconfig]
   );
-
-  // TODO: Add new prompt button
 
   return (
     <>
@@ -92,11 +65,12 @@ export default function EditorContainer({
       <Container>
         {aiconfig.prompts.map((prompt: any, i: number) => {
           return (
-            <CellEditor
+            <PromptContainer
               index={i}
               prompt={prompt}
-              key={i}
-              onChangePrompt={onChangePrompt}
+              key={prompt.name}
+              onChangePromptInput={onChangePromptInput}
+              defaultConfigModelName={aiconfig.metadata.default_model}
             />
           );
         })}
