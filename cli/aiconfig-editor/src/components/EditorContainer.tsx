@@ -47,6 +47,8 @@ export default function EditorContainer({
     [aiconfig]
   );
 
+  // TODO: Implement editor context for callbacks, readonly state, etc.
+
   return (
     <>
       <Container>
