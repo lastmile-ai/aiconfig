@@ -265,14 +265,7 @@ Here are some example uses:
 
 If you are already using OpenAI completion API's in your application, you can get started very quickly to start saving the messages in an `aiconfig`.
 
-Simply add the following lines to your `import`:
-
-```python
-import openai
-from aiconfig.ChatCompletion import create_and_save_to_config
-new_config = AIConfigRuntime.create("my_aiconfig", "This is my new AIConfig")
-openai.chat.completions.create = create_and_save_to_config(aiconfig=new_config)
-```
+Usage: see openai_wrapper.ipynb.
 
 Now you can continue using `openai` completion API as normal. When you want to save the config, just call `new_config.save()` and all your openai completion calls will get serialized to disk.
 

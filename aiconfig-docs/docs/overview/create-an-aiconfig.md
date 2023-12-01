@@ -108,20 +108,7 @@ asyncio.run(main())
 
 If you're using OpenAI chat models, you can also use introspection to wrap OpenAI API calls and save an `aiconfig` automatically:
 
-Replace
-
-```python
-import openai
-```
-
-with
-
-```python
-import openai
-from aiconfig.ChatCompletion import create_and_save_to_config
-new_config = AIConfigRuntime.create("my_aiconfig", "This is my new AIConfig")
-openai.chat.completions.create = create_and_save_to_config(aiconfig=new_config)
-```
+Usage: see openai_wrapper.ipynb.
 
 Now call OpenAI regularly. The results will automatically get saved in `new_config`:
 
