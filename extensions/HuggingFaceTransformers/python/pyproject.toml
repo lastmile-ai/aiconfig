@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "aiconfig_extension_hugging_face_transformers"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="LastMile AI" },
   { name="Rossdan Craig", email="rossdan@lastmileai.dev" },
