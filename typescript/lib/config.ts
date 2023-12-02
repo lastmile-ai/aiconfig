@@ -15,6 +15,7 @@ import _ from "lodash";
 import { getAPIKeyFromEnv } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
+import { PaLMParser } from "./parsers/palm";
 import { extractOverrideSettings } from "./utils";
 import { HuggingFaceTextGenerationParser } from "./parsers/hf";
 import { CallbackEvent, CallbackManager } from "./callback";
@@ -57,7 +58,7 @@ ModelParserRegistry.registerModelParser(new OpenAIChatModelParser(), [
   "gpt-3.5-turbo-0613",
   "gpt-3.5-turbo-16k-0613",
 ]);
-
+ModelParserRegistry.registerModelParser(new PaLMParser(), ["models/text-bison-001"]);
 ModelParserRegistry.registerModelParser(new HuggingFaceTextGenerationParser());
 
 /**
