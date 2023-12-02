@@ -1,0 +1,17 @@
+import { Textarea } from "@mantine/core";
+import { PromptInput } from "aiconfig";
+import { memo } from "react";
+
+type Props = {
+  input: PromptInput;
+  onChangeInput: (value: PromptInput) => void;
+};
+
+export default memo(function PromptInput({ input, onChangeInput }: Props) {
+  return (
+    <Textarea
+      value={input as string}
+      onChange={(e: any) => onChangeInput(e.target.value)}
+    />
+  );
+});
