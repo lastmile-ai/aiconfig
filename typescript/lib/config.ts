@@ -276,7 +276,7 @@ export class AIConfigRuntime implements AIConfig {
    * @param id The ID of the model parser to get.
    */
   public static getModelParser(id: string) {
-    ModelParserRegistry.getModelParser(id);
+    return ModelParserRegistry.getModelParser(id);
   }
 
   //#endregion
