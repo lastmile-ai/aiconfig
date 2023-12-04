@@ -119,7 +119,6 @@ export default function Home() {
             </tbody>
           </Table>
         </Container>
-        <Link href="/editor?path=/Users/suyogsonwalkar/Projects">Editor</Link>
       </main>
     </>
   );
