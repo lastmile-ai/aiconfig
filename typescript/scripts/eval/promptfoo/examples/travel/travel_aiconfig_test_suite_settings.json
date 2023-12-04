@@ -1,0 +1,4 @@
+{
+  "prompt_name": "get_activities",
+  "aiconfig_path": "examples/travel/travel_parametrized_for_testing.aiconfig.json"
+}
