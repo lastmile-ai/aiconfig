@@ -10,18 +10,19 @@ Prompfoo has a pretty nice interface (both input and outputs) for addressing the
 
 1. Write your test cases in a Promptfoo config file. See examples/travel/travel_promtfooconfig.yaml as an example.
 2. Define an AIConfig test suite settings file. It should have the prompt name and path to your aiconfig. See examples/travel/travel_aiconfig_test_suite_settings.json for example.
-3. Set your provider to point to run_aiconfig.ts with your settings file as the argument. For e.g. see examples/travel/travel_promtfooconfig.yaml. Like this:
+3. Write a run_aiconfig.ts script (or simply copy `typescript/scripts/eval/promptfoo/run_aiconfig.ts`.)
+4. Set your provider to point to run_aiconfig.ts with your settings file as the argument. For e.g. see examples/travel/travel_promtfooconfig.yaml. Like this:
 
 ```
 providers:
-  - exec:npx ts-node ../../run_aiconfig.ts ./travel_aiconfig_test_suite_settings.json
+  - exec:npx ts-node run_aiconfig.ts ./travel_aiconfig_test_suite_settings.json
 
 ```
 
-4. export your provider API key if needed so it's available to subprocess environments:
+5. export your provider API key if needed so it's available to subprocess environments:
    `export OPENAI_API_KEY=...`
 
-5. Run `cd typescript; npx promptfoo@latest eval -c path/to/promptfooconfig.yaml`
+6. Run `cd typescript; npx promptfoo@latest eval -c path/to/promptfooconfig.yaml`
    You should see one passing test and one failing test.
 
 ### Debugging / Troubleshooting
