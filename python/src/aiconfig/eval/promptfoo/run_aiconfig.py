@@ -1,13 +1,13 @@
 import asyncio
+import json
 import os
+import sys
+from typing import Any
 
 import openai
 from dotenv import load_dotenv
 
 from aiconfig import AIConfigRuntime
-import sys
-import json
-from typing import Any
 
 
 async def main():
