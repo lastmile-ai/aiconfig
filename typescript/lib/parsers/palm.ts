@@ -8,6 +8,7 @@ import { GoogleAuth } from "google-auth-library";
 import { getAPIKeyFromEnv } from "../utils";
 import { google } from "@google-ai/generativelanguage/build/protos/protos";
 import _ from "lodash";
+import { CallbackEvent } from "../callback";
 
 /**
  * Model Parser for PaLM Text Generation. PaLM API Currently does not support streaming
@@ -23,6 +24,17 @@ export class PaLMTextParser extends ParameterizedModelParser {
   }
 
   public serialize(promptName: string, data: JSONObject, aiConfig: AIConfigRuntime, params?: JSONObject | undefined): Prompt | Prompt[] {
+    const startEvent = {
+      name: "on_serialize_start",
+      file: __filename,
+      data: {
+        promptName,
+        data,
+        params,
+      },
+    } as CallbackEvent;
+    aiConfig.callbackManager.runCallbacks(startEvent);
+
     // input type was found by looking at the impl of text generation api. When calling textGeneration, step into the defintion of the function and look at the type of the input parameter
     // ModelParser abstract method types data as JSONObject, but we know that the data is going to be of type protos.google.ai.generativelanguage.v1beta2.IGenerateTextRequest.
     const input = data as protos.google.ai.generativelanguage.v1beta2.IGenerateTextRequest;
@@ -45,11 +57,30 @@ export class PaLMTextParser extends ParameterizedModelParser {
         },
       },
     ];
+
+    const endEvent = {
+      name: "on_serialize_end",
+      file: __filename,
+      data: {
+        result: prompts,
+      },
+    };
+    aiConfig.callbackManager.runCallbacks(endEvent);
+
     return prompts;
   }
 
   public deserialize(prompt: Prompt, aiConfig: AIConfigRuntime, params?: JSONObject | undefined): any {
     // TODO: @ankush-lastmile PaLM unable to set output type to Text Generation API request type, `protos.google.ai.generativelanguage.v1beta2.IGenerateTextRequest` looks like it conforms to JSONObject type but it doesn't. Returns any for now.
+    const startEvent = {
+      name: "on_deserialize_start",
+      file: __filename,
+      data: {
+        prompt,
+        params,
+      },
+    } as CallbackEvent;
+    aiConfig.callbackManager.runCallbacks(startEvent);
 
     const completionParams = this.getModelSettings(prompt, aiConfig) ?? {};
 
@@ -60,6 +91,15 @@ export class PaLMTextParser extends ParameterizedModelParser {
 
     const refinedCompletionParams = refineTextGenerationParams(completionParams);
 
+    const endEvent = {
+      name: "on_deserialize_end",
+      file: __filename,
+      data: {
+        result: refinedCompletionParams,
+      },
+    } as CallbackEvent;
+    aiConfig.callbackManager.runCallbacks(endEvent);
+
     return refinedCompletionParams;
   }
 
@@ -69,6 +109,17 @@ export class PaLMTextParser extends ParameterizedModelParser {
     options?: InferenceOptions | undefined,
     params?: JSONObject | undefined
   ): Promise<Output[]> {
+    const startEvent = {
+      name: "on_run_start",
+      file: __filename,
+      data: {
+        prompt,
+        options,
+        params,
+      },
+    } as CallbackEvent;
+    await aiConfig.callbackManager.runCallbacks(startEvent);
+
     if (!this.client) {
       const apiKey = getAPIKeyFromEnv("PALM_KEY");
       this.client = new TextServiceClient({
@@ -81,6 +132,15 @@ export class PaLMTextParser extends ParameterizedModelParser {
     const response = (await this.client.generateText(completionParams))[0];
 
     const outputs: ExecuteResult[] = constructOutputs(response);
+
+    const endEvent = {
+      name: "on_run_end",
+      file: __filename,
+      data: {
+        result: outputs,
+      },
+    } as CallbackEvent;
+    await aiConfig.callbackManager.runCallbacks(endEvent);
 
     return outputs;
   }
