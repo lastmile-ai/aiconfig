@@ -1,12 +1,5 @@
 import { JSONObject, JSONValue } from "../common";
-import {
-  AIConfig,
-  InferenceSettings,
-  ModelMetadata,
-  Output,
-  Prompt,
-  SchemaVersion,
-} from "../types";
+import { AIConfig, InferenceSettings, ModelMetadata, Output, Prompt, SchemaVersion } from "../types";
 import { InferenceOptions, ModelParser } from "./modelParser";
 import { ModelParserRegistry } from "./modelParserRegistry";
 import axios from "axios";
@@ -15,6 +8,7 @@ import _ from "lodash";
 import { getAPIKeyFromEnv } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
+import { PaLMTextParser } from "./parsers/palm";
 import { extractOverrideSettings } from "./utils";
 import { HuggingFaceTextGenerationParser } from "./parsers/hf";
 import { CallbackEvent, CallbackManager } from "./callback";
@@ -57,7 +51,7 @@ ModelParserRegistry.registerModelParser(new OpenAIChatModelParser(), [
   "gpt-3.5-turbo-0613",
   "gpt-3.5-turbo-16k-0613",
 ]);
-
+ModelParserRegistry.registerModelParser(new PaLMTextParser());
 ModelParserRegistry.registerModelParser(new HuggingFaceTextGenerationParser());
 
 /**
@@ -120,23 +114,15 @@ export class AIConfigRuntime implements AIConfig {
       aiConfigObj.prompts
     );
 
-    const remainingProps = _.omit(
-      aiConfigObj,
-      "name",
-      "description",
-      "schema_version",
-      "metadata",
-      "prompts"
-    );
+    const remainingProps = _.omit(aiConfigObj, "name", "description", "schema_version", "metadata", "prompts");
 
     Object.assign(aiConfig, remainingProps);
 
     // Update the ModelParserRegistry with any model parsers specified in the AIConfig
     if (aiConfig.metadata.model_parsers) {
-      for (const [modelName, modelParserId] of Object.entries(
-        aiConfig.metadata.model_parsers
-      )) {
+      for (const [modelName, modelParserId] of Object.entries(aiConfig.metadata.model_parsers)) {
         const modelParser = ModelParserRegistry.getModelParser(modelParserId);
+        console.log("||||", modelParserId);
         if (!modelParser) {
           throw new Error(
             `E1001: Unable to load AIConfig: It specifies ${JSON.stringify(
@@ -170,9 +156,7 @@ export class AIConfigRuntime implements AIConfig {
       .get(url, { headers })
       .then((response) => {
         if (response.status !== 200) {
-          throw new Error(
-            `E1005: Failed to load workbook. Status code: ${response.status}`
-          );
+          throw new Error(`E1005: Failed to load workbook. Status code: ${response.status}`);
         }
 
         const data = response.data;
@@ -198,13 +182,7 @@ export class AIConfigRuntime implements AIConfig {
     metadata?: AIConfig["metadata"],
     prompts?: PromptWithOutputs[]
   ) {
-    return new AIConfigRuntime(
-      name,
-      description,
-      schemaVersion,
-      metadata,
-      prompts
-    );
+    return new AIConfigRuntime(name, description, schemaVersion, metadata, prompts);
   }
 
   /**
@@ -217,8 +195,7 @@ export class AIConfigRuntime implements AIConfig {
 
     try {
       // Create a Deep Copy and omit fields that should not be saved
-      const aiConfigObj: Omit<AIConfigRuntime, (typeof keysToOmit)[number]> =
-        _.omit(_.cloneDeep(this), keysToOmit);
+      const aiConfigObj: Omit<AIConfigRuntime, (typeof keysToOmit)[number]> = _.omit(_.cloneDeep(this), keysToOmit);
 
       if (!saveOptions?.serializeOutputs) {
         const prompts = [];
@@ -264,10 +241,7 @@ export class AIConfigRuntime implements AIConfig {
    * @param modelParser The model parser to add to the registry.
    * @param ids Optional list of model IDs to register the model parser for. If unspecified, the model parser will be registered for modelParser.id.
    */
-  public static registerModelParser(
-    modelParser: ModelParser<any, any>,
-    ids?: string[]
-  ) {
+  public static registerModelParser(modelParser: ModelParser<any, any>, ids?: string[]) {
     ModelParserRegistry.registerModelParser(modelParser, ids);
   }
 
@@ -306,9 +280,7 @@ export class AIConfigRuntime implements AIConfig {
     const modelName = this.getModelName(prompt);
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
-      throw new Error(
-        `E1012: Unable to resolve prompt ${promptName}: ModelParser for model ${modelName} does not exist`
-      );
+      throw new Error(`E1012: Unable to resolve prompt ${promptName}: ModelParser for model ${modelName} does not exist`);
     }
 
     const resolvedPrompt = modelParser.deserialize(prompt, this, params);
@@ -328,12 +300,7 @@ export class AIConfigRuntime implements AIConfig {
    * @param params Optional parameters to save alongside the Prompt.
    * @returns A Prompt or list of Prompts representing the input data.
    */
-  public async serialize(
-    modelName: string,
-    data: JSONObject,
-    promptName: string,
-    params?: JSONObject
-  ): Promise<Prompt | Prompt[]> {
+  public async serialize(modelName: string, data: JSONObject, promptName: string, params?: JSONObject): Promise<Prompt | Prompt[]> {
     const startEvent = {
       name: "on_serialize_start",
       file: __filename,
@@ -342,11 +309,7 @@ export class AIConfigRuntime implements AIConfig {
     await this.callbackManager.runCallbacks(startEvent);
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
-      throw new Error(
-        `E1012: Unable to serialize data ${JSON.stringify(
-          data
-        )}: ModelParser for model ${modelName} does not exist`
-      );
+      throw new Error(`E1012: Unable to serialize data ${JSON.stringify(data)}: ModelParser for model ${modelName} does not exist`);
     }
 
     const prompts = modelParser.serialize(promptName, data, this, params);
@@ -367,11 +330,7 @@ export class AIConfigRuntime implements AIConfig {
    * @param params The parameters to use when resolving the prompt.
    * @param options Options that determine how to run inference for the prompt (e.g. whether to stream the output or not)
    */
-  public async run(
-    promptName: string,
-    params: JSONObject = {},
-    options?: InferenceOptions
-  ) {
+  public async run(promptName: string, params: JSONObject = {}, options?: InferenceOptions) {
     const startEvent = {
       name: "on_run_start",
       file: __filename,
@@ -386,9 +345,7 @@ export class AIConfigRuntime implements AIConfig {
     const modelName = this.getModelName(prompt);
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
-      throw new Error(
-        `E1014: Unable to run prompt ${promptName}: ModelParser for model ${modelName} does not exist`
-      );
+      throw new Error(`E1014: Unable to run prompt ${promptName}: ModelParser for model ${modelName} does not exist`);
     }
 
     const result = await modelParser.run(prompt, this, options, params);
@@ -417,11 +374,7 @@ export class AIConfigRuntime implements AIConfig {
    * @example "If you have a prompt P2 that depends on another prompt P1's output, this function will run P1 first,\
    * then use the output of P1 to resolve P2 and run it. Concretely, it executes inference on the DAG of prompt dependencies."
    */
-  public async runWithDependencies(
-    promptName: string,
-    params: JSONObject = {},
-    options?: InferenceOptions
-  ) {
+  public async runWithDependencies(promptName: string, params: JSONObject = {}, options?: InferenceOptions) {
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
       throw new Error(`E1015: Prompt ${promptName} does not exist in AIConfig`);
@@ -430,9 +383,7 @@ export class AIConfigRuntime implements AIConfig {
     const modelName = this.getModelName(prompt);
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
-      throw new Error(
-        `E1016: Unable to run prompt ${promptName}: ModelParser for model ${modelName} does not exist`
-      );
+      throw new Error(`E1016: Unable to run prompt ${promptName}: ModelParser for model ${modelName} does not exist`);
     }
 
     if (!(modelParser instanceof ParameterizedModelParser)) {
@@ -442,12 +393,7 @@ export class AIConfigRuntime implements AIConfig {
       );
     }
 
-    const result = await modelParser.runWithDependencies(
-      promptName,
-      this,
-      options,
-      params
-    );
+    const result = await modelParser.runWithDependencies(promptName, this, options, params);
     return result;
   }
 
@@ -483,9 +429,7 @@ export class AIConfigRuntime implements AIConfig {
     const name = promptName || prompt.name || _.uniqueId("prompt_");
     const existingPrompt = this.getPrompt(name);
     if (existingPrompt) {
-      throw new Error(
-        `E1018: Cannot add new prompt with ${name}. Prompt ${name} already exists in AIConfig. Please provide a unique name.`
-      );
+      throw new Error(`E1018: Cannot add new prompt with ${name}. Prompt ${name} already exists in AIConfig. Please provide a unique name.`);
     }
 
     prompt.name = name;
@@ -511,9 +455,7 @@ export class AIConfigRuntime implements AIConfig {
     }
 
     if (!found) {
-      throw new Error(
-        `E1019: Cannot update prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
-      );
+      throw new Error(`E1019: Cannot update prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`);
     }
   }
 
@@ -524,9 +466,7 @@ export class AIConfigRuntime implements AIConfig {
   public deletePrompt(promptName: string) {
     const existingPrompt = this.getPrompt(promptName);
     if (!existingPrompt) {
-      throw new Error(
-        `E1020: Cannot delete prompt ${promptName}. Prompt not found in AIConfig.`
-      );
+      throw new Error(`E1020: Cannot delete prompt ${promptName}. Prompt not found in AIConfig.`);
     }
 
     this.prompts = this.prompts.filter((p) => p.name !== promptName);
@@ -541,9 +481,7 @@ export class AIConfigRuntime implements AIConfig {
     if (promptName) {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
-        throw new Error(
-          `E1021: Cannot add model ${modelMetadata.name} to prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
-        );
+        throw new Error(`E1021: Cannot add model ${modelMetadata.name} to prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`);
       }
 
       prompt.metadata = {
@@ -642,9 +580,7 @@ export class AIConfigRuntime implements AIConfig {
     if (promptName) {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
-        throw new Error(
-          `E1023: Cannot set parameter ${name} for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
-        );
+        throw new Error(`E1023: Cannot set parameter ${name} for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`);
       }
 
       prompt.metadata = {
@@ -675,9 +611,7 @@ export class AIConfigRuntime implements AIConfig {
     if (promptName) {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
-        throw new Error(
-          `E1024: Cannot delete parameter ${name} for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
-        );
+        throw new Error(`E1024: Cannot delete parameter ${name} for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`);
       }
 
       if (prompt.metadata?.parameters == null) {
@@ -704,9 +638,7 @@ export class AIConfigRuntime implements AIConfig {
     if (promptName) {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
-        throw new Error(
-          `E1025: Cannot set metadata ${key} for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
-        );
+        throw new Error(`E1025: Cannot set metadata ${key} for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`);
       }
 
       prompt.metadata = {
@@ -727,9 +659,7 @@ export class AIConfigRuntime implements AIConfig {
     if (promptName) {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
-        throw new Error(
-          `E1026: Cannot delete metadata property '${key}' for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
-        );
+        throw new Error(`E1026: Cannot delete metadata property '${key}' for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`);
       }
 
       delete prompt.metadata?.[key];
@@ -747,9 +677,7 @@ export class AIConfigRuntime implements AIConfig {
     if (promptName) {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
-        throw new Error(
-          `E1027: Cannot get metadata for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
-        );
+        throw new Error(`E1027: Cannot get metadata for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`);
       }
 
       const globalMetadata = this.metadata;
@@ -778,16 +706,10 @@ export class AIConfigRuntime implements AIConfig {
    * @param output The output to add.
    * @param overwrite Whether to overwrite the existing outputs for the prompt, or append to the end (defaults to false).
    */
-  public addOutput(
-    promptName: string,
-    output: Output,
-    overwrite: boolean = false
-  ) {
+  public addOutput(promptName: string, output: Output, overwrite: boolean = false) {
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
-      throw new Error(
-        `E1028: Cannot add output. Prompt ${promptName} not found in AIConfig.`
-      );
+      throw new Error(`E1028: Cannot add output. Prompt ${promptName} not found in AIConfig.`);
     }
 
     if (overwrite || prompt.outputs == null) {
@@ -807,9 +729,7 @@ export class AIConfigRuntime implements AIConfig {
   public deleteOutput(promptName: string) {
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
-      throw new Error(
-        `E1029: Cannot delete outputs. Prompt ${promptName} not found in AIConfig.`
-      );
+      throw new Error(`E1029: Cannot delete outputs. Prompt ${promptName} not found in AIConfig.`);
     }
 
     const existingOutputs = [...(prompt.outputs || [])];
@@ -825,9 +745,7 @@ export class AIConfigRuntime implements AIConfig {
     if (typeof prompt === "string") {
       prompt = this.getPrompt(prompt)!;
       if (!prompt) {
-        throw new Error(
-          `E1029: Cannot delete outputs. Prompt ${prompt} not found in AIConfig.`
-        );
+        throw new Error(`E1029: Cannot delete outputs. Prompt ${prompt} not found in AIConfig.`);
       }
     }
 
@@ -845,9 +763,7 @@ export class AIConfigRuntime implements AIConfig {
     if (typeof prompt === "string") {
       prompt = this.getPrompt(prompt)!;
       if (!prompt) {
-        throw new Error(
-          `E1030: Cannot delete outputs. Prompt ${prompt} not found in AIConfig.`
-        );
+        throw new Error(`E1030: Cannot delete outputs. Prompt ${prompt} not found in AIConfig.`);
       }
     }
 
@@ -856,9 +772,7 @@ export class AIConfigRuntime implements AIConfig {
     } else if (prompt?.metadata?.model == null) {
       const defaultModel = this.metadata.default_model;
       if (defaultModel == null) {
-        throw new Error(
-          `E2041: No default model specified in AIConfig metadata, and prompt ${prompt.name} does not specify a model`
-        );
+        throw new Error(`E2041: No default model specified in AIConfig metadata, and prompt ${prompt.name} does not specify a model`);
       }
 
       return defaultModel;
@@ -874,16 +788,11 @@ export class AIConfigRuntime implements AIConfig {
     if (typeof prompt === "string") {
       prompt = this.getPrompt(prompt)!;
       if (!prompt) {
-        throw new Error(
-          `E1031: Cannot delete outputs. Prompt ${prompt} not found in AIConfig.`
-        );
+        throw new Error(`E1031: Cannot delete outputs. Prompt ${prompt} not found in AIConfig.`);
       }
     }
 
-    const modelParser = ModelParserRegistry.getModelParserForPrompt(
-      prompt,
-      this
-    );
+    const modelParser = ModelParserRegistry.getModelParserForPrompt(prompt, this);
     if (modelParser != null) {
       return modelParser.getOutputText(this, output, prompt);
     }
@@ -906,15 +815,8 @@ export class AIConfigRuntime implements AIConfig {
    * @param modelName - The unique identifier for the model.
    * @returns A ModelMetadata object that includes the model's name and optional settings.
    */
-  public getModelMetadata(
-    inferenceSettings: InferenceSettings,
-    modelName: string
-  ) {
-    const overrideSettings = extractOverrideSettings(
-      this,
-      inferenceSettings,
-      modelName
-    );
+  public getModelMetadata(inferenceSettings: InferenceSettings, modelName: string) {
+    const overrideSettings = extractOverrideSettings(this, inferenceSettings, modelName);
 
     if (!overrideSettings || Object.keys(overrideSettings).length === 0) {
       return { name: modelName } as ModelMetadata;
