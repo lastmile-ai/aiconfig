@@ -410,6 +410,18 @@ def refine_completion_params(model_settings):
         "context",
     }
 
+    # python and node have different apis. Standardizing across both sdks, so we can use the same .aiconfig for both sdks
+    # Left is node, right is python.
+    key_converter_map = {
+        "topK": "top_k",
+        "topP": "top_p",
+    }
+
+    for key in model_settings:
+        if key in key_converter_map:
+            model_settings[key_converter_map[key]] = model_settings[key]
+            del model_settings[key]
+
     completion_data = {}
     for key in model_settings:
         if key.lower() in supported_keys:
