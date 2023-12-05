@@ -1,3 +1,14 @@
+"""Test-suite style evaluation for AIConfig.
+
+1. For Promptfoo integration, see `promptfoo/README.md`.
+
+2. For Promptfoo-style testing without Promptfoo, 
+see custom_eval/examples/travel/travel_eval.ipynb.
+
+This file mostly contains the library for option 2.
+For details, see the "API" and/or "Implementation" sections below.
+
+"""
 import asyncio
 from functools import partial
 import logging
@@ -78,7 +89,6 @@ UserTestSuiteOutputsOnly = NewType(
 )
 
 TestSuiteWithInputsSettings = NewType("TestSuiteWithInputsSettings", dict[str, str])
-"Empire State Building is on fifth avenue. What is the cross street?"
 
 
 def contains_substring(
