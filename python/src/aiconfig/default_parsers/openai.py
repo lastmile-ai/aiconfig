@@ -209,7 +209,7 @@ class OpenAIInference(ParameterizedModelParser):
                 )
 
         # Add in the latest prompt
-        add_prompt_as_message(prompt, aiconfig, completion_params["messages"], params)
+        add_prompt_as_message(prompt, aiconfig, completion_params["messages"], params, is_last_prompt=True)
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_deserialize_complete", __name__, {"output": completion_params}
@@ -452,7 +452,7 @@ def refine_chat_completion_params(model_settings):
 
 
 def add_prompt_as_message(
-    prompt: Prompt, aiconfig: "AIConfigRuntime", messages: List, params=None
+    prompt: Prompt, aiconfig: "AIConfigRuntime", messages: List, params=None, is_last_prompt: bool = False
 ):
     """
     Converts a given prompt to a message and adds it to the specified messages list.
@@ -491,7 +491,8 @@ def add_prompt_as_message(
         messages.append(message_data)
 
     output = aiconfig.get_latest_output(prompt)
-    if output:
+    # Avoid deserializing the last prompt's output. The output from the previous execution should not be included.
+    if output and is_last_prompt is not True:
         if output.output_type == "execute_result":
             output_message = output.data
             if output_message["role"] == "assistant":
