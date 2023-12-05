@@ -454,16 +454,18 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
             aiConfig.getModelName(currentPrompt) ===
             aiConfig.getModelName(prompt)
           ) {
+            if (currentPrompt.name === prompt.name) {
+              // If this is the current prompt, then we have reached the end of the chat history
+              this.addPromptAsMessage(currentPrompt, aiConfig, messages, params, true);
+              break;
+            }
             this.addPromptAsMessage(currentPrompt, aiConfig, messages, params);
           }
 
-          if (currentPrompt.name === prompt.name) {
-            // If this is the current prompt, then we have reached the end of the chat history
-            break;
-          }
+
         }
       } else {
-        this.addPromptAsMessage(prompt, aiConfig, messages, params);
+        this.addPromptAsMessage(prompt, aiConfig, messages, params, true);
       }
 
       // Update the completion params with the resolved messages
@@ -641,7 +643,8 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     prompt: Prompt,
     aiConfig: AIConfigRuntime,
     messages: Chat.ChatCompletionMessageParam[],
-    params?: JSONObject
+    params?: JSONObject,
+    isLastPrompt: Boolean = false,
   ) {
     // Resolve the prompt with the given parameters, and add it to the messages array
     const promptTemplate = this.getPromptTemplate(prompt, aiConfig);
@@ -668,7 +671,8 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     }
 
     const output = aiConfig.getLatestOutput(prompt);
-    if (output != null) {
+    // Avoid deserializing the last prompt's output as it is related to the currently executing prompt.
+    if (output != null && isLastPrompt !== true) {
       if (output.output_type === "execute_result") {
         const outputMessage =
           output.data as unknown as Chat.ChatCompletionMessageParam;
