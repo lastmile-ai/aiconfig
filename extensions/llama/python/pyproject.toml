@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "python-aiconfig"
+version = "0.0.1"
+authors = [
+  { name="Jonathan Lessinger", email="jonathan@lastmileai.dev" },
+]
+description = "Model Parser extension for Llama"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.urls]
+"Homepage" = "https://github.com/lastmile-ai/aiconfig"
+"Bug Tracker" = "https://github.com/lastmile-ai/aiconfig/issues"

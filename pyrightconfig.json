@@ -5,8 +5,5 @@
   "ignore": [],
   "venv": "aiconfig",
   "pythonVersion": "3.10",
-  "reportUnknownMemberType": false,
-  "reportUnknownVariableType": false,
-  "reportUnknownArgumentType": false,
   "reportMissingTypeStubs": false
 }

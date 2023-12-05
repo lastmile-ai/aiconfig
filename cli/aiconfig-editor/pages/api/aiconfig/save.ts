@@ -1,13 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { AIConfigRuntime } from "aiconfig";
 import { promises as fs } from "fs";
+import { ErrorResponse } from "@/src/shared/serverTypes";
 
 type Data = {
   status: string;
-};
-
-type Error = {
-  error: string;
 };
 
 type RequestBody = {
@@ -17,7 +13,7 @@ type RequestBody = {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data | Error>
+  res: NextApiResponse<Data | ErrorResponse>
 ) {
   if (req.method !== "POST") {
     return res.status(500).json({ error: "Method not allowed" });
