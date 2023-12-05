@@ -1,3 +1,5 @@
+from mock import patch
+import openai
 import pytest
 
 from aiconfig import AIConfigRuntime
