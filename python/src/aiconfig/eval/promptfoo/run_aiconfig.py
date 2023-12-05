@@ -1,13 +1,13 @@
 import asyncio
+import json
 import os
+import sys
+from typing import Any
 
 import openai
 from dotenv import load_dotenv
 
-from aiconfig import AIConfigRuntime
-import sys
-import json
-from typing import Any
+from aiconfig.eval.lib import run_aiconfig_helper
 
 
 async def main():
@@ -20,15 +20,8 @@ async def main():
 
     load_dotenv()
     openai.api_key = os.getenv("OPENAI_API_KEY")
-    runtime = AIConfigRuntime.load(aiconfig_path)
-
-    params = {
-        "the_query": question,
-    }
-
-    result = await runtime.run(prompt_name, params)
-    final_output = runtime.get_output_text(prompt_name, result[0])
-    print(final_output)
+    output = await run_aiconfig_helper(aiconfig_path, prompt_name, question)
+    print(output)
 
 
 def _load_settings(settings_path: str) -> dict[str, Any]:

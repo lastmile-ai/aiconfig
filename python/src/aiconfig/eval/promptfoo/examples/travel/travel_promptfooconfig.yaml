@@ -1,6 +1,6 @@
 prompts: ["{{question}}"]
 providers:
-  - exec:python ../../run_aiconfig.py ./travel_aiconfig_test_suite_settings.json
+  - exec:python -m 'aiconfig.eval.promptfoo.run_aiconfig' ./travel_aiconfig_test_suite_settings.json
 tests:
   - description: "Test if output is equal to the expected value"
     vars:
