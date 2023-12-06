@@ -1,6 +1,6 @@
 import copy
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from transformers import AutoTokenizer, pipeline, TextIteratorStreamer
+from transformers import AutoTokenizer, Pipeline, pipeline, TextIteratorStreamer
 import threading
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
@@ -138,7 +138,7 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
                 config.register_model_parser(parser)
         """
         super().__init__()
-        self.generator = pipeline('text-generation')
+        self.generators : dict[str, Pipeline]= {}
 
     def id(self) -> str:
         """
@@ -224,27 +224,31 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         """
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
         completion_data["text_inputs"] = completion_data.pop("prompt", None)
+        
+        model_name : str = aiconfig.get_model_name(prompt)
+        if isinstance(model_name, str) and model_name not in self.generators:
+            self.generators[model_name] = pipeline('text-generation', model=model_name)
+        generator = self.generators[model_name]
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         streamer = None
-        stream = (options.stream if options else False) and (
+        should_stream = (options.stream if options else False) and (
             not "stream" in completion_data or completion_data.get("stream") != False
         )
-        if stream:
+        if should_stream:
             # TODO (rossdanlm): I noticed that some models are incohorent when used as a tokenizer for streaming
             # mistralai/Mistral-7B-v0.1 is able to generate text no problem, but doesn't make sense when it tries to tokenize
             # in these cases, I would use `gpt2`. I'm wondering if there's a heuristic 
             # we can use to determine if a model is applicable for being used as a tokenizer
             # For now I can just default the line below to gpt2? Maybe we can also define it somehow in the aiconfig?
-            model = aiconfig.get_model_name(prompt)
-            tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained(model)
+            tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
             streamer = TextIteratorStreamer(tokenizer)
             completion_data["streamer"] = streamer
 
         outputs : List[Output] = []
         output = None
-        if not stream:
-            response : List[Any] = self.generator(**completion_data)
+        if not should_stream:
+            response : List[Any] = generator(**completion_data)
             for count, result in enumerate(response):
                 output = construct_regular_output(result, count)
         else:
@@ -253,8 +257,8 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
             if not streamer:
                 raise ValueError("Stream option is selected but streamer is not initialized")
             
-            # Cannot call `self.generator` directly otherwise response will be blocking
-            thread = threading.Thread(target=self.generator, kwargs=completion_data)
+            # For streaming, cannot call `generator` directly otherwise response will be blocking
+            thread = threading.Thread(target=generator, kwargs=completion_data)
             thread.start()
             output = construct_stream_output(streamer, options)
         if output is not None:

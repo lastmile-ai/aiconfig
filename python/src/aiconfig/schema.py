@@ -177,7 +177,7 @@ class AIConfig(BaseModel):
             raise Exception(f"Model '{model_name}' does not exist.")
         del self.metadata.models[model_name]
 
-    def get_model_name(self, prompt: Union[str, Prompt]):
+    def get_model_name(self, prompt: Union[str, Prompt]) -> str:
         """
         Extracts the model ID from the prompt.
 
