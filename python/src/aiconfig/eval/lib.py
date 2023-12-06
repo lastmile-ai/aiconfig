@@ -1,14 +1,3 @@
-"""Test-suite style evaluation for AIConfig.
-
-1. For Promptfoo integration, see `promptfoo/README.md`.
-
-2. For Promptfoo-style testing without Promptfoo, 
-see custom_eval/examples/travel/travel_eval.ipynb.
-
-This file mostly contains the library for option 2.
-For details, see the "API" and/or "Implementation" sections below.
-
-"""
 import asyncio
 from functools import partial
 import logging
@@ -80,15 +69,15 @@ class SampleEvaluationFunction(Protocol, Generic[T_OutputDatum]):
 
 
 # Each test is a (input_datum, evaluation_fn) pair
-UserTestSuiteWithInputs = NewType(
-    "UserTestSuiteWithInputs", Sequence[Tuple[str, SampleEvaluationFunction[str]]]
-)
+UserTestSuiteWithInputs = Sequence[Tuple[str, SampleEvaluationFunction[str]]]
 
-UserTestSuiteOutputsOnly = NewType(
-    "UserTestSuiteOutputsOnly", Sequence[Tuple[str, SampleEvaluationFunction[str]]]
-)
+# Each test is a (output_datum, evaluation_fn) pair
+UserTestSuiteOutputsOnly = Sequence[Tuple[str, SampleEvaluationFunction[str]]]
 
-TestSuiteWithInputsSettings = NewType("TestSuiteWithInputsSettings", dict[str, str])
+# 
+class TestSuiteWithInputsSettings(cu.Record):
+    prompt_name: str
+    aiconfig_path: str
 
 
 def contains_substring(
@@ -236,8 +225,8 @@ async def run_aiconfig(
 ) -> TextOutput:
     """Helper to run the AIConfig which makes the data to be evaluated."""
     # TODO: catch exceptions
-    prompt_name = settings["prompt_name"]
-    aiconfig_path = settings["aiconfig_path"]
+    prompt_name = settings.prompt_name
+    aiconfig_path = settings.aiconfig_path
 
     return TextOutput(
         await run_aiconfig_helper(aiconfig_path, prompt_name, input_datum)
@@ -301,7 +290,7 @@ async def run_aiconfig_helper(
         "the_query": question,
     }
 
-    result: Any = await runtime.run(prompt_name, params)  # type: ignore[fixme, no-untyped-call]
+    result: Any = await runtime.run(prompt_name, params, run_with_dependencies=True)  # type: ignore[fixme, no-untyped-call]
     final_output = runtime.get_output_text(prompt_name, result[0])  # type: ignore[fixme, no-untyped-call]
     return final_output
 

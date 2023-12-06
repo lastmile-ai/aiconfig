@@ -1,4 +1,4 @@
 {
-  "prompt_name": "get_activities",
-  "aiconfig_path": "travel_parametrized_for_testing.aiconfig.json"
+  "prompt_name": "gen_itinerary",
+  "aiconfig_path": "travel_parametrized.aiconfig.json"
 }
