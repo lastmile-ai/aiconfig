@@ -1,8 +1,8 @@
 {
   "name": "NYC Trip Planner",
-  "description": "Intrepid explorer with ChatGPT and AIConfig",
   "schema_version": "latest",
   "metadata": {
+    "parameters": {},
     "models": {
       "gpt2": {
         "model": "gpt2",
@@ -15,12 +15,13 @@
         "system_prompt": "Some random system prompt"
       }
     },
+    "default_model": "gpt2",
     "model_parsers": {
       "mistralai/Mistral-7B-v0.1": "HuggingFaceTextGenerationTransformer",
       "gpt2": "HuggingFaceTextGenerationTransformer"
-    },
-    "default_model": "gpt2"
+    }
   },
+  "description": "Intrepid explorer with ChatGPT and AIConfig",
   "prompts": [
     {
       "name": "gen_story",
@@ -37,9 +38,15 @@
         "parameters": {
           "food": "pizza"
         }
-      }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 3,
+          "data": "I was eating pizza when this happened and a young lady called me.\"\n\nThe woman claimed that she was in her late",
+          "metadata": {}
+        }
+      ]
     }
   ]
 }
-
-
