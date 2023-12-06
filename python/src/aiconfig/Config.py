@@ -207,9 +207,7 @@ class AIConfigRuntime(AIConfig):
 
         if prompt_name not in self.prompt_index:
             raise IndexError(
-                "Prompt not found in config, available prompts are:\n {}".format(
-                    list(self.prompt_index.keys())
-                )
+                f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}"
             )
 
         prompt_data = self.prompt_index[prompt_name]
@@ -256,9 +254,7 @@ class AIConfigRuntime(AIConfig):
 
         if prompt_name not in self.prompt_index:
             raise IndexError(
-                "Prompt not found in config, available prompts are:\n {}".format(
-                    list(self.prompt_index.keys())
-                )
+                f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}"
             )
 
         prompt_data = self.prompt_index[prompt_name]
@@ -360,9 +356,7 @@ class AIConfigRuntime(AIConfig):
         """
         if model_id not in ModelParserRegistry.parser_ids():
             raise IndexError(
-                "Model parser '{}' not found in registry, available model parsers are:\n {}".format(
-                    model_id, ModelParserRegistry.parser_ids()
-                )
+                f"Model parser '{model_id}' not found in registry, available model parsers are:\n {ModelParserRegistry.parser_ids()}"
             )
         return ModelParserRegistry.get_model_parser(model_id)
 
