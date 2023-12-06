@@ -1,4 +1,16 @@
+"""Test-suite style evaluation for AIConfig.
+
+1. For Promptfoo integration, see `promptfoo/README.md`.
+
+2. For Promptfoo-style testing without Promptfoo, 
+see custom_eval/examples/travel/travel_eval.ipynb.
+
+This file mostly contains the library for option 2.
+For details, see the "API" and/or "Implementation" sections below.
+
+"""
 import asyncio
+from functools import partial
 import logging
 from abc import abstractmethod
 from dataclasses import dataclass
@@ -77,11 +89,10 @@ UserTestSuiteOutputsOnly = NewType(
 )
 
 TestSuiteWithInputsSettings = NewType("TestSuiteWithInputsSettings", dict[str, str])
-"Empire State Building is on fifth avenue. What is the cross street?"
 
 
 def contains_substring(
-    output_datum: str, substring: str, case_sensitive: bool = False
+    output_datum: str, substring: str, case_sensitive: bool
 ) -> SampleMetricValue[str]:
     return SampleMetricValue(
         value=float(
@@ -93,6 +104,16 @@ def contains_substring(
             best_value=1.0,
             worst_value=0.0,
         ),
+    )
+
+
+def substring_match(
+    substring: str, case_sensitive: bool = True
+) -> SampleEvaluationFunction[str]:
+    """Convenience function for running `contains_substring()` on a fixed substring.
+    Can be used directly to construct a user test suite."""
+    return partial(
+        contains_substring, substring=substring, case_sensitive=case_sensitive
     )
 
 
