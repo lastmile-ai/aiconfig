@@ -360,7 +360,8 @@ class AIConfig(BaseModel):
         """
         if prompt_name not in self.prompt_index:
             raise IndexError(
-                "Prompt not found in config, available prompts are:\n {}".format(
+                "Prompt '{}' not found in config, available prompts are:\n {}".format(
+                    prompt_name,
                     list(self.prompt_index.keys())
                 )
             )
@@ -381,7 +382,8 @@ class AIConfig(BaseModel):
         """
         if prompt_name not in self.prompt_index:
             raise IndexError(
-                "Prompt not found in config, available prompts are:\n {}".format(
+                "Prompt '{}' not found in config, available prompts are:\n {}".format(
+                    prompt_name,
                     list(self.prompt_index.keys())
                 )
             )
