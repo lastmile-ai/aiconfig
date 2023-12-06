@@ -251,6 +251,7 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
             response : List[Any] = generator(**completion_data)
             for count, result in enumerate(response):
                 output = construct_regular_output(result, count)
+                outputs.append(output)
         else:
             if completion_data.get("num_return_sequences", 1) > 1:
                 raise ValueError("Sorry, TextIteratorStreamer does not support multiple return sequences, please set `num_return_sequences` to 1")
@@ -261,8 +262,8 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
             thread = threading.Thread(target=generator, kwargs=completion_data)
             thread.start()
             output = construct_stream_output(streamer, options)
-        if output is not None:
-            outputs.append(output)
+            if output is not None:
+                outputs.append(output)
 
         prompt.outputs = outputs
         return prompt.outputs
