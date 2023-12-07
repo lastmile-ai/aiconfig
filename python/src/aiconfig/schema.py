@@ -177,7 +177,7 @@ class AIConfig(BaseModel):
             raise Exception(f"Model '{model_name}' does not exist.")
         del self.metadata.models[model_name]
 
-    def get_model_name(self, prompt: Union[str, Prompt]):
+    def get_model_name(self, prompt: Union[str, Prompt]) -> str:
         """
         Extracts the model ID from the prompt.
 
@@ -360,7 +360,8 @@ class AIConfig(BaseModel):
         """
         if prompt_name not in self.prompt_index:
             raise IndexError(
-                "Prompt not found in config, available prompts are:\n {}".format(
+                "Prompt '{}' not found in config, available prompts are:\n {}".format(
+                    prompt_name,
                     list(self.prompt_index.keys())
                 )
             )
@@ -381,7 +382,8 @@ class AIConfig(BaseModel):
         """
         if prompt_name not in self.prompt_index:
             raise IndexError(
-                "Prompt not found in config, available prompts are:\n {}".format(
+                "Prompt '{}' not found in config, available prompts are:\n {}".format(
+                    prompt_name,
                     list(self.prompt_index.keys())
                 )
             )

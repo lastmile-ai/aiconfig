@@ -201,6 +201,7 @@ def test_update_nonexistent_prompt(ai_config_runtime: AIConfigRuntime):
     Test updating a nonexistent prompt.
     """
     config = ai_config_runtime
+    nonexistent_prompt_name = "nonexistent_prompt"
 
     prompt_data = Prompt(
         name="prompt1",
@@ -209,8 +210,8 @@ def test_update_nonexistent_prompt(ai_config_runtime: AIConfigRuntime):
     )
 
     # Ensure updating a nonexistent prompt raises an exception
-    with pytest.raises(IndexError, match=r"Prompt not found in config"):
-        config.update_prompt("nonexistent_prompt", prompt_data)
+    with pytest.raises(IndexError, match=f"Prompt '{nonexistent_prompt_name}' not found in config"):
+        config.update_prompt(nonexistent_prompt_name, prompt_data)
 
 
 def test_delete_nonexistent_prompt(ai_config_runtime: AIConfigRuntime):
@@ -218,10 +219,11 @@ def test_delete_nonexistent_prompt(ai_config_runtime: AIConfigRuntime):
     Test deleting a nonexistent prompt.
     """
     config = ai_config_runtime
+    prompt_name = "nonexistent_prompt"
 
     # Ensure deleting a nonexistent prompt raises an exception
-    with pytest.raises(IndexError, match=r"Prompt not found in config"):
-        config.delete_prompt("nonexistent_prompt")
+    with pytest.raises(IndexError, match=f"Prompt '{prompt_name}' not found in config"):
+        config.delete_prompt(prompt_name)
 
 
 def test_get_metadata_with_nonexistent_prompt(ai_config_runtime: AIConfigRuntime):
