@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, NewType, Optional
 
 import requests
 from aiconfig.callback import CallbackEvent, CallbackManager
@@ -14,7 +14,7 @@ from .registry import (
     ModelParserRegistry,
     update_model_parser_registry_with_config_runtime,
 )
-from .schema import AIConfig, Prompt
+from .schema import AIConfig, ExecuteResult, Prompt
 
 gpt_models = [
     "gpt-4",
@@ -41,6 +41,8 @@ dalle_image_generation_models = [
 ]
 for model in dalle_image_generation_models:
     ModelParserRegistry.register_model_parser(DalleImageGenerationParser(model))
+
+Params = NewType("Params", Dict[str, Any])
 
 
 class AIConfigRuntime(AIConfig):
@@ -141,7 +143,7 @@ class AIConfigRuntime(AIConfig):
         model_name: str,
         data: Dict,
         prompt_name: str,
-        params: Optional[dict] = None,
+        params: Params | None = None,
     ) -> List[Prompt]:
         """
         Serializes the completion params into a Prompt object. Inverse of the 'resolve' function.
@@ -184,7 +186,7 @@ class AIConfigRuntime(AIConfig):
     async def resolve(
         self,
         prompt_name: str,
-        params: Optional[dict] = None,
+        params: Params | None = None,
         **kwargs,
     ):
         """
@@ -223,10 +225,10 @@ class AIConfigRuntime(AIConfig):
     async def run(
         self,
         prompt_name: str,
-        params: Optional[dict] = None,
+        params: Params | None = None,
         options: Optional[InferenceOptions] = None,
         **kwargs,
-    ):
+    ) -> ExecuteResult:
         """
         Executes the AI model with the resolved parameters and returns the API response.
 
@@ -249,9 +251,6 @@ class AIConfigRuntime(AIConfig):
         )
         await self.callback_manager.run_callbacks(event)
 
-        if not params:
-            params = {}
-
         if prompt_name not in self.prompt_index:
             raise IndexError(
                 f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}"
@@ -265,7 +264,7 @@ class AIConfigRuntime(AIConfig):
             prompt_data,
             self,
             options,
-            params,
+            params or {},
             callback_manager=self.callback_manager,
             **kwargs,
         )
@@ -273,6 +272,16 @@ class AIConfigRuntime(AIConfig):
         event = CallbackEvent("on_run_complete", __name__, {"result": response})
         await self.callback_manager.run_callbacks(event)
         return response
+
+    async def run_and_get_output_text(
+        self,
+        prompt_name: str,
+        params: Params | None = None,
+        options: Optional[InferenceOptions] = None,
+        **kwargs,
+    ) -> str:
+        result: Any = await self.run(prompt_name, params, options=options, **kwargs)
+        return self.get_output_text(prompt_name, result[0])
 
     #
     #     Saves this AIConfig to a file.
