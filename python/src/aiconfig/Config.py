@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 from aiconfig.callback import CallbackEvent, CallbackManager
@@ -273,6 +273,16 @@ class AIConfigRuntime(AIConfig):
         event = CallbackEvent("on_run_complete", __name__, {"result": response})
         await self.callback_manager.run_callbacks(event)
         return response
+
+    async def run_and_get_output_text(
+        self,
+        prompt_name: str,
+        params: dict[Any, Any] | None = None,
+        options: Optional[InferenceOptions] = None,
+        **kwargs,
+    ) -> str:
+        result: Any = await self.run(prompt_name, params, options=options, **kwargs)
+        return self.get_output_text(prompt_name, result[0])
 
     #
     #     Saves this AIConfig to a file.
