@@ -137,3 +137,4 @@ dist
 __pycache__/
 models
 *.egg-info
+.hypothesis
