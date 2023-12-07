@@ -87,7 +87,7 @@ If you are already familiar with [Promptfoo](https://www.promptfoo.dev/) and/or 
 
 Please run the example as follows:
 
-`npx promptfoo@latest eval -c python/src/aiconfig/eval/promptfoo/examples/travel/travel_promptfooconfig.yaml`
+`npx promptfoo@latest eval -c python/src/aiconfig/eval/examples/travel/travel_promptfoo_config.yaml`
 
 You should get one passing test and one failing test:
 
