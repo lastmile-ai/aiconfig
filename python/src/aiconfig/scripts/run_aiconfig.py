@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import sys
-from typing import IO
 
 from result import Ok, Result
 
@@ -24,8 +23,6 @@ async def main():
     res_settings = _load_settings(settings_path)
 
     question = sys.argv[2]
-    # prompt_name = settings.prompt_name
-    # aiconfig_path = settings.aiconfig_path
 
     def _load_aiconfig(settings: Settings) -> Result[AIConfigRuntime, str]:
         try:
@@ -48,21 +45,7 @@ async def main():
 
 
 def _load_settings(settings_path: str) -> Result[Settings, str]:
-    def pydantic_model_validate_from_json_file_handle(
-        f_handle: IO[str],
-    ) -> Result[Settings, str]:
-        def settings_model_validate_json(s: str) -> Result[Settings, str]:
-            try:
-                return Ok(Settings.model_validate_json(s))
-            except ValueError as e:
-                return cu.ErrWithTraceback(e)
-
-        return cu.read_file_from_handle(f_handle).and_then(settings_model_validate_json)
-
-    path_fn = cu.safe_file_io_decorator(
-        pydantic_model_validate_from_json_file_handle, mode="r"
-    )
-    return path_fn(settings_path)
+    return cu.pydantic_model_validate_from_json_file_path(settings_path, Settings)
 
 
 if __name__ == "__main__":
