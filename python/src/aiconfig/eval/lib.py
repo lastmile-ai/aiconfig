@@ -1,71 +1,22 @@
 import asyncio
-from functools import partial
 import logging
-from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, Generic, NewType, Protocol, Sequence, Tuple, TypeVar
+from typing import Generic, NewType, Sequence, Tuple, TypeVar
 
 import lastmile_utils.lib.core.api as cu
 import pandas as pd
 from aiconfig.Config import AIConfigRuntime
-from pydantic import root_validator
 from result import Ok, Result
+
+from aiconfig.eval.common import (
+    SampleEvaluationFunction,
+    SampleMetricValue,
+    T_InputDatum,
+    T_OutputDatum,
+)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format=cu.LOGGER_FMT)
-
-# API
-
-T_InputDatum = TypeVar("T_InputDatum", contravariant=True)
-T_OutputDatum = TypeVar("T_OutputDatum", contravariant=True)
-
-
-class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
-    """A record to tie together metadata about an evaluation metric
-    to ensure that numbers are interpreted as intended.
-
-    Assumptions:
-    * Metric type is float (bools and ints have to be represented as floats; tensors are not supported)
-    * Value is monotonic in "goodness". i.e. there are two cases:
-        higher is better
-            e.g. accuracy, best_value=1.0, worst_value=0.0
-            The higher the better over the entire range.
-        lower is better
-            e.g. error count, best_value=0.0, worst_value=inf
-            The lower the better over the entire rane.
-    """
-
-    name: str
-    description: str
-    best_value: float
-    worst_value: float
-
-
-class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
-    value: float
-    interpretation: EvaluationMetricMetadata[T_OutputDatum]
-
-    @root_validator(pre=True)
-    def check_value_range(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        wv, bv = (
-            values["interpretation"].worst_value,
-            values["interpretation"].best_value,
-        )
-        value = values["value"]
-        if wv == bv:
-            raise ValueError("best_value and worst_value cannot be equal")
-        if wv < bv and not wv <= value <= bv:
-            raise ValueError(f"value {value} is not in range [{wv}, {bv}] (inclusive)")
-        if wv > bv and not wv >= value >= bv:
-            raise ValueError(f"value {value} is not in range [{bv}, {wv}] (inclusive)")
-
-        return values
-
-
-class SampleEvaluationFunction(Protocol, Generic[T_OutputDatum]):
-    @abstractmethod
-    def __call__(self, output_datum: T_OutputDatum) -> SampleMetricValue[T_OutputDatum]:
-        pass
 
 
 # Each test is a (input_datum, evaluation_fn) pair
@@ -74,48 +25,11 @@ UserTestSuiteWithInputs = Sequence[Tuple[str, SampleEvaluationFunction[str]]]
 # Each test is a (output_datum, evaluation_fn) pair
 UserTestSuiteOutputsOnly = Sequence[Tuple[str, SampleEvaluationFunction[str]]]
 
-# 
+
+#
 class TestSuiteWithInputsSettings(cu.Record):
     prompt_name: str
     aiconfig_path: str
-
-
-def contains_substring(
-    output_datum: str, substring: str, case_sensitive: bool
-) -> SampleMetricValue[str]:
-    return SampleMetricValue(
-        value=float(
-            check_substring(output_datum, substring, case_sensitive=case_sensitive)
-        ),
-        interpretation=EvaluationMetricMetadata(
-            name="contains_substring",
-            description="1.0 (pass) if contains given substring",
-            best_value=1.0,
-            worst_value=0.0,
-        ),
-    )
-
-
-def substring_match(
-    substring: str, case_sensitive: bool = True
-) -> SampleEvaluationFunction[str]:
-    """Convenience function for running `contains_substring()` on a fixed substring.
-    Can be used directly to construct a user test suite."""
-    return partial(
-        contains_substring, substring=substring, case_sensitive=case_sensitive
-    )
-
-
-def brevity(output_datum: str) -> SampleMetricValue[str]:
-    return SampleMetricValue(
-        value=float(len(output_datum)),
-        interpretation=EvaluationMetricMetadata(
-            name="brevity",
-            description="Absolute text length",
-            best_value=1.0,
-            worst_value=float("inf"),
-        ),
-    )
 
 
 async def run_test_suite_with_inputs(
@@ -134,8 +48,6 @@ async def run_test_suite_outputs_only(
     res = await run_test_suite_helper(TestSuiteOutputsOnlySpec(test_suite=test_suite))
     return res.unwrap_or_raise(ValueError)
 
-
-# Implementation
 
 T = TypeVar("T")
 
@@ -209,11 +121,13 @@ def eval_res_to_df(
                 value=sample_res.metric_value.value,
                 metric_name=sample_res.metric_value.interpretation.name,
                 metric_description=sample_res.metric_value.interpretation.description,
-                best_value=sample_res.metric_value.interpretation.best_value,
-                worst_value=sample_res.metric_value.interpretation.worst_value,
+                best_possible_value=sample_res.metric_value.interpretation.best_value,
+                worst_possible_value=sample_res.metric_value.interpretation.worst_value,
             )
         )
-    df = pd.DataFrame.from_records(records)  # type: ignore[no-untyped-call]
+    df = pd.DataFrame.from_records(records)  # type: ignore[no-untyped-call]    
+    if len(df) == 0:
+        return df
     for c in ["input", "aiconfig_output", "metric_name", "metric_description"]:
         df[c] = df[c].astype("string").fillna("Missing")  # type: ignore[no-untyped-call]
 
@@ -224,13 +138,12 @@ async def run_aiconfig(
     settings: TestSuiteWithInputsSettings, input_datum: TextInput
 ) -> TextOutput:
     """Helper to run the AIConfig which makes the data to be evaluated."""
-    # TODO: catch exceptions
     prompt_name = settings.prompt_name
     aiconfig_path = settings.aiconfig_path
+    aiconfig = AIConfigRuntime.load(aiconfig_path)  # type: ignore[fixme, no-untyped-call]
 
-    return TextOutput(
-        await run_aiconfig_helper(aiconfig_path, prompt_name, input_datum)
-    )
+    output = await run_aiconfig_helper(aiconfig, prompt_name, input_datum)
+    return output.map(TextOutput).unwrap()
 
 
 async def user_test_suite_with_inputs_to_eval_params_list(
@@ -282,24 +195,16 @@ def user_test_suite_outputs_only_to_eval_params_list(
 
 
 async def run_aiconfig_helper(
-    aiconfig_path: str, prompt_name: str, question: str
-) -> str:
-    runtime = AIConfigRuntime.load(aiconfig_path)  # type: ignore[fixme, no-untyped-call]
-
+    runtime: AIConfigRuntime, prompt_name: str, question: str
+) -> Result[str, str]:
     params = {
         "the_query": question,
     }
 
-    result: Any = await runtime.run(prompt_name, params, run_with_dependencies=True)  # type: ignore[fixme, no-untyped-call]
-    final_output = runtime.get_output_text(prompt_name, result[0])  # type: ignore[fixme, no-untyped-call]
-    return final_output
-
-
-def check_substring(output_datum: str, substring: str, case_sensitive: bool) -> bool:
-    if case_sensitive:
-        return substring in output_datum
-    else:
-        return substring.lower() in output_datum.lower()
+    try:
+        return Ok(await runtime.run_and_get_output_text(prompt_name, params, run_with_dependencies=True))  # type: ignore[fixme, no-untyped-call]
+    except Exception as e:
+        return cu.ErrWithTraceback(e)
 
 
 @dataclass(frozen=True)
