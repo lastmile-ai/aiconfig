@@ -53,11 +53,11 @@ async def test_run_with_outputs_only_basic():
 @given(st.data())
 @pytest.mark.asyncio
 async def test_run_test_suite_outputs_only(data: st.DataObject):
-    Metrics = [brevity, substring_match("hello")]
-    TestPairs = st.tuples(st.text(min_size=1), st.sampled_from(Metrics))
+    metrics = [brevity, substring_match("hello")]
+    test_pairs = st.tuples(st.text(min_size=1), st.sampled_from(metrics))
     user_test_suite_outputs_only = data.draw(
         st.lists(
-            TestPairs,
+            test_pairs,
             min_size=1,
         )
     )
