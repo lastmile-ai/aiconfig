@@ -26,7 +26,6 @@ UserTestSuiteWithInputs = Sequence[Tuple[str, SampleEvaluationFunction[str]]]
 UserTestSuiteOutputsOnly = Sequence[Tuple[str, SampleEvaluationFunction[str]]]
 
 
-#
 class TestSuiteWithInputsSettings(cu.Record):
     prompt_name: str
     aiconfig_path: str
@@ -125,7 +124,7 @@ def eval_res_to_df(
                 worst_possible_value=sample_res.metric_value.interpretation.worst_value,
             )
         )
-    df = pd.DataFrame.from_records(records)  # type: ignore[no-untyped-call]    
+    df = pd.DataFrame.from_records(records)  # type: ignore[no-untyped-call]
     if len(df) == 0:
         return df
     for c in ["input", "aiconfig_output", "metric_name", "metric_description"]:
