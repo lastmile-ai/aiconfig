@@ -274,6 +274,16 @@ class AIConfigRuntime(AIConfig):
         await self.callback_manager.run_callbacks(event)
         return response
 
+    async def run_and_get_output_text(
+        self,
+        prompt_name: str,
+        params: Params | None = None,
+        options: Optional[InferenceOptions] = None,
+        **kwargs,
+    ) -> str:
+        result: Any = await self.run(prompt_name, params, options=options, **kwargs)
+        return self.get_output_text(prompt_name, result[0])
+
     #
     #     Saves this AIConfig to a file.
     #     @param filePath The path to the file to save to.
