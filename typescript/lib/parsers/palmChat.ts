@@ -1,4 +1,4 @@
-import { TextServiceClient, protos } from "@google-ai/generativelanguage";
+import { DiscussServiceClient, TextServiceClient, protos } from "@google-ai/generativelanguage";
 import { JSONObject } from "../../common";
 import { Prompt, Output, ModelMetadata, ExecuteResult } from "../../types";
 import { AIConfigRuntime } from "../config";
@@ -17,8 +17,8 @@ import { CallbackEvent } from "../callback";
  */
 
 export class PaLMChatParser extends ParameterizedModelParser {
-  private client: TextServiceClient | null = null;
-  _id = "models/text-bison-001";
+  private client: DiscussServiceClient | null = null;
+  _id = "models/chat-bison-001";
 
   public constructor() {
     super();
@@ -123,7 +123,7 @@ export class PaLMChatParser extends ParameterizedModelParser {
 
     if (!this.client) {
       const apiKey = getAPIKeyFromEnv("PALM_KEY");
-      this.client = new TextServiceClient({
+      this.client = new DiscussServiceClient({
         authClient: new GoogleAuth().fromAPIKey(apiKey),
       });
     }
@@ -131,7 +131,7 @@ export class PaLMChatParser extends ParameterizedModelParser {
     const completionParams = this.deserialize(prompt, aiConfig, params);
     // Palm doesn't support streaming. See api docs link at the top of the file
     // API Response object is a list of [response, request, Object]. Destructure it to get the actual response
-    const [response] = await this.client.generateText(completionParams);
+    const [response] = await this.client.generateMessage(completionParams);
 
     const outputs: ExecuteResult[] = constructOutputs(response);
 
@@ -195,7 +195,7 @@ function constructOutputs(response: protos.google.ai.generativelanguage.v1beta2.
       output_type: "execute_result",
       data: candidate.output,
       execution_count: i,
-      metadata: _.omit(candidate, ["output"])
+      metadata: _.omit(candidate, ["output"]),
     };
 
     outputs.push(output);
