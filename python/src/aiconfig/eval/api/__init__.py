@@ -14,19 +14,17 @@ from ..lib import (
     TestSuiteWithInputsSettings,
     run_test_suite_with_inputs,
     run_test_suite_outputs_only,
-    SampleEvaluationFunction,
 )
 
-from ..metrics import (
-    brevity,
-    substring_match,
-)
+from ..common import Metric
+
+from ..metrics import brevity, substring_match
 
 __all__ = [
+    "Metric",
     "brevity",
     "substring_match",
     "run_test_suite_with_inputs",
     "run_test_suite_outputs_only",
     "TestSuiteWithInputsSettings",
-    "SampleEvaluationFunction",
 ]
