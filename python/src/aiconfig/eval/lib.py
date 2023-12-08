@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from dataclasses import dataclass
 from typing import Generic, NewType, Sequence, Tuple, TypeVar
@@ -135,19 +134,19 @@ def eval_res_to_df(
 
 async def run_aiconfig(
     settings: TestSuiteWithInputsSettings, input_datum: TextInput
-) -> TextOutput:
+) -> Result[TextOutput, str]:
     """Helper to run the AIConfig which makes the data to be evaluated."""
     prompt_name = settings.prompt_name
     aiconfig_path = settings.aiconfig_path
     aiconfig = AIConfigRuntime.load(aiconfig_path)  # type: ignore[fixme, no-untyped-call]
 
     output = await run_aiconfig_helper(aiconfig, prompt_name, input_datum)
-    return output.map(TextOutput).unwrap()
+    return output.map(TextOutput)
 
 
 async def user_test_suite_with_inputs_to_eval_params_list(
     test_suite: UserTestSuiteWithInputs, settings: TestSuiteWithInputsSettings
-) -> Sequence[SampleEvaluationParams[TextInput, TextOutput]]:
+) -> Result[Sequence[SampleEvaluationParams[TextInput, TextOutput]], str]:
     out: list[SampleEvaluationParams[TextInput, TextOutput]] = []
     grouped: dict[str, list[SampleEvaluationFunction[str]]] = {}
     for input_datum, eval_fn in test_suite:
@@ -156,28 +155,31 @@ async def user_test_suite_with_inputs_to_eval_params_list(
         grouped[input_datum].append(eval_fn)
 
     all_inputs = list(grouped.keys())
-    outputs = await asyncio.gather(
-        *(run_aiconfig(settings, TextInput(input_datum)) for input_datum in all_inputs)
+    res_outputs = await cu.result_reduce_list_all_ok_async(
+        [run_aiconfig(settings, TextInput(input_datum)) for input_datum in all_inputs]
     )
 
-    # This zip is safe because we have defined an order for the keys in `all_inputs`
-    # them apped run_aiconfig over that list.
-    # Docs: https://docs.python.org/3/library/asyncio-task.html#running-tasks-concurrently
-    #  > If all awaitables are completed successfully, the result is an aggregate list
-    # of returned values. The order of result values corresponds to the order
-    # of awaitables in aws.
-    outputs_by_input = dict(zip(all_inputs, outputs))
+    def _zip_inputs_outputs(outputs: list[TextOutput]):
+        # This zip is safe because we have defined an order for the keys in `all_inputs`
+        # them apped run_aiconfig over that list.
+        # Docs: https://docs.python.org/3/library/asyncio-task.html#running-tasks-concurrently
+        #  > If all awaitables are completed successfully, the result is an aggregate list
+        # of returned values. The order of result values corresponds to the order
+        # of awaitables in aws.
+        outputs_by_input = dict(zip(all_inputs, outputs))
 
-    for input_datum, eval_fns in grouped.items():
-        for eval_fn in eval_fns:
-            out.append(
-                SampleEvaluationParams(
-                    input_sample=TextInput(input_datum),
-                    output_sample=outputs_by_input[input_datum],
-                    evaluation_fn=eval_fn,
+        for input_datum, eval_fns in grouped.items():
+            for eval_fn in eval_fns:
+                out.append(
+                    SampleEvaluationParams(
+                        input_sample=TextInput(input_datum),
+                        output_sample=outputs_by_input[input_datum],
+                        evaluation_fn=eval_fn,
+                    )
                 )
-            )
-    return out
+        return out
+    
+    return res_outputs.map(_zip_inputs_outputs)
 
 
 def user_test_suite_outputs_only_to_eval_params_list(
@@ -225,15 +227,14 @@ async def run_test_suite_helper(
 ) -> Result[pd.DataFrame, str]:
     async def _get_eval_params_list(
         test_suite_spec: TestSuiteSpec,
-    ) -> Sequence[SampleEvaluationParams[TextInput, TextOutput]]:
+    ) -> Result[Sequence[SampleEvaluationParams[TextInput, TextOutput]], str]:
         match test_suite_spec:
             case TestSuiteWithInputsSpec(test_suite=test_suite, settings=settings):
                 return await user_test_suite_with_inputs_to_eval_params_list(
                     test_suite, settings
                 )
             case TestSuiteOutputsOnlySpec(test_suite=test_suite):
-                return user_test_suite_outputs_only_to_eval_params_list(test_suite)
+                return Ok(user_test_suite_outputs_only_to_eval_params_list(test_suite))
 
     eval_params_list = await _get_eval_params_list(test_suite_spec)
-    eval_res = evaluate(eval_params_list)
-    return eval_res.map(eval_res_to_df)
+    return eval_params_list.and_then(evaluate).map(eval_res_to_df)
