@@ -14,6 +14,45 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
     """A record to tie together metadata about an evaluation metric
     to ensure that numbers are interpreted as intended.
 
+    IMPORTANT NOTE: 
+        **This property is part of the contract of implementing a metric**:
+
+        `id` must uniquely identify the metric to disambiguate different 
+          conceptual quantities in case they happen to share a name.
+          
+          Illustration of the property:
+            ```
+                # Helper function
+                def extract_id(matcher, matcher_input):
+                    return matcher(matcher_input).interpretation.id
+
+                # These two metrics share everything but the substring.
+                matcher1 = substring_match("hello")
+                matcher2 = substring_match("world")
+
+                # Run both on the same input.
+                the_input = "hello world"
+
+                # They have distinct IDs because of the two different substrings.
+                assert extract_id(matcher1, the_input) != extract_id(matcher2, the_input)          
+             ```
+
+          
+        `id` must however be a _constant_ with respect to the metric input.
+            Illustration of the property:
+
+            ```
+                the_matcher = substring_match("hello")
+                input1 = "hello world"
+                input2 = "the quick brown fox"
+
+                assert extract_id(the_matcher, input1) == extract_id(the_matcher, input2)
+            ```
+
+          See `metrics.substring_match()` for an example of how to set an id.
+
+
+
     Assumptions:
     * Metric type is float
         (bools and ints have to be represented as floats; tensors are not supported)
@@ -30,6 +69,7 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
           Error count must fall between 0 and inf.
     """
 
+    id: str
     name: str
     description: str
     best_value: float
