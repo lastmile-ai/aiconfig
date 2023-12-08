@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, TypeVar
 import hypothesis.strategies as st
 import lastmile_utils.lib.core.api as cu
 import pandas as pd
@@ -15,9 +15,11 @@ from aiconfig.eval.api import (
 )
 from aiconfig.eval.lib import TestSuiteWithInputsSpec, run_test_suite_helper
 
-from hypothesis import given
+import hypothesis
 
 from aiconfig.model_parser import InferenceOptions
+
+T_MetricParams = TypeVar("T_MetricParams")
 
 
 def current_dir():
@@ -44,11 +46,11 @@ class MockAIConfigRuntime(AIConfigRuntime):
 
 
 def test_metrics():
-    assert brevity("hello").value == 5.0
+    assert brevity("hello") == 5.0
 
-    assert substring_match("lo w")("hello world").value == 1.0
-    assert substring_match("hello", case_sensitive=False)("HELLO world").value == 1.0
-    assert substring_match("hello", case_sensitive=True)("HELLO world").value == 0.0
+    assert substring_match("lo w")("hello world") == 1.0
+    assert substring_match("hello", case_sensitive=False)("HELLO world") == 1.0
+    assert substring_match("hello", case_sensitive=True)("HELLO world") == 0.0
 
 
 @pytest.mark.asyncio
@@ -84,7 +86,7 @@ async def test_run_with_outputs_only_basic():
     assert out["value"].equals(exp["value"])  # type: ignore
 
 
-@given(st.data())
+@hypothesis.given(st.data())
 @pytest.mark.asyncio
 async def test_run_test_suite_outputs_only(data: st.DataObject):
     metrics = [brevity, substring_match("hello")]
@@ -102,6 +104,7 @@ async def test_run_test_suite_outputs_only(data: st.DataObject):
         "input",
         "aiconfig_output",
         "value",
+        "metric_id",
         "metric_name",
         "metric_description",
         "best_possible_value",
@@ -117,7 +120,7 @@ async def test_run_test_suite_outputs_only(data: st.DataObject):
     ).all()
 
 
-@given(st.data())
+@hypothesis.given(st.data())
 @pytest.mark.asyncio
 async def test_run_test_suite_with_inputs(data: st.DataObject):
     """In test_run_test_suite_outputs_only, we test the user-facing function (e2e)
@@ -157,13 +160,14 @@ async def test_run_test_suite_with_inputs(data: st.DataObject):
                 "input",
                 "aiconfig_output",
                 "value",
+                "metric_id",
                 "metric_name",
                 "metric_description",
                 "best_possible_value",
                 "worst_possible_value",
             ]
             inputs = df["input"].astype(str).tolist()  # type: ignore[no-untyped-call]
-            assert set(df["input"]) == set(input_data)  # type: ignore[no-untyped-call]
+            assert set(inputs) == set(input_data)  # type: ignore[no-untyped-call]
 
             df_brevity = df[df["metric_name"] == "brevity"]
             assert (
