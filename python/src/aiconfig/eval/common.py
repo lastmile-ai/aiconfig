@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+import json
 from typing import Any, Generic
 from abc import abstractmethod
 from typing import Any, Generic, Protocol, TypeVar
@@ -10,9 +12,57 @@ T_InputDatum = TypeVar("T_InputDatum", contravariant=True)
 T_OutputDatum = TypeVar("T_OutputDatum", contravariant=True)
 
 
+class SampleEvaluationFunction(Protocol, Generic[T_OutputDatum]):
+    @abstractmethod
+    def __call__(self, output_datum: T_OutputDatum) -> float:
+        pass
+
+
 class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
     """A record to tie together metadata about an evaluation metric
     to ensure that numbers are interpreted as intended.
+
+    IMPORTANT NOTE:
+        **This property is part of the contract of implementing a metric**:
+
+        `id` must uniquely identify the metric to disambiguate different
+          conceptual quantities in case they happen to share a name.
+
+          If you write a metric, to write an automated test for this property,
+          see `test_metric_library_id_properties()`.
+
+          Illustration of the property:
+            ```
+                # Helper function
+                def extract_id(matcher, matcher_input):
+                    return matcher(matcher_input).interpretation.id
+
+                # These two metrics share everything but the substring.
+                matcher1 = substring_match("hello")
+                matcher2 = substring_match("world")
+
+                # Run both on the same input.
+                the_input = "hello world"
+
+                # They have distinct IDs because of the two different substrings.
+                assert extract_id(matcher1, the_input) != extract_id(matcher2, the_input)
+             ```
+
+
+        `id` must however be a _constant_ with respect to the metric input.
+            Illustration of the property:
+
+            ```
+                the_matcher = substring_match("hello")
+                input1 = "hello world"
+                input2 = "the quick brown fox"
+
+                assert extract_id(the_matcher, input1) == extract_id(the_matcher, input2)
+            ```
+
+          See `metrics.substring_match()` for an example of how to set an id.
+
+
 
     Assumptions:
     * Metric type is float
@@ -30,10 +80,37 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
           Error count must fall between 0 and inf.
     """
 
+    @property
+    def id(self) -> str:
+        return cu.hash_id(
+            f"{self.name}{self.description}{self.best_value}{self.worst_value}params={self._serialize_extra_metadata()}".encode(
+                "utf-8"
+            )
+        )
+
+    def _serialize_extra_metadata(self) -> str:
+        return json.dumps(self.extra_metadata, sort_keys=True)
+
     name: str
     description: str
     best_value: float
     worst_value: float
+    # e.g. {"substring": "hello", "case_sensitive": False}
+    extra_metadata: dict[str, Any] = {}
+
+
+@dataclass(frozen=True)
+class Metric(Generic[T_OutputDatum]):
+    calculate: SampleEvaluationFunction[T_OutputDatum]
+    interpretation: EvaluationMetricMetadata[T_OutputDatum]
+
+
+    def __call__(self, output_datum: T_OutputDatum) -> Any:
+        """
+        For convenience, make a Metric callable.
+        Similar to torch Module `forward()`.
+        """
+        return self.calculate(output_datum)
 
 
 class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
@@ -73,9 +150,3 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
             )
 
         return values
-
-
-class SampleEvaluationFunction(Protocol, Generic[T_OutputDatum]):
-    @abstractmethod
-    def __call__(self, output_datum: T_OutputDatum) -> SampleMetricValue[T_OutputDatum]:
-        pass
