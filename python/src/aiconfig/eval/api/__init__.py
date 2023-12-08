@@ -20,11 +20,13 @@ from ..lib import (
 from ..metrics import (
     brevity,
     substring_match,
+    is_sufficiently_whitespacy
 )
 
 __all__ = [
     "brevity",
     "substring_match",
+    "is_sufficiently_whitespacy",
     "run_test_suite_with_inputs",
     "run_test_suite_outputs_only",
     "TestSuiteWithInputsSettings",
