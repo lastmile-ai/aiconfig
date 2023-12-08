@@ -1,8 +1,26 @@
+from typing import Any, Generic
 
+from attr import dataclass
 from aiconfig.eval.common import (
     EvaluationMetricMetadata,
-    Metric,
+    SampleEvaluationFunction,
+    T_OutputDatum,
 )
+
+@dataclass(frozen=True)
+class Metric(Generic[T_OutputDatum]):
+    """See metrics.py for examples."""
+
+    evaluation_fn: SampleEvaluationFunction[T_OutputDatum]
+    metric_metadata: EvaluationMetricMetadata[T_OutputDatum]
+
+    def __call__(self, output_datum: T_OutputDatum) -> Any:
+        """
+        For convenience, make a Metric callable.
+        Similar to torch Module `forward()`.
+        """
+        return self.evaluation_fn(output_datum)
+
 
 
 def _check_substring(output_datum: str, substring: str, case_sensitive: bool) -> bool:
@@ -21,9 +39,10 @@ def substring_match(substring: str, case_sensitive: bool = True) -> Metric[str]:
                 case_sensitive=case_sensitive,
             )
         )
+
     return Metric(
-        calculate=_fn,
-        interpretation=EvaluationMetricMetadata(
+        evaluation_fn=_fn,
+        metric_metadata=EvaluationMetricMetadata(
             name="substring_match",
             description="1.0 (pass) if contains given substring",
             best_value=1.0,
@@ -40,8 +59,8 @@ def _calculate_brevity(output_datum: str) -> float:
 
 
 brevity: Metric[str] = Metric(
-    calculate=_calculate_brevity,
-    interpretation=EvaluationMetricMetadata(
+    evaluation_fn=_calculate_brevity,
+    metric_metadata=EvaluationMetricMetadata(
         name="brevity",
         description="Absolute text length",
         best_value=1.0,
