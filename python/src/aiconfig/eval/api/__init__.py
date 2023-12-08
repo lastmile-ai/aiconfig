@@ -16,9 +16,7 @@ from ..lib import (
     run_test_suite_outputs_only,
 )
 
-from ..common import Metric
-
-from ..metrics import brevity, substring_match
+from ..metrics import Metric, brevity, substring_match
 
 __all__ = [
     "Metric",
