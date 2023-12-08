@@ -1,16 +1,46 @@
+import os
+from typing import Any
 import hypothesis.strategies as st
 import lastmile_utils.lib.core.api as cu
 import pandas as pd
 import pytest
-from result import Ok
+from result import Err, Ok
+from aiconfig.Config import AIConfigRuntime
 from aiconfig.eval.api import (
     TestSuiteWithInputsSettings,
     brevity,
-    run_test_suite_with_inputs,
     substring_match,
+    run_test_suite_with_inputs,
+    run_test_suite_outputs_only,
 )
-from aiconfig.eval.lib import run_test_suite_outputs_only
+from aiconfig.eval.lib import TestSuiteWithInputsSpec, run_test_suite_helper
+
 from hypothesis import given
+
+from aiconfig.model_parser import InferenceOptions
+
+
+def current_dir():
+    return os.path.dirname(os.path.realpath(__file__))
+
+
+class MockAIConfigRuntime(AIConfigRuntime):
+    def __init__(self):
+        pass
+
+    async def run_and_get_output_text(
+        self,
+        prompt_name: str,
+        params: dict[Any, Any] | None = None,
+        options: InferenceOptions | None = None,
+        **kwargs,
+    ) -> str:
+        params_ = params or {}
+        assert params_.keys() == {
+            "the_query"
+        }, 'For eval, AIConfig params must have just the key "the_query".'
+        the_query = params_["the_query"]
+        return f"output_for_{prompt_name}_the_query_{the_query}"
 
 
 def test_metrics():
@@ -23,13 +53,17 @@ def test_metrics():
 
 @pytest.mark.asyncio
 async def test_run_with_inputs_sanity_check():
-    """No easy way to mock LLM calls,
-    so just test the imports and sanity check output."""
+    """No easy way to mock LLM calls from outside run_test_suite_with_inputs.
+
+    Instead, give empty list and just test the imports and sanity check output."""
+
+    path = os.path.join(
+        current_dir(),
+        "../src/aiconfig/eval/examples/travel/travel_parametrized.aiconfig.json",
+    )
     out = await run_test_suite_with_inputs(
         [],
-        TestSuiteWithInputsSettings(
-            prompt_name="test", aiconfig_path="some/path/we/wont/read"
-        ),
+        TestSuiteWithInputsSettings(prompt_name="test", aiconfig_path=path),
     )
     assert isinstance(out, pd.DataFrame)
     assert out.shape == (0, 0)
@@ -53,18 +87,18 @@ async def test_run_with_outputs_only_basic():
 @given(st.data())
 @pytest.mark.asyncio
 async def test_run_test_suite_outputs_only(data: st.DataObject):
-    Metrics = [brevity, substring_match("hello")]
-    TestPairs = st.tuples(st.text(min_size=1), st.sampled_from(Metrics))
+    metrics = [brevity, substring_match("hello")]
+    test_pairs = st.tuples(st.text(min_size=1), st.sampled_from(metrics))
     user_test_suite_outputs_only = data.draw(
         st.lists(
-            TestPairs,
+            test_pairs,
             min_size=1,
         )
     )
 
-    out = await run_test_suite_outputs_only(user_test_suite_outputs_only)
-    assert out.shape[0] == (len(user_test_suite_outputs_only))
-    assert out.columns.tolist() == [
+    df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
+    assert df.shape[0] == (len(user_test_suite_outputs_only))
+    assert df.columns.tolist() == [
         "input",
         "aiconfig_output",
         "value",
@@ -73,11 +107,68 @@ async def test_run_test_suite_outputs_only(data: st.DataObject):
         "best_possible_value",
         "worst_possible_value",
     ]
-    inputs = out["input"].astype(str).tolist()  # type: ignore[no-untyped-call]
+    inputs = df["input"].astype(str).tolist()  # type: ignore[no-untyped-call]
     assert cu.only(inputs) == Ok("Missing")
 
-    out_brevity = out[out["metric_name"] == "brevity"]
+    df_brevity = df[df["metric_name"] == "brevity"]
     assert (
-        out_brevity["aiconfig_output"].apply(len)  # type: ignore[no-untyped-call]
-        == out_brevity["value"]  # type: ignore[no-untyped-call]
+        df_brevity["aiconfig_output"].apply(len)  # type: ignore[no-untyped-call]
+        == df_brevity["value"]  # type: ignore[no-untyped-call]
     ).all()
+
+
+@given(st.data())
+@pytest.mark.asyncio
+async def test_run_test_suite_with_inputs(data: st.DataObject):
+    """In test_run_test_suite_outputs_only, we test the user-facing function (e2e)
+    In this case that's harder because run_test_suite_with_inputs takes
+    an aiconfig path, not object.
+    In order to test with a mock AIConfig object, in this test we go one level down
+    and test run_test_suite_helper().
+
+    Also see test_run_with_inputs_sanity_check.
+    """
+    metrics = [brevity, substring_match("hello")]
+    test_pairs = st.tuples(st.text(min_size=1), st.sampled_from(metrics))
+    user_test_suite_with_inputs = data.draw(
+        st.lists(
+            test_pairs,
+            min_size=1,
+        )
+    )
+
+    input_data, _ = cu.unzip(user_test_suite_with_inputs)
+
+    mock_aiconfig = MockAIConfigRuntime()
+
+    out = await run_test_suite_helper(
+        TestSuiteWithInputsSpec(
+            test_suite=user_test_suite_with_inputs,
+            prompt_name="prompt0",
+            aiconfig=mock_aiconfig,
+        )
+    )
+
+    match out:
+        case Ok(df):
+            assert isinstance(df, pd.DataFrame)
+            assert df.shape[0] == (len(user_test_suite_with_inputs))
+            assert df.columns.tolist() == [
+                "input",
+                "aiconfig_output",
+                "value",
+                "metric_name",
+                "metric_description",
+                "best_possible_value",
+                "worst_possible_value",
+            ]
+            inputs = df["input"].astype(str).tolist()  # type: ignore[no-untyped-call]
+            assert set(df["input"]) == set(input_data)  # type: ignore[no-untyped-call]
+
+            df_brevity = df[df["metric_name"] == "brevity"]
+            assert (
+                df_brevity["aiconfig_output"].apply(len)  # type: ignore[no-untyped-call]
+                == df_brevity["value"]  # type: ignore[no-untyped-call]
+            ).all()
+        case Err(e):
+            assert False, f"expected Ok, got Err({e})"

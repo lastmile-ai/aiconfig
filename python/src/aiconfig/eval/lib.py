@@ -34,8 +34,13 @@ async def run_test_suite_with_inputs(
     test_suite: UserTestSuiteWithInputs,
     settings: TestSuiteWithInputsSettings,
 ) -> pd.DataFrame:
+    aiconfig = AIConfigRuntime.load(settings.aiconfig_path)  # type: ignore[fixme, no-untyped-call]
     res = await run_test_suite_helper(
-        TestSuiteWithInputsSpec(test_suite=test_suite, settings=settings)
+        TestSuiteWithInputsSpec(
+            test_suite=test_suite,
+            prompt_name=settings.prompt_name,
+            aiconfig=aiconfig,
+        )
     )
     return res.unwrap_or_raise(ValueError)
 
@@ -132,20 +137,8 @@ def eval_res_to_df(
     return df
 
 
-async def run_aiconfig(
-    settings: TestSuiteWithInputsSettings, input_datum: TextInput
-) -> Result[TextOutput, str]:
-    """Helper to run the AIConfig which makes the data to be evaluated."""
-    prompt_name = settings.prompt_name
-    aiconfig_path = settings.aiconfig_path
-    aiconfig = AIConfigRuntime.load(aiconfig_path)  # type: ignore[fixme, no-untyped-call]
-
-    output = await run_aiconfig_helper(aiconfig, prompt_name, input_datum)
-    return output.map(TextOutput)
-
-
 async def user_test_suite_with_inputs_to_eval_params_list(
-    test_suite: UserTestSuiteWithInputs, settings: TestSuiteWithInputsSettings
+    test_suite: UserTestSuiteWithInputs, prompt_name: str, aiconfig: AIConfigRuntime
 ) -> Result[Sequence[SampleEvaluationParams[TextInput, TextOutput]], str]:
     out: list[SampleEvaluationParams[TextInput, TextOutput]] = []
     grouped: dict[str, list[SampleEvaluationFunction[str]]] = {}
@@ -155,9 +148,13 @@ async def user_test_suite_with_inputs_to_eval_params_list(
         grouped[input_datum].append(eval_fn)
 
     all_inputs = list(grouped.keys())
-    res_outputs = await cu.result_reduce_list_all_ok_async(
-        [run_aiconfig(settings, TextInput(input_datum)) for input_datum in all_inputs]
-    )
+
+    async def _run(input_datum: str) -> Result[TextOutput, str]:
+        return (await run_aiconfig_helper(aiconfig, prompt_name, input_datum)).map(
+            TextOutput
+        )
+
+    res_outputs = await cu.result_reduce_list_all_ok_async(list(map(_run, all_inputs)))
 
     def _zip_inputs_outputs(outputs: list[TextOutput]):
         # This zip is safe because we have defined an order for the keys in `all_inputs`
@@ -178,7 +175,7 @@ async def user_test_suite_with_inputs_to_eval_params_list(
                     )
                 )
         return out
-    
+
     return res_outputs.map(_zip_inputs_outputs)
 
 
@@ -211,7 +208,8 @@ async def run_aiconfig_helper(
 @dataclass(frozen=True)
 class TestSuiteWithInputsSpec:
     test_suite: UserTestSuiteWithInputs
-    settings: TestSuiteWithInputsSettings
+    prompt_name: str
+    aiconfig: AIConfigRuntime
 
 
 @dataclass(frozen=True)
@@ -229,9 +227,11 @@ async def run_test_suite_helper(
         test_suite_spec: TestSuiteSpec,
     ) -> Result[Sequence[SampleEvaluationParams[TextInput, TextOutput]], str]:
         match test_suite_spec:
-            case TestSuiteWithInputsSpec(test_suite=test_suite, settings=settings):
+            case TestSuiteWithInputsSpec(
+                test_suite=test_suite, prompt_name=prompt_name, aiconfig=aiconfig
+            ):
                 return await user_test_suite_with_inputs_to_eval_params_list(
-                    test_suite, settings
+                    test_suite, prompt_name, aiconfig
                 )
             case TestSuiteOutputsOnlySpec(test_suite=test_suite):
                 return Ok(user_test_suite_outputs_only_to_eval_params_list(test_suite))
