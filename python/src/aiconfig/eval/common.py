@@ -52,6 +52,9 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
         if worst_value < best_value and not worst_value <= value <= best_value:
             raise ValueError(
                 f"""
+                    [{values["interpretation"].name}]
+                    {values["interpretation"].description}
+
                     Value {value} is not in range [{worst_value}, {best_value}]. 
                     You defined worst_value = {worst_value} and best_value = {best_value},
                     but got value outside that range.
@@ -60,6 +63,9 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
         if worst_value > best_value and not worst_value >= value >= best_value:
             raise ValueError(
                 f"""
+                    [{values["interpretation"].name}]
+                    {values["interpretation"].description}
+
                     Value {value} is not in range [{worst_value}, {best_value}]. 
                     You defined worst_value = {worst_value} and best_value = {best_value},
                     but got value outside that range.

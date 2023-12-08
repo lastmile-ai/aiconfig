@@ -15,7 +15,7 @@ Inputs:
 # The first element of each pair is the test input.
 # Each one will get put into "the_query" in the input prompt:
 # "Tell me 3 fun attractions related to {{the_query}} to do in NYC."
-# See the aiconfig (python/src/aiconfig/eval/custom_eval/examples/travel/travel_parametrized.aiconfig.json).
+# See the aiconfig (https://github.com/lastmile-ai/aiconfig/blob/9669b9e5614d5b1b0603ddf3ec61556cd79bfc14/python/src/aiconfig/eval/examples/travel/travel_parametrized.aiconfig.json#L4).
 test_inputs_with_substrings = [
     ("different kinds of cuisines", "Magnolia Bakery"),
     ("Iconic midtown skyscrapers", "Empire State Building"),
@@ -41,7 +41,7 @@ Output:
 
 Make sure AIConfig library is installed (pip3 install python-aiconfig).
 
-Usage: Please see [this notebook](https://github.com/lastmile-ai/aiconfig/blob/d79cf7dadf934b0ce09bc671cfde37aaecf05c1e/python/src/aiconfig/eval/custom_eval/examples/travel/travel_eval.ipynb#L4) for an example of running evaluation on an existing AIConfig. Run the notebook cells in order. This should be sufficient to get started, but the sections below provide more detail.
+Usage: Please see [this notebook](https://github.com/lastmile-ai/aiconfig/blob/9669b9e5614d5b1b0603ddf3ec61556cd79bfc14/python/src/aiconfig/eval/examples/travel/travel_eval.ipynb#L4) for an example of running evaluation on an existing AIConfig. Run the notebook cells in order. This should be sufficient to get started, but the sections below provide more detail.
 
 ## Custom Eval Usage Steps
 
@@ -50,7 +50,7 @@ Let's take a closer look at what we're testing and how. The travel example linke
 `the_query -> get_activities.input -> get_activities.output -> gen_itinerary.input -> gen_itinerary.output`.
 
 The leaf "the_query" is the placeholder for test case inputs, like a function argument. The root "gen_itinerary.output" is the value that will be tested, like the function's return value. You must specify exactly one leaf input and it must be named "the_query". You must also specify the name of the prompt you want to test (see test suite settings, `ts_settings = TestSuiteWithInputsSettings...
-` in the [notebook](https://github.com/lastmile-ai/aiconfig/blob/d79cf7dadf934b0ce09bc671cfde37aaecf05c1e/python/src/aiconfig/eval/custom_eval/examples/travel/travel_eval.ipynb#L4)).
+` in the [notebook](https://github.com/lastmile-ai/aiconfig/blob/9669b9e5614d5b1b0603ddf3ec61556cd79bfc14/python/src/aiconfig/eval/examples/travel/travel_eval.ipynb#L4)).
 
 Zooming in on the edges, each of which is either prompt string formatting or model execution:
 
@@ -97,13 +97,13 @@ You should get one passing test and one failing test:
 
 This is very similar to the custom eval case, but leverages Promptfoo. The idea is to define an AIConfig as a custom provider that you will specify in your promptfoo file. The AIConfig library contains a run script that appears as a black box to Promptfoo and therefore can easily integrate with Promptfoo as long as you provide a small amount of extra configuration. Essentially, you make a Promptfoo test yaml file with a custom AIConfig provider that points to your test suite settings. Details below.
 
-1. Write your test cases in a Promptfoo config file. ([Example](https://github.com/lastmile-ai/aiconfig/blob/d79cf7dadf934b0ce09bc671cfde37aaecf05c1e/python/src/aiconfig/eval/promptfoo/examples/travel/travel_promptfooconfig.yaml)).
+1. Write your test cases in a Promptfoo config file. ([Example](https://github.com/lastmile-ai/aiconfig/blob/9669b9e5614d5b1b0603ddf3ec61556cd79bfc14/python/src/aiconfig/eval/examples/travel/travel_promptfoo_config.yaml#L4)).
 
 - Note that the `prompts` list must contain one literal prompt (in this case, "question") which is then assigned test values in your Promptfoo test cases (see `vars`). This prompt variable is just a placeholder for Promptfoo's use and is completely distinct from the prompts in your AIConfig. Think of it roughly like a function parameter you need to call the Promptfoo helper function.
 
-2. Define an AIConfig test suite settings file. It must have the name of the AIConfig prompt you want to test and the file path to your aiconfig. ([Example](https://github.com/lastmile-ai/aiconfig/blob/d79cf7dadf934b0ce09bc671cfde37aaecf05c1e/python/src/aiconfig/eval/promptfoo/examples/travel/travel_aiconfig_test_suite_settings.json)).
+2. Define an AIConfig test suite settings file. It must have the name of the AIConfig prompt you want to test and the file path to your aiconfig. ([Example](https://github.com/lastmile-ai/aiconfig/blob/9669b9e5614d5b1b0603ddf3ec61556cd79bfc14/python/src/aiconfig/eval/examples/travel/travel_aiconfig_test_suite_settings.json#L3)).
 
-3. Put one item in `providers` that runs the AIConfig run script with the path to your test suite settings file ([Example](https://github.com/lastmile-ai/aiconfig/blob/d79cf7dadf934b0ce09bc671cfde37aaecf05c1e/python/src/aiconfig/eval/promptfoo/examples/travel/travel_promptfooconfig.yaml#L3)).
+3. Put one item in `providers` that runs the AIConfig run script with the path to your test suite settings file ([Example](https://github.com/lastmile-ai/aiconfig/blob/9669b9e5614d5b1b0603ddf3ec61556cd79bfc14/python/src/aiconfig/eval/examples/travel/travel_promptfoo_config.yaml#L4)).
 
 4. Make sure your API key(s) are available as environment variables, including to subshell processes. This can be done using `export`. See [here](https://github.com/lastmile-ai/aiconfig/#set-your-openai-api-key) for more detail.
 
