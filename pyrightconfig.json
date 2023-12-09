@@ -1,9 +1,9 @@
-{
-  "typeCheckingMode": "strict",
-  "include": ["python"],
-  "exclude": ["python/build"],
-  "ignore": [],
-  "venv": "aiconfig",
-  "pythonVersion": "3.10",
-  "reportMissingTypeStubs": false
-}
+// {
+//   "typeCheckingMode": "strict",
+//   "include": ["python"],
+//   "exclude": ["python/build"],
+//   "ignore": [],
+//   "venv": "aiconfig",
+//   "pythonVersion": "3.10",
+//   "reportMissingTypeStubs": false
+// }
