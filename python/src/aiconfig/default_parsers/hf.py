@@ -91,7 +91,8 @@ def construct_stream_output(
 
         index = 0  # HF Text Generation api doesn't support multiple outputs
         delta = data
-        options.stream_callback(delta, accumulated_message, index)
+        if options and options.stream_callback:
+            options.stream_callback(delta, accumulated_message_for_choice, index)
 
         output = ExecuteResult(
             **{
