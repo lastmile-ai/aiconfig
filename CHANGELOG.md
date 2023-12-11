@@ -1,5 +1,30 @@
 # Changelog
 
+## Python Version 1.1.5 (2023-12-11)
+
+## NPM Version 1.0.8 (2023-12-11)
+
+Full Changelog:
+
+### Features
+
+- **python-sdk** Evaluation harness with AIConfig. Supports text input/output evaluation with native AIConfig Interface as well as an integration with Promptfoo. (Link to ReadME)
+- **python-sdk:** Support for PaLM Text as a core model Parser ([222bf6e](https://github.com/lastmile-ai/aiconfig/pull/348/commits/222bf6edf5c615b3b9b5f58b7fd5c829b2884d1b))
+- **typescript-sdk:** Support for PaLM Text as a core model parser ([222bf6e](https://github.com/lastmile-ai/aiconfig/pull/348/commits/222bf6edf5c615b3b9b5f58b7fd5c829b2884d1b))
+- - Link to video demo
+
+### Bug Fixes
+
+- **python-extension** HuggingFace Transformers Extension: Fixed bug where we're not properly appending outputs for multiple return sequences (https://github.com/lastmile-ai/aiconfig/pull/411)
+- **python-extension** HuggingFace Transformers Extension: Fixed a bug that defaulted model to GPT-2. (https://github.com/lastmile-ai/aiconfig/pull/410)
+
+### Extensions
+
+- **python-extension:** Extension for LLama-Guard using pytorch ([222bf6e](https://github.com/lastmile-ai/aiconfig/pull/348/commits/222bf6edf5c615b3b9b5f58b7fd5c829b2884d1b))
+- - Link to video demo/colab
+
+---
+
 ## Python Version 1.1.4 (2023-12-04)
 
 ## NPM Version 1.0.7 (2023-12-04)
