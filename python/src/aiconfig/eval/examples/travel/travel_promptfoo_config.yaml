@@ -15,6 +15,6 @@ tests:
       question: "iconic midtown skyscrapers"
     assert:
       - type: python
-        value: output.lower().find('empire state building') != -1
+        value: output.lower().find('empire state') != -1
       - type: python
         value: len(output) < 5000

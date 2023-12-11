@@ -1,5 +1,26 @@
 # Changelog
 
+## Python Version 1.1.5 (2023-12-11)
+
+## NPM Version 1.0.7 (2023-12-11)
+
+Full Changelog:
+
+### Features
+
+### Bug Fixes
+
+
+### Better Engineering
+
+### Documentation
+
+### Extensions
+
+- **python-extension:** Extension for LLama-Guard with pytorch ([222bf6e](https://github.com/lastmile-ai/aiconfig/pull/348/commits/222bf6edf5c615b3b9b5f58b7fd5c829b2884d1b))
+- **python-extension:** Extension for LLama 2.0
+- **typescript-extension:** Extension for LLama 2.0
+
 ## Python Version 1.1.4 (2023-12-04)
 
 ## NPM Version 1.0.7 (2023-12-04)
