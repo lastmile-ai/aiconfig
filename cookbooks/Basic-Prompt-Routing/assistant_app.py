@@ -3,11 +3,13 @@ import os
 
 import openai
 import streamlit as st
-from dotenv import load_dotenv
 
 from aiconfig import AIConfigRuntime
 
-load_dotenv()
+# Create ~/.env file with this line: export OPENAI_API_KEY=<your key here>
+# You can get your key from https://platform.openai.com/api-keys 
+import dotenv
+dotenv.load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
