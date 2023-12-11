@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 from aiconfig.callback import CallbackEvent, CallbackManager
@@ -207,9 +207,7 @@ class AIConfigRuntime(AIConfig):
 
         if prompt_name not in self.prompt_index:
             raise IndexError(
-                "Prompt not found in config, available prompts are:\n {}".format(
-                    list(self.prompt_index.keys())
-                )
+                f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}"
             )
 
         prompt_data = self.prompt_index[prompt_name]
@@ -256,9 +254,7 @@ class AIConfigRuntime(AIConfig):
 
         if prompt_name not in self.prompt_index:
             raise IndexError(
-                "Prompt not found in config, available prompts are:\n {}".format(
-                    list(self.prompt_index.keys())
-                )
+                f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}"
             )
 
         prompt_data = self.prompt_index[prompt_name]
@@ -278,13 +274,25 @@ class AIConfigRuntime(AIConfig):
         await self.callback_manager.run_callbacks(event)
         return response
 
+    async def run_and_get_output_text(
+        self,
+        prompt_name: str,
+        params: dict[Any, Any] | None = None,
+        options: Optional[InferenceOptions] = None,
+        **kwargs,
+    ) -> str:
+        result: Any = await self.run(prompt_name, params, options=options, **kwargs)
+        return self.get_output_text(prompt_name, result[0])
+
     #
     #     Saves this AIConfig to a file.
     #     @param filePath The path to the file to save to.
     #    @param saveOptions Options that determine how to save the AIConfig to the file.
     #    */
 
-    def save(self, json_config_filepath: str = None, include_outputs: bool = True):
+    def save(
+        self, json_config_filepath: str | None = None, include_outputs: bool = True
+    ):
         """
         Save the AI Configuration to a JSON file.
 
@@ -358,9 +366,7 @@ class AIConfigRuntime(AIConfig):
         """
         if model_id not in ModelParserRegistry.parser_ids():
             raise IndexError(
-                "Model parser '{}' not found in registry, available model parsers are:\n {}".format(
-                    model_id, ModelParserRegistry.parser_ids()
-                )
+                f"Model parser '{model_id}' not found in registry, available model parsers are:\n {ModelParserRegistry.parser_ids()}"
             )
         return ModelParserRegistry.get_model_parser(model_id)
 

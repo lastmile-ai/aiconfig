@@ -1,0 +1,4 @@
+{
+  "prompt_name": "gen_itinerary",
+  "aiconfig_path": "travel_parametrized.aiconfig.json"
+}

@@ -1,0 +1,20 @@
+prompts: ["{{question}}"]
+providers:
+  - exec:python -m 'aiconfig.scripts.run_aiconfig' ./travel_aiconfig_test_suite_settings.json
+tests:
+  - description: "Test if output contains the expected value, and measure the length of the output"
+    vars:
+      question: "different kinds of cuisines"
+    assert:
+      - type: python
+        value: output.lower().find('magnolia bakery') != -1
+      - type: python
+        value: len(output) < 5000
+  - description: "Test if output contains the expected value, and measure the length of the output"
+    vars:
+      question: "iconic midtown skyscrapers"
+    assert:
+      - type: python
+        value: output.lower().find('empire state') != -1
+      - type: python
+        value: len(output) < 5000
