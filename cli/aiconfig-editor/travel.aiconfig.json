@@ -31,6 +31,21 @@
           "order_by": "geographic location"
         }
       }
+    },
+    {
+      "name": "single_day_itinerary",
+      "input": "Refine this itinerary to fit within a single day: {{gen_itinerary.output}}.",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {
+            "max_tokens": 1000
+          }
+        },
+        "parameters": {
+          "order_by": "geographic location"
+        }
+      }
     }
   ]
 }
