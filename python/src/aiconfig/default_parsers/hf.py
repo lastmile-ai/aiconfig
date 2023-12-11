@@ -14,6 +14,8 @@ from huggingface_hub.inference._text_generation import (
 
 from aiconfig.schema import ExecuteResult, Output, Prompt
 
+from aiconfig.util.params import resolve_prompt
+
 # ModelParser Utils
 # Type hint imports
 
@@ -243,9 +245,12 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
-        stream = (options.stream if options else False) and (
-            not "stream" in completion_data or completion_data.get("stream") != False
-        )
+        if options is not None and options.stream is not None:
+            stream = options.stream
+        elif "stream" in completion_data:
+            stream = completion_data["stream"]
+
+        completion_data["stream"] = stream
 
         response = self.client.text_generation(**completion_data)
         response_is_detailed = completion_data.get("details", False)
