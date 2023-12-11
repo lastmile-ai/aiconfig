@@ -71,37 +71,30 @@ export class PaLMChatParser extends ParameterizedModelParser {
     return prompts;
   }
 
-  public deserialize(prompt: Prompt, aiConfig: AIConfigRuntime, params?: JSONObject | undefined): any {
-    // TODO: @ankush-lastmile PaLM unable to set output type to Text Generation API request type, `protos.google.ai.generativelanguage.v1beta2.IGenerateTextRequest` looks like it conforms to JSONObject type but it doesn't. Returns any for now.
-    const startEvent = {
+  public deserialize(prompt: Prompt, aiConfig: AIConfigRuntime, params?: JSONObject): any {
+    const event = {
       name: "on_deserialize_start",
       file: __filename,
       data: {
         prompt,
         params,
       },
-    } as CallbackEvent;
-    aiConfig.callbackManager.runCallbacks(startEvent);
+    };
+    aiConfig.callbackManager.runCallbacks(event);
 
     const completionParams = this.getModelSettings(prompt, aiConfig) ?? {};
-
-    // Get Prompt Template (aka prompt string), paramaterize it, and set it in completionParams
-    const promptTemplate = prompt.input as string;
-    const promptText = this.resolvePromptTemplate(promptTemplate, prompt, aiConfig, params);
-    completionParams.prompt = { text: promptText };
-
-    const refinedCompletionParams = refineTextGenerationParams(completionParams);
+    completionParams.messages = [];
 
     const endEvent = {
       name: "on_deserialize_end",
       file: __filename,
       data: {
-        result: refinedCompletionParams,
+        result: completionParams,
       },
-    } as CallbackEvent;
+    };
     aiConfig.callbackManager.runCallbacks(endEvent);
 
-    return refinedCompletionParams;
+    return completionParams;
   }
 
   public async run(
@@ -161,6 +154,28 @@ export class PaLMChatParser extends ParameterizedModelParser {
     } else {
       return "";
     }
+  }
+
+  public constructConversationHistory(aiconfig: AIConfigRuntime, prompt: Prompt, params: JSONObject): any {
+    if (prompt.metadata!.remember_chat_context) {
+      for (let i = 0; i < aiconfig.prompts.length; i++) {
+        let prevPrompt = aiconfig.prompts[i];
+
+        if (prevPrompt.name === prompt.name) {
+          break;
+        }
+
+        if (aiconfig.get_model_name(prevPrompt) === self.id) {
+          
+            const resolvedPrevPrompt = this.resolvePromptTemplate(prevPrompt.input, params, aiConfig);
+          completionParams.messages.push({ content: resolvedPrevPrompt, author: "0" });
+
+          const outputText = aiConfig.get_output_text(prevPrompt, aiConfig.get_latest_output(prevPrompt));
+          completionParams["messages"].push({ content: outputText, author: "1" });
+        }
+      }
+    }
+    completionParams["messages"].push({ content: resolvePrompt(prompt, params, aiConfig), author: "0" });
   }
 }
 
