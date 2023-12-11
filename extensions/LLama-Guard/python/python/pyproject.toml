@@ -2,16 +2,15 @@
 requires = ["setuptools", "wheel"]
 
 [project]
-name = "aiconfig_extension_hugging_face_transformers"
-version = "0.0.4"
+name = "aiconfig_extension_llama_guard"
+version = "0.0.2"
 authors = [
   { name="LastMile AI" },
-  { name="Rossdan Craig", email="rossdan@lastmileai.dev" },
   { name="Ankush Pala", email="ankush@lastmileai.dev" },
 ]
-description = "An extension for using Hugging Face transformers to parse models for AIConfig."
+description = "An extension for using llama-guard with aiconfig"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",

@@ -1,16 +1,24 @@
+# Define a Model Parser for LLama-Guard
+
+
 import copy
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from transformers import AutoTokenizer, Pipeline, pipeline, TextIteratorStreamer
-import threading
+from transformers import AutoTokenizer
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 from aiconfig.util.params import resolve_prompt
+from aiconfig import CallbackEvent
+
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import torch
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
+
+
 
 
 # Step 1: define Helpers
@@ -68,7 +76,7 @@ def refine_chat_completion_params(model_settings: Dict[str, Any]) -> Dict[str, A
         "encoder_no_repeat_ngram_size",
         "decoder_start_token_id",
         "num_assistant_tokens",
-        "num_assistant_tokens_schedule"
+        "num_assistant_tokens_schedule",
     }
 
     completion_data = {}
@@ -93,35 +101,11 @@ def construct_regular_output(result: Dict[str, str], execution_count: int) -> Ou
     )
     return output
 
-def construct_stream_output(
-    streamer: TextIteratorStreamer,
-    options: InferenceOptions,
-) -> Output:
-    """
-    Constructs the output for a stream response.
-
-    Args:
-        streamer (TextIteratorStreamer): Streams the output. See https://huggingface.co/docs/transformers/v4.35.2/en/internal/generation_utils#transformers.TextIteratorStreamer
-        options (InferenceOptions): The inference options. Used to determine the stream callback.
-
-    """
-    accumulated_message = ""
-    output = ExecuteResult(
-            **{
-                "output_type": "execute_result",
-                "data": accumulated_message,
-                "execution_count": 0, #Multiple outputs are not supported for streaming
-                "metadata": {},
-            }
-        )
-    for new_text in streamer:
-        accumulated_message += new_text
-        options.stream_callback(new_text, accumulated_message, 0)
-        output.data = accumulated_message
-    return output
 
 
-class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
+# This model parser doesn't support streaming. TODO: Implement streaming
+# This Model Parser doesn't support n-outputs.
+class LLamaGuardParser(ParameterizedModelParser):
     """
     A model parser for HuggingFace models of type text generation task using transformers.
     """
@@ -138,13 +122,20 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
                 config.register_model_parser(parser)
         """
         super().__init__()
-        self.generators : dict[str, Pipeline]= {}
+        model_id = "meta-llama/LlamaGuard-7b"
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print("device: ", self.device)
+        dtype = torch.bfloat16
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+        self.model = AutoModelForCausalLM.from_pretrained(
+            model_id, torch_dtype=dtype, device_map=self.device
+        )
 
     def id(self) -> str:
         """
         Returns an identifier for the Model Parser
         """
-        return "HuggingFaceTextGenerationTransformer"
+        return "LlamaGuardParser"
 
     async def serialize(
         self,
@@ -202,14 +193,29 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
         completion_data = refine_chat_completion_params(model_settings)
-        
-        #Add resolved prompt
+
+        # Add resolved prompt
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
-        completion_data["prompt"] = resolved_prompt
-        return completion_data
+
+        # Tokenized Prompt
+        inputs = self.tokenizer([resolved_prompt], return_tensors="pt").to(self.device)
+
+        deserialize_output = {"tokenized_input": inputs, "gen_params": completion_data}
+
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_deserialize_complete", __name__, {"text_prompt": resolved_prompt, "output": deserialize_output}
+            )
+        )
+
+        return deserialize_output
 
     async def run_inference(
-        self, prompt: Prompt, aiconfig : "AIConfigRuntime", options : InferenceOptions, parameters: Dict[str, Any]
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        options: InferenceOptions,
+        parameters: Dict[str, Any],
     ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
@@ -222,50 +228,31 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         Returns:
             InferenceResponse: The response from the model.
         """
-        completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
-        completion_data["text_inputs"] = completion_data.pop("prompt", None)
-        
-        model_name : str = aiconfig.get_model_name(prompt)
-        if isinstance(model_name, str) and model_name not in self.generators:
-            self.generators[model_name] = pipeline('text-generation', model=model_name)
-        generator = self.generators[model_name]
 
-        # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
-        streamer = None
-        should_stream = (options.stream if options else False) and (
-            not "stream" in completion_data or completion_data.get("stream") != False
+        resolved_data = await self.deserialize(prompt, aiconfig, options, parameters)
+        # Move to GPU if applicable, self.device is set in __init__). Otherwise this is a no-op
+        tokenized_input_cuda = resolved_data["tokenized_input"].to(self.device)
+
+        # Merge tokenized input with other generation parameters
+        gen_params = resolved_data["gen_params"]
+        input_params = {**tokenized_input_cuda, **gen_params}
+
+        response = self.model.generate(**input_params)
+        prompt_len = tokenized_input_cuda["input_ids"].shape[-1]
+        output_text = self.tokenizer.decode(
+            response[0][prompt_len:], skip_special_tokens=True
         )
-        if should_stream:
-            # TODO (rossdanlm): I noticed that some models are incohorent when used as a tokenizer for streaming
-            # mistralai/Mistral-7B-v0.1 is able to generate text no problem, but doesn't make sense when it tries to tokenize
-            # in these cases, I would use `gpt2`. I'm wondering if there's a heuristic 
-            # we can use to determine if a model is applicable for being used as a tokenizer
-            # For now I can just default the line below to gpt2? Maybe we can also define it somehow in the aiconfig?
-            tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
-            streamer = TextIteratorStreamer(tokenizer)
-            completion_data["streamer"] = streamer
 
-        outputs : List[Output] = []
-        output = None
-        if not should_stream:
-            response : List[Any] = generator(**completion_data)
-            for count, result in enumerate(response):
-                output = construct_regular_output(result, count)
-                outputs.append(output)
-        else:
-            if completion_data.get("num_return_sequences", 1) > 1:
-                raise ValueError("Sorry, TextIteratorStreamer does not support multiple return sequences, please set `num_return_sequences` to 1")
-            if not streamer:
-                raise ValueError("Stream option is selected but streamer is not initialized")
-            
-            # For streaming, cannot call `generator` directly otherwise response will be blocking
-            thread = threading.Thread(target=generator, kwargs=completion_data)
-            thread.start()
-            output = construct_stream_output(streamer, options)
-            if output is not None:
-                outputs.append(output)
+        Output = ExecuteResult(
+            **{
+                "output_type": "execute_result",
+                "data": output_text,
+                "execution_count": 0,
+                "metadata": {},
+            }
+        )
 
-        prompt.outputs = outputs
+        prompt.outputs = [Output]
         return prompt.outputs
 
     def get_output_text(

@@ -1,0 +1,33 @@
+{
+  "name": "NYC Trip Planner",
+  "description": "Intrepid explorer with ChatGPT and AIConfig",
+  "schema_version": "latest",
+  "metadata": {
+    "models": {
+      "gpt-3.5-turbo": {
+        "model": "gpt-3.5-turbo",
+        "top_p": 1,
+        "temperature": 1
+      },
+      "gpt-4": {
+        "model": "gpt-4",
+        "max_tokens": 3000,
+        "system_prompt": "You are an expert travel coordinator with exquisite taste. You are an exremely concise, brief communicator."
+      }
+    },
+    "default_model": "gpt-3.5-turbo"
+  },
+  "prompts": [
+    {
+      "name": "get_activities",
+      "input": "Tell me 3 fun attractions related to {{the_query}} to do in NYC."
+    },
+    {
+      "name": "gen_itinerary",
+      "input": "Generate an extremely brief itinerary by choosing the best-known of these activities: {{get_activities.output}}.",
+      "metadata": {
+        "model": "gpt-4"
+      }
+    }
+  ]
+}
