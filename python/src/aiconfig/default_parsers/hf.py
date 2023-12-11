@@ -245,6 +245,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
+        stream = True  # Default value
         if options is not None and options.stream is not None:
             stream = options.stream
         elif "stream" in completion_data:
