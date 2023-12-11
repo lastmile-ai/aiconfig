@@ -1,5 +1,6 @@
+import PromptActionBar from "@/src/components/prompt/PromptActionBar";
 import PromptInput from "@/src/components/prompt/PromptInput";
-import { getPromptModelName } from "@/src/utils/promptUtils";
+import { getPromptModelName, getPromptSchema } from "@/src/utils/promptUtils";
 import { Flex, Card, Text } from "@mantine/core";
 import { Prompt, PromptInput as AIConfigPromptInput } from "aiconfig";
 import { memo, useCallback } from "react";
@@ -17,19 +18,28 @@ export default memo(function PromptContainer({
   onChangePromptInput,
   defaultConfigModelName,
 }: Props) {
-  // TODO: Show prompt name & metadata inside of settings editor later
+  // TODO: Move this to context
   const onChangeInput = useCallback(
     (newInput: AIConfigPromptInput) => onChangePromptInput(index, newInput),
     [index, onChangePromptInput]
   );
+
+  const promptSchema = getPromptSchema(prompt, defaultConfigModelName);
+
   return (
     <div style={{ marginTop: 16 }}>
-      <Card>
-        <Flex justify="space-between" m="sm">
-          <Text weight="bold">{`{{${prompt.name}}}}`}</Text>
-          <Text>{getPromptModelName(prompt, defaultConfigModelName)}</Text>
+      <Card withBorder>
+        <Flex justify="space-between">
+          <Flex direction="column">
+            <Flex justify="space-between" m="sm">
+              <Text weight="bold">{`{{${prompt.name}}}}`}</Text>
+              <Text>{getPromptModelName(prompt, defaultConfigModelName)}</Text>
+            </Flex>
+            <PromptInput input={prompt.input} onChangeInput={onChangeInput} />
+            {/* <PromptOutput /> */}
+          </Flex>
+          <PromptActionBar prompt={prompt} promptSchema={promptSchema} />
         </Flex>
-        <PromptInput input={prompt.input} onChangeInput={onChangeInput} />
       </Card>
     </div>
   );
