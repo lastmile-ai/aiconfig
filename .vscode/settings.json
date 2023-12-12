@@ -29,5 +29,8 @@
   },
   "black-formatter.args": ["--line-length=88"],
   // example: "--disable=C0114,C0115,C0116"
-  "pylint.args": []
+  "pylint.args": [],
+  "python.analysis.extraPaths": [
+    "./python/src"
+  ]
 }
