@@ -273,6 +273,60 @@ class AIConfigRuntime(AIConfig):
         event = CallbackEvent("on_run_complete", __name__, {"result": response})
         await self.callback_manager.run_callbacks(event)
         return response
+    
+    async def run_batch(self, prompt_name:str, params_list: list[dict], options: Optional[InferenceOptions] = None, **kwargs) -> list[Prompt]:
+        """
+        Executes the given Prompt with the given parameters. Returns a list of Prompt objects representing the output of the model.
+
+        Args:
+            params_list (dict): The resolved parameters to use for inference.
+            prompt_name (str): The identifier of the prompt to be used.
+
+        Returns:
+            object: The response object returned by the AI-model's API.
+        """
+        event = CallbackEvent(
+            "on_run_batch_start",
+            __name__,
+            {
+                "prompt_name": prompt_name,
+                "params_list": params_list,
+                "options": options,
+                "kwargs": kwargs,
+            },
+        )
+        await self.callback_manager.run_callbacks(event)
+
+        if not params_list:
+            params_list = {}
+
+        if prompt_name not in self.prompt_index:
+            raise IndexError(
+                f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}"
+            )
+
+        prompt_data = self.prompt_index[prompt_name]
+        model_name = self.get_model_name(prompt_data)
+        model_provider = AIConfigRuntime.get_model_parser(model_name)
+
+        batch_results = await model_provider.run_batch(
+            prompt_data,
+            self,
+            params_list,
+            options,
+            callback_manager=self.callback_manager,
+            **kwargs,
+        )
+
+        # model parser batch execute returns a list of AIConfigRuntime objects. We need to extract the prompts from each of them.
+        prompts = []
+        for aiconfig in batch_results:
+            prompts.append(aiconfig.get_prompt(prompt_name))
+
+        event = CallbackEvent("on_run_batch_complete", __name__, {"result": prompts})
+
+        await self.callback_manager.run_callbacks(event)
+        return prompts
 
     async def run_and_get_output_text(
         self,
