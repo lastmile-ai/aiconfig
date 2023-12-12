@@ -1,6 +1,6 @@
 {
   "name": "aiconfig",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Library to help manage AI prompts, models and parameters using the .aiconfig file format.",
   "repository": {
     "type": "git",
@@ -31,7 +31,8 @@
     "compile": "tsc"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.5",
+    "@babel/preset-typescript": "^7.23.3",
+    "@types/jest": "^29.5.10",
     "@types/lodash": "^4.14.197",
     "@typescript-eslint/eslint-plugin": "^6.7.2",
     "@typescript-eslint/parser": "^6.7.2",
