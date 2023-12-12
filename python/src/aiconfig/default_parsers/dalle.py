@@ -198,6 +198,7 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         if not output:
             return ""
 
+        # TODO (rossdanlm): Handle multiple outputs in list
         if output.output_type == "execute_result":
             if isinstance(output.data, str):
                 return output.data

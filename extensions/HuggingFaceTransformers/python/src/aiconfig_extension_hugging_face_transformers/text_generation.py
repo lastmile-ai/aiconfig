@@ -280,6 +280,7 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         if output is None:
             return ""
 
+        # TODO (rossdanlm): Handle multiple outputs in list
         if output.output_type == "execute_result":
             if isinstance(output.data, str):
                 return output.data
