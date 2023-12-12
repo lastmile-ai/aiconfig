@@ -91,6 +91,34 @@ export abstract class ModelParser<T = JSONObject, R = T> {
     params?: JSONObject
   ): Promise<Output | Output[]>;
 
+
+    /**
+   * Executes model inference for the given prompt based on the provided completion data.
+   * @param prompt The Prompt to run inference for.
+   * @param aiConfig The AIConfig that the prompt belongs to.
+   * @param options Options that determine how to run inference for the prompt (e.g. whether to stream the output or not)
+   * @param params Optional parameters to override the prompt's parameters with.
+   */
+    public abstract runBatch(
+      prompt: Prompt,
+      aiConfig: AIConfigRuntime,
+      options?: InferenceOptions,
+      paramsList?: JSONObject[]
+    ): Promise<AIConfigRuntime[]>;
+
+    public abstract runBatch2(
+      prompt: Prompt,
+      aiConfig: AIConfigRuntime,
+      options?: InferenceOptions,
+      paramsList?: JSONObject[]
+    ): Promise<{
+      input: {
+        prompt: any;
+        params: JSONObject
+      },
+      output: Output[];
+    }>;
+
   /**
    * Get the string representing the output from a prompt.
    */
