@@ -418,6 +418,40 @@ export class AIConfigRuntime implements AIConfig {
   }
 
   /**
+   *  Hello
+   */
+  public async runBatch(
+    prompt: Prompt,
+    options?: InferenceOptions,
+    paramsList?: JSONObject[]
+  ) : Promise<{
+    input: {
+      prompt: any;
+      params: JSONObject
+    },
+    output: Output[];
+  }>{
+
+    if(!paramsList){
+      return {input: {prompt, params: {}}, output: [] }
+    }
+    
+    let outputs = [];
+
+    for(let i = 0; i < paramsList?.length || 0; i++){
+      const params = paramsList[i];
+      await this.run(prompt.name, params, options);
+      const output = this.getLatestOutput(prompt) ?? {};;  
+      
+      outputs.push(output);
+    }
+
+    return {input: {prompt, params: {}}, output: outputs }
+  
+
+  }
+
+  /**
    * Same as `AIConfigRuntime.run`, but re-runs all prompt dependencies.
    * @see AIConfigRuntime.run
    * @example "If you have a prompt P2 that depends on another prompt P1's output, this function will run P1 first,\
