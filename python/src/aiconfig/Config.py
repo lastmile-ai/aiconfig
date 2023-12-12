@@ -10,6 +10,7 @@ from aiconfig.model_parser import InferenceOptions, ModelParser
 
 from .default_parsers.dalle import DalleImageGenerationParser
 from .default_parsers.hf import HuggingFaceTextGenerationParser
+from .default_parsers.text_2_image import HuggingFaceText2ImageDiffusor
 from .registry import (
     ModelParserRegistry,
     update_model_parser_registry_with_config_runtime,
@@ -41,6 +42,7 @@ dalle_image_generation_models = [
 ]
 for model in dalle_image_generation_models:
     ModelParserRegistry.register_model_parser(DalleImageGenerationParser(model))
+ModelParserRegistry.register_model_parser(HuggingFaceText2ImageDiffusor())
 
 
 class AIConfigRuntime(AIConfig):
