@@ -32,6 +32,7 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
 
   public serialize(
     promptName: string,
+    // TODO (rossdanlm): Generalize this openai serializer to work with multi-modal inputs, not just text completion
     data: CompletionCreateParams,
     aiConfig: AIConfigRuntime,
     params?: JSONObject

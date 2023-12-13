@@ -60,8 +60,25 @@ class PromptMetadata(BaseModel):
         extra = "allow"
 
 
+class Attachment(BaseModel):
+    """
+    Attachment used to pass data in PromptInput for non-text inputs (ex: image, audio)
+    """
+
+    # The data representing the attachment
+    data: Any
+    # The MIME type of the result. If not specified, the MIME type will be assumed to be text/plain
+    mime_type: Optional[str] = None
+    # Output metadata
+    metadata: Optional[Dict[str, Any]] = None
+
+
 class PromptInput(BaseModel):
-    # Any additional inputs to the model
+    # Attachments can be used to pass in non-text inputs (ex: image, audio)
+    attachments: Optional[List[Attachment]] = None
+
+    # Freeform data for the overall prompt input (ex: document answering question
+    # requires both images (attachments) and question (data))
     data: Optional[Any] = None
 
     class Config:
@@ -361,8 +378,7 @@ class AIConfig(BaseModel):
         if prompt_name not in self.prompt_index:
             raise IndexError(
                 "Prompt '{}' not found in config, available prompts are:\n {}".format(
-                    prompt_name,
-                    list(self.prompt_index.keys())
+                    prompt_name, list(self.prompt_index.keys())
                 )
             )
 
@@ -383,8 +399,7 @@ class AIConfig(BaseModel):
         if prompt_name not in self.prompt_index:
             raise IndexError(
                 "Prompt '{}' not found in config, available prompts are:\n {}".format(
-                    prompt_name,
-                    list(self.prompt_index.keys())
+                    prompt_name, list(self.prompt_index.keys())
                 )
             )
 
