@@ -23,6 +23,7 @@
     "@mantine/prism": "^6.0.7",
     "@mantine/spotlight": "^6.0.7",
     "@mantine/tiptap": "^6.0.7",
+    "@tabler/icons-react": "^2.44.0",
     "aiconfig": "^1.0.1",
     "next": "14.0.2",
     "node-fetch": "^3.3.2",

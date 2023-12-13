@@ -46,6 +46,27 @@
           "order_by": "geographic location"
         }
       }
+    },
+    {
+      "name": "image_prompt",
+      "input": {
+        "data": "What do these images show?",
+        "attachments": [
+          {
+            "data": "https://s3.amazonaws.com/files.uploads.lastmileai.com/uploads/cldxsqbel0000qs8owp8mkd0z/2023_12_1_21_23_24/942/Screenshot 2023-11-28 at 11.11.25 AM.png",
+            "mime_type": "image/png"
+          },
+          {
+            "data": "https://s3.amazonaws.com/files.uploads.lastmileai.com/uploads/cldxsqbel0000qs8owp8mkd0z/2023_12_1_21_23_24/8325/Screenshot 2023-11-28 at 1.51.52 PM.png",
+            "mime_type": "image/png"
+          }
+        ]
+      },
+      "metadata": {
+        "model": {
+          "name": "gpt-4-vision-preview"
+        }
+      }
     }
   ]
 }
