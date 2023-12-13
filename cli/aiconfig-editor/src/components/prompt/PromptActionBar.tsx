@@ -5,9 +5,10 @@ import {
   PromptSchema,
   checkParametersSupported,
 } from "@/src/utils/promptUtils";
-import { Flex } from "@mantine/core";
+import { ActionIcon, Button, Flex } from "@mantine/core";
+import { IconClearAll } from "@tabler/icons-react";
 import { Prompt } from "aiconfig";
-import { memo } from "react";
+import { memo, useState } from "react";
 
 type Props = {
   prompt: Prompt;
@@ -15,20 +16,31 @@ type Props = {
 };
 
 export default memo(function PromptActionBar({ prompt, promptSchema }: Props) {
-  // TODO: Handle collapse / expand / drag-to-resize
+  const [isExpanded, setIsExpanded] = useState(false);
+  // TODO: Handle dragable resize
   const modelSettingsSchema = promptSchema?.model_settings;
   const promptMetadataSchema = promptSchema?.prompt_metadata;
 
   return (
-    <Flex
-      direction="column"
-      justify="space-between"
-      style={{ borderLeft: "1px solid grey" }}
-    >
-      <ModelSettingsRenderer prompt={prompt} schema={modelSettingsSchema} />
-      <PromptMetadataRenderer prompt={prompt} schema={promptMetadataSchema} />
-      {checkParametersSupported(prompt) && (
-        <PromptParametersRenderer prompt={prompt} />
+    <Flex direction="column" justify="space-between">
+      {isExpanded ? (
+        <>
+          <ActionIcon size="sm" onClick={() => setIsExpanded(false)}>
+            <IconClearAll />
+          </ActionIcon>
+          <ModelSettingsRenderer prompt={prompt} schema={modelSettingsSchema} />
+          <PromptMetadataRenderer
+            prompt={prompt}
+            schema={promptMetadataSchema}
+          />
+          {checkParametersSupported(prompt) && (
+            <PromptParametersRenderer prompt={prompt} />
+          )}{" "}
+        </>
+      ) : (
+        <ActionIcon size="sm" onClick={() => setIsExpanded(true)}>
+          <IconClearAll />
+        </ActionIcon>
       )}
     </Flex>
   );

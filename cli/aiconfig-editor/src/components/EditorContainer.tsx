@@ -51,7 +51,7 @@ export default function EditorContainer({
 
   return (
     <>
-      <Container>
+      <Container maw="80rem">
         <Group grow m="sm">
           <Button onClick={onBackNavigation} variant="default" mr="lg">
             Back
@@ -64,7 +64,7 @@ export default function EditorContainer({
           </Button>
         </Group>
       </Container>
-      <Container>
+      <Container maw="80rem">
         {aiconfig.prompts.map((prompt: any, i: number) => {
           return (
             <PromptContainer
