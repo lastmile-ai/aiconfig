@@ -15,6 +15,7 @@ import _ from "lodash";
 import { getAPIKeyFromEnv } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
+import { PaLMTextParser } from "./parsers/palm";
 import { extractOverrideSettings } from "./utils";
 import { HuggingFaceTextGenerationParser } from "./parsers/hf";
 import { CallbackEvent, CallbackManager } from "./callback";
@@ -57,8 +58,8 @@ ModelParserRegistry.registerModelParser(new OpenAIChatModelParser(), [
   "gpt-3.5-turbo-0613",
   "gpt-3.5-turbo-16k-0613",
 ]);
-
 ModelParserRegistry.registerModelParser(new HuggingFaceTextGenerationParser());
+ModelParserRegistry.registerModelParser(new PaLMTextParser());
 
 /**
  * Represents an AIConfig. This is the main class for interacting with AIConfig files.
@@ -276,7 +277,7 @@ export class AIConfigRuntime implements AIConfig {
    * @param id The ID of the model parser to get.
    */
   public static getModelParser(id: string) {
-    ModelParserRegistry.getModelParser(id);
+    return ModelParserRegistry.getModelParser(id);
   }
 
   //#endregion
