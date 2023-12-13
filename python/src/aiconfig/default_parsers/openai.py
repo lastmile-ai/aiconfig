@@ -7,6 +7,7 @@ from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.util.parser_utils import retry_with_exponential_backoff
 from aiconfig.util.params import (
     resolve_prompt,
     resolve_prompt_string,
@@ -258,7 +259,7 @@ class OpenAIInference(ParameterizedModelParser):
 
         completion_data["stream"] = stream
 
-        response = openai.chat.completions.create(**completion_data)
+        response = openai_chat_completion_with_backoff(**completion_data)
         outputs = []
         if not stream:
             # # OpenAI>1.0.0 uses pydantic models for response
@@ -506,3 +507,8 @@ def is_prompt_template(prompt: Prompt):
     return isinstance(prompt.input, str) or (
         hasattr(prompt.input, "data") and isinstance(prompt.input.data, str)
     )
+
+
+@retry_with_exponential_backoff
+def openai_chat_completion_with_backoff(**kwargs):
+    return openai.chat.completions.create(**kwargs)
