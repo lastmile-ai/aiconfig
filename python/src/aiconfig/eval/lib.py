@@ -8,20 +8,20 @@ from aiconfig.Config import AIConfigRuntime
 from result import Ok, Result
 
 from aiconfig.eval.common import (
-    Metric,
     SampleMetricValue,
     T_InputDatum,
     T_OutputDatum,
 )
+from aiconfig.eval.metrics import Metric
 
 logging.basicConfig(format=cu.LOGGER_FMT)
 logger = logging.getLogger(__name__)
 
 
-# Each test is a (input_datum, evaluation_fn) pair
+# Each test is a (input_datum, Metric) pair
 UserTestSuiteWithInputs = Sequence[Tuple[str, Metric[str]]]
 
-# Each test is a (output_datum, evaluation_fn) pair
+# Each test is a (output_datum, Metric) pair
 UserTestSuiteOutputsOnly = Sequence[Tuple[str, Metric[str]]]
 
 
@@ -80,6 +80,9 @@ DatasetEvaluationResult = Sequence[SampleEvaluationResult[T_InputDatum, T_Output
 
 @dataclass(frozen=True)
 class SampleEvaluationParams(Generic[T_InputDatum, T_OutputDatum]):
+    # input_sample doesn't _need_ to be here, because we already have
+    # output_sample ready to input to eval.
+    # input_sample is here for documentation/debugging.
     input_sample: T_InputDatum | None
     output_sample: T_OutputDatum
     metric: Metric[T_OutputDatum]
@@ -102,14 +105,14 @@ def evaluate(
             eval_params.output_sample,
             eval_params.metric,
         )
-        evaluation_fn = metric.calculate
-        res_ = evaluation_fn(sample)
+        calculate = metric.evaluation_fn
+        res_ = calculate(sample)
         logger.debug(f"{res_=}")
         result = SampleEvaluationResult(
             input_datum=eval_params.input_sample,
             output_datum=sample,
             metric_value=SampleMetricValue(
-                value=res_, interpretation=metric.interpretation
+                value=res_, metric_metadata=metric.metric_metadata
             ),
         )
         results.append(result)
@@ -127,11 +130,11 @@ def eval_res_to_df(
                 input=sample_res.input_datum,
                 aiconfig_output=sample_res.output_datum,
                 value=sample_res.metric_value.value,
-                metric_id=sample_res.metric_value.interpretation.id,
-                metric_name=sample_res.metric_value.interpretation.name,
-                metric_description=sample_res.metric_value.interpretation.description,
-                best_possible_value=sample_res.metric_value.interpretation.best_value,
-                worst_possible_value=sample_res.metric_value.interpretation.worst_value,
+                metric_id=sample_res.metric_value.metric_metadata.id,
+                metric_name=sample_res.metric_value.metric_metadata.name,
+                metric_description=sample_res.metric_value.metric_metadata.description,
+                best_possible_value=sample_res.metric_value.metric_metadata.best_value,
+                worst_possible_value=sample_res.metric_value.metric_metadata.worst_value,
             )
         )
     df = pd.DataFrame.from_records(records)  # type: ignore[no-untyped-call]
@@ -146,14 +149,22 @@ def eval_res_to_df(
 async def user_test_suite_with_inputs_to_eval_params_list(
     test_suite: UserTestSuiteWithInputs, prompt_name: str, aiconfig: AIConfigRuntime
 ) -> Result[Sequence[SampleEvaluationParams[TextInput, TextOutput]], str]:
+    """
+    Example in/out:
+        [("hello", brevity)] -> [SampleEvaluationParams("hello", "output_is_world", brevity)]
+    """
     out: list[SampleEvaluationParams[TextInput, TextOutput]] = []
-    grouped: dict[str, list[Metric[str]]] = {}
-    for input_datum, metric in test_suite:
-        if input_datum not in grouped:
-            grouped[input_datum] = []
-        grouped[input_datum].append(metric)
 
-    all_inputs = list(grouped.keys())
+    # Group by input so that we only run each input through the AIConfig once.
+    # This is sort of an optimization because the user can give the same input
+    # multiple times (with different metrics).
+    input_to_metrics_mapping: dict[str, list[Metric[str]]] = {}
+    for input_datum, metric in test_suite:
+        if input_datum not in input_to_metrics_mapping:
+            input_to_metrics_mapping[input_datum] = []
+        input_to_metrics_mapping[input_datum].append(metric)
+
+    all_inputs = list(input_to_metrics_mapping.keys())
 
     async def _run(input_datum: str) -> Result[TextOutput, str]:
         return (await run_aiconfig_helper(aiconfig, prompt_name, input_datum)).map(
@@ -177,7 +188,7 @@ async def user_test_suite_with_inputs_to_eval_params_list(
         # of awaitables in aws.
         outputs_by_input = dict(zip(all_inputs, outputs))
 
-        for input_datum, metrics in grouped.items():
+        for input_datum, metrics in input_to_metrics_mapping.items():
             for metric in metrics:
                 out.append(
                     SampleEvaluationParams(
@@ -194,6 +205,9 @@ async def user_test_suite_with_inputs_to_eval_params_list(
 def user_test_suite_outputs_only_to_eval_params_list(
     test_suite: UserTestSuiteOutputsOnly,
 ) -> Sequence[SampleEvaluationParams[TextInput, TextOutput]]:
+    """
+    Example: [("the_output_is_world", brevity)] -> [SampleEvaluationParams(None, "the_output_is_world", brevity)
+    """
     return [
         SampleEvaluationParams(
             input_sample=None, output_sample=TextOutput(output_datum), metric=metric

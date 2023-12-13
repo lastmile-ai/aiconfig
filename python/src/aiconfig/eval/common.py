@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import json
 from typing import Any, Generic
 from abc import abstractmethod
@@ -12,7 +11,7 @@ T_InputDatum = TypeVar("T_InputDatum", contravariant=True)
 T_OutputDatum = TypeVar("T_OutputDatum", contravariant=True)
 
 
-class SampleEvaluationFunction(Protocol, Generic[T_OutputDatum]):
+class EvaluationFunction(Protocol, Generic[T_OutputDatum]):
     @abstractmethod
     def __call__(self, output_datum: T_OutputDatum) -> float:
         pass
@@ -35,7 +34,7 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
             ```
                 # Helper function
                 def extract_id(matcher, matcher_input):
-                    return matcher(matcher_input).interpretation.id
+                    return matcher(matcher_input).metric_metadata.id
 
                 # These two metrics share everything but the substring.
                 matcher1 = substring_match("hello")
@@ -99,29 +98,15 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
     extra_metadata: dict[str, Any] = {}
 
 
-@dataclass(frozen=True)
-class Metric(Generic[T_OutputDatum]):
-    calculate: SampleEvaluationFunction[T_OutputDatum]
-    interpretation: EvaluationMetricMetadata[T_OutputDatum]
-
-
-    def __call__(self, output_datum: T_OutputDatum) -> Any:
-        """
-        For convenience, make a Metric callable.
-        Similar to torch Module `forward()`.
-        """
-        return self.calculate(output_datum)
-
-
 class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
     value: float
-    interpretation: EvaluationMetricMetadata[T_OutputDatum]
+    metric_metadata: EvaluationMetricMetadata[T_OutputDatum]
 
     @root_validator(pre=True)
     def check_value_range(cls, values: dict[str, Any]) -> dict[str, Any]:
         worst_value, best_value = (
-            values["interpretation"].worst_value,
-            values["interpretation"].best_value,
+            values["metric_metadata"].worst_value,
+            values["metric_metadata"].best_value,
         )
         value = values["value"]
         if worst_value == best_value:
@@ -129,8 +114,8 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
         if worst_value < best_value and not worst_value <= value <= best_value:
             raise ValueError(
                 f"""
-                    [{values["interpretation"].name}]
-                    {values["interpretation"].description}
+                    [{values["metric_metadata"].name}]
+                    {values["metric_metadata"].description}
 
                     Value {value} is not in range [{worst_value}, {best_value}]. 
                     You defined worst_value = {worst_value} and best_value = {best_value},
@@ -140,8 +125,8 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
         if worst_value > best_value and not worst_value >= value >= best_value:
             raise ValueError(
                 f"""
-                    [{values["interpretation"].name}]
-                    {values["interpretation"].description}
+                    [{values["metric_metadata"].name}]
+                    {values["metric_metadata"].description}
 
                     Value {value} is not in range [{worst_value}, {best_value}]. 
                     You defined worst_value = {worst_value} and best_value = {best_value},

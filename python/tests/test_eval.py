@@ -37,6 +37,13 @@ class MockAIConfigRuntime(AIConfigRuntime):
         options: InferenceOptions | None = None,
         **kwargs,
     ) -> str:
+        """
+        This overrides the real method for mocking, but the output doesn't matter very much.
+        We're currently not really testing properties of the output.
+        We just have to return a string so the tests work.
+
+        Real method: https://github.com/lastmile-ai/aiconfig/blob/a4376d1f951e19776633d397a3cda7fa85506eef/python/src/aiconfig/Config.py#L277
+        """
         params_ = params or {}
         assert params_.keys() == {
             "the_query"
@@ -166,7 +173,7 @@ async def test_run_test_suite_with_inputs(data: st.DataObject):
             ]
 
             input_pairs = {
-                (input_datum, metric.interpretation.id)
+                (input_datum, metric.metric_metadata.id)
                 for input_datum, metric in user_test_suite_with_inputs
             }
             result_pairs = set(  # type: ignore[no-untyped-call]
