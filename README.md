@@ -30,7 +30,7 @@ AIConfig is a framework that makes it easy to build generative AI applications f
 It allows you to store and iterate on generative AI behavior separately from your application code, offering a streamlined AI development workflow.
 
 <div style="text-align:center;">
-    <img src="aiconfig-docs/static/img/aiconfig_dataflow.png" alt="AIConfig flow" style="width:40%;">
+    <img src="aiconfig-docs/static/img/aiconfig_dataflow.png" alt="AIConfig flow">
 </div>
 
 **[More context here](#why-is-this-important).**
@@ -92,10 +92,8 @@ AIConfigs are JSON-serializable configs that store your prompts, models, and mod
 </code></pre>
 </details>
 
-<br>
-
 The core SDK allows you to use your AIConfig easily in your application code.
-We cover Python instructions here, for Node.js please see the detailed Getting Started guide.
+We cover Python instructions here, for Node.js please see the detailed Getting Started guide [here](https://aiconfig.lastmileai.dev/docs/getting-started).
 The example below shows python below uses `trip_planner_aiconfig.json` shared above.
 
 Resources: [Getting Started Docs](https://aiconfig.lastmileai.dev/docs/getting-started) | [YouTube Demo Video](https://www.youtube.com/watch?v=X_Z-M2ZcpjA) | [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1RlGQmtR0uK7OTI5nG10E219JoH2mgAQr#scrollTo=h2G7ThhyFWxg)
@@ -159,11 +157,11 @@ AIConfig helps unwind complexity by separating prompts, model parameters, and mo
 
 ## Features
 
-- **Prompts as Configs**: a [standardized JSON format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to store prompt chains and model settings in source control.
+- **Prompts as Configs**: [standardized JSON format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to store prompt and model settings in source control.
 - **Editor for Prompt Chains**: Prototype and iterate on your prompt chains and model settings in [AI Workbooks](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9).
-- **Model-agnostic SDK**: Access the latest models from OpenAI, Google, Meta, and HuggingFace - easily extensible to work with any generative AI model.
-- **Multimodal Capabilities**: Build multimodal AI apps that chain text, image, and audio models together.
-- **Improved Collaboration**: Different people can be responsible for prompt engineering and app development. AIConfig makes it easy to work together given the separation of concerns between generative AI settings and app code.
+- **Model-agnostic SDK**: Access the latest models from OpenAI, Google, Meta, and HuggingFace - easily support your own model.
+- **Multimodal Support**: Build multimodal AI apps that chain text, image, and audio models together.
+- **Improved Collaboration**: Different people can be responsible for prompt engineering vs app development. AIConfig makes it easy to work together given the separation of concerns between generative AI settings and app code.
 
 ## Use cases
 
@@ -189,11 +187,11 @@ AIConfig supports the following models out of the box. See examples:
 - [Gemini](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Gemini)
 - [LLaMA](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/llama)
 - [LLaMA Guard](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/LLaMA-Guard)
-- [Google PaLM models (PaLM chat)](<(https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Multi-LLM-Consistency)>)
+- [Google PaLM models (PaLM chat)](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Multi-LLM-Consistency)
 - [Hugging Face Text Generation Task models (Ex. Mistral-7B)](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/HuggingFace)
 
 If you need to use a model that isn't provided out of the box, you can implement a `ModelParser` for it.
-[Instructions on how to support a new model](https://aiconfig.lastmileai.dev/docs/extensibility#1-bring-your-own-model).
+See [instructions](https://aiconfig.lastmileai.dev/docs/extensibility#1-bring-your-own-model) on how to support a new model on AIConfig.
 
 ## Extensibility
 
