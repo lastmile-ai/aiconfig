@@ -1,5 +1,5 @@
 <div align="center"><picture>
-  <img alt="aiconfig" src="https://github.com/lastmile-ai/aiconfig/assets/81494782/d94f4f67-466a-4207-a46b-069f260e6ef4"/>
+  <img alt="aiconfig" src="aiconfig-docs/static/img/readme_small_logo.png" width="200"/>
 </picture></div>
 <br/>
 
@@ -29,8 +29,8 @@
 AIConfig is a framework that makes it easy to build generative AI applications for production. It manages generative AI prompts, models and model parameters as JSON-serializable configs that can be version controlled, evaluated, monitored and opened in a notebook playground for rapid prototyping.
 It allows you to store and iterate on generative AI behavior separately from your application code, offering a streamlined AI development workflow.
 
-<div style="text-align:center;">
-    <img src="aiconfig-docs/static/img/aiconfig_dataflow.png" alt="AIConfig flow">
+<div style="center">
+    <img src="aiconfig-docs/static/img/aiconfig_dataflow.png" alt="AIConfig flow" width="500">
 </div>
 
 **[More context here](#why-is-this-important).**
