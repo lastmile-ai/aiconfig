@@ -396,7 +396,9 @@ export class AIConfigRuntime implements AIConfig {
         `E1014: Unable to run prompt '${promptName}': ModelParser for model ${modelName} does not exist`
       );
     }
-
+    
+    // Clear previous run outputs if they exist
+    this.deleteOutput(promptName);
     const result = await modelParser.run(prompt, this, options, params);
 
     // Update the prompt's outputs
