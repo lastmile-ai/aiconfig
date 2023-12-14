@@ -1,3 +1,20 @@
-huggingface_hub
+#Linters
+black
+pylint
+
+# AIConfig
 python-aiconfig
+
+#Hugging Face Libraries - Remote Infernce Client 
+huggingface_hub
+
+#Hugging Face Libraries - Local Inference Tranformers & Diffusors
+accelerate # Used to help speed up image generation
+diffusers # Used for image + audio generation
+torch
+torchvision
+torchaudio
+transformers # Used for text generation
+
+#Other
 asyncio
