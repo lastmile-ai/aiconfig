@@ -10,10 +10,10 @@ import constants from '@site/core/tabConstants';
 
 Passing data into prompts is fundamental to `aiconfig`. It allows you to store prompt _templates_ as the config, and resolve the template into a prompt by passing in data.
 
-In `aiconfig`, data flow is accomplished using parameters. Parameters can be defined statically in the [`aiconfig` metadata](/docs/overview/ai-config-format#metadata), and also passed in dynamically when using the AIConfig SDK.
+In `aiconfig`, data flow is accomplished using parameters. Parameters can be defined statically in the [`aiconfig` metadata](/docs/ai-config-format#metadata), and also passed in dynamically when using the AIConfig SDK.
 
 :::info
-Parameters allow you to pass data _into_ prompts, as well as _between_ prompts. For more information on the latter, see [Parameter Chains](/docs/overview/define-prompt-chain#parameter-chains).
+Parameters allow you to pass data _into_ prompts, as well as _between_ prompts. For more information on the latter, see [Parameter Chains](/docs/define-prompt-chain#parameter-chains).
 :::
 
 ## Parameter syntax
@@ -64,7 +64,7 @@ In this case, `sql_language` is set to `postgresql` by default, but overridden t
 ```
 
 :::info
-Read more about the `aiconfig` metadata schema [here](docs/overview/ai-config-format#metadata).
+Read more about the `aiconfig` metadata schema [here](docs/ai-config-format#metadata).
 :::
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
@@ -234,7 +234,7 @@ For the default model parsers (e.g. GPT-\*, PaLM, Hugging Face Text Generation),
 
 ## Passing data into a prompt chain
 
-Passing data into a [prompt chain](/docs/overview/define-prompt-chain#what-are-prompt-chains) is no different than passing data into a single prompt.
+Passing data into a [prompt chain](/docs/define-prompt-chain#what-are-prompt-chains) is no different than passing data into a single prompt.
 
 In the example above, the `translate` prompt is a prompt chain because it depends on the output of the `write_sql` prompt:
 

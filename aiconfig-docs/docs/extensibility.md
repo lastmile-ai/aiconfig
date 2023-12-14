@@ -65,8 +65,8 @@ In some cases, you may want to create a specialized `ModelParser` that handles p
 :::info
 In AIConfig, parameters refer to the handlebar syntax used by prompt inputs to denote a placeholder for another value. Learn more in the following sections:
 
-- [Passing data into prompts](/docs/overview/parameters)
-- [Parameter chains](/docs/overview/define-prompt-chain)
+- [Passing data into prompts](/docs/parameters)
+- [Parameter chains](/docs/define-prompt-chain)
 
 :::
 
@@ -114,10 +114,10 @@ The AIConfig SDK has a `CallbackManager` class provides a stack trace of what's 
 
 Anyone can register a callback, and filter for the events they care about. You can subsequently use these callbacks to integrate with your own monitoring and observability systems.
 
-See the [**Tracing & Monitoring**](/docs/overview/monitoring-aiconfig) section to learn how to use event callbacks
+See the [**Tracing & Monitoring**](/docs/monitoring-aiconfig) section to learn how to use event callbacks
 
 ## 3. Custom metadata
 
-You can store any kind of JSON-serializable metadata in an `aiconfig`. See the [metadata schema details](/docs/overview/ai-config-format#metadata) to learn more.
+You can store any kind of JSON-serializable metadata in an `aiconfig`. See the [metadata schema details](/docs/ai-config-format#metadata) to learn more.
 
 To add metadata, use the `config.set_metadata` (Python) or `config.setMetadata` (TypeScript) API.

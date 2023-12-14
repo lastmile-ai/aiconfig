@@ -14,7 +14,7 @@ import constants from '@site/core/tabConstants';
 If you want to re-run the transitive closure of dependencies in a prompt chain, call `config.run("prompt_name", params, options, run_with_dependencies=True)`.
 :::
 
-Once you've [created an `aiconfig`](/docs/overview/create-an-aiconfig), defined your prompts and [prompt chains](/docs/overview/define-prompt-chain), it is time to run the prompt.
+Once you've [created an `aiconfig`](/docs/create-an-aiconfig), defined your prompts and [prompt chains](/docs/define-prompt-chain), it is time to run the prompt.
 
 Running a prompt means invoking model inference for that prompt. The interface for running a prompt is the same no matter what underlying model is being invoked. This is one of the things that makes `aiconfig` powerful -- by removing model-specific logic from your application code, it streamlines your application and helps you iterate faster.
 
@@ -48,8 +48,8 @@ async function runPrompt() {
 Under the covers, the `run` function does a couple of things:
 
 - It deserializes the given prompt into the data type expected by the model's inference endpoint.
-- It applies model settings specified in the prompt and global [metadata](/docs/overview/ai-config-format#metadata).
-- It passes data using [parameters](/docs/overview/parameters) specified in the `run` call.
+- It applies model settings specified in the prompt and global [metadata](/docs/ai-config-format#metadata).
+- It passes data using [parameters](/docs/parameters) specified in the `run` call.
 - It calls the model's inference endpoint with the fully resolved arguments in the shape expected by the model.
 - Finally, it caches the resulting outputs in the `AIConfigRuntime` object.
 
@@ -131,7 +131,7 @@ async function travelWithGPT() {
 
 ### Re-running the entire chain
 
-Running with dependencies is useful to re-executing [prompt chains](/docs/overview/define-prompt-chain).
+Running with dependencies is useful to re-executing [prompt chains](/docs/define-prompt-chain).
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
 <TabItem value="python">
@@ -212,4 +212,4 @@ async function streamOutputs() {
 
 ## Passing data into prompts
 
-You can pass data into prompts using parameters. Please see [this guide](/docs/overview/parameters) to learn more.
+You can pass data into prompts using parameters. Please see [this guide](/docs/parameters) to learn more.

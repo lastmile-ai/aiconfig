@@ -16,7 +16,7 @@ Please read [AIConfig Basics](/docs/basics) to understand the motivation behind 
 
 ## Installation
 
-The [`aiconfig` file format](/docs/overview/ai-config-format) is best used with the AIConfig SDK. To install the SDK, use your favorite package manager:
+The [`aiconfig` file format](/docs/ai-config-format) is best used with the AIConfig SDK. To install the SDK, use your favorite package manager:
 
 #### Python
 
@@ -351,11 +351,11 @@ Tutorial code can be found [here](https://github.com/lastmile-ai/aiconfig/tree/a
 
 There is a lot you can do with `aiconfig`. We have several other tutorials to help get you started:
 
-- [Create an AIConfig from scratch](/docs/overview/create-an-aiconfig)
-- [Run a prompt](/docs/overview/run-aiconfig)
-- [Pass data into prompts](/docs/overview/parameters)
-- [Prompt chains](/docs/overview/define-prompt-chain)
-- [Callbacks and monitoring](/docs/overview/monitoring-aiconfig)
+- [Create an AIConfig from scratch](/docs/create-an-aiconfig)
+- [Run a prompt](/docs/run-aiconfig)
+- [Pass data into prompts](/docs/parameters)
+- [Prompt chains](/docs/define-prompt-chain)
+- [Callbacks and monitoring](/docs/monitoring-aiconfig)
 
 ### Cookbooks
 

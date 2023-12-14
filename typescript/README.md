@@ -4,7 +4,7 @@
 
 AIConfig saves prompts, models and model parameters as source control friendly configs. This allows you to iterate on prompts and model parameters _separately from your application code_.
 
-1. **Prompts as configs**: a [standardized JSON format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to store generative AI model settings, prompt inputs/outputs, and flexible metadata.
+1. **Prompts as configs**: a [standardized JSON format](https://aiconfig.lastmileai.dev/docs/ai-config-format) to store generative AI model settings, prompt inputs/outputs, and flexible metadata.
 2. **Model-agnostic SDK**: Python & Node SDKs to use `aiconfig` in your application code. AIConfig is designed to be **model-agnostic** and **multi-modal**, so you can extend it to work with any generative AI model, including text, image and audio.
 3. **AI Workbook editor**: A [notebook-like playground](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9) to edit `aiconfig` files visually, run prompts, tweak models and model settings, and chain things together.
 
@@ -29,11 +29,11 @@ AIConfig helps unwind complexity by separating prompts, model parameters, and mo
 <ul style="margin-bottom:0; padding-bottom:0;">
   <li><a href="#install">Getting Started</a></li>
   <ul style="margin-bottom:0; padding-bottom:0;">
-    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/create-an-aiconfig">Create an AIConfig</a></li>
-    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/run-aiconfig">Run a prompt</a></li>
-    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/parameters">Pass data into prompts</a></li>
-    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/define-prompt-chain">Prompt Chains</a></li>
-    <li><a href="https://aiconfig.lastmileai.dev/docs/overview/monitoring-aiconfig">Callbacks and monitoring</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/create-an-aiconfig">Create an AIConfig</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/run-aiconfig">Run a prompt</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/parameters">Pass data into prompts</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/define-prompt-chain">Prompt Chains</a></li>
+    <li><a href="https://aiconfig.lastmileai.dev/docs/monitoring-aiconfig">Callbacks and monitoring</a></li>
   </ul>
   <li><a href="#aiconfig-sdk">SDK Cheatsheet</a></li>
   <li><a href="#cookbooks">Cookbooks and guides</a></li>
@@ -58,7 +58,7 @@ AIConfig helps unwind complexity by separating prompts, model parameters, and mo
 
 ## Features
 
-- [x] **Source-control friendly** [`aiconfig` format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to save prompts and model settings, which you can use for evaluation, reproducibility and simplifying your application code.
+- [x] **Source-control friendly** [`aiconfig` format](https://aiconfig.lastmileai.dev/docs/ai-config-format) to save prompts and model settings, which you can use for evaluation, reproducibility and simplifying your application code.
 - [x] **Multi-modal and model agnostic**. Use with any model, and serialize/deserialize data with the same `aiconfig` format.
 - [x] **Prompt chaining and parameterization** with [{{handlebars}}](https://handlebarsjs.com/) templating syntax, allowing you to pass dynamic data into prompts (as well as between prompts).
 - [x] **Streaming** supported out of the box, allowing you to get playground-like streaming wherever you use `aiconfig`.
@@ -253,11 +253,11 @@ Try out the workbook playground here: **[NYC Travel Workbook](https://lastmileai
 
 There is a lot you can do with `aiconfig`. We have several other tutorials to help get you started:
 
-- [Create an AIConfig from scratch](https://aiconfig.lastmileai.dev/docs/overview/create-an-aiconfig)
-- [Run a prompt](https://aiconfig.lastmileai.dev/docs/overview/run-aiconfig)
-- [Pass data into prompts](https://aiconfig.lastmileai.dev/docs/overview/parameters)
-- [Prompt chains](https://aiconfig.lastmileai.dev/docs/overview/define-prompt-chain)
-- [Callbacks and monitoring](https://aiconfig.lastmileai.dev/docs/overview/monitoring-aiconfig)
+- [Create an AIConfig from scratch](https://aiconfig.lastmileai.dev/docs/create-an-aiconfig)
+- [Run a prompt](https://aiconfig.lastmileai.dev/docs/run-aiconfig)
+- [Pass data into prompts](https://aiconfig.lastmileai.dev/docs/parameters)
+- [Prompt chains](https://aiconfig.lastmileai.dev/docs/define-prompt-chain)
+- [Callbacks and monitoring](https://aiconfig.lastmileai.dev/docs/monitoring-aiconfig)
 
 Here are some example uses:
 
@@ -287,7 +287,7 @@ AIConfig supports the following model models out of the box:
 
 ## AIConfig Schema
 
-[AIConfig specification](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format)
+[AIConfig specification](https://aiconfig.lastmileai.dev/docs/ai-config-format)
 
 ## AIConfig SDK
 
@@ -390,7 +390,7 @@ config.setCallbackManager(callbackManager);
 await config.run("prompt_name");
 ```
 
-[**Read more** here](https://aiconfig.lastmileai.dev/docs/overview/monitoring-aiconfig)
+[**Read more** here](https://aiconfig.lastmileai.dev/docs/monitoring-aiconfig)
 
 ## Extensibility
 
@@ -424,7 +424,7 @@ We provide several guides to demonstrate the power of `aiconfig`.
 
 - [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
 
-At its core, RAG is about passing data into prompts. Read how to [pass data](/docs/overview/parameters) with AIConfig.
+At its core, RAG is about passing data into prompts. Read how to [pass data](/docs/parameters) with AIConfig.
 
 ### Function calling
 
@@ -520,7 +520,7 @@ You can also choose to save outputs to a _different_ file than the original conf
 
 ### Why should I use `aiconfig` instead of things like [configurator](https://pypi.org/project/configurator/)?
 
-It helps to have a [standardized format](http://aiconfig.lastmileai.dev/docs/overview/ai-config-format) specifically for storing generative AI prompts, inference results, model parameters and arbitrary metadata, as opposed to a general-purpose configuration schema.
+It helps to have a [standardized format](http://aiconfig.lastmileai.dev/docs/ai-config-format) specifically for storing generative AI prompts, inference results, model parameters and arbitrary metadata, as opposed to a general-purpose configuration schema.
 
 With that standardization, you just need a layer that knows how to serialize/deserialize from that format into whatever the inference endpoints require.
 

@@ -220,6 +220,6 @@ Custom callbacks should include error handling to manage exceptions. Errors thro
 
 ### Custom metadata
 
-You can store any kind of JSON-serializable metadata in an `aiconfig`. See the [metadata schema details](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format#metadata) to learn more.
+You can store any kind of JSON-serializable metadata in an `aiconfig`. See the [metadata schema details](https://aiconfig.lastmileai.dev/docs/ai-config-format#metadata) to learn more.
 
 To add metadata, use the `config.setMetadata` API (available in both Python and TypeScript).

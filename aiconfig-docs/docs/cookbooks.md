@@ -16,7 +16,7 @@ The [cookbooks](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks) dir
 
 - [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
 
-At its core, RAG is about passing data into prompts. Read how to [pass data](/docs/overview/parameters) with AIConfig.
+At its core, RAG is about passing data into prompts. Read how to [pass data](/docs/parameters) with AIConfig.
 
 ### Function calling
 

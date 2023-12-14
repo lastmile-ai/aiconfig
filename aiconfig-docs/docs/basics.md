@@ -30,11 +30,11 @@ AIConfig helps unwind complexity by separating prompts, model parameters, and mo
 
 ![AIConfig flow](/img/aiconfig_dataflow.png)
 
-1. **[`aiconfig` file format](/docs/overview/ai-config-format)**: a standardized JSON format to store generative AI model settings, prompt inputs and outputs, and flexible multi-purpose metadata.
+1. **[`aiconfig` file format](/docs/ai-config-format)**: a standardized JSON format to store generative AI model settings, prompt inputs and outputs, and flexible multi-purpose metadata.
 2. **[AIConfig SDK](https://github.com/lastmile-ai/aiconfig#aiconfig-sdk)**: Python and Node SDKs to use `aiconfig` in your application code, and extension points to customize behavior.
 3. **[AI Workbook editor](https://lastmileai.dev/workbooks/clm7b9yez00mdqw70majklrmx)**: A notebook-like playground to edit `aiconfig` files visually, run prompts, tweak models and model settings, and chain things together.
 
-AIConfig is **multi-modal** and **model-agnostic**. This enables powerful interop between different models and modalities, including chaining them together (see [prompt chaining](/docs/overview/define-prompt-chain)). For example, a Whisper (speech-to-text) prompt can be connected to a GPT4-V prompt (image+text-to-text) to build complex AI applications, all backed by the same `aiconfig` serialization format.
+AIConfig is **multi-modal** and **model-agnostic**. This enables powerful interop between different models and modalities, including chaining them together (see [prompt chaining](/docs/define-prompt-chain)). For example, a Whisper (speech-to-text) prompt can be connected to a GPT4-V prompt (image+text-to-text) to build complex AI applications, all backed by the same `aiconfig` serialization format.
 
 ## Prompts as configs
 
@@ -49,16 +49,16 @@ Separating prompt management from application development leads to a few powerfu
 ## Using AIConfig
 
 :::tip
-See the [Getting Started](/docs/getting-started) guide for a more detailed overview, and spend time getting familiar with the [`aiconfig` file format](/docs/overview/ai-config-format).
+See the [Getting Started](/docs/getting-started) guide for a more detailed overview, and spend time getting familiar with the [`aiconfig` file format](/docs/ai-config-format).
 :::
 
 Here are the basics of interacting with `aiconfig`:
 
-- [Create an AIConfig from scratch](/docs/overview/create-an-aiconfig)
-- [Run a prompt](/docs/overview/run-aiconfig)
-- [Pass data into prompts](/docs/overview/parameters)
-- [Prompt chains](/docs/overview/define-prompt-chain)
-- [Callbacks and monitoring](/docs/overview/monitoring-aiconfig)
+- [Create an AIConfig from scratch](/docs/create-an-aiconfig)
+- [Run a prompt](/docs/run-aiconfig)
+- [Pass data into prompts](/docs/parameters)
+- [Prompt chains](/docs/define-prompt-chain)
+- [Callbacks and monitoring](/docs/monitoring-aiconfig)
 
 ### Guides
 
