@@ -19,6 +19,16 @@ Once you've [created an `aiconfig`](/docs/overview/create-an-aiconfig), defined 
 Running a prompt means invoking model inference for that prompt. The interface for running a prompt is the same no matter what underlying model is being invoked. This is one of the things that makes `aiconfig` powerful -- by removing model-specific logic from your application code, it streamlines your application and helps you iterate faster.
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python title="app.py"
+from aiconfig import AIConfigRuntime
+
+config = AIConfigRuntime.load('aiconfig.json')
+result = await config.run("prompt_name")
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -30,16 +40,6 @@ async function runPrompt() {
   const result = await config.run("prompt_name");
   return result;
 }
-```
-
-</TabItem>
-<TabItem value="python">
-
-```python title="app.py"
-from aiconfig import AIConfigRuntime
-
-config = AIConfigRuntime.load('aiconfig.json')
-result = await config.run("prompt_name")
 ```
 
 </TabItem>
@@ -95,6 +95,19 @@ Consider the following example `aiconfig`. `gen_itinerary` is a prompt chain tha
 By default, calling `gen_itinerary` will use the cached output for `get_activities`.
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python title="app.py"
+from aiconfig import AIConfigRuntime, InferenceOptions
+config = AIConfigRuntime.load('travel.aiconfig.json')
+
+await config.run("get_activities")
+
+# Uses the cached output for `get_activities` to resolve the `gen_itinerary` prompt
+await config.run("gen_itinerary");
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -114,19 +127,6 @@ async function travelWithGPT() {
 ```
 
 </TabItem>
-<TabItem value="python">
-
-```python title="app.py"
-from aiconfig import AIConfigRuntime, InferenceOptions
-config = AIConfigRuntime.load('travel.aiconfig.json')
-
-await config.run("get_activities")
-
-# Uses the cached output for `get_activities` to resolve the `gen_itinerary` prompt
-await config.run("gen_itinerary");
-```
-
-</TabItem>
 </Tabs>
 
 ### Re-running the entire chain
@@ -134,6 +134,17 @@ await config.run("gen_itinerary");
 Running with dependencies is useful to re-executing [prompt chains](/docs/overview/define-prompt-chain).
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python title="app.py"
+from aiconfig import AIConfigRuntime, InferenceOptions
+config = AIConfigRuntime.load('travel.aiconfig.json')
+
+# Re-runs `get_activities` first, and then uses the output to resolve the `gen_itinerary` prompt
+await config.run("gen_itinerary", run_with_dependencies=True);
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -151,17 +162,6 @@ async function travelWithGPT() {
 ```
 
 </TabItem>
-<TabItem value="python">
-
-```python title="app.py"
-from aiconfig import AIConfigRuntime, InferenceOptions
-config = AIConfigRuntime.load('travel.aiconfig.json')
-
-# Re-runs `get_activities` first, and then uses the output to resolve the `gen_itinerary` prompt
-await config.run("gen_itinerary", run_with_dependencies=True);
-```
-
-</TabItem>
 </Tabs>
 
 ## Streaming outputs
@@ -171,6 +171,17 @@ The `run` API makes it easy to stream outputs in a consistent way across any mod
 You can pass in an `InferenceOptions` object, which allows you to specify a streaming callback:
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python title="app.py"
+from aiconfig import AIConfigRuntime, InferenceOptions
+config = AIConfigRuntime.load('travel.aiconfig.json')
+
+inference_options = InferenceOptions(stream=True) # Defines a console streaming callback
+await config.run("get_activities", options=inference_options)
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -194,17 +205,6 @@ async function streamOutputs() {
   // Run a single prompt
   await aiConfig.run("get_activities", /*params*/ undefined, options);
 }
-```
-
-</TabItem>
-<TabItem value="python">
-
-```python title="app.py"
-from aiconfig import AIConfigRuntime, InferenceOptions
-config = AIConfigRuntime.load('travel.aiconfig.json')
-
-inference_options = InferenceOptions(stream=True) # Defines a console streaming callback
-await config.run("get_activities", options=inference_options)
 ```
 
 </TabItem>

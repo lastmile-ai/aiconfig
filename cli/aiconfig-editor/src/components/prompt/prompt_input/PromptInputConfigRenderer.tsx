@@ -7,7 +7,10 @@ type Props = {
   onChangeInput: (value: PromptInput) => void;
 };
 
-export default memo(function PromptInput({ input, onChangeInput }: Props) {
+export default memo(function PromptInputConfigRenderer({
+  input,
+  onChangeInput,
+}: Props) {
   return (
     <Textarea
       value={input as string}

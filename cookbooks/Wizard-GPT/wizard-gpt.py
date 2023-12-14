@@ -2,6 +2,14 @@ import asyncio
 
 from aiconfig import AIConfigRuntime, InferenceOptions, Prompt
 
+# Create ~/.env file with this line: export OPENAI_API_KEY=<your key here>
+# You can get your key from https://platform.openai.com/api-keys 
+import openai
+import dotenv
+import os
+dotenv.load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
 
 async def main():
     while True:
