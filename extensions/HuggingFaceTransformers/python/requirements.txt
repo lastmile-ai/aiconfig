@@ -5,11 +5,13 @@ pylint
 # AIConfig
 python-aiconfig
 
-#Hugging Face Transformers
-transformers
+#Hugging Face Libraries
+accelerate
+diffusers # Used for image generation
 torch
 torchvision
 torchaudio
+transformers # Used for text generation
 
 #Other
 asyncio
