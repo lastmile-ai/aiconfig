@@ -2,6 +2,7 @@ import base64
 import copy
 import io
 import itertools
+import torch
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from diffusers import AutoPipelineForText2Image
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
@@ -276,11 +277,11 @@ https://huggingface.co/docs/diffusers/using-diffusers/loading
         # num_inference_steps (default value). See here for more details:
         # https://huggingface.co/docs/diffusers/using-diffusers/loading#checkpoint-variants
         if isinstance(model_name, str) and model_name not in self.generators:
+            device = self._get_device()
             self.generators[model_name] = AutoPipelineForText2Image.from_pretrained(
                 pretrained_model_or_path=model_name,
-                safety_checker=None,
                 **pipeline_creation_data
-            )
+            ).to(device)
         generator = self.generators[model_name]
 
         disclaimer_long_response_print_message = """\n
@@ -339,3 +340,11 @@ If that doesn't work, you can also try less computationally intensive models.
                 return output.data
         else:
             return ""
+
+    def _get_device(self) -> str:
+        if torch.cuda.is_available():
+            return "cuda"
+        elif torch.backends.mps.is_available():
+            return "mps"
+        else:
+            "cpu"
