@@ -1,0 +1,37 @@
+{
+  "name": "Exploring Gemini",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {
+      "gemini-pro": {
+        "stream": true
+      }
+    },
+    "default_model": "gemini-pro",
+    "model_parsers": {}
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "multilinguality",
+      "input": "Can you teach me how to say duck in a different language? And, give me a few options.",
+      "metadata": {
+        "model": "gemini-pro",
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": []
+    },
+    {
+      "name": "pronounciation",
+      "input": "Can you explain how to pronounce the {{language}} one?",
+      "metadata": {
+        "model": "gemini-pro",
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": []
+    }
+  ]
+}
