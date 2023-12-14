@@ -71,6 +71,22 @@ For example, in the following `aiconfig`, `prompt1` and `prompt2` are considered
 In order to treat `prompt2` as an individual prompt, you can set `remember_chat_context` to `false` in the prompt's metadata:
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python title="app.py"
+from aiconfig import AIConfigRuntime
+
+config = AIConfigRuntime.load('transformers.aiconfig.json')
+
+config.set_metadata("remember_chat_context", False, "prompt2")
+
+# Runs just prompt2, without conversation history from prompt1
+await config.run("prompt2")
+
+config.save()
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -89,22 +105,6 @@ async function noConversationHistory() {
 
   aiConfig.save();
 }
-```
-
-</TabItem>
-<TabItem value="python">
-
-```python title="app.py"
-from aiconfig import AIConfigRuntime
-
-config = AIConfigRuntime.load('transformers.aiconfig.json')
-
-config.set_metadata("remember_chat_context", False, "prompt2")
-
-# Runs just prompt2, without conversation history from prompt1
-await config.run("prompt2")
-
-config.save()
 ```
 
 </TabItem>
@@ -155,6 +155,22 @@ Effectively, this is a prompt chain between `gen_itinerary` and `get_activities`
 To run this with AIConfig:
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python
+from aiconfig import AIConfigRuntime
+
+config = AIConfigRuntime.load('travel.aiconfig.json')
+
+# This will first run get_activities with GPT-3.5,
+# and then use its output to run the gen_itinerary using GPT-4
+await config.run(
+    "gen_itinerary",
+    options=InferenceOptions(stream=True),
+    run_with_dependencies=True)
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript
@@ -170,22 +186,6 @@ async function runPromptChain() {
   // and then use its output to run the gen_itinerary using GPT-4
   await aiConfig.runWithDependencies("gen_itinerary");
 }
-```
-
-</TabItem>
-<TabItem value="python">
-
-```python
-from aiconfig import AIConfigRuntime
-
-config = AIConfigRuntime.load('travel.aiconfig.json')
-
-# This will first run get_activities with GPT-3.5,
-# and then use its output to run the gen_itinerary using GPT-4
-await config.run(
-    "gen_itinerary",
-    options=InferenceOptions(stream=True),
-    run_with_dependencies=True)
 ```
 
 </TabItem>
