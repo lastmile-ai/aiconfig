@@ -1,3 +1,4 @@
+requests==2.30.0
 black
 flake8
 pylint
@@ -13,3 +14,5 @@ nest_asyncio
 prompt_toolkit
 mock
 pytest-asyncio
+lastmile-utils==0.0.9
+hypothesis==6.91.0

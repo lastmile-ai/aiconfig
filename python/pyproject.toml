@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "python-aiconfig"
-version = "1.1.0"
+version = "1.1.6"
 authors = [
   { name="Sarmad Qadri", email="sarmad@lastmileai.dev" },
 ]
@@ -14,21 +14,10 @@ classifiers = [
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
 ]
+dynamic = ["dependencies"]
 
-dependencies = [
-  "requests==2.30.0",
-  "black",
-  "flake8",
-  "pytest",
-  "pydantic>=2.1",
-  "pybars3",
-  "google-generativeai",
-  "openai>=1.0.0",
-  "python-dotenv",
-  "huggingface_hub",
-  "result",
-  "nest_asyncio",
-  ]
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
 
 [project.urls]
 "Homepage" = "https://github.com/lastmile-ai/aiconfig"

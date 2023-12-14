@@ -22,6 +22,44 @@ There are 2 ways to create an `aiconfig` from scratch.
 You can use the `create` function to create an empty `aiconfig`. To create prompts in the config, you can use the `serialize` function, which takes in data in the form that a model expects (e.g. OpenAI completion params), and creates Prompt objects that can be saved in the `aiconfig`.
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+:::tip
+[Clone this notebook](https://github.com/lastmile-ai/aiconfig/blob/main/cookbooks/Create-AIConfig-Programmatically/create_aiconfig_programmatically.ipynb) to create an `aiconfig` programmatically.
+:::
+
+```python title="app.py"
+import asyncio
+from aiconfig import AIConfigRuntime
+
+async def main():
+    new_config = AIConfigRuntime.create("my_aiconfig", "This is my new AIConfig")
+
+    # OpenAI completion params
+    model = "gpt-4"
+    data = {
+        "model": model,
+        "messages": [
+        { "role": "user", "content": "Say this is a test" },
+        { "role": "assistant", "content": "This is a test." },
+        { "role": "user", "content": "What do you say?" }
+        ]
+    }
+
+    # Serialize the data into the aiconfig format.
+    prompts = await new_config.serialize(model, data, "prompts")
+
+    # Add the prompts to the aiconfig
+    for i, prompt in enumerate(prompts):
+        new_config.add_prompt(f"prompt_name_{i}", prompt)
+
+    # Save the aiconfig to disk
+    new_config.save('new.aiconfig.json', include_outputs=True)
+
+asyncio.run(main())
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -64,64 +102,13 @@ async function createAIConfig() {
 ```
 
 </TabItem>
-<TabItem value="python">
-
-:::tip
-[Clone this notebook](https://github.com/lastmile-ai/aiconfig/blob/main/cookbooks/Create-AIConfig-Programmatically/create_aiconfig_programmatically.ipynb) to create an `aiconfig` programmatically.
-:::
-
-```python title="app.py"
-import asyncio
-from aiconfig import AIConfigRuntime
-
-async def main():
-    new_config = AIConfigRuntime.create("my_aiconfig", "This is my new AIConfig")
-
-    # OpenAI completion params
-    model = "gpt-4"
-    data = {
-        "model": model,
-        "messages": [
-        { "role": "user", "content": "Say this is a test" },
-        { "role": "assistant", "content": "This is a test." },
-        { "role": "user", "content": "What do you say?" }
-        ]
-    }
-
-    # Serialize the data into the aiconfig format.
-    prompts = await new_config.serialize(model, data, "prompts")
-
-    # Add the prompts to the aiconfig
-    for i, prompt in enumerate(prompts):
-        new_config.add_prompt(f"prompt_name_{i}", prompt)
-
-    # Save the aiconfig to disk
-    new_config.save('new.aiconfig.json', include_outputs=True)
-
-asyncio.run(main())
-```
-
-</TabItem>
 </Tabs>
 
 ### OpenAI API Python Wrapper
 
 If you're using OpenAI chat models, you can also use introspection to wrap OpenAI API calls and save an `aiconfig` automatically:
 
-Replace
-
-```python
-import openai
-```
-
-with
-
-```python
-import openai
-from aiconfig.ChatCompletion import create_and_save_to_config
-new_config = AIConfigRuntime.create("my_aiconfig", "This is my new AIConfig")
-openai.chat.completions.create = create_and_save_to_config(aiconfig=new_config)
-```
+Usage: see openai_wrapper.ipynb.
 
 Now call OpenAI regularly. The results will automatically get saved in `new_config`:
 

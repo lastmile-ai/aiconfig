@@ -1,6 +1,6 @@
 import copy
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import openai
 from aiconfig.callback import CallbackEvent
@@ -8,21 +8,12 @@ from aiconfig.default_parsers.parameterized_model_parser import ParameterizedMod
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import (
-    resolve_parameters,
     resolve_prompt,
     resolve_prompt_string,
     resolve_system_prompt,
 )
 
-from aiconfig import schema
-from aiconfig.schema import (
-    ExecuteResult,
-    ModelMetadata,
-    Output,
-    Prompt,
-    PromptInput,
-    PromptMetadata,
-)
+from aiconfig.schema import ExecuteResult, Output, Prompt, PromptInput, PromptMetadata
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
@@ -60,7 +51,12 @@ class OpenAIInference(ParameterizedModelParser):
         event = CallbackEvent(
             "on_serialize_start",
             __name__,
-            {"prompt_name": prompt_name, "data": data, "parameters": parameters, "kwargs": kwargs},
+            {
+                "prompt_name": prompt_name,
+                "data": data,
+                "parameters": parameters,
+                "kwargs": kwargs,
+            },
         )
         await ai_config.callback_manager.run_callbacks(event)
         prompts = []
@@ -80,7 +76,9 @@ class OpenAIInference(ParameterizedModelParser):
                 break
 
         # Get the global settings for the model
-        model_name = conversation_data["model"] if "model" in conversation_data else self.id()
+        model_name = (
+            conversation_data["model"] if "model" in conversation_data else self.id()
+        )
 
         model_metadata = ai_config.get_model_metadata(conversation_data, model_name)
         # Remove messages array from model metadata. Handled separately
@@ -104,7 +102,9 @@ class OpenAIInference(ParameterizedModelParser):
                         i += 1
                 new_prompt_name = f"{prompt_name}_{len(prompts) + 1}"
 
-                input = messsage["content"] if role == "user" else PromptInput(**messsage)
+                input = (
+                    messsage["content"] if role == "user" else PromptInput(**messsage)
+                )
 
                 prompt = Prompt(
                     name=new_prompt_name,
@@ -151,7 +151,9 @@ class OpenAIInference(ParameterizedModelParser):
             dict: Model-specific completion parameters.
         """
         await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params})
+            CallbackEvent(
+                "on_deserialize_start", __name__, {"prompt": prompt, "params": params}
+            )
         )
         # Build Completion params
         model_settings = self.get_model_settings(prompt, aiconfig)
@@ -186,27 +188,41 @@ class OpenAIInference(ParameterizedModelParser):
                     if previous_prompt.name == prompt.name:
                         break
 
-                    if aiconfig.get_model_name(previous_prompt) == aiconfig.get_model_name(prompt):
+                    if aiconfig.get_model_name(
+                        previous_prompt
+                    ) == aiconfig.get_model_name(prompt):
                         # Add prompt and its output to completion data. Constructing this prompt will take into account available parameters.
                         add_prompt_as_message(
-                            previous_prompt, aiconfig, completion_params["messages"], params
+                            previous_prompt,
+                            aiconfig,
+                            completion_params["messages"],
+                            params,
                         )
         else:
             # If messages are already specified in the model settings, then just resolve each message with the given parameters and append the latest message
             for i in range(len(completion_params.get("messages"))):
                 completion_params["messages"][i]["content"] = resolve_prompt_string(
-                    prompt, params, aiconfig, completion_params["messages"][i]["content"]
+                    prompt,
+                    params,
+                    aiconfig,
+                    completion_params["messages"][i]["content"],
                 )
 
         # Add in the latest prompt
         add_prompt_as_message(prompt, aiconfig, completion_params["messages"], params)
         await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_deserialize_complete", __name__, {"output": completion_params})
+            CallbackEvent(
+                "on_deserialize_complete", __name__, {"output": completion_params}
+            )
         )
         return completion_params
 
     async def run_inference(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        options: InferenceOptions,
+        parameters,
     ) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
@@ -244,15 +260,19 @@ class OpenAIInference(ParameterizedModelParser):
 
         response = openai.chat.completions.create(**completion_data)
         outputs = []
-
         if not stream:
             # # OpenAI>1.0.0 uses pydantic models for response
             response = response.model_dump(exclude_none=True)
+
             response_without_choices = {
-                key: copy.deepcopy(value) for key, value in response.items() if key != "choices"
+                key: copy.deepcopy(value)
+                for key, value in response.items()
+                if key != "choices"
             }
             for i, choice in enumerate(response.get("choices")):
-                response_without_choices.update({"finish_reason": choice.get("finish_reason")})
+                response_without_choices.update(
+                    {"finish_reason": choice.get("finish_reason")}
+                )
                 output = ExecuteResult(
                     **{
                         "output_type": "execute_result",
@@ -278,7 +298,9 @@ class OpenAIInference(ParameterizedModelParser):
                     delta = choice.get("delta")
 
                     if options and options.stream_callback:
-                        options.stream_callback(delta, accumulated_message_for_choice, index)
+                        options.stream_callback(
+                            delta, accumulated_message_for_choice, index
+                        )
 
                     output = ExecuteResult(
                         **{
@@ -305,14 +327,19 @@ class OpenAIInference(ParameterizedModelParser):
         """
         if isinstance(prompt.input, str):
             return prompt.input
-        elif isinstance(prompt.input, PromptInput) and isinstance(prompt.input.data, str):
+        elif isinstance(prompt.input, PromptInput) and isinstance(
+            prompt.input.data, str
+        ):
             return prompt.input.data
         else:
             message = prompt.input
             return message.content or ""
 
     def get_output_text(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", output: Optional[Output] = None
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        output: Optional[Output] = None,
     ) -> str:
         if not output:
             output = aiconfig.get_latest_output(prompt)
@@ -440,11 +467,17 @@ def add_prompt_as_message(
         messages.append({"content": resolved_prompt, "role": "user"})
     else:
         # Assumes Prompt input will be in the format of ChatCompletionMessageParam (with content, role, function_name, and name attributes)
-        resolved_prompt = resolve_prompt_string(prompt, params, aiconfig, prompt.input.content)
+        resolved_prompt = resolve_prompt_string(
+            prompt, params, aiconfig, prompt.input.content
+        )
 
         prompt_input = prompt.input
         role = prompt_input.role if hasattr(prompt_input, "role") else "user"
-        fn_call = prompt_input.function_call if hasattr(prompt_input, "function_call") else None
+        fn_call = (
+            prompt_input.function_call
+            if hasattr(prompt_input, "function_call")
+            else None
+        )
         name = prompt_input.name if hasattr(prompt_input, "name") else None
 
         message_data = {"content": resolved_prompt, "role": role}

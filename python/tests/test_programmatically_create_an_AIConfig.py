@@ -6,7 +6,6 @@ from aiconfig.schema import (
     AIConfig,
     ConfigMetadata,
     ExecuteResult,
-    InferenceSettings,
     ModelMetadata,
     Prompt,
     PromptMetadata,
@@ -69,7 +68,9 @@ def test_delete_nonexistent_model(ai_config: AIConfig):
     non_existent_model = "non_existent_model"
 
     # Ensure trying to delete a non-existent model raises an exception
-    with pytest.raises(Exception, match=f"Model '{non_existent_model}' does not exist."):
+    with pytest.raises(
+        Exception, match=f"Model '{non_existent_model}' does not exist."
+    ):
         ai_config.delete_model(non_existent_model)
 
 
@@ -80,7 +81,9 @@ def test_add_prompt_to_config(ai_config_runtime: AIConfigRuntime):
     config = ai_config_runtime
 
     prompt_data = Prompt(
-        name="prompt1", input="This is a prompt", metadata=PromptMetadata(model="fakemodel")
+        name="prompt1",
+        input="This is a prompt",
+        metadata=PromptMetadata(model="fakemodel"),
     )
 
     config.add_prompt("prompt1", prompt_data)
@@ -101,7 +104,9 @@ def test_delete_prompt_from_config(ai_config_runtime):
     config = ai_config_runtime
 
     prompt_data = Prompt(
-        name="prompt1", input="This is a prompt", metadata=PromptMetadata(model="fakemodel")
+        name="prompt1",
+        input="This is a prompt",
+        metadata=PromptMetadata(model="fakemodel"),
     )
 
     config.add_prompt("prompt1", prompt_data)
@@ -123,13 +128,17 @@ def test_update_prompt_in_config(ai_config_runtime):
     config: AIConfig = ai_config_runtime
 
     prompt_data = Prompt(
-        name="prompt1", input="This is a prompt", metadata=PromptMetadata(model="fakemodel")
+        name="prompt1",
+        input="This is a prompt",
+        metadata=PromptMetadata(model="fakemodel"),
     )
 
     config.add_prompt("prompt1", prompt_data)
 
     updated_prompt_data = Prompt(
-        name="prompt1", input="Updated prompt", metadata=PromptMetadata(model="updatedmodel")
+        name="prompt1",
+        input="Updated prompt",
+        metadata=PromptMetadata(model="updatedmodel"),
     )
 
     config.update_prompt("prompt1", updated_prompt_data)
@@ -170,10 +179,14 @@ def test_add_prompt_with_duplicate_name(ai_config_runtime: AIConfigRuntime):
     config = ai_config_runtime
 
     prompt_data1 = Prompt(
-        name="prompt1", input="This is a prompt", metadata=PromptMetadata(model="fakemodel")
+        name="prompt1",
+        input="This is a prompt",
+        metadata=PromptMetadata(model="fakemodel"),
     )
     prompt_data2 = Prompt(
-        name="prompt1", input="Duplicate prompt", metadata=PromptMetadata(model="fakemodel")
+        name="prompt1",
+        input="Duplicate prompt",
+        metadata=PromptMetadata(model="fakemodel"),
     )
 
     config.add_prompt("prompt1", prompt_data1)
@@ -188,14 +201,17 @@ def test_update_nonexistent_prompt(ai_config_runtime: AIConfigRuntime):
     Test updating a nonexistent prompt.
     """
     config = ai_config_runtime
+    nonexistent_prompt_name = "nonexistent_prompt"
 
     prompt_data = Prompt(
-        name="prompt1", input="This is a prompt", metadata=PromptMetadata(model="fakemodel")
+        name="prompt1",
+        input="This is a prompt",
+        metadata=PromptMetadata(model="fakemodel"),
     )
 
     # Ensure updating a nonexistent prompt raises an exception
-    with pytest.raises(IndexError, match=r"Prompt not found in config"):
-        config.update_prompt("nonexistent_prompt", prompt_data)
+    with pytest.raises(IndexError, match=f"Prompt '{nonexistent_prompt_name}' not found in config"):
+        config.update_prompt(nonexistent_prompt_name, prompt_data)
 
 
 def test_delete_nonexistent_prompt(ai_config_runtime: AIConfigRuntime):
@@ -203,10 +219,11 @@ def test_delete_nonexistent_prompt(ai_config_runtime: AIConfigRuntime):
     Test deleting a nonexistent prompt.
     """
     config = ai_config_runtime
+    prompt_name = "nonexistent_prompt"
 
     # Ensure deleting a nonexistent prompt raises an exception
-    with pytest.raises(IndexError, match=r"Prompt not found in config"):
-        config.delete_prompt("nonexistent_prompt")
+    with pytest.raises(IndexError, match=f"Prompt '{prompt_name}' not found in config"):
+        config.delete_prompt(prompt_name)
 
 
 def test_get_metadata_with_nonexistent_prompt(ai_config_runtime: AIConfigRuntime):
@@ -237,14 +254,19 @@ def test_delete_nonexistent_parameter(ai_config_runtime: AIConfigRuntime):
     )
 
     # Ensure deleting a nonexistent parameter raises a KeyError
-    with pytest.raises(KeyError, match=f"Parameter '{parameter_name_to_delete}' does not exist."):
+    with pytest.raises(
+        KeyError, match=f"Parameter '{parameter_name_to_delete}' does not exist."
+    ):
         config.delete_parameter(parameter_name_to_delete)
 
 
 @pytest.fixture
 def ai_config():
     config = AIConfig(
-        name="Untitled AIConfig", schema_version="latest", metadata=ConfigMetadata(), prompts=[]
+        name="Untitled AIConfig",
+        schema_version="latest",
+        metadata=ConfigMetadata(),
+        prompts=[],
     )
     return config
 
@@ -272,7 +294,9 @@ def test_set_parameter_for_prompt(ai_config: AIConfig):
 
     # Create a sample prompt for testing
     prompt_data = Prompt(
-        name=prompt_name, input="This is a prompt", metadata=PromptMetadata(model="fakemodel")
+        name=prompt_name,
+        input="This is a prompt",
+        metadata=PromptMetadata(model="fakemodel"),
     )
     ai_config.add_prompt(prompt_name, prompt_data)
 
@@ -280,7 +304,8 @@ def test_set_parameter_for_prompt(ai_config: AIConfig):
 
     # Ensure the parameter is set for the specific prompt
     assert (
-        ai_config.prompt_index[prompt_name].metadata.parameters[parameter_name] == parameter_value
+        ai_config.prompt_index[prompt_name].metadata.parameters[parameter_name]
+        == parameter_value
     )
     assert ai_config.prompts[0].metadata.parameters[parameter_name] == parameter_value
 
@@ -325,7 +350,9 @@ def test_load_saved_config(tmp_path):
 
     # Create a sample prompt for testing
     prompt_data = Prompt(
-        name="prompt1", input="This is a prompt", metadata=PromptMetadata(model="fakemodel")
+        name="prompt1",
+        input="This is a prompt",
+        metadata=PromptMetadata(model="fakemodel"),
     )
     config_runtime.add_prompt("prompt1", prompt_data)
 
@@ -387,7 +414,9 @@ def test_get_prompt_after_deleting_previous(ai_config_runtime: AIConfigRuntime):
 
 
 def test_get_prompt_nonexistent(ai_config_runtime: AIConfigRuntime):
-    with pytest.raises(IndexError, match=r"Prompt 'GreetingPrompt' not found in config"):
+    with pytest.raises(
+        IndexError, match=r"Prompt 'GreetingPrompt' not found in config"
+    ):
         ai_config_runtime.get_prompt("GreetingPrompt")
 
 
@@ -410,9 +439,9 @@ def test_update_model_specific_prompt(ai_config_runtime: AIConfigRuntime):
     )
     ai_config_runtime.add_prompt(prompt1.name, prompt1)
     ai_config_runtime.update_model(model_metadata, "GreetingPrompt")
-    assert ai_config_runtime.get_prompt("GreetingPrompt").metadata.model == ModelMetadata(
-        **model_metadata
-    )
+    assert ai_config_runtime.get_prompt(
+        "GreetingPrompt"
+    ).metadata.model == ModelMetadata(**model_metadata)
 
 
 def test_update_model_empty_metadata(ai_config_runtime: AIConfigRuntime):
@@ -457,11 +486,16 @@ def test_set_and_delete_metadata_ai_config_prompt(ai_config_runtime: AIConfigRun
     ai_config_runtime.add_prompt(prompt1.name, prompt1)
     ai_config_runtime.set_metadata("testkey", "testvalue", "GreetingPrompt")
 
-    assert ai_config_runtime.get_prompt("GreetingPrompt").metadata.testkey == "testvalue"
+    assert (
+        ai_config_runtime.get_prompt("GreetingPrompt").metadata.testkey == "testvalue"
+    )
 
     ai_config_runtime.delete_metadata("testkey", "GreetingPrompt")
 
-    assert hasattr(ai_config_runtime.get_prompt("GreetingPrompt").metadata, "testkey") is False
+    assert (
+        hasattr(ai_config_runtime.get_prompt("GreetingPrompt").metadata, "testkey")
+        is False
+    )
 
 
 def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRuntime):
@@ -498,19 +532,27 @@ def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRunt
 
 def test_extract_override_settings(ai_config_runtime: AIConfigRuntime):
     initial_settings = {"topP": 0.9}
-    
+
     # Test Case 1: No global setting, Expect an override
-    override = extract_override_settings(ai_config_runtime, initial_settings, "testmodel")
+    override = extract_override_settings(
+        ai_config_runtime, initial_settings, "testmodel"
+    )
     assert override == {"topP": 0.9}
 
     # Test Case 2: Global Settings differ, expect override
     ai_config_runtime.add_model("testmodel", {"topP": 0.8})
-    override = extract_override_settings(ai_config_runtime, initial_settings, "testmodel")
+    override = extract_override_settings(
+        ai_config_runtime, initial_settings, "testmodel"
+    )
     assert override == {"topP": 0.9}
 
     # Test Case 3: Global Settings match settings, expect no override
-    ai_config_runtime.update_model(ModelMetadata(name="testmodel", settings={"topP": 0.9}))
-    override = extract_override_settings(ai_config_runtime, initial_settings, "testmodel")
+    ai_config_runtime.update_model(
+        ModelMetadata(name="testmodel", settings={"topP": 0.9})
+    )
+    override = extract_override_settings(
+        ai_config_runtime, initial_settings, "testmodel"
+    )
     assert override == {}
 
     # Test Case 4: Global settings defined and empty settings defined. Expect no override

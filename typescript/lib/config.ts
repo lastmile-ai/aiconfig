@@ -15,6 +15,7 @@ import _ from "lodash";
 import { getAPIKeyFromEnv } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
+import { PaLMTextParser } from "./parsers/palm";
 import { extractOverrideSettings } from "./utils";
 import { HuggingFaceTextGenerationParser } from "./parsers/hf";
 import { CallbackEvent, CallbackManager } from "./callback";
@@ -57,8 +58,8 @@ ModelParserRegistry.registerModelParser(new OpenAIChatModelParser(), [
   "gpt-3.5-turbo-0613",
   "gpt-3.5-turbo-16k-0613",
 ]);
-
 ModelParserRegistry.registerModelParser(new HuggingFaceTextGenerationParser());
+ModelParserRegistry.registerModelParser(new PaLMTextParser());
 
 /**
  * Represents an AIConfig. This is the main class for interacting with AIConfig files.
@@ -276,7 +277,7 @@ export class AIConfigRuntime implements AIConfig {
    * @param id The ID of the model parser to get.
    */
   public static getModelParser(id: string) {
-    ModelParserRegistry.getModelParser(id);
+    return ModelParserRegistry.getModelParser(id);
   }
 
   //#endregion
@@ -300,14 +301,17 @@ export class AIConfigRuntime implements AIConfig {
     await this.callbackManager.runCallbacks(startEvent);
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
-      throw new Error(`E1011: Prompt ${promptName} does not exist in AIConfig`);
+      throw new Error(
+        // TODO (rossdanlm): Centralize all the error messages so don't have to edit each one manually
+        `E1011: Prompt '${promptName}' does not exist. Available prompts are: ${this.prompts}.`
+      );
     }
 
     const modelName = this.getModelName(prompt);
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
       throw new Error(
-        `E1012: Unable to resolve prompt ${promptName}: ModelParser for model ${modelName} does not exist`
+        `E1012: Unable to resolve prompt '${promptName}': ModelParser for model '${modelName}' does not exist`
       );
     }
 
@@ -380,14 +384,16 @@ export class AIConfigRuntime implements AIConfig {
     await this.callbackManager.runCallbacks(startEvent);
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
-      throw new Error(`E1013: Prompt ${promptName} does not exist in AIConfig`);
+      throw new Error(
+        `E1013: Prompt '${promptName}' does not exist. Available prompts are: ${this.prompts}.`
+      );
     }
 
     const modelName = this.getModelName(prompt);
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
       throw new Error(
-        `E1014: Unable to run prompt ${promptName}: ModelParser for model ${modelName} does not exist`
+        `E1014: Unable to run prompt '${promptName}': ModelParser for model ${modelName} does not exist`
       );
     }
 
@@ -424,21 +430,23 @@ export class AIConfigRuntime implements AIConfig {
   ) {
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
-      throw new Error(`E1015: Prompt ${promptName} does not exist in AIConfig`);
+      throw new Error(
+        `E1015: Prompt '${promptName}' does not exist. Available prompts are: ${this.prompts}.`
+      );
     }
 
     const modelName = this.getModelName(prompt);
     const modelParser = ModelParserRegistry.getModelParser(modelName);
     if (!modelParser) {
       throw new Error(
-        `E1016: Unable to run prompt ${promptName}: ModelParser for model ${modelName} does not exist`
+        `E1016: Unable to run prompt '${promptName}': ModelParser for model '${modelName}' does not exist`
       );
     }
 
     if (!(modelParser instanceof ParameterizedModelParser)) {
       // TODO: saqadri - determine if we want to just run the prompt without dependencies if it's not a ParameterizedModelParser
       throw new Error(
-        `E1017: Unable to identify dependency graph for prompt ${promptName}: ModelParser for model ${modelName} is not a ParameterizedModelParser`
+        `E1017: Unable to identify dependency graph for prompt '${promptName}': ModelParser for model '${modelName}' is not a ParameterizedModelParser`
       );
     }
 
@@ -512,7 +520,7 @@ export class AIConfigRuntime implements AIConfig {
 
     if (!found) {
       throw new Error(
-        `E1019: Cannot update prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
+        `E1019: Cannot update prompt '${promptName}' because prompt name does not exist. Available prompts are: ${this.prompts}.`
       );
     }
   }
@@ -525,7 +533,7 @@ export class AIConfigRuntime implements AIConfig {
     const existingPrompt = this.getPrompt(promptName);
     if (!existingPrompt) {
       throw new Error(
-        `E1020: Cannot delete prompt ${promptName}. Prompt not found in AIConfig.`
+        `E1020: Cannot delete prompt '${promptName}' because prompt name does not exist. Available prompts are: ${this.prompts}.`
       );
     }
 
@@ -542,7 +550,7 @@ export class AIConfigRuntime implements AIConfig {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
         throw new Error(
-          `E1021: Cannot add model ${modelMetadata.name} to prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
+          `E1021: Cannot add model ${modelMetadata.name} for prompt '${promptName}' because prompt name does not exist. Available prompts are ${this.prompts}.`
         );
       }
 
@@ -569,7 +577,7 @@ export class AIConfigRuntime implements AIConfig {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
         throw new Error(
-          `E1022: Cannot update model ${modelMetadata.name} for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
+          `E1022: Cannot update model ${modelMetadata.name} for prompt '${promptName}' because prompt name does not exist. Available prompts are ${this.prompts}.`
         );
       }
 
@@ -643,7 +651,7 @@ export class AIConfigRuntime implements AIConfig {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
         throw new Error(
-          `E1023: Cannot set parameter ${name} for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
+          `E1023: Cannot set parameter ${name} for prompt '${promptName}' because prompt name does not exist. Available prompts are ${this.prompts}.`
         );
       }
 
@@ -676,7 +684,7 @@ export class AIConfigRuntime implements AIConfig {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
         throw new Error(
-          `E1024: Cannot delete parameter ${name} for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
+          `E1024: Cannot delete parameter ${name} for prompt '${promptName}' because prompt name does not exist. Available prompts are ${this.prompts}.`
         );
       }
 
@@ -705,7 +713,7 @@ export class AIConfigRuntime implements AIConfig {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
         throw new Error(
-          `E1025: Cannot set metadata ${key} for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
+          `E1025: Cannot set metadata ${key} for prompt '${promptName}' because prompt name does not exist. Available prompts are: ${this.prompts}.`
         );
       }
 
@@ -728,7 +736,7 @@ export class AIConfigRuntime implements AIConfig {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
         throw new Error(
-          `E1026: Cannot delete metadata property '${key}' for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
+          `E1026: Cannot delete metadata property '${key}' for prompt '${promptName}' because prompt name does not exist. Available prompts are: ${this.prompts}.`
         );
       }
 
@@ -748,7 +756,7 @@ export class AIConfigRuntime implements AIConfig {
       const prompt = this.getPrompt(promptName);
       if (!prompt) {
         throw new Error(
-          `E1027: Cannot get metadata for prompt ${promptName}. Prompt ${promptName} does not exist in AIConfig.`
+          `E1027: Cannot get metadata for prompt '${promptName}' because prompt name does not exist. Available prompts are: ${this.prompts}.`
         );
       }
 
@@ -786,7 +794,7 @@ export class AIConfigRuntime implements AIConfig {
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
       throw new Error(
-        `E1028: Cannot add output. Prompt ${promptName} not found in AIConfig.`
+        `E1028: Cannot add output for prompt '${promptName}' because prompt name does not exist. Available prompts are: ${this.prompts}.`
       );
     }
 
@@ -808,7 +816,7 @@ export class AIConfigRuntime implements AIConfig {
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
       throw new Error(
-        `E1029: Cannot delete outputs. Prompt ${promptName} not found in AIConfig.`
+        `E1029: Cannot delete outputs for prompt '${promptName}' because prompt name does not exist. Available prompts are: ${this.prompts}.`
       );
     }
 
