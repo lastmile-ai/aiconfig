@@ -15,7 +15,7 @@ function ModelMetadataSchemaRenderer({ prompt, schema }: Props) {
   return null; // TODO: Implement
 }
 
-export default memo(function ModelSettingsRenderer({ prompt, schema }: Props) {
+export default memo(function PromptMetadataRenderer({ prompt, schema }: Props) {
   return schema ? (
     <ModelMetadataSchemaRenderer prompt={prompt} schema={schema} />
   ) : (

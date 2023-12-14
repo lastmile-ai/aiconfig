@@ -70,20 +70,18 @@ async function openAIWithAIConfig() {
   //     console.log(aiConfig.getOutputText("demoPrompt", output));
   //   }
 
-  const inferenceOptions: InferenceOptions = {
-    callbacks: {
-      streamCallback: (data: any, _accumulatedData: any, _index: any) => {
-        process.stdout.write(data?.content || "\n");
-      },
-    },
-  };
-
   const streamCallback = (data: any, _accumulatedData: any, _index: any) => {
     process.stdout.write(data?.content || "\n");
   };
 
+  const inferenceOptions: InferenceOptions = {
+    callbacks: {
+      streamCallback,
+    },
+  };
+
   // Streaming:
-  let result2 = await aiConfig.run(
+  await aiConfig.run(
     "demoPrompt",
     /*params*/ {
       name: "Streaming Demo",
