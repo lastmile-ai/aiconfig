@@ -261,6 +261,9 @@ class AIConfigRuntime(AIConfig):
         model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
+        # Clear previous run outputs if they exist
+        self.delete_output(prompt_name)
+
         response = await model_provider.run(
             prompt_data,
             self,
