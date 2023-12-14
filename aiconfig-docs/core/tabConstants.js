@@ -29,8 +29,8 @@ const pythonPackageManagers = [
 const defaultPythonPackageManager = "pip";
 
 const aiConfigLanguages = [
-  { label: "TypeScript", value: "node" },
   { label: "Python", value: "python" },
+  { label: "TypeScript", value: "node" },
 ];
 const defaultAIConfigLanguage = "python";
 

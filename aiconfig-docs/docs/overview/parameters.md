@@ -68,6 +68,28 @@ Read more about the `aiconfig` metadata schema [here](docs/overview/ai-config-fo
 :::
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python title="app.py"
+from aiconfig import AIConfigRuntime
+
+# Load the aiconfig.
+config = AIConfigRuntime.load('sql.aiconfig.json')
+
+# Set a global parameter
+config.set_parameter("sql_language", "mysql")
+
+# Set a prompt-specific parameter
+config.set_parameter(
+    "output_data",
+    "user_name, user_email, trial. output granularity is the trial_id.",
+    "write_sql" #prompt_name
+)
+
+config.save()
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -95,6 +117,11 @@ config.save();
 ```
 
 </TabItem>
+</Tabs>
+
+### Specifying parameters in code
+
+<Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
 <TabItem value="python">
 
 ```python title="app.py"
@@ -103,25 +130,17 @@ from aiconfig import AIConfigRuntime
 # Load the aiconfig.
 config = AIConfigRuntime.load('sql.aiconfig.json')
 
-# Set a global parameter
-config.set_parameter("sql_language", "mysql")
+params = {
+    "sql_language": "mysql", # This will override the default value in the aiconfig
+    "output_data": "user_name, user_email, trial. output granularity is the trial_id.",
+    "table_relationships": "user table, trial table, trial_step table. a user can create many trials. each trial has many trial_steps."
+}
 
-# Set a prompt-specific parameter
-config.set_parameter(
-    "output_data",
-    "user_name, user_email, trial. output granularity is the trial_id.",
-    "write_sql" #prompt_name
-)
-
-config.save()
+# Run the prompt with parameters
+await config.run("write_sql", params)
 ```
 
 </TabItem>
-</Tabs>
-
-### Specifying parameters in code
-
-<Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -148,25 +167,6 @@ async function parameterizedPrompt() {
 ```
 
 </TabItem>
-<TabItem value="python">
-
-```python title="app.py"
-from aiconfig import AIConfigRuntime
-
-# Load the aiconfig.
-config = AIConfigRuntime.load('sql.aiconfig.json')
-
-params = {
-    "sql_language": "mysql", # This will override the default value in the aiconfig
-    "output_data": "user_name, user_email, trial. output granularity is the trial_id.",
-    "table_relationships": "user table, trial table, trial_step table. a user can create many trials. each trial has many trial_steps."
-}
-
-# Run the prompt with parameters
-await config.run("write_sql", params)
-```
-
-</TabItem>
 </Tabs>
 
 ### Resolving the prompt
@@ -176,17 +176,17 @@ Use the `resolve` function to see how parameters are applied to a prompt templat
 In the example above, replace `config.run` with `config.resolve`:
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
-<TabItem value="node">
-
-```typescript
-await config.resolve("write_sql", params);
-```
-
-</TabItem>
 <TabItem value="python">
 
 ```python
 await config.resolve("write_sql", params)
+```
+
+</TabItem>
+<TabItem value="node">
+
+```typescript
+await config.resolve("write_sql", params);
 ```
 
 </TabItem>
@@ -251,6 +251,28 @@ In the example above, the `translate` prompt is a prompt chain because it depend
 To run this prompt chain properly, you'd need to pass in parameters for both prompts.
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python title="app.py"
+from aiconfig import AIConfigRuntime
+
+# Load the aiconfig.
+config = AIConfigRuntime.load('sql.aiconfig.json')
+
+params = {
+    # Parameters for `translate` prompt
+    "target_language": "postgresql",
+    # Parameters for `write_sql` prompt
+    "sql_language": "mysql",
+    "output_data": "user_name, user_email, trial. output granularity is the trial_id.",
+    "table_relationships": "user table, trial table, trial_step table. a user can create many trials. each trial has many trial_steps."
+}
+
+# Run the prompt chain
+await config.run("translate", params, run_with_dependencies=True)
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -277,28 +299,6 @@ async function parameterizedPrompt() {
   // Run the prompt chain
   await config.runWithDependencies("translate", params);
 }
-```
-
-</TabItem>
-<TabItem value="python">
-
-```python title="app.py"
-from aiconfig import AIConfigRuntime
-
-# Load the aiconfig.
-config = AIConfigRuntime.load('sql.aiconfig.json')
-
-params = {
-    # Parameters for `translate` prompt
-    "target_language": "postgresql",
-    # Parameters for `write_sql` prompt
-    "sql_language": "mysql",
-    "output_data": "user_name, user_email, trial. output granularity is the trial_id.",
-    "table_relationships": "user table, trial table, trial_step table. a user can create many trials. each trial has many trial_steps."
-}
-
-# Run the prompt chain
-await config.run("translate", params, run_with_dependencies=True)
 ```
 
 </TabItem>
