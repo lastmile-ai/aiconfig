@@ -1,5 +1,6 @@
 import { Prompt } from "aiconfig";
 import { OpenAIChatModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatModelParserPromptSchema";
+import { OpenAIChatVisionModelParserPromptSchema } from "@/src/shared/prompt_schemas/OpenAIChatVisionModelParserPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -45,10 +46,42 @@ export function getPromptModelName(
 export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "gpt-3.5-turbo": OpenAIChatModelParserPromptSchema,
   "gpt-4": OpenAIChatModelParserPromptSchema,
+  "gpt-4-vision-preview": OpenAIChatVisionModelParserPromptSchema,
 };
 
-export type PromptInputSchema = {
-  type: "string" | "object";
+export type PromptInputSchema =
+  | PromptInputStringSchema
+  | PromptInputObjectSchema;
+
+export type PromptInputStringSchema = {
+  type: "string";
+};
+
+export type PromptInputObjectDataSchema = {
+  type: string;
+};
+
+export type PromptInputObjectAttachmentsSchema = {
+  type: "array";
+  items: {
+    type: "attachment";
+    required: string[];
+    mime_types: string[];
+    properties: {
+      data: {
+        type: string;
+      };
+    };
+  };
+};
+
+export type PromptInputObjectSchema = {
+  type: "object";
+  properties: {
+    data: PromptInputObjectDataSchema;
+    attachments?: PromptInputObjectAttachmentsSchema;
+  } & Record<string, { [key: string]: any }>;
+  required?: string[] | undefined;
 };
 
 export type ModelSettingsSchema = {

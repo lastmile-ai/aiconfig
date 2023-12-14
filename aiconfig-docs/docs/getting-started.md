@@ -18,26 +18,6 @@ Please read [AIConfig Basics](/docs/basics) to understand the motivation behind 
 
 The [`aiconfig` file format](/docs/overview/ai-config-format) is best used with the AIConfig SDK. To install the SDK, use your favorite package manager:
 
-#### Node.js (TypeScript)
-
-<Tabs groupId="package-manager" queryString defaultValue={constants.defaultNodePackageManager} values={constants.nodePackageManagers}>
-<TabItem value="npm">
-
-```bash
-$ npm install aiconfig
-```
-
-</TabItem>
-<TabItem value="yarn">
-
-```bash
-$ yarn add aiconfig
-```
-
-</TabItem>
-
-</Tabs>
-
 #### Python
 
 <Tabs groupId="package-manager" queryString defaultValue={constants.defaultPythonPackageManager} values={constants.pythonPackageManagers}>
@@ -52,6 +32,26 @@ $ pip install --user python-aiconfig
 
 ```bash
 $ poetry add python-aiconfig
+```
+
+</TabItem>
+
+</Tabs>
+
+#### Node.js (TypeScript)
+
+<Tabs groupId="package-manager" queryString defaultValue={constants.defaultNodePackageManager} values={constants.nodePackageManagers}>
+<TabItem value="npm">
+
+```bash
+$ npm install aiconfig
+```
+
+</TabItem>
+<TabItem value="yarn">
+
+```bash
+$ yarn add aiconfig
 ```
 
 </TabItem>
@@ -134,6 +134,24 @@ Don't worry if you don't understand all parts of this yet, we'll go over it in s
 
 You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python title="app.py"
+import asyncio
+from aiconfig import AIConfigRuntime, InferenceOptions
+
+async def main():
+  # Load the aiconfig
+  config = AIConfigRuntime.load('travel.aiconfig.json')
+
+  # Run a single prompt
+  await config.run("get_activities")
+
+asyncio.run(main())
+```
+
+</TabItem>
+
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -152,23 +170,6 @@ async function travelWithGPT() {
 ```
 
 </TabItem>
-<TabItem value="python">
-
-```python title="app.py"
-import asyncio
-from aiconfig import AIConfigRuntime, InferenceOptions
-
-async def main():
-  # Load the aiconfig
-  config = AIConfigRuntime.load('travel.aiconfig.json')
-
-  # Run a single prompt
-  await config.run("get_activities")
-
-asyncio.run(main())
-```
-
-</TabItem>
 </Tabs>
 
 ### 3. Enable streaming for your prompt.
@@ -176,6 +177,18 @@ asyncio.run(main())
 You can enable streaming for your prompt responses by passing in a streaming callback.
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python title="app.py"
+from aiconfig import AIConfigRuntime, InferenceOptions
+config = AIConfigRuntime.load('travel.aiconfig.json')
+
+# Run a single prompt (with streaming)
+inference_options = InferenceOptions(stream=True)
+await config.run("get_activities", options=inference_options)
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -199,18 +212,6 @@ async function travelWithGPT() {
   // Run a single prompt
   await aiConfig.run("get_activities", /*params*/ undefined, options);
 }
-```
-
-</TabItem>
-<TabItem value="python">
-
-```python title="app.py"
-from aiconfig import AIConfigRuntime, InferenceOptions
-config = AIConfigRuntime.load('travel.aiconfig.json')
-
-# Run a single prompt (with streaming)
-inference_options = InferenceOptions(stream=True)
-await config.run("get_activities", options=inference_options)
 ```
 
 </TabItem>
@@ -252,6 +253,20 @@ Effectively, this is a prompt chain between `gen_itinerary` and `get_activities`
 Let's run this with AIConfig:
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+Replace `config.run` above with this:
+
+```python
+inference_options = InferenceOptions(stream=True)
+await config.run(
+    "gen_itinerary",
+    params={"order_by": "duration"},
+    options=inference_options,
+    run_with_dependencies=True)
+```
+
+</TabItem>
 <TabItem value="node">
 
 Replace the `aiconfig.run` call above with this:
@@ -268,20 +283,6 @@ await aiConfig.runWithDependencies(
 ```
 
 </TabItem>
-<TabItem value="python">
-
-Replace `config.run` above with this:
-
-```python
-inference_options = InferenceOptions(stream=True)
-await config.run(
-    "gen_itinerary",
-    params={"order_by": "duration"},
-    options=inference_options,
-    run_with_dependencies=True)
-```
-
-</TabItem>
 </Tabs>
 
 :::info
@@ -293,6 +294,14 @@ Notice how simple the syntax is to perform a fairly complex task - running 2 dif
 Let's save the AIConfig back to disk, and serialize the outputs from the latest inference run as well:
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python
+# Save the aiconfig to disk. and serialize outputs from the model run
+config.save('updated.aiconfig.json', include_outputs=True)
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript
@@ -301,14 +310,6 @@ aiConfig.save(
   "updated.aiconfig.json",
   /*saveOptions*/ { serializeOutputs: true }
 );
-```
-
-</TabItem>
-<TabItem value="python">
-
-```python
-# Save the aiconfig to disk. and serialize outputs from the model run
-config.save('updated.aiconfig.json', include_outputs=True)
 ```
 
 </TabItem>

@@ -1,7 +1,7 @@
 import PromptActionBar from "@/src/components/prompt/PromptActionBar";
-import PromptInput from "@/src/components/prompt/PromptInput";
+import PromptInputRenderer from "@/src/components/prompt/prompt_input/PromptInputRenderer";
 import { getPromptModelName, getPromptSchema } from "@/src/utils/promptUtils";
-import { Flex, Card, Text } from "@mantine/core";
+import { Flex, Card, Text, createStyles } from "@mantine/core";
 import { Prompt, PromptInput as AIConfigPromptInput } from "aiconfig";
 import { memo, useCallback } from "react";
 
@@ -11,6 +11,19 @@ type Props = {
   onChangePromptInput: (i: number, newPromptInput: AIConfigPromptInput) => void;
   defaultConfigModelName?: string;
 };
+
+const useStyles = createStyles((theme) => ({
+  promptInputCard: {
+    flex: 1,
+    borderRight: "0 !important",
+    borderBottomRightRadius: 0,
+    borderTopRightRadius: 0,
+  },
+  actionBarCard: {
+    borderBottomLeftRadius: 0,
+    borderTopLeftRadius: 0,
+  },
+}));
 
 export default memo(function PromptContainer({
   prompt,
@@ -25,22 +38,29 @@ export default memo(function PromptContainer({
   );
 
   const promptSchema = getPromptSchema(prompt, defaultConfigModelName);
+  const inputSchema = promptSchema?.input;
+
+  const { classes } = useStyles();
 
   return (
-    <div style={{ marginTop: 16 }}>
-      <Card withBorder>
-        <Flex justify="space-between">
-          <Flex direction="column">
-            <Flex justify="space-between" m="sm">
-              <Text weight="bold">{`{{${prompt.name}}}}`}</Text>
-              <Text>{getPromptModelName(prompt, defaultConfigModelName)}</Text>
-            </Flex>
-            <PromptInput input={prompt.input} onChangeInput={onChangeInput} />
-            {/* <PromptOutput /> */}
+    <Flex justify="space-between" mt="md">
+      <Card withBorder className={classes.promptInputCard}>
+        <Flex direction="column">
+          <Flex justify="space-between">
+            <Text weight="bold">{`{{${prompt.name}}}}`}</Text>
+            <Text>{getPromptModelName(prompt, defaultConfigModelName)}</Text>
           </Flex>
-          <PromptActionBar prompt={prompt} promptSchema={promptSchema} />
+          <PromptInputRenderer
+            input={prompt.input}
+            schema={inputSchema}
+            onChangeInput={onChangeInput}
+          />
+          {/* <PromptOutput /> */}
         </Flex>
       </Card>
-    </div>
+      <Card withBorder className={classes.actionBarCard}>
+        <PromptActionBar prompt={prompt} promptSchema={promptSchema} />
+      </Card>
+    </Flex>
   );
 });

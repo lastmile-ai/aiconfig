@@ -29,6 +29,16 @@ Anyone can register a callback, and filter for the events you care about. You ca
 Custom callbacks are functions that conform to the Callback type. They receive a CallbackEvent object containing event details, and return a Promise. Here's an example of a simple logging callback:
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python title="app.py"
+from aiconfig import AIConfigRuntime, CallbackEvent, CallbackManager
+
+async def my_custom_callback(event: CallbackEvent) -> None:
+  print(f"Event triggered: {event.name}", event)
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -37,16 +47,6 @@ import { Callback, CallbackEvent } from "aiconfig";
 const myCustomCallback: Callback = async (event: CallbackEvent) => {
   console.log(`Event triggered: ${event.name}`, event);
 };
-```
-
-</TabItem>
-<TabItem value="python">
-
-```python title="app.py"
-from aiconfig import AIConfigRuntime, CallbackEvent, CallbackManager
-
-async def my_custom_callback(event: CallbackEvent) -> None:
-  print(f"Event triggered: {event.name}", event)
 ```
 
 </TabItem>
@@ -59,6 +59,22 @@ By default, a CallbackManager is set up which logs all events to to `aiconfig.lo
 :::
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python title="app.py"
+from aiconfig import AIConfigRuntime, CallbackEvent, CallbackManager
+config = AIConfigRuntime.load('aiconfig.json')
+
+async def my_custom_callback(event: CallbackEvent) -> None:
+  print(f"Event triggered: {event.name}", event)
+
+callback_manager = CallbackManager([my_custom_callback])
+config.set_callback_manager(callback_manager)
+
+await config.run("prompt_name")
+```
+
+</TabItem>
 <TabItem value="node">
 
 ```typescript title="app.ts"
@@ -80,22 +96,6 @@ const callbackManager = new CallbackManager([myCustomCallback]);
 config.setCallbackManager(callbackManager);
 
 await config.run("prompt_name");
-```
-
-</TabItem>
-<TabItem value="python">
-
-```python title="app.py"
-from aiconfig import AIConfigRuntime, CallbackEvent, CallbackManager
-config = AIConfigRuntime.load('aiconfig.json')
-
-async def my_custom_callback(event: CallbackEvent) -> None:
-  print(f"Event triggered: {event.name}", event)
-
-callback_manager = CallbackManager([my_custom_callback])
-config.set_callback_manager(callback_manager)
-
-await config.run("prompt_name")
 ```
 
 </TabItem>
@@ -128,19 +128,19 @@ Similarly, ModelParsers should trigger their own events when serializing, deseri
 The CallbackManager uses a timeout mechanism to ensure callbacks do not hang indefinitely. If a callback does not complete within the specified timeout, it is aborted, and an error is logged. This timeout can be adjusted in the CallbackManager constructor and defaults to 5s if not specified.
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
-<TabItem value="node">
-
-```typescript
-const customTimeout = 10;
-const callbackManager = new CallbackManager(callbacks, customTimeout);
-```
-
-</TabItem>
 <TabItem value="python">
 
 ```python
 custom_timeout = 10; # 10 seconds
 callback_manager = CallbackManager([my_logging_callback], custom_timeout)
+```
+
+</TabItem>
+<TabItem value="node">
+
+```typescript
+const customTimeout = 10;
+const callbackManager = new CallbackManager(callbacks, customTimeout);
 ```
 
 </TabItem>
