@@ -1,12 +1,13 @@
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 from aiconfig.callback import CallbackEvent, CallbackManager
 from aiconfig.default_parsers.openai import DefaultOpenAIParser
 from aiconfig.default_parsers.palm import PaLMChatParser, PaLMTextParser
 from aiconfig.model_parser import InferenceOptions, ModelParser
+from aiconfig.schema import JSONObject
 
 from .default_parsers.dalle import DalleImageGenerationParser
 from .default_parsers.hf import HuggingFaceTextGenerationParser
@@ -126,9 +127,7 @@ class AIConfigRuntime(AIConfig):
             resp = requests.get(url, headers=headers)
 
             if resp.status_code != 200:
-                raise Exception(
-                    f"Failed to load workbook. Status code: {resp.status_code}"
-                )
+                raise Exception(f"Failed to load workbook. Status code: {resp.status_code}")
 
             data = resp.json()
 
@@ -171,9 +170,7 @@ class AIConfigRuntime(AIConfig):
 
         model_parser = ModelParserRegistry.get_model_parser(model_name)
         if not model_parser:
-            raise ValueError(
-                f"Unable to serialize data: `{data}`\n Model Parser for model {model_name} does not exist."
-            )
+            raise ValueError(f"Unable to serialize data: `{data}`\n Model Parser for model {model_name} does not exist.")
 
         prompts = await model_parser.serialize(prompt_name, data, self, params)
 
@@ -197,18 +194,14 @@ class AIConfigRuntime(AIConfig):
         Returns:
             str: The resolved prompt.
         """
-        event = CallbackEvent(
-            "on_resolve_start", __file__, {"prompt_name": prompt_name, "params": params}
-        )
+        event = CallbackEvent("on_resolve_start", __file__, {"prompt_name": prompt_name, "params": params})
         await self.callback_manager.run_callbacks(event)
 
         if not params:
             params = {}
 
         if prompt_name not in self.prompt_index:
-            raise IndexError(
-                f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}"
-            )
+            raise IndexError(f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}")
 
         prompt_data = self.prompt_index[prompt_name]
         model_name = self.get_model_name(prompt_data)
@@ -253,9 +246,7 @@ class AIConfigRuntime(AIConfig):
             params = {}
 
         if prompt_name not in self.prompt_index:
-            raise IndexError(
-                f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}"
-            )
+            raise IndexError(f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}")
 
         prompt_data = self.prompt_index[prompt_name]
         model_name = self.get_model_name(prompt_data)
@@ -277,6 +268,77 @@ class AIConfigRuntime(AIConfig):
         await self.callback_manager.run_callbacks(event)
         return response
 
+    async def run_batch(
+        self,
+        prompt_name: str,
+        parameters_list: list[dict[str, Any]],
+        options: Optional[InferenceOptions] = None,
+        **kwargs,
+    ) -> list[Tuple["ExecuteResult", JSONObject | Any]]:
+        """
+        Executes a specified Prompt in batch mode using provided parameters. This method returns a list of tuples.
+        Each tuple consists of the inference result and the corresponding resolved completion parameters.
+        The resolved completion parameters are derived by calling the resolve() method on the resultant AIConfigRuntimes.
+
+
+        Args:
+            prompt_name (str): Identifier of the Prompt to be used. The identifier must be valid & present in available prompts.
+            parameters_list (list[dict]): A list of parameter sets for running the inference multiple times.
+                                        Each dictionary represent a set of parameters.
+            options (Optional[InferenceOptions]): Optional parameters for tuning the inference execution.
+            kwargs (Any): Other optional parameters.
+
+        Raises:
+            IndexError: If the identifier for the prompt doesn't exist in the list of available prompts.
+
+        Returns:
+            list[Tuple['ExecuteResult', Any]]: A list of tuples containing the result of the inference and the resolved completion parameters used for the inference.
+
+        Example:
+            >>> aiconfig.run_batch("some_prompt", [{"param1": 1, "param2": 2}, {"param1": 3, "param2": 4}])
+        """
+        event = CallbackEvent(
+            "on_run_batch_start",
+            __name__,
+            {
+                "prompt_name": prompt_name,
+                "params_list": parameters_list,
+                "kwargs": kwargs,
+            },
+        )
+        await self.callback_manager.run_callbacks(event)
+
+        # Check if the provided prompt name is available in the list of prompts
+        if prompt_name not in self.prompt_index:
+            raise IndexError(f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}")
+
+        # Retrieve model and respective provider
+        prompt_data = self.prompt_index[prompt_name]
+        model_name = self.get_model_name(prompt_data)
+        model_provider = AIConfigRuntime.get_model_parser(model_name)
+
+        # Run the batch and store results
+        batch_results_aiconfigruntimes = await model_provider.run_batch(
+            prompt_data,
+            self,
+            parameters_list,
+            options,
+            callback_manager=self.callback_manager,
+            **kwargs,
+        )
+
+        # Extract the prompt outputs and the resolved completion params from the result
+        batch_results_formatted = []
+        for aiconfig in batch_results_aiconfigruntimes:
+            aiconfig_execute_results = aiconfig.get_prompt(prompt_name).outputs
+            prompt_data_resolved = await aiconfig.resolve(prompt_name)
+            batch_results_formatted.append(tuple([aiconfig_execute_results, prompt_data_resolved]))
+
+        event = CallbackEvent("on_run_batch_complete", __name__, {"result": batch_results_formatted})
+
+        await self.callback_manager.run_callbacks(event)
+        return batch_results_formatted
+
     async def run_and_get_output_text(
         self,
         prompt_name: str,
@@ -293,9 +355,7 @@ class AIConfigRuntime(AIConfig):
     #    @param saveOptions Options that determine how to save the AIConfig to the file.
     #    */
 
-    def save(
-        self, json_config_filepath: str | None = None, include_outputs: bool = True
-    ):
+    def save(self, json_config_filepath: str | None = None, include_outputs: bool = True):
         """
         Save the AI Configuration to a JSON file.
 
@@ -328,9 +388,7 @@ class AIConfigRuntime(AIConfig):
                 indent=2,
             )
 
-    def get_output_text(
-        self, prompt: str | Prompt, output: Optional[dict] = None
-    ) -> str:
+    def get_output_text(self, prompt: str | Prompt, output: Optional[dict] = None) -> str:
         """
         Get the string representing the output from a prompt (if any)
 
@@ -368,14 +426,10 @@ class AIConfigRuntime(AIConfig):
             ModelParser: The model parser corresponding to the given identifier.
         """
         if model_id not in ModelParserRegistry.parser_ids():
-            raise IndexError(
-                f"Model parser '{model_id}' not found in registry, available model parsers are:\n {ModelParserRegistry.parser_ids()}"
-            )
+            raise IndexError(f"Model parser '{model_id}' not found in registry, available model parsers are:\n {ModelParserRegistry.parser_ids()}")
         return ModelParserRegistry.get_model_parser(model_id)
 
     def set_callback_manager(self, callback_manager: CallbackManager):
         if callback_manager is None:
-            raise ValueError(
-                "callback_manager cannot be None. Create a new CallbackManager with No callbacks instead."
-            )
+            raise ValueError("callback_manager cannot be None. Create a new CallbackManager with No callbacks instead.")
         self.callback_manager = callback_manager
