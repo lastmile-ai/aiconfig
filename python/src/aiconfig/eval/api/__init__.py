@@ -16,10 +16,12 @@ from ..lib import (
     run_test_suite_outputs_only,
 )
 
+from .. import metrics
 from ..metrics import Metric, brevity, substring_match
 
 __all__ = [
     "Metric",
+    "metrics",
     "brevity",
     "substring_match",
     "run_test_suite_with_inputs",
