@@ -1,15 +1,16 @@
+import itertools
 import os
-from typing import Any, TypeVar
+from typing import Any
 import hypothesis.strategies as st
 import lastmile_utils.lib.core.api as cu
 import pandas as pd
 import pytest
 from result import Err, Ok
 from aiconfig.Config import AIConfigRuntime
+
+from aiconfig.eval.api import metrics
 from aiconfig.eval.api import (
     TestSuiteWithInputsSettings,
-    brevity,
-    substring_match,
     run_test_suite_with_inputs,
     run_test_suite_outputs_only,
 )
@@ -19,7 +20,17 @@ import hypothesis
 
 from aiconfig.model_parser import InferenceOptions
 
-T_MetricParams = TypeVar("T_MetricParams")
+brevity = metrics.brevity
+substring_match = metrics.substring_match
+
+
+def set_pd():
+    pd.set_option("display.max_rows", 50)
+    pd.set_option("display.max_columns", 50)
+    pd.set_option("display.expand_frame_repr", True)
+    pd.set_option("display.width", 1000)
+
+    pd.set_option("display.max_colwidth", 50)
 
 
 def current_dir():
@@ -87,7 +98,7 @@ async def test_run_with_outputs_only_basic():
     out = await run_test_suite_outputs_only(test_suite)
     exp = pd.DataFrame(
         {
-            "value": [11.0, 1.0],
+            "value": [11.0, True],
         }
     )
     assert out["value"].equals(exp["value"])  # type: ignore
@@ -189,7 +200,20 @@ async def test_run_test_suite_with_inputs(data: st.DataObject):
             ).all()
 
             df_substring = df[df["metric_name"] == "substring_match"]
-            assert (df_substring["value"].apply(lambda x: x in {0.0, 0.1})).all()  # type: ignore[no-untyped-call]
+            assert (df_substring["value"].apply(lambda x: x in {False, True})).all()  # type: ignore[no-untyped-call]
 
         case Err(e):
             assert False, f"expected Ok, got Err({e})"
+
+
+@pytest.mark.asyncio
+async def test_custom_metric_type():
+    user_test_suite_outputs_only = list(
+        itertools.product(
+            ["nltk is amazing", "whats for dinner?"],
+            [metrics.sentiment_scores, metrics.sentiment_class, brevity],
+        )
+    )
+    df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
+    set_pd()
+    print(df[["aiconfig_output", "value", "metric_name"]])
