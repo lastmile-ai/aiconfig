@@ -205,12 +205,24 @@ async function travelWithGPT() {
 <TabItem value="python">
 
 ```python title="app.py"
+import asyncio
 from aiconfig import AIConfigRuntime, InferenceOptions
-config = AIConfigRuntime.load('travel.aiconfig.json')
 
-# Run a single prompt (with streaming)
-inference_options = InferenceOptions(stream=True)
-await config.run("get_activities", options=inference_options)
+
+async def travelWithGPT():
+    config = AIConfigRuntime.load("travel.aiconfig.json")
+
+    # Run a single prompt (with streaming)
+    options = InferenceOptions(
+        stream=True,
+        # Write stream data to stdout
+        stream_callback=lambda data, _acc, _idx: print(data.get("content", ""), end=""),
+    )
+    await config.run("get_activities", options=options)
+
+
+if __name__ == "__main__":
+    asyncio.run(travelWithGPT())
 ```
 
 </TabItem>
