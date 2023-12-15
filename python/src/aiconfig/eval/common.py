@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Generic, Protocol, TypeVar
 
 import lastmile_utils.lib.core.api as cu
-from pydantic import root_validator
+from pydantic import model_validator, root_validator
 
 T_InputDatum = TypeVar("T_InputDatum", contravariant=True)
 T_OutputDatum = TypeVar("T_OutputDatum", contravariant=True)
@@ -26,7 +26,7 @@ MetricValue = int | float | str | bool | CustomMetricValue
 
 class EvaluationFunction(Protocol, Generic[T_OutputDatum]):
     @abstractmethod
-    def __call__(self, output_datum: T_OutputDatum) -> MetricValue:
+    async def __call__(self, output_datum: T_OutputDatum) -> MetricValue:
         pass
 
 
@@ -54,25 +54,25 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
           Error count must fall between 0 and inf.
     """
 
-    @property
-    def id(self) -> str:
-        return cu.hash_id(
-            f"{self.name}{self.description}{self.best_value}{self.worst_value}params={self._serialize_extra_metadata()}".encode("utf-8")
-        )
-
-    def _serialize_extra_metadata(self) -> str:
-        return json.dumps(self.extra_metadata, sort_keys=True)
-
     name: str
     description: str
     best_value: MetricValue | None = None
     worst_value: MetricValue | None = None
     # e.g. {"substring": "hello", "case_sensitive": False}
     extra_metadata: dict[str, Any] = {}
+    id: str = "UNSET"
+
+    @model_validator(mode="before")
+    def set_id(cls, values: dict[str, Any]) -> dict[str, Any]:
+        values["id"] = cu.hash_id(f"{values['name']}{values['description']}{values['best_value']}{values['worst_value']}".encode("utf-8"))
+        return values
+
+    def _serialize_extra_metadata(self) -> str:
+        return json.dumps(self.extra_metadata, sort_keys=True)
 
 
 class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
-    value: MetricValue
+    value: MetricValue | None
     metric_metadata: EvaluationMetricMetadata[T_OutputDatum]
 
     @root_validator(pre=True)
@@ -97,7 +97,7 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
             )
         elif worst_value == best_value:
             raise ValueError("best_value and worst_value cannot be equal")
-        elif worst_value < best_value and not worst_value <= value <= best_value:
+        elif value is not None and worst_value < best_value and not worst_value <= value <= best_value:
             raise ValueError(
                 f"""
                     [{values["metric_metadata"].name}]
@@ -108,7 +108,7 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
                     but got value outside that range.
                 """
             )
-        elif worst_value > best_value and not worst_value >= value >= best_value:
+        elif value is not None and worst_value > best_value and not worst_value >= value >= best_value:
             raise ValueError(
                 f"""
                     [{values["metric_metadata"].name}]
