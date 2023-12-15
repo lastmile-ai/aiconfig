@@ -20,8 +20,6 @@ import { extractOverrideSettings } from "./utils";
 import { HuggingFaceTextGenerationParser } from "./parsers/hf";
 import { CallbackEvent, CallbackManager } from "./callback";
 
-export type PromptWithOutputs = Prompt & { outputs?: Output[] };
-
 /**
  * Options for saving an AIConfig to a file.
  */
@@ -72,7 +70,7 @@ export class AIConfigRuntime implements AIConfig {
   description?: string | undefined;
   schema_version: SchemaVersion;
   metadata: AIConfig["metadata"];
-  prompts: PromptWithOutputs[];
+  prompts: Prompt[];
 
   filePath?: string;
   callbackManager: CallbackManager = CallbackManager.createManagerWithLogging();
@@ -82,7 +80,7 @@ export class AIConfigRuntime implements AIConfig {
     description?: string,
     schemaVersion: SchemaVersion = "latest",
     metadata?: AIConfig["metadata"],
-    prompts?: PromptWithOutputs[]
+    prompts?: Prompt[]
   ) {
     this.name = name;
     this.description = description;
@@ -197,7 +195,7 @@ export class AIConfigRuntime implements AIConfig {
     description?: string,
     schemaVersion: SchemaVersion = "latest",
     metadata?: AIConfig["metadata"],
-    prompts?: PromptWithOutputs[]
+    prompts?: Prompt[]
   ) {
     return new AIConfigRuntime(
       name,
@@ -397,6 +395,8 @@ export class AIConfigRuntime implements AIConfig {
       );
     }
 
+    // Clear previous run outputs if they exist
+    this.deleteOutput(promptName);
     const result = await modelParser.run(prompt, this, options, params);
 
     // Update the prompt's outputs

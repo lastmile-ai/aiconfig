@@ -1,5 +1,5 @@
 import PromptContainer from "@/src/components/prompt/PromptContainer";
-import { Container, Text, Group, Button } from "@mantine/core";
+import { Container, Text, Group, Button, createStyles } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { AIConfig, PromptInput } from "aiconfig";
 import router from "next/router";
@@ -10,6 +10,15 @@ type Props = {
   onBackNavigation: () => void;
   onSave: (aiconfig: AIConfig) => Promise<void>;
 };
+
+const useStyles = createStyles((theme) => ({
+  promptsContainer: {
+    [theme.fn.smallerThan("sm")]: {
+      padding: "0 0 200px 0",
+    },
+    paddingBottom: 400,
+  },
+}));
 
 export default function EditorContainer({
   aiconfig: initialAIConfig,
@@ -47,6 +56,8 @@ export default function EditorContainer({
     [aiconfig]
   );
 
+  const { classes } = useStyles();
+
   // TODO: Implement editor context for callbacks, readonly state, etc.
 
   return (
@@ -64,7 +75,7 @@ export default function EditorContainer({
           </Button>
         </Group>
       </Container>
-      <Container maw="80rem">
+      <Container maw="80rem" className={classes.promptsContainer}>
         {aiconfig.prompts.map((prompt: any, i: number) => {
           return (
             <PromptContainer
