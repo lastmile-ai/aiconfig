@@ -52,6 +52,7 @@
     "gpt-3-encoder": "^1.1.4",
     "handlebars": "^4.7.8",
     "lodash": "^4.17.21",
+    "node-fetch": "^3.3.2",
     "openai": "^4.11.1",
     "typescript-json-schema": "^0.60.0",
     "uuid": "^9.0.1",
