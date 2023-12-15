@@ -142,10 +142,11 @@ from aiconfig import AIConfigRuntime, InferenceOptions
 
 async def main():
   # Load the aiconfig
-  config = AIConfigRuntime.load('travel.aiconfig.json')
+  aiconfig = AIConfigRuntime.load('travel.aiconfig.json')
 
   # Run a single prompt
-  await config.run("get_activities")
+  result = await aiconfig.run("get_activities")
+  print(result)
 
 asyncio.run(main())
 ```
@@ -165,8 +166,11 @@ async function travelWithGPT() {
   );
 
   // Run a single prompt
-  await aiConfig.run("get_activities");
+  const result = await aiConfig.run("get_activities");
+  console.log(result);
 }
+
+travelWithGPT();
 ```
 
 </TabItem>
@@ -180,12 +184,22 @@ You can enable streaming for your prompt responses by passing in a streaming cal
 <TabItem value="python">
 
 ```python title="app.py"
+import asyncio
 from aiconfig import AIConfigRuntime, InferenceOptions
-config = AIConfigRuntime.load('travel.aiconfig.json')
 
-# Run a single prompt (with streaming)
-inference_options = InferenceOptions(stream=True)
-await config.run("get_activities", options=inference_options)
+async def travelWithGPT():
+    aiconfig = AIConfigRuntime.load("travel.aiconfig.json")
+
+    # Run a single prompt (with streaming)
+    options = InferenceOptions(
+        stream=True,
+        # Write stream data to stdout
+        stream_callback=lambda data, _acc, _idx: print(data.get("content", ""), end=""),
+    )
+    await aiconfig.run("get_activities", options=options)
+
+if __name__ == "__main__":
+    asyncio.run(travelWithGPT())
 ```
 
 </TabItem>
@@ -212,6 +226,8 @@ async function travelWithGPT() {
   // Run a single prompt
   await aiConfig.run("get_activities", /*params*/ undefined, options);
 }
+
+travelWithGPT();
 ```
 
 </TabItem>
@@ -258,11 +274,10 @@ Let's run this with AIConfig:
 Replace `config.run` above with this:
 
 ```python
-inference_options = InferenceOptions(stream=True)
-await config.run(
+await aiconfig.run(
     "gen_itinerary",
     params={"order_by": "duration"},
-    options=inference_options,
+    options=options,
     run_with_dependencies=True)
 ```
 
@@ -298,7 +313,7 @@ Let's save the AIConfig back to disk, and serialize the outputs from the latest 
 
 ```python
 # Save the aiconfig to disk. and serialize outputs from the model run
-config.save('updated.aiconfig.json', include_outputs=True)
+aiconfig.save('updated.aiconfig.json', include_outputs=True)
 ```
 
 </TabItem>
