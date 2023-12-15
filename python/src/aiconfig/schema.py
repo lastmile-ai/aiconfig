@@ -326,7 +326,8 @@ class AIConfig(BaseModel):
         if parameter_name in target_metadata.parameters:
             del target_metadata.parameters[parameter_name]
         else:
-            raise KeyError(f"Parameter '{parameter_name}' does not exist.")
+            scope_suffix = f"prompt '{prompt_name}'" if prompt_name is not None else "current AIConfig-scoped metadata"
+            raise KeyError(f"Parameter '{parameter_name}' does not exist for {scope_suffix}.")
 
     def get_prompt(self, prompt_name: str) -> Prompt:
         """
