@@ -8,6 +8,7 @@ from aiconfig.Config import AIConfigRuntime
 from result import Ok, Result
 
 from aiconfig.eval.common import (
+    MetricValue,
     SampleMetricValue,
     T_InputDatum,
     T_OutputDatum,
@@ -123,7 +124,7 @@ def evaluate(
 def eval_res_to_df(
     eval_res: DatasetEvaluationResult[T_InputDatum, T_OutputDatum],
 ) -> pd.DataFrame:
-    records: list[dict[str, None | str | float | T_InputDatum | T_OutputDatum]] = []
+    records: list[dict[str, None | MetricValue | T_InputDatum | T_OutputDatum]] = []
     for sample_res in eval_res:
         records.append(
             dict(
