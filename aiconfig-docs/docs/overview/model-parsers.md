@@ -25,6 +25,6 @@ sidebar_position: 10
 We plan on keeping core `aiconfig` lightweight so it doesn't become a monolithic project. We recommend using AIConfig extensions to expand support for additional models and functionality.
 :::
 
-### Build your own Model Parser
+# Custom Models
 
-TBD
+Don't see your model supported? See the [**Extensibility**](/docs/extensibility) section to learn how to add your own model parser.
