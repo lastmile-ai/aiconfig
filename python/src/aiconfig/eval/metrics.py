@@ -15,12 +15,12 @@ class Metric(Generic[T_OutputDatum]):
     evaluation_fn: EvaluationFunction[T_OutputDatum]
     metric_metadata: EvaluationMetricMetadata[T_OutputDatum]
 
-    def __call__(self, output_datum: T_OutputDatum) -> Any:
+    async def __call__(self, output_datum: T_OutputDatum) -> Any:
         """
         For convenience, make a Metric callable.
         Similar to torch Module `forward()`.
         """
-        return self.evaluation_fn(output_datum)
+        return await self.evaluation_fn(output_datum)
 
 
 def _check_substring(output_datum: str, substring: str, case_sensitive: bool) -> bool:
@@ -31,7 +31,7 @@ def _check_substring(output_datum: str, substring: str, case_sensitive: bool) ->
 
 
 def substring_match(substring: str, case_sensitive: bool = True) -> Metric[str]:
-    def _fn(output_datum: str) -> bool:
+    async def _fn(output_datum: str) -> bool:
         return _check_substring(
             output_datum=output_datum,
             substring=substring,
@@ -50,7 +50,7 @@ def substring_match(substring: str, case_sensitive: bool = True) -> Metric[str]:
     )
 
 
-def _calculate_brevity(output_datum: str) -> int:
+async def _calculate_brevity(output_datum: str) -> int:
     if len(output_datum) == 0:
         raise ValueError("Brevity is meaningless for empty string.")
     return len(output_datum)
@@ -98,7 +98,7 @@ class TextOverallPositiveSentiment(CustomMetricValue):
         return self.pos - self.neg < other.pos - other.neg
 
 
-def _get_sentiment_scores(output_datum: str) -> TextSentimentScores:
+async def _get_sentiment_scores(output_datum: str) -> TextSentimentScores:
     nltk.download("vader_lexicon", quiet=True)  # type: ignore
     sid = SentimentIntensityAnalyzer()
     mapping: dict[str, float] = sid.polarity_scores(output_datum)  # type: ignore
@@ -106,12 +106,13 @@ def _get_sentiment_scores(output_datum: str) -> TextSentimentScores:
     return TextSentimentScores(mapping=mapping, **mapping, highest=highest)
 
 
-def _get_sentiment(output_datum: str) -> str:
-    return _get_sentiment_scores(output_datum).highest
+async def _get_sentiment(output_datum: str) -> str:
+    scores = await _get_sentiment_scores(output_datum)
+    return scores.highest
 
 
-def _get_overall_positive_sentiment(output_datum: str) -> TextOverallPositiveSentiment:
-    scores = _get_sentiment_scores(output_datum)
+async def _get_overall_positive_sentiment(output_datum: str) -> TextOverallPositiveSentiment:
+    scores = await _get_sentiment_scores(output_datum)
     return TextOverallPositiveSentiment(pos=scores.pos, neg=scores.neg)
 
 

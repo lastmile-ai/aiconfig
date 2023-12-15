@@ -7,10 +7,10 @@ import pandas as pd
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.eval.common import MetricValue, SampleMetricValue, T_InputDatum, T_OutputDatum
 from aiconfig.eval.metrics import Metric
-from result import Ok, Result
+from result import Err, Ok, Result
 
 logging.basicConfig(format=cu.LOGGER_FMT)
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 # Each test is a (input_datum, Metric) pair
@@ -86,9 +86,9 @@ class SampleEvaluationParams(Generic[T_InputDatum, T_OutputDatum]):
         return f"\nSampleEvaluationParams:\n\t{self.output_sample=}\n\t{self.metric=}"
 
 
-def evaluate(
+async def evaluate(
     evaluation_params_list: Sequence[SampleEvaluationParams[T_InputDatum, T_OutputDatum]],
-) -> Result[DatasetEvaluationResult[T_InputDatum, T_OutputDatum], str]:  # pyright: ignore[fixme, reportInvalidTypeVarUse]
+) -> Result[DatasetEvaluationResult[T_InputDatum, T_OutputDatum], str]:
     results: Sequence[SampleEvaluationResult[T_InputDatum, T_OutputDatum]] = []
 
     for eval_params in evaluation_params_list:
@@ -96,13 +96,24 @@ def evaluate(
             eval_params.output_sample,
             eval_params.metric,
         )
-        calculate = metric.evaluation_fn
-        res_ = calculate(sample)
-        logger.debug(f"{res_=}")
+
+        async def _calculate() -> MetricValue:
+            return await metric.evaluation_fn(sample)
+
+        def _ok_with_log(res_: Result[MetricValue, str]) -> MetricValue | None:
+            match res_:
+                case Ok(res):
+                    return res
+                case Err(e):
+                    LOGGER.error(f"Error evaluating {eval_params=}: {e}")
+                    return None
+
+        # TODO: figure out the right timeout
+        res_ = await cu.run_thunk_safe(_calculate(), timeout=1)
         result = SampleEvaluationResult(
             input_datum=eval_params.input_sample,
             output_datum=sample,
-            metric_value=SampleMetricValue(value=res_, metric_metadata=metric.metric_metadata),
+            metric_value=SampleMetricValue(value=_ok_with_log(res_), metric_metadata=metric.metric_metadata),
         )
         results.append(result)
 
@@ -238,4 +249,6 @@ async def run_test_suite_helper(
                 return Ok(user_test_suite_outputs_only_to_eval_params_list(test_suite))
 
     eval_params_list = await _get_eval_params_list(test_suite_spec)
-    return eval_params_list.and_then(evaluate).map(eval_res_to_df)
+    res_evaluated = await eval_params_list.and_then_async(evaluate)
+    res_df_evaluated = res_evaluated.map(eval_res_to_df)
+    return res_df_evaluated
