@@ -435,6 +435,13 @@ class AIConfig(BaseModel):
             )
         return model_metadata
 
+    # TODO (rossdan): If we pass in a new model under ModelMetadata, but that model is
+    # not already registered to a model parser, we should throw an error and instruct
+    # user how to update this in their code or AIConfig. OR we should allow a 
+    # model_parser_id field to be passed into ModelMetadata and (somehow) find the ID
+    # that matches this class and do this automatically with the
+    # `update_model_parser_registry_with_config_runtime`` function
+    # Tracked in https://github.com/lastmile-ai/aiconfig/issues/503
     def update_model(
         self, model_metadata: Dict | ModelMetadata, prompt_name: Optional[str] = None
     ):
