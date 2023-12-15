@@ -63,14 +63,18 @@ export type PromptInputObjectDataSchema = {
 
 export type PromptInputObjectAttachmentsSchema = {
   type: "array";
+  min_items?: number;
+  max_items?: number;
   items: {
     type: "attachment";
     required: string[];
     mime_types: string[];
+    max_size?: number;
     properties: {
       data: {
         type: string;
       };
+      metadata?: GenericPropertiesSchema;
     };
   };
 };
@@ -84,20 +88,20 @@ export type PromptInputObjectSchema = {
   required?: string[] | undefined;
 };
 
-export type ModelSettingsSchema = {
-  properties: Record<string, { [key: string]: any }>;
-  required?: string[];
-};
-
-export type PromptMetadataSchema = {
-  properties: Record<string, { [key: string]: any }>;
-  required?: string[];
+export type GenericPropertiesSchema = {
+  properties: Record<
+    string,
+    {
+      [key: string]: any;
+    }
+  >;
+  required?: string[] | undefined;
 };
 
 export type PromptSchema = {
   input: PromptInputSchema;
-  model_settings?: ModelSettingsSchema;
-  prompt_metadata?: PromptMetadataSchema;
+  model_settings?: GenericPropertiesSchema;
+  prompt_metadata?: GenericPropertiesSchema;
 };
 
 export function getPromptSchema(
