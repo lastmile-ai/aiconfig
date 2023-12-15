@@ -4,7 +4,7 @@
 <br/>
 
 <p align="center">
-    <b>AIConfig - the open-source framework for building production-grade AI applications!</b> <br />
+    <b>AIConfig - the open-source framework for building production-grade AI applications</b> <br />
 </p>
 
 <p align="center">
