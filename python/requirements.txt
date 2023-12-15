@@ -16,3 +16,4 @@ mock
 pytest-asyncio
 lastmile-utils==0.0.9
 hypothesis==6.91.0
+nltk
