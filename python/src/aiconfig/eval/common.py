@@ -70,6 +70,12 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
     def _serialize_extra_metadata(self) -> str:
         return json.dumps(self.extra_metadata, sort_keys=True)
 
+    def __repr__(self) -> str:
+        fields = self.__dict__
+        fields["id"] = self.id
+        s_json = json.dumps(fields, indent=2)
+        return f"EvaluationMetricMetadata({s_json})"
+
 
 class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
     value: MetricValue | None
