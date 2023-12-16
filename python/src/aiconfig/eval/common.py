@@ -1,13 +1,17 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Generic, Protocol, TypeVar
+from typing import Any, Generic, NewType, Protocol, TypeVar
 
 import lastmile_utils.lib.core.api as cu
-from pydantic import root_validator
+from pydantic import BaseModel, root_validator
 
 T_InputDatum = TypeVar("T_InputDatum", contravariant=True)
 T_OutputDatum = TypeVar("T_OutputDatum", contravariant=True)
+
+T_BaseModel = TypeVar("T_BaseModel", bound=BaseModel)
+
+SerializedJSON = NewType("SerializedJSON", str)
 
 
 @dataclass
@@ -22,6 +26,11 @@ class CustomMetricValue(ABC):
 
 
 MetricValue = int | float | str | bool | CustomMetricValue
+
+
+@dataclass
+class CustomMetricPydanticObject(CustomMetricValue, Generic[T_BaseModel]):
+    data: T_BaseModel
 
 
 class EvaluationFunction(Protocol, Generic[T_OutputDatum]):
@@ -127,3 +136,9 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
             )
         else:
             return values
+
+
+class TextRatingsData(cu.Record):
+    conciseness_rating: int
+    conciseness_confidence: float
+    conciseness_reasoning: str
