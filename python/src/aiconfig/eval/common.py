@@ -26,7 +26,7 @@ MetricValue = int | float | str | bool | CustomMetricValue
 
 class EvaluationFunction(Protocol, Generic[T_OutputDatum]):
     @abstractmethod
-    def __call__(self, output_datum: T_OutputDatum) -> MetricValue:
+    async def __call__(self, output_datum: T_OutputDatum) -> MetricValue:
         pass
 
 
@@ -70,9 +70,15 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
     # e.g. {"substring": "hello", "case_sensitive": False}
     extra_metadata: dict[str, Any] = {}
 
+    def __repr__(self) -> str:
+        fields = self.__dict__
+        fields["id"] = self.id
+        s_json = json.dumps(fields, indent=2)
+        return f"EvaluationMetricMetadata({s_json})"
+
 
 class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
-    value: MetricValue
+    value: MetricValue | None
     metric_metadata: EvaluationMetricMetadata[T_OutputDatum]
 
     @root_validator(pre=True)
@@ -97,7 +103,7 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
             )
         elif worst_value == best_value:
             raise ValueError("best_value and worst_value cannot be equal")
-        elif worst_value < best_value and not worst_value <= value <= best_value:
+        elif value is not None and worst_value < best_value and not worst_value <= value <= best_value:
             raise ValueError(
                 f"""
                     [{values["metric_metadata"].name}]
@@ -108,7 +114,7 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
                     but got value outside that range.
                 """
             )
-        elif worst_value > best_value and not worst_value >= value >= best_value:
+        elif value is not None and worst_value > best_value and not worst_value >= value >= best_value:
             raise ValueError(
                 f"""
                     [{values["metric_metadata"].name}]
