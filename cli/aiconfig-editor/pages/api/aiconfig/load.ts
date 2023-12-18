@@ -1,9 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { AIConfig, AIConfigRuntime } from "aiconfig";
+import { AIConfigRuntime } from "aiconfig";
 import { ErrorResponse } from "@/src/shared/serverTypes";
+import {
+  ClientAIConfig,
+  ClientExecuteResult,
+  ClientPromptOutput,
+} from "@/src/shared/types";
 
 type Data = {
-  aiconfig: AIConfig;
+  aiconfig: ClientAIConfig;
 };
 
 type RequestBody = {
@@ -24,10 +29,32 @@ export default function handler(
     return res.status(500).json({ error: "No path provided" });
   }
 
-  // TODO: Needed to add node-fetch to the dependencies of aiconfig-editor for this to work
-  // This should be fixed up in library though?
   // TODO: load should probably be async?
   const aiconfig = AIConfigRuntime.load(body.path);
 
-  res.status(200).json({ aiconfig });
+  // Refine outputs for client-side rendering. We only care about displaying (and deleting)
+  // outputs directly from the editor
+  const clientAIConfig: ClientAIConfig = {
+    ...aiconfig,
+    prompts: aiconfig.prompts.map((prompt) => ({
+      ...prompt,
+      outputs: prompt.outputs?.map((output) => {
+        if (output.output_type === "execute_result") {
+          const text = aiconfig.getOutputText(prompt, output);
+          if (text) {
+            return {
+              ...output,
+              client: {
+                type: "text",
+                text,
+              },
+            } as ClientExecuteResult;
+          }
+        }
+        return output as ClientPromptOutput;
+      }),
+    })),
+  };
+
+  res.status(200).json({ aiconfig: clientAIConfig });
 }

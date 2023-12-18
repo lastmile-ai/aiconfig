@@ -1,13 +1,15 @@
 import PromptActionBar from "@/src/components/prompt/PromptActionBar";
 import PromptInputRenderer from "@/src/components/prompt/prompt_input/PromptInputRenderer";
+import PromptOutputsRenderer from "@/src/components/prompt/prompt_outputs/PromptOutputsRenderer";
+import { ClientPrompt } from "@/src/shared/types";
 import { getPromptModelName, getPromptSchema } from "@/src/utils/promptUtils";
 import { Flex, Card, Text, createStyles } from "@mantine/core";
-import { Prompt, PromptInput as AIConfigPromptInput } from "aiconfig";
+import { PromptInput as AIConfigPromptInput } from "aiconfig";
 import { memo, useCallback } from "react";
 
 type Props = {
   index: number;
-  prompt: Prompt;
+  prompt: ClientPrompt;
   onChangePromptInput: (i: number, newPromptInput: AIConfigPromptInput) => void;
   defaultConfigModelName?: string;
 };
@@ -31,11 +33,14 @@ export default memo(function PromptContainer({
   onChangePromptInput,
   defaultConfigModelName,
 }: Props) {
-  // TODO: Move this to context
   const onChangeInput = useCallback(
     (newInput: AIConfigPromptInput) => onChangePromptInput(index, newInput),
     [index, onChangePromptInput]
   );
+
+  // TODO: When adding support for custom PromptContainers, implement a PromptContainerRenderer which
+  // will take in the index and callback and render the appropriate PromptContainer with new memoized
+  // callback and not having to pass index down to PromptContainer
 
   const promptSchema = getPromptSchema(prompt, defaultConfigModelName);
   const inputSchema = promptSchema?.input;
@@ -55,7 +60,7 @@ export default memo(function PromptContainer({
             schema={inputSchema}
             onChangeInput={onChangeInput}
           />
-          {/* <PromptOutput /> */}
+          {prompt.outputs && <PromptOutputsRenderer outputs={prompt.outputs} />}
         </Flex>
       </Card>
       <Card withBorder className={classes.actionBarCard}>

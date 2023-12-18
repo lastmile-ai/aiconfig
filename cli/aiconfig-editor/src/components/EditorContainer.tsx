@@ -1,15 +1,16 @@
 import PromptContainer from "@/src/components/prompt/PromptContainer";
 import { Container, Text, Group, Button, createStyles } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { AIConfig, PromptInput } from "aiconfig";
+import { PromptInput } from "aiconfig";
 import router from "next/router";
 import { useCallback, useReducer, useState } from "react";
 import aiconfigReducer from "@/src/components/aiconfigReducer";
+import { ClientAIConfig } from "@/src/shared/types";
 
 type Props = {
-  aiconfig: AIConfig;
+  aiconfig: ClientAIConfig;
   onBackNavigation: () => void;
-  onSave: (aiconfig: AIConfig) => Promise<void>;
+  onSave: (aiconfig: ClientAIConfig) => Promise<void>;
 };
 
 const useStyles = createStyles((theme) => ({
