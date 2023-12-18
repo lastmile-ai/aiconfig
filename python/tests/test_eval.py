@@ -15,12 +15,34 @@ import pytest
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.eval import common
 from aiconfig.eval.api import TestSuiteWithInputsSettings, metrics, run_test_suite_outputs_only, run_test_suite_with_inputs
-from aiconfig.eval.lib import TestSuiteWithInputsSpec, run_test_suite_helper
+from aiconfig.eval.lib import MetricList, TestSuiteWithInputsSpec, run_test_suite_helper
 from aiconfig.model_parser import InferenceOptions
 from result import Err, Ok, Result
 
 brevity = metrics.brevity
 substring_match = metrics.substring_match
+
+MOCK_NLTK_SENTIMENT_SCORE_MAPPING = {
+    "nltk is amazing": {"pos": 0.9, "neu": 0.1, "neg": 0.0, "compound": 0.9},
+    "whats for dinner?": {"pos": 0.0, "neu": 0.9, "neg": 0.1, "compound": -0.9},
+    "oh, bother": {"pos": 0.0, "neu": 0.1, "neg": 0.9, "compound": -0.9},
+}
+
+
+def _compute_mock_sentiment_class_mapping(score_mapping: dict[str, dict[str, float]]) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for k, scores in score_mapping.items():
+        max_class, max_score = "", float("-inf")
+        for class_, score in scores.items():
+            if score > max_score:
+                max_score = score
+                max_class = class_
+        out[k] = max_class
+
+    return out
+
+
+MOCK_NLTK_SENTIMENT_CLASS_MAPPING = _compute_mock_sentiment_class_mapping(MOCK_NLTK_SENTIMENT_SCORE_MAPPING)
 
 
 def set_pd():
@@ -96,7 +118,7 @@ async def test_run_with_outputs_only_basic():
     out = await run_test_suite_outputs_only(test_suite)
     exp = pd.DataFrame(
         data={
-            "value": [11.0, True],
+            "value": [11, True],
         }
     )
     assert out["value"].equals(exp["value"])  # type: ignore
@@ -195,34 +217,57 @@ async def test_run_test_suite_with_inputs(data: st.DataObject):
             assert False, f"expected Ok, got Err({e})"
 
 
+def _make_mock_nltk_metrics() -> MetricList[str]:
+    def _mock_get_nltk_polarity_scores(text: str) -> dict[str, float]:
+        return MOCK_NLTK_SENTIMENT_SCORE_MAPPING[text]
+
+    mock_nltk_sentiment_scores_vader = metrics.make_sentiment_scores_metric(
+        get_polarity_scores=_mock_get_nltk_polarity_scores,
+        make_evaluation_fn=metrics.make_get_sentiment_scores,
+        name="nltk_sentiment_scores_vader",
+        description="NLTK sentiment scores using Vader",
+    )
+
+    mock_nltk_sentiment_class_vader = metrics.make_sentiment_scores_metric(
+        get_polarity_scores=_mock_get_nltk_polarity_scores,
+        make_evaluation_fn=metrics.make_get_sentiment_class,
+        name="nltk_sentiment_class_vader",
+        description="Highest-probability NLTK sentiment class using Vader",
+    )
+
+    mock_nltk_sentiment_score_overall_positive = metrics.make_sentiment_scores_metric(
+        get_polarity_scores=_mock_get_nltk_polarity_scores,
+        make_evaluation_fn=metrics.make_get_overall_positive_sentiment,
+        name="nltk_sentiment_score_overall_positive",
+        description="Positive minus negative",
+        best_value=metrics.TextOverallPositiveSentiment(pos=1.0, neg=0.0),
+        worst_value=metrics.TextOverallPositiveSentiment(pos=0.0, neg=1.0),
+    )
+
+    return [mock_nltk_sentiment_scores_vader, mock_nltk_sentiment_class_vader, mock_nltk_sentiment_score_overall_positive]
+
+
 @pytest.mark.asyncio
 async def test_custom_metric_type():
+    mock_nltk_metrics = _make_mock_nltk_metrics()
     user_test_suite_outputs_only = list(
         itertools.product(
             ["nltk is amazing", "whats for dinner?", "oh, bother"],
-            [
-                metrics.sentiment_scores,
-                metrics.sentiment_class,
-                metrics.sentiment_score_overall_positive,
-            ],
+            mock_nltk_metrics,
         )
     )
     df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
     result = df.set_index(["metric_name", "aiconfig_output"]).value.unstack(0).to_dict()  # type: ignore
-    assert result["sentiment_class"] == {
-        "nltk is amazing": "pos",
-        "whats for dinner?": "neu",
-        "oh, bother": "neg",
-    }
+    assert result["nltk_sentiment_class_vader"] == MOCK_NLTK_SENTIMENT_CLASS_MAPPING
 
-    assert all(isinstance(v, metrics.TextSentimentScores) for v in result["sentiment_scores"].values())  # type: ignore
+    assert all(isinstance(v, metrics.TextSentimentScores) for v in result["nltk_sentiment_scores_vader"].values())  # type: ignore
 
-    assert all(isinstance(v, metrics.TextOverallPositiveSentiment) for v in result["sentiment_score_overall_positive"].values())  # type: ignore
+    assert all(isinstance(v, metrics.TextOverallPositiveSentiment) for v in result["nltk_sentiment_score_overall_positive"].values())  # type: ignore
 
     neutral = metrics.TextOverallPositiveSentiment(pos=0.0, neg=0.0)
 
-    assert result["sentiment_score_overall_positive"]["nltk is amazing"] > neutral
-    assert result["sentiment_score_overall_positive"]["oh, bother"] < neutral
+    assert result["nltk_sentiment_score_overall_positive"]["nltk is amazing"] > neutral
+    assert result["nltk_sentiment_score_overall_positive"]["oh, bother"] < neutral
 
 
 @pytest.mark.asyncio
