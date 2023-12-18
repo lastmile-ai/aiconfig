@@ -1,10 +1,10 @@
-import { PromptMetadataSchema } from "@/src/utils/promptUtils";
+import { GenericPropertiesSchema } from "@/src/utils/promptUtils";
 import { Prompt } from "aiconfig";
 import { memo } from "react";
 
 type Props = {
   prompt: Prompt;
-  schema?: PromptMetadataSchema;
+  schema?: GenericPropertiesSchema;
 };
 
 function ModelMetadataConfigRenderer({ prompt }: Props) {
