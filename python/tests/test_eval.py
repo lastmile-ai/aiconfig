@@ -1,5 +1,6 @@
 # type: ignore[no-untyped-call]
 import itertools
+import logging
 import os
 from typing import Any
 
@@ -55,12 +56,13 @@ class MockAIConfigRuntime(AIConfigRuntime):
         return f"output_for_{prompt_name}_the_query_{the_query}"
 
 
-def test_metrics():
-    assert brevity("hello") == 5.0
+@pytest.mark.asyncio
+async def test_metrics():
+    assert await brevity("hello") == 5.0
 
-    assert substring_match("lo w")("hello world") == 1.0
-    assert substring_match("hello", case_sensitive=False)("HELLO world") == 1.0
-    assert substring_match("hello", case_sensitive=True)("HELLO world") == 0.0
+    assert await substring_match("lo w")("hello world") == 1.0
+    assert await substring_match("hello", case_sensitive=False)("HELLO world") == 1.0
+    assert await substring_match("hello", case_sensitive=True)("HELLO world") == 0.0
 
 
 @pytest.mark.asyncio
@@ -217,3 +219,20 @@ async def test_custom_metric_type():
 
     assert result["sentiment_score_overall_positive"]["nltk is amazing"] > neutral
     assert result["sentiment_score_overall_positive"]["oh, bother"] < neutral
+
+
+@pytest.mark.asyncio
+async def test_exception_metric(caplog):
+    user_test_suite_outputs_only = list(
+        itertools.product(
+            ["Hundred Acre Wood", ""],
+            [metrics.brevity],
+        )
+    )
+    with caplog.at_level(logging.ERROR):
+        df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
+    mapping = df.query("metric_name=='brevity'").set_index("aiconfig_output").value.to_dict()
+    assert mapping["Hundred Acre Wood"] == 17.0
+    assert pd.isnull(mapping[""])
+
+    assert any("Brevity is meaningless for empty string." in record.msg for record in caplog.records)

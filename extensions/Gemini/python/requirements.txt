@@ -1,0 +1,8 @@
+#Google
+google-generativeai
+
+#Other
+asyncio
+
+# AIConfig
+python-aiconfig

@@ -6,7 +6,7 @@ pytest
 pydantic>=2.1
 pybars3
 google-generativeai
-openai>=1.0.0
+openai >= 1.0.0, < 1.5
 python-dotenv
 huggingface_hub
 result
@@ -14,6 +14,6 @@ nest_asyncio
 prompt_toolkit
 mock
 pytest-asyncio
-lastmile-utils==0.0.9
+lastmile-utils==0.0.10
 hypothesis==6.91.0
 nltk

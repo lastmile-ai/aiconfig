@@ -1,13 +1,13 @@
 import ModelSettingsConfigRenderer from "@/src/components/prompt/model_settings/ModelSettingsConfigRenderer";
 import ModelSettingsSchemaRenderer from "@/src/components/prompt/model_settings/ModelSettingsSchemaRenderer";
-import { ModelSettingsSchema } from "@/src/utils/promptUtils";
+import { GenericPropertiesSchema } from "@/src/utils/promptUtils";
 import { Flex, Text } from "@mantine/core";
 import { Prompt } from "aiconfig";
 import { memo } from "react";
 
 type Props = {
   prompt: Prompt;
-  schema?: ModelSettingsSchema;
+  schema?: GenericPropertiesSchema;
 };
 
 // Don't default to config-level model settings since that could be confusing

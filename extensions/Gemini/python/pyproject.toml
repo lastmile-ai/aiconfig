@@ -2,17 +2,19 @@
 requires = ["setuptools", "wheel"]
 
 [project]
-name = "python-aiconfig"
-version = "1.1.7"
+name = "aiconfig_extension_gemini"
+version = "0.0.4"
 authors = [
-  { name="Sarmad Qadri", email="sarmad@lastmileai.dev" },
+  { name="LastMile AI" },
+  { name="Ankush Pala", email="ankush@lastmileai.dev" },
 ]
-description = "Python library for LastMile AI API"
+description = "An extension for using Gemini with aiconfig"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 classifiers = [
-  "Intended Audience :: Developers",
-  "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
 ]
 dynamic = ["dependencies"]
 
@@ -20,8 +22,8 @@ dynamic = ["dependencies"]
 dependencies = {file = ["requirements.txt"]}
 
 [project.urls]
-"Homepage" = "https://github.com/lastmile-ai/aiconfig"
-"Bug Tracker" = "https://github.com/lastmile-ai/aiconfig/issues"
+Homepage = "https://github.com/lastmile-ai/aiconfig/"
+Issues = "https://github.com/lastmile-ai/aiconfig/issues"
 
 # Black formatting
 [tool.black]
