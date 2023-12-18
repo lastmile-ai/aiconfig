@@ -1,10 +1,10 @@
 <div align="center"><picture>
-  <img alt="aiconfig" src="https://github.com/lastmile-ai/aiconfig/assets/81494782/d94f4f67-466a-4207-a46b-069f260e6ef4"/>
+  <img alt="aiconfig" src="aiconfig-docs/static/img/readme_small_logo.png" width="200"/>
 </picture></div>
 <br/>
 
 <p align="center">
-    <b>AIConfig - the open-source framework for building production-grade AI applications!</b> <br />
+    <b>AIConfig - the open-source framework for building production-grade AI applications</b> <br />
 </p>
 
 <p align="center">
@@ -27,10 +27,11 @@
 </p>
 
 AIConfig is a framework that makes it easy to build generative AI applications for production. It manages generative AI prompts, models and model parameters as JSON-serializable configs that can be version controlled, evaluated, monitored and opened in a notebook playground for rapid prototyping.
-It allows you to store and iterate on generative AI behavior separately from your application code, offering a streamlined AI development workflow.
 
-<div style="text-align:center;">
-    <img src="aiconfig-docs/static/img/aiconfig_dataflow.png" alt="AIConfig flow">
+It allows you to store and iterate on generative AI behavior _separately from your application code_, offering a streamlined AI development workflow.
+
+<div style="center">
+    <img src="aiconfig-docs/static/img/aiconfig_dataflow.png" alt="AIConfig flow" width="500">
 </div>
 
 **[More context here](#why-is-this-important).**
@@ -92,9 +93,9 @@ Here is a sample AIConfig that uses gpt-3.5-turbo and gpt-4:
 </code></pre>
 </details>
 
-The core SDK allows you to use your AIConfig easily in your application code.
-We cover Python instructions here, for Node.js please see the detailed Getting Started guide [here](https://aiconfig.lastmileai.dev/docs/getting-started).
-The example below shows python below uses `trip_planner_aiconfig.json` shared above.
+The core SDK connects your AIConfig to your application code.
+We cover Python instructions here - for Node.js please see the detailed Getting Started guide [here](https://aiconfig.lastmileai.dev/docs/getting-started).
+The example below uses `trip_planner_aiconfig.json` shared above.
 
 [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1RlGQmtR0uK7OTI5nG10E219JoH2mgAQr#scrollTo=h2G7ThhyFWxg)
 
