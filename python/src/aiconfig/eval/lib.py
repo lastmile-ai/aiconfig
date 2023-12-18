@@ -5,14 +5,9 @@ from typing import Generic, NewType, Sequence, Tuple, TypeVar
 import lastmile_utils.lib.core.api as cu
 import pandas as pd
 from aiconfig.Config import AIConfigRuntime
-from result import Ok, Result
-
-from aiconfig.eval.common import (
-    SampleMetricValue,
-    T_InputDatum,
-    T_OutputDatum,
-)
+from aiconfig.eval.common import MetricValue, SampleMetricValue, T_InputDatum, T_OutputDatum
 from aiconfig.eval.metrics import Metric
+from result import Ok, Result
 
 logging.basicConfig(format=cu.LOGGER_FMT)
 logger = logging.getLogger(__name__)
@@ -92,12 +87,8 @@ class SampleEvaluationParams(Generic[T_InputDatum, T_OutputDatum]):
 
 
 def evaluate(
-    evaluation_params_list: Sequence[
-        SampleEvaluationParams[T_InputDatum, T_OutputDatum]
-    ],
-) -> Result[
-    DatasetEvaluationResult[T_InputDatum, T_OutputDatum], str
-]:  # pyright: ignore[fixme, reportInvalidTypeVarUse]
+    evaluation_params_list: Sequence[SampleEvaluationParams[T_InputDatum, T_OutputDatum]],
+) -> Result[DatasetEvaluationResult[T_InputDatum, T_OutputDatum], str]:  # pyright: ignore[fixme, reportInvalidTypeVarUse]
     results: Sequence[SampleEvaluationResult[T_InputDatum, T_OutputDatum]] = []
 
     for eval_params in evaluation_params_list:
@@ -111,9 +102,7 @@ def evaluate(
         result = SampleEvaluationResult(
             input_datum=eval_params.input_sample,
             output_datum=sample,
-            metric_value=SampleMetricValue(
-                value=res_, metric_metadata=metric.metric_metadata
-            ),
+            metric_value=SampleMetricValue(value=res_, metric_metadata=metric.metric_metadata),
         )
         results.append(result)
 
@@ -123,7 +112,7 @@ def evaluate(
 def eval_res_to_df(
     eval_res: DatasetEvaluationResult[T_InputDatum, T_OutputDatum],
 ) -> pd.DataFrame:
-    records: list[dict[str, None | str | float | T_InputDatum | T_OutputDatum]] = []
+    records: list[dict[str, None | MetricValue | T_InputDatum | T_OutputDatum]] = []
     for sample_res in eval_res:
         records.append(
             dict(
@@ -167,9 +156,7 @@ async def user_test_suite_with_inputs_to_eval_params_list(
     all_inputs = list(input_to_metrics_mapping.keys())
 
     async def _run(input_datum: str) -> Result[TextOutput, str]:
-        return (await run_aiconfig_helper(aiconfig, prompt_name, input_datum)).map(
-            TextOutput
-        )
+        return (await run_aiconfig_helper(aiconfig, prompt_name, input_datum)).map(TextOutput)
 
     # TODO: fix the race condition and then use gather
     # https://github.com/lastmile-ai/aiconfig/issues/434
@@ -208,17 +195,10 @@ def user_test_suite_outputs_only_to_eval_params_list(
     """
     Example: [("the_output_is_world", brevity)] -> [SampleEvaluationParams(None, "the_output_is_world", brevity)
     """
-    return [
-        SampleEvaluationParams(
-            input_sample=None, output_sample=TextOutput(output_datum), metric=metric
-        )
-        for output_datum, metric in test_suite
-    ]
+    return [SampleEvaluationParams(input_sample=None, output_sample=TextOutput(output_datum), metric=metric) for output_datum, metric in test_suite]
 
 
-async def run_aiconfig_helper(
-    runtime: AIConfigRuntime, prompt_name: str, question: str
-) -> Result[str, str]:
+async def run_aiconfig_helper(runtime: AIConfigRuntime, prompt_name: str, question: str) -> Result[str, str]:
     params = {
         "the_query": question,
     }
@@ -252,12 +232,8 @@ async def run_test_suite_helper(
         test_suite_spec: TestSuiteSpec,
     ) -> Result[Sequence[SampleEvaluationParams[TextInput, TextOutput]], str]:
         match test_suite_spec:
-            case TestSuiteWithInputsSpec(
-                test_suite=test_suite, prompt_name=prompt_name, aiconfig=aiconfig
-            ):
-                return await user_test_suite_with_inputs_to_eval_params_list(
-                    test_suite, prompt_name, aiconfig
-                )
+            case TestSuiteWithInputsSpec(test_suite=test_suite, prompt_name=prompt_name, aiconfig=aiconfig):
+                return await user_test_suite_with_inputs_to_eval_params_list(test_suite, prompt_name, aiconfig)
             case TestSuiteOutputsOnlySpec(test_suite=test_suite):
                 return Ok(user_test_suite_outputs_only_to_eval_params_list(test_suite))
 
