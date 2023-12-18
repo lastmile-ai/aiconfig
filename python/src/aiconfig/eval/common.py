@@ -6,18 +6,20 @@ from typing import Any, Generic, NewType, Protocol, Type, TypeVar
 import lastmile_utils.lib.core.api as cu
 import result
 from aiconfig.eval import common
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel
 from result import Result
 
 T_InputDatum = TypeVar("T_InputDatum", contravariant=True)
 T_OutputDatum = TypeVar("T_OutputDatum", contravariant=True)
+
+T_Evaluable = TypeVar("T_Evaluable", contravariant=True)
 
 T_BaseModel = TypeVar("T_BaseModel", bound=BaseModel)
 
 SerializedJSON = NewType("SerializedJSON", str)
 
 
-@dataclass
+@dataclass(eq=False)
 class CustomMetricValue(ABC):
     """
     Subclass this if you want your metric to return a type not included in MetricValue.
@@ -28,13 +30,13 @@ class CustomMetricValue(ABC):
     """
 
 
+T_MetricValue = TypeVar("T_MetricValue", int, float, str, bool, CustomMetricValue, covariant=True)
+
+
 class CompletionTextToSerializedJSON(Protocol):
     @abstractmethod
     def __call__(self, output_datum: str) -> Result[common.SerializedJSON, str]:
         pass
-
-
-MetricValue = int | float | str | bool | CustomMetricValue
 
 
 @dataclass
@@ -42,13 +44,14 @@ class CustomMetricPydanticObject(CustomMetricValue, Generic[T_BaseModel]):
     data: T_BaseModel
 
 
-class EvaluationFunction(Protocol, Generic[T_OutputDatum]):
+class EvaluationFunction(Protocol, Generic[T_Evaluable, T_MetricValue]):
     @abstractmethod
-    async def __call__(self, output_datum: T_OutputDatum) -> MetricValue:
+    async def __call__(self, datum: T_Evaluable) -> T_MetricValue:
         pass
 
 
-class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
+class EvaluationMetricMetadata(cu.Record, Generic[T_Evaluable, T_MetricValue]):
+
     """A record to tie together metadata about an evaluation metric
     to ensure that numbers are interpreted as intended.
 
@@ -83,8 +86,8 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
 
     name: str
     description: str
-    best_value: MetricValue | None = None
-    worst_value: MetricValue | None = None
+    best_value: T_MetricValue | None = None
+    worst_value: T_MetricValue | None = None
     # e.g. {"substring": "hello", "case_sensitive": False}
     extra_metadata: dict[str, Any] = {}
 
@@ -95,25 +98,26 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
         return f"EvaluationMetricMetadata({s_json})"
 
 
-class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
-    value: MetricValue | None
-    metric_metadata: EvaluationMetricMetadata[T_OutputDatum]
+@dataclass
+class SampleMetricValue(Generic[T_Evaluable, T_MetricValue]):
+    value: T_MetricValue | None
+    metric_metadata: EvaluationMetricMetadata[T_Evaluable, T_MetricValue]
 
-    @root_validator(pre=True)
-    def check_value_range(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def __post_init__(self) -> None:
+        metric_metadata = self.metric_metadata
         worst_value, best_value = (
-            values["metric_metadata"].worst_value,
-            values["metric_metadata"].best_value,
+            metric_metadata.worst_value,
+            metric_metadata.best_value,
         )
-        value = values["value"]
+        value = self.value
         if worst_value is None and best_value is None:
             # fine
-            return values
+            return
         elif worst_value is None or best_value is None:
             raise ValueError(
                 f"""
-                    [{values["metric_metadata"].name}]
-                    {values["metric_metadata"].description}
+                    [{metric_metadata.name}]
+                    {metric_metadata.description}
 
                     You must define both worst_value and best_value, or neither.
                     You defined worst_value = {worst_value} and best_value = {best_value}.
@@ -121,30 +125,28 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
             )
         elif worst_value == best_value:
             raise ValueError("best_value and worst_value cannot be equal")
-        elif value is not None and worst_value < best_value and not worst_value <= value <= best_value:
+        elif value is not None and worst_value < best_value and not worst_value <= value <= best_value:  # type: ignore[fixme]
             raise ValueError(
                 f"""
-                    [{values["metric_metadata"].name}]
-                    {values["metric_metadata"].description}
+                    [{metric_metadata.name}]
+                    {metric_metadata.description}
 
                     Value {value} is not in range [{worst_value}, {best_value}]. 
                     You defined worst_value = {worst_value} and best_value = {best_value},
                     but got value outside that range.
                 """
             )
-        elif value is not None and worst_value > best_value and not worst_value >= value >= best_value:
+        elif value is not None and worst_value > best_value and not worst_value >= value >= best_value:  # type: ignore[fixme]
             raise ValueError(
                 f"""
-                    [{values["metric_metadata"].name}]
-                    {values["metric_metadata"].description}
+                    [{metric_metadata.name}]
+                    {metric_metadata.description}
 
                     Value {value} is not in range [{worst_value}, {best_value}]. 
                     You defined worst_value = {worst_value} and best_value = {best_value},
                     but got value outside that range.
                 """
             )
-        else:
-            return values
 
 
 class TextRatingsData(cu.Record):

@@ -15,7 +15,7 @@ import pytest
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.eval import common
 from aiconfig.eval.api import TestSuiteWithInputsSettings, metrics, run_test_suite_outputs_only, run_test_suite_with_inputs
-from aiconfig.eval.lib import TestSuiteWithInputsSpec, run_test_suite_helper
+from aiconfig.eval.lib import MetricList, TestSuiteWithInputsSpec, run_test_suite_helper
 from aiconfig.model_parser import InferenceOptions
 from result import Err, Ok, Result
 
@@ -118,7 +118,7 @@ async def test_run_with_outputs_only_basic():
     out = await run_test_suite_outputs_only(test_suite)
     exp = pd.DataFrame(
         data={
-            "value": [11.0, True],
+            "value": [11, True],
         }
     )
     assert out["value"].equals(exp["value"])  # type: ignore
@@ -217,7 +217,7 @@ async def test_run_test_suite_with_inputs(data: st.DataObject):
             assert False, f"expected Ok, got Err({e})"
 
 
-def _make_mock_nltk_metrics() -> list[metrics.Metric[str]]:
+def _make_mock_nltk_metrics() -> MetricList[str]:
     def _mock_get_nltk_polarity_scores(text: str) -> dict[str, float]:
         return MOCK_NLTK_SENTIMENT_SCORE_MAPPING[text]
 
