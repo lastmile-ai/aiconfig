@@ -420,49 +420,107 @@ def test_get_prompt_nonexistent(ai_config_runtime: AIConfigRuntime):
         ai_config_runtime.get_prompt("GreetingPrompt")
 
 
-def test_update_model_ai_config(ai_config_runtime: AIConfigRuntime):
-    model_metadata = {"name": "testmodel", "settings": {"topP": 0.9}}
-    ai_config_runtime.update_model(model_metadata)
-    assert (
-        ai_config_runtime.metadata.models["testmodel"]
-        == ModelMetadata(**{"name": "testmodel", "settings": {"topP": 0.9}}).settings
-    )
+def test_update_model_for_ai_config(ai_config_runtime: AIConfigRuntime):
+    """Test updating model without a specific prompt."""
+    # New model name, new settings --> update
+    name = "testmodel"
+    settings = {"topP": 0.9}
+    ai_config_runtime.update_model(name, settings)
+    pytest.warns(match=f"No prompt name was given to update the model name to '{name}'.")
+    assert ai_config_runtime.metadata.models is not None
+    assert ai_config_runtime.metadata.models[name] == settings
+
+    # Existing model name, no settings --> no-op
+    ai_config_runtime.update_model(name)
+    pytest.warns(match=f"No prompt name was given to update the model name to '{name}'.")
+    assert ai_config_runtime.metadata.models is not None
+    assert ai_config_runtime.metadata.models[name] == settings
+
+    # Existing model name, new settings --> update
+    new_settings = {"topP": 0.75}
+    ai_config_runtime.update_model(name, new_settings)
+    pytest.warns(match=f"No prompt name was given to update the model name to '{name}'.")
+    assert ai_config_runtime.metadata.models is not None
+    assert ai_config_runtime.metadata.models[name] == new_settings
+
+    # New model name, no settings --> update
+    new_name = "testmodel_without_settings"
+    ai_config_runtime.update_model(new_name)
+    pytest.warns(match=f"No prompt name was given to update the model name to '{new_name}'.")
+    assert ai_config_runtime.metadata.models is not None
+    assert ai_config_runtime.metadata.models[new_name] == {}
 
 
-def test_update_model_specific_prompt(ai_config_runtime: AIConfigRuntime):
-    """Test updating model metadata for a specific prompt."""
-    model_metadata = {"name": "testmodel", "settings": {"topP": 0.9}}
+def test_update_model_for_prompt(ai_config_runtime: AIConfigRuntime):
+    """Test updating model for a specific prompt."""
+    #New model name, new settings, no prompt metadata --> update
     prompt1 = Prompt(
         name="GreetingPrompt",
-        input="Hello, how are you?",
-        metadata=PromptMetadata(model="fakemodel"),
+        input="Hello, how are you?"
     )
     ai_config_runtime.add_prompt(prompt1.name, prompt1)
-    ai_config_runtime.update_model(model_metadata, "GreetingPrompt")
-    assert ai_config_runtime.get_prompt(
-        "GreetingPrompt"
-    ).metadata.model == ModelMetadata(**model_metadata)
-
-
-def test_update_model_empty_metadata(ai_config_runtime: AIConfigRuntime):
-    """Test updating with an empty model_metadata dictionary."""
-    model_metadata = {}
-
-    with pytest.raises(
-        KeyError,
-        match=r"Cannot update model. Model metadata must contain a 'name' element. Optionally, it may contain a 'settings' element.",
-    ):
-        ai_config_runtime.update_model(model_metadata)
-
-
-def test_set_metadata_ai_config(ai_config_runtime: AIConfigRuntime):
-    """Test setting metadata at the AIConfig level."""
-    model_metadata = {"name": "testmodel", "settings": {"topP": 0.9}}
-    ai_config_runtime.update_model(model_metadata)
-    assert (
-        ai_config_runtime.get_metadata().models["testmodel"]
-        == ModelMetadata(**model_metadata).settings
+    name = "testmodel"
+    settings = {"topP": 0.9}
+    ai_config_runtime.update_model(name, settings, prompt1.name)
+    prompt = ai_config_runtime.get_prompt(prompt1.name)
+    assert prompt.metadata is not None
+    assert prompt.metadata.model == ModelMetadata(name=name, settings=settings)
+    
+    # New model name, no settings --> update name only
+    new_name = "testmodel_new_name"
+    ai_config_runtime.update_model(new_name, None, prompt1.name)
+    prompt = ai_config_runtime.get_prompt(prompt1.name)
+    assert prompt.metadata is not None
+    assert prompt.metadata.model == ModelMetadata(name=new_name, settings=settings)
+    
+    # Same model name, new settings --> update settings only
+    settings = {"topP": 0.9}
+    ai_config_runtime.update_model(new_name, settings, prompt1.name)
+    prompt = ai_config_runtime.get_prompt(prompt1.name)
+    assert prompt.metadata is not None
+    assert prompt.metadata.model == ModelMetadata(name=new_name, settings=settings)
+    
+    # New name, no settings, prompt with model name as string --> update
+    prompt2 = Prompt(
+        name="GreetingPromptModelAsStr",
+        input="Hello, how are you?",
+        metadata=PromptMetadata(model= "some_random_model"),
     )
+    ai_config_runtime.add_prompt(prompt2.name, prompt2)
+    new_name_again = "testmodel_new_name_model_as_str"
+    ai_config_runtime.update_model(new_name_again, None, prompt2.name)
+    prompt = ai_config_runtime.get_prompt(prompt2.name)
+    assert prompt.metadata is not None
+    assert prompt.metadata.model == ModelMetadata(name=new_name_again, settings={})
+
+    # New name, no settings, prompt with metadata but no model --> update
+    tags = ["my_fancy_tags"]
+    prompt3 = Prompt(
+        name="GreetingsNumber3",
+        input="Hello, how are you?",
+        metadata=PromptMetadata(tags= tags),
+    )
+    ai_config_runtime.add_prompt(prompt3.name, prompt3)
+    new_name_3 = "new_name_number_3"
+    ai_config_runtime.update_model(new_name_3, None, prompt3.name)
+    prompt = ai_config_runtime.get_prompt(prompt3.name)
+    assert prompt.metadata is not None
+    assert prompt.metadata.model == ModelMetadata(name=new_name_3, settings={})
+    assert prompt.metadata.tags == tags
+
+def test_update_model_with_invalid_arguments(ai_config_runtime: AIConfigRuntime):
+    """Test trying to update model with invalid arguments."""
+    with pytest.raises(
+        ValueError,
+        match=r"Cannot update model. Either model name or model settings must be specified.",
+    ):
+        ai_config_runtime.update_model(name=None, settings=None)
+    
+    with pytest.raises(
+        ValueError,
+        match=r"Cannot update model. There are two things you are trying:",
+    ):
+        ai_config_runtime.update_model(name=None, settings={"top": 0.9}, prompt_name=None)
 
 
 def test_set_and_delete_metadata_ai_config(ai_config_runtime: AIConfigRuntime):
@@ -547,9 +605,7 @@ def test_extract_override_settings(ai_config_runtime: AIConfigRuntime):
     assert override == {"topP": 0.9}
 
     # Test Case 3: Global Settings match settings, expect no override
-    ai_config_runtime.update_model(
-        ModelMetadata(name="testmodel", settings={"topP": 0.9})
-    )
+    ai_config_runtime.update_model(name="testmodel", settings={"topP": 0.9})
     override = extract_override_settings(
         ai_config_runtime, initial_settings, "testmodel"
     )

@@ -1,3 +1,4 @@
+import warnings
 from typing import Any, Dict, List, Literal, Optional, Union
 
 from aiconfig.util.config_utils import extract_override_settings
@@ -444,30 +445,134 @@ class AIConfig(BaseModel):
     # `update_model_parser_registry_with_config_runtime`` function
     # Tracked in https://github.com/lastmile-ai/aiconfig/issues/503
     def update_model(
-        self, model_metadata: Dict | ModelMetadata, prompt_name: Optional[str] = None
+        self, name: Optional[str] = None, settings: Optional[InferenceSettings] = None, prompt_name: Optional[str] = None
     ):
         """
-        Updates model settings in AIconfig-level metadata
+        Updates model name and/or settings at the prompt (if specified) or AIConfig level.
 
         Args:
-            model_metadata (dict): The model metadata to update.
-            prompt_name (str, optional): If specified, the model settings will only be applied to the prompt with the given prompt_name.
+            name (str): The model name to update. If None, keep existing name.
+            settings (dict): The model settings to update. If None, keep existing settings.
+            prompt_name (Optional[str]): If specified, the model updatd will only be applied to the prompt with the given prompt_name.
         """
-        if isinstance(model_metadata, dict):
-            if "name" not in model_metadata:
-                raise KeyError(
-                    "Cannot update model. Model metadata must contain a 'name' element. Optionally, it may contain a 'settings' element."
-                )
-            model_metadata = ModelMetadata(**model_metadata)
-        if prompt_name:
+        if name is None and settings is None:
+            raise ValueError(
+                "Cannot update model. Either model name or model settings must be specified."
+            )
+        if name is None and prompt_name is None: #Only settings param is set
+            raise ValueError(
+                """
+Cannot update model. There are two things you are trying: \
+    1) Update the settings of a prompt \
+        Fix: You must pass in a `prompt_name` argument \
+    2) Update the settings at the AIConfig-level \
+        Fix: You must pass in a `name` for the model you wish \
+        to update. AIConfig-level can have multiple models, \
+        so without a model name, we don't know which model \
+        to set the settings for."
+"""
+            )
+        
+        # We first update the model name, then update the model settings
+        if name is not None:
+            # We need to pass in settings param because it's needed for
+            # config-level updates
+            self._update_model_name(name, settings, prompt_name)
+       
+        if settings is not None and prompt_name is not None:
+            self._update_model_settings_for_prompt(settings, prompt_name)
+    
+    def _update_model_name(self, name: str, settings: Union[InferenceSettings, None], prompt_name: Optional[str] = None):
+        """
+        Updates model name at the prompt (if specified) or AIConfig level. To
+        keep things simplified, at the prompt level we are only updating the
+        model name, preserving existing settings if they exist, or setting the
+        settings to empty dict. We will update the settings in a follow up
+        `_update_model_settings_for_prompt()` call. The reason we do is
+        to delegate the `settings is None` check inside of `update_model()` 
+        instead of making this function more complicated.
+        
+        If model is not already specified for a prompt, we err on the side of
+        passing in the entire ModelMetadata into the prompt, even if there
+        are no settings, just becuase this makes it easier to manage for
+        future writes in case we want to add model settings later
+        (see `_update_model_settings`).
+
+        Args:
+            name (str): Model name to set
+            settings (Optional[InferenceSettings]): Model settings to set
+                (only needed if we have to set the AI-Config level settings
+                since we don't know the old model name so can't grab the
+                older settings). If this is None, we will preserve the
+                existing settings if the model name already exists at
+                AIConfig level, or we will create an empty dict if the model
+                name is new.
+            prompt_name (Optional[str]): If specified, the model update will
+                only be applied to the prompt with the given prompt_name. If
+                it is None, we will update the AIConfig-level model settings.
+        """
+        if prompt_name is not None:
             prompt = self.get_prompt(prompt_name)
             if not prompt:
                 raise IndexError(
-                    f"Cannot update model {model_metadata.name} for prompt {prompt_name}. Prompt {prompt_name} does not exist in AIConfig."
+                    f"Cannot update model name of '{name}' for prompt '{prompt_name}'. Prompt {prompt_name} does not exist in AIConfig."
                 )
-            prompt.metadata.model = model_metadata
+            if prompt.metadata is None:
+                model_metadata = ModelMetadata(name=name, settings={})
+                prompt.metadata = PromptMetadata(model=model_metadata)
+            elif prompt.metadata.model is None or isinstance(prompt.metadata.model, str):
+                prompt.metadata.model = ModelMetadata(name=name, settings={})
+            else: # prompt.metadata.model is ModelMetadata
+                model_settings : InferenceSettings = prompt.metadata.model.settings or {}
+                prompt.metadata.model = ModelMetadata(name=name, settings=model_settings)
         else:
-            self.metadata.models[model_metadata.name] = model_metadata.settings
+            warning_message = f"""
+No prompt name was given to update the model name to '{name}'. We are \
+assuming this is intentional and are therefore updating the \
+AIConfig-level settings. If this is a mistake, please rerun the \
+`update_model` function with a specified `prompt_name` argument.
+"""
+            warnings.warn(warning_message)
+            if self.metadata.models is None:
+                model_settings = settings or {}
+                self.metadata.models = {name: model_settings}
+            else:
+                # If the model name already exists and settings is None, 
+                # this is essentially a no-op since we are preserving 
+                # existing settings for that model name
+                model_settings = settings or self.metadata.models.get(name, {})
+                self.metadata.models[name] = model_settings
+    
+    def _update_model_settings_for_prompt(self, settings: InferenceSettings, prompt_name: str):
+        """
+        Updates model name at the prompt level. We do not update at the
+        AIConfig level because an AIConfig can have multiple models, so
+        without the model name, we don't know which model to update.
+
+        Args:
+            settings (InferenceSettings): Model settings to set
+            prompt_name (str): The name of the prompt we want to update.
+        """
+        prompt = self.get_prompt(prompt_name)
+        if not prompt:
+            raise IndexError(
+                f"Cannot update model settings for prompt '{prompt_name}'. Prompt '{prompt_name}' does not exist in AIConfig."
+            )
+
+        metadata_error_message = f"""
+Cannot update model settings for prompt '{prompt_name}' because it does not \
+have a model name set for it. Please be sure that a model is set for this \
+prompt. You can do this be calling `update_model()` and passing a model name \
+as an argument.
+"""
+        if prompt.metadata is None or prompt.metadata.model is None:
+            raise ValueError(metadata_error_message)
+
+        if isinstance(prompt.metadata.model, str):
+            model_name = prompt.metadata.model
+            prompt.metadata.model = ModelMetadata(name=model_name, settings=settings)
+        else:
+            prompt.metadata.model.settings = settings
 
     def set_metadata(self, key: str, value: Any, prompt_name: Optional[str] = None):
         """
