@@ -4,31 +4,46 @@
   "schema_version": "latest",
   "metadata": {
     "models": {
-      "gpt-3.5-turbo": {
-        "model": "gpt-3.5-turbo",
-        "top_p": 1,
-        "temperature": 1
-      },
-      "gpt-4": {
-        "model": "gpt-4",
+      "gpt2": {
+        "model": "gpt2",
         "max_tokens": 3000,
-        "system_prompt": "You are an expert travel coordinator with exquisite taste."
+        "system_prompt": "Some random system prompt"
+      },
+      "runwayml/stable-diffusion-v1-5": {
+        "model": "runwayml/stable-diffusion-v1-5"
+      },
+      "stabilityai/stable-diffusion-xl-base-1.0": {
+        "model": "stabilityai/stable-diffusion-xl-base-1.0"
       }
     },
-    "default_model": "gpt-3.5-turbo"
+    "model_parsers": {
+      "runwayml/stable-diffusion-v1-5": "HuggingFaceText2ImageDiffusor"
+    },
+    "default_model": "gpt2"
   },
   "prompts": [
     {
-      "name": "get_activities",
-      "input": "Tell me 10 fun attractions to do in NYC."
+      "name": "gen_image",
+      "input": "a cute {{animal}} holding 2 AKs with an explosion behind it",
+      "metadata": {
+        "parameters": {
+          "animal": "bunny"
+        }
+      }
     },
     {
-      "name": "gen_itinerary",
-      "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
+      "name": "gen_image_sdxl",
+      "input": "a cute {{animal}} holding 2 AKs with an explosion behind it",
       "metadata": {
-        "model": "gpt-4",
+        "model": {
+          "name": "stabilityai/stable-diffusion-xl-base-1.0",
+          "settings": {
+            "num_images_per_prompt": 2,
+            "num_inference_steps": 50
+          }
+        },
         "parameters": {
-          "order_by": "geographic location"
+          "animal": "bunny"
         }
       }
     }
