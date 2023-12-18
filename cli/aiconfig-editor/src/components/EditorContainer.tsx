@@ -3,7 +3,8 @@ import { Container, Text, Group, Button, createStyles } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { AIConfig, PromptInput } from "aiconfig";
 import router from "next/router";
-import { useCallback, useState } from "react";
+import { useCallback, useReducer, useState } from "react";
+import aiconfigReducer from "@/src/components/aiconfigReducer";
 
 type Props = {
   aiconfig: AIConfig;
@@ -26,12 +27,15 @@ export default function EditorContainer({
   onSave,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
-  const [aiconfig, setAIConfig] = useState(initialAIConfig);
+  const [aiconfigState, dispatch] = useReducer(
+    aiconfigReducer,
+    initialAIConfig
+  );
 
   const save = useCallback(async () => {
     setIsSaving(true);
     try {
-      await onSave(aiconfig);
+      await onSave(aiconfigState);
     } catch (err: any) {
       showNotification({
         title: "Error saving",
@@ -41,19 +45,17 @@ export default function EditorContainer({
     } finally {
       setIsSaving(false);
     }
-  }, [aiconfig, onSave]);
+  }, [aiconfigState, onSave]);
 
-  // TODO: Move to EditorContext and update to handle non-text inputs
   const onChangePromptInput = useCallback(
     (i: number, newPromptInput: PromptInput) => {
-      // TODO: This is super basic, should probably update to reducer, etc.
-      // Also not optimized, etc.
-
-      const newPrompts = [...aiconfig.prompts];
-      newPrompts[i].input = newPromptInput;
-      setAIConfig({ ...aiconfig, prompts: newPrompts });
+      dispatch({
+        type: "UPDATE_PROMPT_INPUT",
+        index: i,
+        input: newPromptInput,
+      });
     },
-    [aiconfig]
+    [dispatch]
   );
 
   const { classes } = useStyles();
@@ -76,14 +78,14 @@ export default function EditorContainer({
         </Group>
       </Container>
       <Container maw="80rem" className={classes.promptsContainer}>
-        {aiconfig.prompts.map((prompt: any, i: number) => {
+        {aiconfigState.prompts.map((prompt: any, i: number) => {
           return (
             <PromptContainer
               index={i}
               prompt={prompt}
               key={prompt.name}
               onChangePromptInput={onChangePromptInput}
-              defaultConfigModelName={aiconfig.metadata.default_model}
+              defaultConfigModelName={aiconfigState.metadata.default_model}
             />
           );
         })}
