@@ -1,5 +1,28 @@
 # Changelog
 
+## Python Version 1.1.7 (2023-12-11)
+
+## NPM Version 1.1.1 (2023-12-11)
+
+Full Changelog:
+[version](diff compare between versions)
+
+### Features
+- **python-sdk:** Created model parser extension for Google’s Gemini: (478)
+
+
+### Bug Fixes
+
+### Better Engineering
+
+### Documentation
+
+### Extensions
+
+* **tag:** one-line short description ([#919](link to issue) ([135d9cf](link to commit))
+
+
+
 ## Python Version 1.1.5 (2023-12-11)
 
 ## NPM Version 1.0.8 (2023-12-11)
