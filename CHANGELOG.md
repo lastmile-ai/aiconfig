@@ -1,5 +1,30 @@
 # Changelog
 
+## Python Version 1.1.6 (2023-18-11)
+
+## NPM Version 1.1.1 (2023-18-11)
+
+### Features
+
+- **python-sdk:** Created model parser extension for Google’s Gemini ([#478](https://github.com/lastmile-ai/aiconfig/pull/478), [cookbook](https://github.com/lastmile-ai/aiconfig/pull/483))
+- Added attachment field to PromptInput schema to support non-text input data (ex: image, audio) ([#473](https://github.com/lastmile-ai/aiconfig/pull/473))
+- **python-sdk:** Created batch execution interface using `config.run_batch()` ([#469](https://github.com/lastmile-ai/aiconfig/pull/469))
+- Added model parser for HuggingFace text2Image tasks ([#460](https://github.com/lastmile-ai/aiconfig/pull/460))
+- Updated evaluation metric values to be any arbitrary type, not just floats, & renamed fields for easier understanding ([#484](https://github.com/lastmile-ai/aiconfig/pull/484), [#437](https://github.com/lastmile-ai/aiconfig/pull/437))
+- Merged `aiconfig-extension-hugging-face-transformers` into `aiconfig-extension-hugging-face` where all Hugging Face tasks will now be supported ([#498](https://github.com/lastmile-ai/aiconfig/pull/498), [README](https://github.com/lastmile-ai/aiconfig/blob/main/extensions/HuggingFace/README.md))
+
+### Bug Fixes
+
+- Fixed caching issue by clearing outputs from prompt after `config.run()` ([#491](https://github.com/lastmile-ai/aiconfig/pull/491))
+- **typescript-sdk:** Pinned OpenAI dependency to to 4.11.1 to fix broken tests([#524](https://github.com/lastmile-ai/aiconfig/pull/524))
+- **typescript-sdk:** Removed redundant PromptWithOutputs type ([#508](https://github.com/lastmile-ai/aiconfig/pull/508))
+
+### Documentation
+
+- Refactored and shortened README ([#493](https://github.com/lastmile-ai/aiconfig/pull/493))
+- Created table of supported models ([#501](https://github.com/lastmile-ai/aiconfig/pull/501))
+- Updated cookbooks with explicit instructions on how to set API keys ([#441](https://github.com/lastmile-ai/aiconfig/pull/441))
+
 ## Python Version 1.1.5 (2023-12-11)
 
 ## NPM Version 1.0.8 (2023-12-11)
