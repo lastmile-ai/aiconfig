@@ -6,7 +6,7 @@ pytest
 pydantic>=2.1
 pybars3
 google-generativeai
-openai>=1.0.0
+openai >= 1.0.0, < 1.5
 python-dotenv
 huggingface_hub
 result
