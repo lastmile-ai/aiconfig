@@ -14,6 +14,6 @@ nest_asyncio
 prompt_toolkit
 mock
 pytest-asyncio
-lastmile-utils==0.0.10
+lastmile-utils==0.0.11
 hypothesis==6.91.0
 nltk
