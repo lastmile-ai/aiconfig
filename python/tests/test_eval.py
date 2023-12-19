@@ -14,7 +14,7 @@ import pandas as pd
 import pytest
 from aiconfig.eval import common
 from aiconfig.eval.api import TestSuiteWithInputsSettings, metrics, run_test_suite_outputs_only, run_test_suite_with_inputs
-from aiconfig.eval.lib import MetricList, TestSuiteWithInputsSpec, run_test_suite_helper
+from aiconfig.eval.lib import MetricList, TestSuiteGeneralSettings, TestSuiteWithInputsSpec, run_test_suite_helper
 from result import Err, Ok, Result
 
 from . import mocks
@@ -155,9 +155,7 @@ async def test_run_test_suite_with_inputs(data: st.DataObject):
 
     out = await run_test_suite_helper(
         TestSuiteWithInputsSpec(
-            test_suite=user_test_suite_with_inputs,
-            prompt_name="prompt0",
-            aiconfig=mock_aiconfig,
+            test_suite=user_test_suite_with_inputs, prompt_name="prompt0", aiconfig=mock_aiconfig, general_settings=TestSuiteGeneralSettings()
         )
     )
 
@@ -327,7 +325,7 @@ async def test_openai_structured_eval():
         ("one two three", mock_metric),
     ]
     df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
-    metric_data = cast(common.CustomMetricPydanticObject[metrics.TextRatingsData], df.loc[0, "value"]).data
+    metric_data = cast(common.CustomMetricPydanticObject[common.TextRatingsData], df.loc[0, "value"]).data
     assert isinstance(metric_data, common.TextRatingsData)
     metric_json = metric_data.to_dict()
     assert metric_json == {"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it's pretty concise."}
