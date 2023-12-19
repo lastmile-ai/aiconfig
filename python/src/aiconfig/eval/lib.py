@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from dataclasses import dataclass
+from functools import partial
 from typing import Any, Generic, NewType, Sequence, Tuple, TypeVar
 
 import lastmile_utils.lib.core.api as cu
@@ -90,7 +91,7 @@ MetricList = list[Metric[T_OutputDatum, Any]]
 
 
 async def _evaluate_for_sample(
-    eval_params: SampleEvaluationParams[T_InputDatum, T_OutputDatum, T_MetricValue]
+    eval_params: SampleEvaluationParams[T_InputDatum, T_OutputDatum, T_MetricValue], timeout: int
 ) -> SampleEvaluationResult[T_InputDatum, T_OutputDatum, T_MetricValue]:
     sample, metric = (
         eval_params.output_sample,
@@ -108,8 +109,7 @@ async def _evaluate_for_sample(
                 LOGGER.error(f"Error evaluating {eval_params=}: {e}")
                 return None
 
-    # TODO: figure out the right timeout
-    res_ = await cu.run_thunk_safe(_calculate(), timeout=1)
+    res_ = await cu.run_thunk_safe(_calculate(), timeout=timeout)
     result = SampleEvaluationResult(
         input_datum=eval_params.input_sample,
         output_datum=sample,
@@ -123,9 +123,9 @@ async def _evaluate_for_sample(
 
 
 async def evaluate(
-    evaluation_params_list: DatasetEvaluationParams[T_InputDatum, T_OutputDatum],
+    evaluation_params_list: DatasetEvaluationParams[T_InputDatum, T_OutputDatum], eval_fn_timeout: int
 ) -> Result[DatasetEvaluationResult[T_InputDatum, T_OutputDatum], str]:
-    return Ok(await asyncio.gather(*map(_evaluate_for_sample, evaluation_params_list)))
+    return Ok(await asyncio.gather(*map(partial(_evaluate_for_sample, timeout=eval_fn_timeout), evaluation_params_list)))
 
 
 def eval_res_to_df(
@@ -258,6 +258,13 @@ async def run_test_suite_helper(
                 return Ok(user_test_suite_outputs_only_to_eval_params_list(test_suite))
 
     eval_params_list = await _get_eval_params_list(test_suite_spec)
-    res_evaluated = await eval_params_list.and_then_async(evaluate)
+
+    async def _evaluate_with_timeout(
+        eval_params_list: DatasetEvaluationParams[TextInput, TextOutput],
+    ) -> Result[DatasetEvaluationResult[TextInput, TextOutput], str]:
+        # TODO wire up the timeout more and improve default
+        return await evaluate(eval_params_list, eval_fn_timeout=1)
+
+    res_evaluated = await eval_params_list.and_then_async(_evaluate_with_timeout)
     res_df_evaluated = res_evaluated.map(eval_res_to_df)
     return res_df_evaluated
