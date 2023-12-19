@@ -9,7 +9,7 @@ from aiconfig.eval import common
 from result import Err, Ok, Result
 
 
-@dataclass
+@dataclass(frozen=True)
 class OpenAIChatCompletionParams:
     # TODO: type better
     messages: list[openai_types.ChatCompletionMessageParam]
