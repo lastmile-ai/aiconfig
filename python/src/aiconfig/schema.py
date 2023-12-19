@@ -11,17 +11,41 @@ JSONObject = Dict[str, Any]
 InferenceSettings = JSONObject
 
 
+class Attachment(BaseModel):
+    """
+    Attachment used to pass data in InputOrOutputData for non-text 
+    input/outputs (ex: image, audio)
+    """
+    # The data representing the attachment
+    data: Any
+    # The MIME type of the result. If not specified, the MIME type will be 
+    # assumed to be text/plain
+    mime_type: Optional[str] = None
+    # Output metadata
+    metadata: Optional[Dict[str, Any]] = None
+
+# TODO (rossdanlm): Add data validation that both attachments and data
+# fields both can't be empty at the same time
+class InputOrOutputData(BaseModel):
+    """
+    Uniform content format shared within all prompt input and outputs
+    """
+    # Attachments can be used to pass in non-text data (ex: image, audio)
+    attachments: Optional[List[Attachment]] = None
+    # The data representing the input or result of the executing prompt.
+    data: Optional[Any] = None
+    # Addtional details about the data
+    metadata: Optional[Dict[str, Any]] = None
+
+
 class ExecuteResult(BaseModel):
     # Type of output
     output_type: Literal["execute_result"]
-    # nth choice.
+    # The index that this corresponds to from the prompt.
+    # Ex: `num_return_sequences = 3` means this index can be 0, 1, or 2
     execution_count: Union[int, None] = None
-    # The result of the executing prompt.
-    data: Any
-    # The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
-    mime_type: Optional[str] = None
-    # Output metadata
-    metadata: Dict[str, Any]
+    # Data representing the result output
+    result: InputOrOutputData
 
 
 class Error(BaseModel):
@@ -37,7 +61,6 @@ class Error(BaseModel):
 
 # Output can be one of ExecuteResult, ExecuteResult, DisplayData, Stream, or Error
 Output = Union[ExecuteResult, Error]
-
 
 class ModelMetadata(BaseModel):
     # The ID of the model to use.
@@ -61,36 +84,11 @@ class PromptMetadata(BaseModel):
         extra = "allow"
 
 
-class Attachment(BaseModel):
-    """
-    Attachment used to pass data in PromptInput for non-text inputs (ex: image, audio)
-    """
-
-    # The data representing the attachment
-    data: Any
-    # The MIME type of the result. If not specified, the MIME type will be assumed to be text/plain
-    mime_type: Optional[str] = None
-    # Output metadata
-    metadata: Optional[Dict[str, Any]] = None
-
-
-class PromptInput(BaseModel):
-    # Attachments can be used to pass in non-text inputs (ex: image, audio)
-    attachments: Optional[List[Attachment]] = None
-
-    # Freeform data for the overall prompt input (ex: document answering question
-    # requires both images (attachments) and question (data))
-    data: Optional[Any] = None
-
-    class Config:
-        extra = "allow"
-
-
 class Prompt(BaseModel):
     # A unique identifier for the prompt. This is used to reference the prompt in other parts of the AIConfig (such as other prompts)
     name: str
     # The prompt string, or a more complex prompt object
-    input: Union[str, PromptInput]
+    input: Union[str, InputOrOutputData]
     # Metadata for the prompt
     metadata: Optional[PromptMetadata] = None
     # Execution, display, or stream outputs (currently a work-in-progress)

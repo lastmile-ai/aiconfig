@@ -72,6 +72,27 @@ export type SchemaVersion =
   | "v1"
   | "latest";
 
+// TODO (rossdanlm): Add data validation that both attachments and data
+// fields both can't be empty at the same time
+export type InputOrOutputData = {
+  /**
+   * Attachments can be used to pass in non-text data (ex: image, audio)
+   */
+  attachments?: Attachment[];
+
+  /**
+   * The data representing the input or result of the executing prompt.
+   */
+  data?: JSONValue;
+
+  /**
+   * Addtional details about the data
+   */
+  metadata?: {
+    [k: string]: any;
+  };
+};
+
 export type Attachment = {
   /**
    * The data representing the attachment
@@ -91,24 +112,6 @@ export type Attachment = {
     [k: string]: any;
   };
 };
-
-export type PromptInput =
-  | {
-      /**
-       * Attachments can be used to pass in non-text inputs (ex: image, audio)
-       */
-      attachments?: Attachment[];
-
-      /**
-       * Input to the model. This can represent a single input, or multiple inputs.
-       * The structure of the data object is up to the ModelParser. For example,
-       * a multi-modal ModelParser can choose to key the data by MIME type.
-       */
-      data?: JSONValue;
-
-      [k: string]: any;
-    }
-  | string;
 
 export type InferenceSettings = JSONObject;
 export type GlobalModelMetadata = {
@@ -136,7 +139,7 @@ export type Prompt = {
   /**
    * The prompt string, or a more complex prompt object.
    */
-  input: PromptInput;
+  input: string | InputOrOutputData;
 
   metadata?: {
     /**
@@ -175,6 +178,8 @@ export type Prompt = {
  */
 export type Output = ExecuteResult | Error;
 
+// TODO (rossdanlm): Add data validation that both attachments and data
+// fields both can't be empty at the same time
 /**
  * Result of executing a prompt.
  */
@@ -185,26 +190,15 @@ export type ExecuteResult = {
   output_type: "execute_result";
 
   /**
-   * A result's prompt number.
+   * The index that this corresponds to from the prompt.
+   * Ex: `num_return_sequences = 3` means this index can be 0, 1, or 2
    */
   execution_count?: number;
 
   /**
-   * The result of executing the prompt.
+   * Data representing the result output.
    */
-  data: JSONValue;
-
-  /**
-   * The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
-   */
-  mime_type?: string;
-
-  /**
-   * Output metadata.
-   */
-  metadata?: {
-    [k: string]: any;
-  };
+  result: InputOrOutputData;
 };
 
 /**
