@@ -89,6 +89,7 @@ export type PromptInputObjectSchema = {
 };
 
 export type GenericPropertiesSchema = {
+  type: "object";
   properties: Record<
     string,
     {

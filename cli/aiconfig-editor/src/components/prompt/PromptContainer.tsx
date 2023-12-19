@@ -11,6 +11,7 @@ type Props = {
   index: number;
   prompt: ClientPrompt;
   onChangePromptInput: (i: number, newPromptInput: AIConfigPromptInput) => void;
+  onUpdateModelSettings: (i: number, newModelSettings: any) => void;
   defaultConfigModelName?: string;
 };
 
@@ -32,10 +33,16 @@ export default memo(function PromptContainer({
   index,
   onChangePromptInput,
   defaultConfigModelName,
+  onUpdateModelSettings,
 }: Props) {
   const onChangeInput = useCallback(
     (newInput: AIConfigPromptInput) => onChangePromptInput(index, newInput),
     [index, onChangePromptInput]
+  );
+
+  const updateModelSettings = useCallback(
+    (newModelSettings: any) => onUpdateModelSettings(index, newModelSettings),
+    [index, onUpdateModelSettings]
   );
 
   // TODO: When adding support for custom PromptContainers, implement a PromptContainerRenderer which
@@ -64,7 +71,11 @@ export default memo(function PromptContainer({
         </Flex>
       </Card>
       <Card withBorder className={classes.actionBarCard}>
-        <PromptActionBar prompt={prompt} promptSchema={promptSchema} />
+        <PromptActionBar
+          prompt={prompt}
+          promptSchema={promptSchema}
+          onUpdateModelSettings={updateModelSettings}
+        />
       </Card>
     </Flex>
   );
