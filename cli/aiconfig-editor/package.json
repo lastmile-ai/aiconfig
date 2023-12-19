@@ -24,11 +24,13 @@
     "@mantine/spotlight": "^6.0.7",
     "@mantine/tiptap": "^6.0.7",
     "@tabler/icons-react": "^2.44.0",
-    "aiconfig": "^1.0.1",
+    "aiconfig": "^1.1.0",
     "next": "14.0.2",
     "node-fetch": "^3.3.2",
     "react": "^18",
     "react-dom": "^18",
+    "react-markdown": "^8.0.6",
+    "remark-gfm": "^4.0.0",
     "ufetch": "^1.6.0"
   },
   "devDependencies": {

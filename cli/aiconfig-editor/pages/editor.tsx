@@ -1,4 +1,5 @@
 import EditorContainer from "@/src/components/EditorContainer";
+import { ClientAIConfig } from "@/src/shared/types";
 import { Flex, Loader } from "@mantine/core";
 import { AIConfig } from "aiconfig";
 import { useRouter } from "next/router";
@@ -9,7 +10,7 @@ export default function Editor() {
   // Use router to get the path, load the file using aiconfig.load, make it editable & use save to save it regularly
   // TODO: Settings, other things to edit, allowing plugins in editor (eg for custom model parsers in python or JS)
   const router = useRouter();
-  const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
+  const [aiconfig, setAiConfig] = useState<ClientAIConfig | undefined>();
 
   const loadConfig = useCallback(async () => {
     if (!router.query.path) {

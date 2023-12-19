@@ -1,14 +1,11 @@
-import {
-  ModelSettingsSchema,
-  PromptMetadataSchema,
-} from "@/src/utils/promptUtils";
+import { GenericPropertiesSchema } from "@/src/utils/promptUtils";
 import { useCallback, useRef, useState } from "react";
 
-// Local state to maintain all the possible properties from a schema, as well as 'dirty' state to track
+// Local state to maintain all the possible generic properties from a schema, as well as 'dirty' state to track
 // which properties have been changed. This is used to determine which properties to propagate to the config.
-// Otherwise, the config would be bloated with unnecessary settings just by loading it in the editor.
+// Otherwise, the config would be bloated with unnecessary properties just by loading it in the editor.
 export function useSchemaState(
-  schema: ModelSettingsSchema | PromptMetadataSchema,
+  schema: GenericPropertiesSchema,
   initialData?: Record<string, unknown>
 ) {
   const [schemaState, setSchemaState] = useState<
