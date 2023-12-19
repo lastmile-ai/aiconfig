@@ -92,6 +92,8 @@ export type Attachment = {
   };
 };
 
+// TODO (rossdanlm): Add data validation that both attachments and data
+// fields both can't be empty at the same time
 export type PromptInput =
   | {
       /**
@@ -175,6 +177,8 @@ export type Prompt = {
  */
 export type Output = ExecuteResult | Error;
 
+// TODO (rossdanlm): Add data validation that both attachments and data
+// fields both can't be empty at the same time
 /**
  * Result of executing a prompt.
  */
@@ -190,14 +194,14 @@ export type ExecuteResult = {
   execution_count?: number;
 
   /**
-   * The result of executing the prompt.
+   * Attachments can be used to pass in non-text outputs (ex: image, audio)
    */
-  data: JSONValue;
+  attachments?: Attachment[];
 
   /**
-   * The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
+   * The result of executing the prompt.
    */
-  mime_type?: string;
+  data?: JSONValue;
 
   /**
    * Output metadata.

@@ -11,15 +11,32 @@ JSONObject = Dict[str, Any]
 InferenceSettings = JSONObject
 
 
+class Attachment(BaseModel):
+    """
+    Attachment used to pass data in PromptInput or ExecuteResult for non-text 
+    input/outputs (ex: image, audio)
+    """
+    # The data representing the attachment
+    data: Any
+    # The MIME type of the result. If not specified, the MIME type will be 
+    # assumed to be text/plain
+    mime_type: Optional[str] = None
+    # Output metadata
+    metadata: Optional[Dict[str, Any]] = None
+
+
+# TODO (rossdanlm): Add data validation that both attachments and data
+# fields both can't be empty at the same time
 class ExecuteResult(BaseModel):
     # Type of output
     output_type: Literal["execute_result"]
-    # nth choice.
+    # The index that this corresponds to from the prompt.
+    # Ex: `num_return_sequences = 3` means this index can be 0, 1, or 2
     execution_count: Union[int, None] = None
+    # Attachments can be used to pass in non-text outputs (ex: image, audio)
+    attachments: Optional[List[Attachment]] = None
     # The result of the executing prompt.
-    data: Any
-    # The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
-    mime_type: Optional[str] = None
+    data: Optional[Any] = None
     # Output metadata
     metadata: Dict[str, Any]
 
@@ -37,7 +54,6 @@ class Error(BaseModel):
 
 # Output can be one of ExecuteResult, ExecuteResult, DisplayData, Stream, or Error
 Output = Union[ExecuteResult, Error]
-
 
 class ModelMetadata(BaseModel):
     # The ID of the model to use.
@@ -61,19 +77,8 @@ class PromptMetadata(BaseModel):
         extra = "allow"
 
 
-class Attachment(BaseModel):
-    """
-    Attachment used to pass data in PromptInput for non-text inputs (ex: image, audio)
-    """
-
-    # The data representing the attachment
-    data: Any
-    # The MIME type of the result. If not specified, the MIME type will be assumed to be text/plain
-    mime_type: Optional[str] = None
-    # Output metadata
-    metadata: Optional[Dict[str, Any]] = None
-
-
+# TODO (rossdanlm): Add data validation that both attachments and data
+# fields both can't be empty at the same time
 class PromptInput(BaseModel):
     # Attachments can be used to pass in non-text inputs (ex: image, audio)
     attachments: Optional[List[Attachment]] = None
