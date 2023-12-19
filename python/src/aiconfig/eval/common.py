@@ -19,7 +19,7 @@ T_BaseModel = TypeVar("T_BaseModel", bound=BaseModel)
 SerializedJSON = NewType("SerializedJSON", str)
 
 
-@dataclass(eq=False)
+@dataclass(frozen=True)
 class CustomMetricValue(ABC):
     """
     Subclass this if you want your metric to return a type not included in MetricValue.
@@ -39,7 +39,7 @@ class CompletionTextToSerializedJSON(Protocol):
         pass
 
 
-@dataclass
+@dataclass(frozen=True)
 class CustomMetricPydanticObject(CustomMetricValue, Generic[T_BaseModel]):
     data: T_BaseModel
 
@@ -98,8 +98,10 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_Evaluable, T_MetricValue]):
         return f"EvaluationMetricMetadata({s_json})"
 
 
-@dataclass
+@dataclass(frozen=True)
 class SampleMetricValue(Generic[T_Evaluable, T_MetricValue]):
+    # `None` is used to signal that there was an error during calculation.
+    # In this case, error information is written to stderr (see lib.py:_evaluate_for_sample()).
     value: T_MetricValue | None
     metric_metadata: EvaluationMetricMetadata[T_Evaluable, T_MetricValue]
 

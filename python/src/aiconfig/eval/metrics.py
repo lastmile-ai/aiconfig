@@ -1,6 +1,7 @@
 import json
 import sys
 from abc import abstractmethod
+from dataclasses import dataclass
 from functools import partial, total_ordering
 from typing import Any, Callable, Generic, Protocol, Type
 
@@ -18,7 +19,6 @@ from aiconfig.eval.common import (
     TextRatingsData,
 )
 from aiconfig.eval.openai import OpenAIChatCompletionCreate, default_openai_chat_completion_create, make_fn_completion_text_to_serialized_json
-from attr import dataclass
 from nltk.sentiment.vader import SentimentIntensityAnalyzer as NLTKSentimentIntensityAnalyzer
 from result import Err, Ok, Result
 
@@ -56,7 +56,7 @@ async def _calculate_brevity(datum: str) -> int:
     return len(datum)
 
 
-@dataclass
+@dataclass(frozen=True)
 class TextSentimentScores(CustomMetricValue):
     mapping: dict[str, float]
     pos: float
@@ -67,7 +67,7 @@ class TextSentimentScores(CustomMetricValue):
 
 
 @total_ordering
-@dataclass(eq=False)
+@dataclass(frozen=True, eq=False)
 class TextOverallPositiveSentiment(CustomMetricValue):
     """Compare by total positive sentiment: positive - negative"""
 
