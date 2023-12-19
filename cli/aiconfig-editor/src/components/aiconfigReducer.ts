@@ -1,12 +1,21 @@
 import { ClientAIConfig, ClientPrompt } from "@/src/shared/types";
-import { PromptInput } from "aiconfig";
+import { getPromptModelName } from "@/src/utils/promptUtils";
+import { AIConfig, JSONObject, PromptInput } from "aiconfig";
 
-type AIConfigReducerAction = UpdatePromptInputAction;
+type AIConfigReducerAction =
+  | UpdatePromptInputAction
+  | UpdatePromptModelSettingsAction;
 
 export type UpdatePromptInputAction = {
   type: "UPDATE_PROMPT_INPUT";
   index: number;
   input: PromptInput;
+};
+
+export type UpdatePromptModelSettingsAction = {
+  type: "UPDATE_PROMPT_MODEL_SETTINGS";
+  index: number;
+  modelSettings: JSONObject;
 };
 
 function reduceReplacePrompt(
@@ -40,6 +49,23 @@ export default function aiconfigReducer(
   switch (action.type) {
     case "UPDATE_PROMPT_INPUT": {
       return reduceReplaceInput(state, action.index, () => action.input);
+    }
+    case "UPDATE_PROMPT_MODEL_SETTINGS": {
+      return reduceReplacePrompt(state, action.index, (prompt) => ({
+        ...prompt,
+        metadata: {
+          ...prompt.metadata,
+          model: {
+            // TODO: Figure out why 'as' is needed here. Should just be ClientAIConfig and that
+            // should properly type metadata
+            name: getPromptModelName(
+              prompt,
+              (state as AIConfig).metadata.default_model
+            ),
+            settings: action.modelSettings,
+          },
+        },
+      }));
     }
   }
 }
