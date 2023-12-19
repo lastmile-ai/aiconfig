@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { promises as fs } from "fs";
 import { ErrorResponse } from "@/src/shared/serverTypes";
+import { AIConfig, AIConfigRuntime } from "aiconfig";
 
 type Data = {
   status: string;
@@ -8,7 +8,7 @@ type Data = {
 
 type RequestBody = {
   path: string;
-  aiconfig: any;
+  aiconfig: AIConfig;
 };
 
 export default async function handler(
@@ -29,9 +29,9 @@ export default async function handler(
     return res.status(500).json({ error: "No aiconfig data provided" });
   }
 
-  // TODO: There's no save without creating aiconfig object, and no clean way of only updating specific portions
-  // So ignore all of this & just save the json from the editor
-  await fs.writeFile(body.path, JSON.stringify(body.aiconfig, null, 2));
+  // Construct the config and ensure proper serialization for saving
+  const config = await AIConfigRuntime.loadJSON(body.aiconfig);
+  config.save(body.path, { serializeOutputs: true });
 
   res.status(200).json({ status: "ok" });
 }
