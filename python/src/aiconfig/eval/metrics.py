@@ -9,7 +9,6 @@ import lastmile_utils.lib.core.api as cu
 import nltk
 import pandas as pd
 from aiconfig.eval import common
-
 from aiconfig.eval.openai import OpenAIChatCompletionCreate, default_openai_chat_completion_create, make_fn_completion_text_to_serialized_json
 from nltk.sentiment.vader import SentimentIntensityAnalyzer as NLTKSentimentIntensityAnalyzer
 from result import Err, Ok, Result

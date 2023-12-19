@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from functools import partial
 from typing import Any, Generic, NewType, Sequence, Tuple, TypeVar
 
+import aiconfig.eval.common as common
 import lastmile_utils.lib.core.api as cu
 import pandas as pd
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.eval.metrics import Metric
-import aiconfig.eval.common as common
 from result import Err, Ok, Result
 
 logging.basicConfig(format=cu.LOGGER_FMT)
