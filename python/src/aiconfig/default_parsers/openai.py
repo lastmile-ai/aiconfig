@@ -165,7 +165,7 @@ class OpenAIInference(ParameterizedModelParser):
             completion_params["messages"] = []
 
             # Add System Prompt
-            if "system_prompt" in model_settings:
+            if model_settings.get("system_prompt", None) is not None:
                 system_prompt = model_settings["system_prompt"]
                 if isinstance(system_prompt, dict):
                     # If system prompt is an object, then it should have content and role attributes
