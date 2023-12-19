@@ -31,6 +31,7 @@ def default_openai_chat_completion_create(completion_params: OpenAIChatCompletio
             model=completion_params.model,
             temperature=completion_params.temperature,
             tools=completion_params.tools,
+            stream=False,
         )
         return Ok(result)
     except Exception as e:

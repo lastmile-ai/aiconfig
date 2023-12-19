@@ -1,4 +1,5 @@
 import json
+import sys
 from abc import abstractmethod
 from functools import partial, total_ordering
 from typing import Any, Callable, Generic, Protocol, Type
@@ -7,7 +8,15 @@ import lastmile_utils.lib.core.api as cu
 import nltk
 import pandas as pd
 from aiconfig.eval import common
-from aiconfig.eval.common import CustomMetricValue, EvaluationFunction, EvaluationMetricMetadata, T_BaseModel, T_OutputDatum, TextRatingsData
+from aiconfig.eval.common import (
+    CustomMetricValue,
+    EvaluationFunction,
+    EvaluationMetricMetadata,
+    T_BaseModel,
+    T_Evaluable,
+    T_MetricValue,
+    TextRatingsData,
+)
 from aiconfig.eval.openai import OpenAIChatCompletionCreate, default_openai_chat_completion_create, make_fn_completion_text_to_serialized_json
 from attr import dataclass
 from nltk.sentiment.vader import SentimentIntensityAnalyzer as NLTKSentimentIntensityAnalyzer
@@ -15,31 +24,36 @@ from result import Err, Ok, Result
 
 
 @dataclass(frozen=True)
-class Metric(Generic[T_OutputDatum]):
+class Metric(Generic[T_Evaluable, T_MetricValue]):
     """See metrics.py for examples."""
 
-    evaluation_fn: EvaluationFunction[T_OutputDatum]
-    metric_metadata: EvaluationMetricMetadata[T_OutputDatum]
+    evaluation_fn: EvaluationFunction[T_Evaluable, T_MetricValue]
+    metric_metadata: EvaluationMetricMetadata[T_Evaluable, T_MetricValue]
 
-    async def __call__(self, output_datum: T_OutputDatum) -> Any:
+    async def __call__(self, datum: T_Evaluable) -> T_MetricValue:
         """
         For convenience, make a Metric callable.
         Similar to torch Module `forward()`.
         """
-        return await self.evaluation_fn(output_datum)
+        return await self.evaluation_fn(datum)
 
 
-def _check_substring(output_datum: str, substring: str, case_sensitive: bool) -> bool:
+def _check_substring(
+    output_datum: str,
+    substring: str,
+    #
+    case_sensitive: bool,
+) -> bool:
     if case_sensitive:
         return substring in output_datum
     else:
         return substring.lower() in output_datum.lower()
 
 
-async def _calculate_brevity(output_datum: str) -> int:
-    if len(output_datum) == 0:
+async def _calculate_brevity(datum: str) -> int:
+    if len(datum) == 0:
         raise ValueError("Brevity is meaningless for empty string.")
-    return len(output_datum)
+    return len(datum)
 
 
 @dataclass
@@ -90,24 +104,24 @@ def _get_sentiment_scores(output_datum: str, get_polarity_scores: GetPolaritySco
     return TextSentimentScores(mapping=mapping, **mapping, highest=highest)
 
 
-def make_get_sentiment_scores(get_polarity_scores: GetPolarityScores) -> EvaluationFunction[str]:
-    async def _f(output_datum: str) -> TextSentimentScores:
-        return _get_sentiment_scores(output_datum, get_polarity_scores)
+def make_get_sentiment_scores(get_polarity_scores: GetPolarityScores) -> EvaluationFunction[str, TextSentimentScores]:
+    async def _f(datum: str) -> TextSentimentScores:
+        return _get_sentiment_scores(datum, get_polarity_scores)
 
     return _f
 
 
-def make_get_sentiment_class(get_polarity_scores: GetPolarityScores) -> EvaluationFunction[str]:
-    async def _f(output_datum: str) -> str:
-        scores = _get_sentiment_scores(output_datum, get_polarity_scores)
+def make_get_sentiment_class(get_polarity_scores: GetPolarityScores) -> EvaluationFunction[str, str]:
+    async def _f(datum: str) -> str:
+        scores = _get_sentiment_scores(datum, get_polarity_scores)
         return scores.highest
 
     return _f
 
 
-def make_get_overall_positive_sentiment(get_polarity_scores: GetPolarityScores) -> EvaluationFunction[str]:
-    async def _f(output_datum: str) -> TextOverallPositiveSentiment:
-        scores = _get_sentiment_scores(output_datum, get_polarity_scores)
+def make_get_overall_positive_sentiment(get_polarity_scores: GetPolarityScores) -> EvaluationFunction[str, TextOverallPositiveSentiment]:
+    async def _f(datum: str) -> TextOverallPositiveSentiment:
+        scores = _get_sentiment_scores(datum, get_polarity_scores)
         return TextOverallPositiveSentiment(pos=scores.pos, neg=scores.neg)
 
     return _f
@@ -115,16 +129,25 @@ def make_get_overall_positive_sentiment(get_polarity_scores: GetPolarityScores) 
 
 def make_sentiment_scores_metric(
     get_polarity_scores: GetPolarityScores,
-    make_evaluation_fn: Callable[[GetPolarityScores], EvaluationFunction[str]],
+    make_evaluation_fn: Callable[[GetPolarityScores], EvaluationFunction[str, T_MetricValue]],
     name: str,
     description: str,
-    best_value: common.MetricValue | None = None,
-    worst_value: common.MetricValue | None = None,
-) -> Metric[str]:
-    return Metric(
-        evaluation_fn=make_evaluation_fn(get_polarity_scores),
-        metric_metadata=EvaluationMetricMetadata(name=name, description=description, best_value=best_value, worst_value=worst_value),
+    best_value: T_MetricValue | None = None,
+    worst_value: T_MetricValue | None = None,
+) -> Metric[str, T_MetricValue]:
+    evaluation_fn: EvaluationFunction[str, T_MetricValue] = make_evaluation_fn(get_polarity_scores)
+    out: Metric[str, T_MetricValue] = Metric(
+        evaluation_fn=evaluation_fn,
+        metric_metadata=EvaluationMetricMetadata(
+            #
+            name=name,
+            description=description,
+            #
+            best_value=best_value,
+            worst_value=worst_value,
+        ),
     )
+    return out
 
 
 def make_structured_llm_metric(
@@ -134,11 +157,11 @@ def make_structured_llm_metric(
     metric_name: str,
     metric_description: str,
     field_descriptions: dict[str, str] = {},
-) -> Metric[str]:
-    def _make_evaluation_fn(basemodel_type: Type[T_BaseModel]) -> EvaluationFunction[str]:
-        async def _evaluation_fn(output_datum: str) -> common.CustomMetricPydanticObject[T_BaseModel]:
+) -> Metric[str, common.CustomMetricPydanticObject[T_BaseModel]]:
+    def _make_evaluation_fn(basemodel_type: Type[T_BaseModel]) -> EvaluationFunction[str, common.CustomMetricPydanticObject[T_BaseModel]]:
+        async def _evaluation_fn(datum: str) -> common.CustomMetricPydanticObject[T_BaseModel]:
             resp = common.get_llm_structured_response(
-                input_text=output_datum,
+                input_text=datum,
                 chat_completion_create=chat_completion_create,
                 basemodel_type=basemodel_type,
             )
@@ -173,7 +196,7 @@ def _make_openai_structured_llm_metric_helper(
     metric_description: str,
     field_descriptions: dict[str, str],
     openai_chat_completion_create: OpenAIChatCompletionCreate | None = None,
-) -> Result[Metric[str], str]:
+) -> Result[Metric[str, common.CustomMetricPydanticObject[T_BaseModel]], str]:
     schema = pydantic_basemodel_type.model_json_schema()
     properties = schema["properties"]
     required = schema["required"]
@@ -227,7 +250,7 @@ def make_openai_structured_llm_metric(
     metric_description: str,
     field_descriptions: dict[str, str] = {},
     openai_chat_completion_create: OpenAIChatCompletionCreate | None = None,
-) -> Metric[str]:
+) -> Metric[str, common.CustomMetricPydanticObject[T_BaseModel]]:
     res_metric = _make_openai_structured_llm_metric_helper(
         eval_llm_name=eval_llm_name,
         pydantic_basemodel_type=pydantic_basemodel_type,
@@ -245,10 +268,10 @@ def make_openai_structured_llm_metric(
             raise ValueError(f"Error making metric: {e}")
 
 
-def substring_match(substring: str, case_sensitive: bool = True) -> Metric[str]:
-    async def _fn(output_datum: str) -> bool:
+def substring_match(substring: str, case_sensitive: bool = True) -> Metric[str, bool]:
+    async def _fn(datum: str) -> bool:
         return _check_substring(
-            output_datum=output_datum,
+            output_datum=datum,
             substring=substring,
             case_sensitive=case_sensitive,
         )
@@ -267,13 +290,13 @@ def substring_match(substring: str, case_sensitive: bool = True) -> Metric[str]:
 
 # 2. literal metrics
 
-brevity: Metric[str] = Metric(
+brevity: Metric[str, int] = Metric(
     evaluation_fn=_calculate_brevity,
     metric_metadata=EvaluationMetricMetadata(
         name="brevity",
         description="Absolute text length",
-        best_value=1.0,
-        worst_value=float("inf"),
+        best_value=1,
+        worst_value=sys.maxsize,
     ),
 )
 
