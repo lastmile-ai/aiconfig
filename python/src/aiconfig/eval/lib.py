@@ -23,9 +23,19 @@ UserTestSuiteWithInputs = Sequence[Tuple[str, Metric[str, Any]]]
 UserTestSuiteOutputsOnly = Sequence[Tuple[str, Metric[str, Any]]]
 
 
+@dataclass(frozen=True)
+class TestSuiteGeneralSettings:
+    eval_fn_timeout_s: int = 5
+
+
 class TestSuiteWithInputsSettings(cu.Record):
     prompt_name: str
     aiconfig_path: str
+    general_settings: TestSuiteGeneralSettings = TestSuiteGeneralSettings()
+
+
+class TestSuiteOutputsOnlySettings(cu.Record):
+    general_settings: TestSuiteGeneralSettings = TestSuiteGeneralSettings()
 
 
 async def run_test_suite_with_inputs(
@@ -38,6 +48,7 @@ async def run_test_suite_with_inputs(
             test_suite=test_suite,
             prompt_name=settings.prompt_name,
             aiconfig=aiconfig,
+            general_settings=settings.general_settings,
         )
     )
     return res.unwrap_or_raise(ValueError)
@@ -45,8 +56,9 @@ async def run_test_suite_with_inputs(
 
 async def run_test_suite_outputs_only(
     test_suite: UserTestSuiteOutputsOnly,
+    settings: TestSuiteOutputsOnlySettings = TestSuiteOutputsOnlySettings(),
 ) -> pd.DataFrame:
-    res = await run_test_suite_helper(TestSuiteOutputsOnlySpec(test_suite=test_suite))
+    res = await run_test_suite_helper(TestSuiteOutputsOnlySpec(test_suite=test_suite, general_settings=settings.general_settings))
     return res.unwrap_or_raise(ValueError)
 
 
@@ -91,7 +103,7 @@ MetricList = list[Metric[T_OutputDatum, Any]]
 
 
 async def _evaluate_for_sample(
-    eval_params: SampleEvaluationParams[T_InputDatum, T_OutputDatum, T_MetricValue], timeout: int
+    eval_params: SampleEvaluationParams[T_InputDatum, T_OutputDatum, T_MetricValue], timeout_s: int
 ) -> SampleEvaluationResult[T_InputDatum, T_OutputDatum, T_MetricValue]:
     sample, metric = (
         eval_params.output_sample,
@@ -109,7 +121,7 @@ async def _evaluate_for_sample(
                 LOGGER.error(f"Error evaluating {eval_params=}: {e}")
                 return None
 
-    res_ = await cu.run_thunk_safe(_calculate(), timeout=timeout)
+    res_ = await cu.run_thunk_safe(_calculate(), timeout=timeout_s)
     result = SampleEvaluationResult(
         input_datum=eval_params.input_sample,
         output_datum=sample,
@@ -123,9 +135,9 @@ async def _evaluate_for_sample(
 
 
 async def evaluate(
-    evaluation_params_list: DatasetEvaluationParams[T_InputDatum, T_OutputDatum], eval_fn_timeout: int
+    evaluation_params_list: DatasetEvaluationParams[T_InputDatum, T_OutputDatum], eval_fn_timeout_s: int
 ) -> Result[DatasetEvaluationResult[T_InputDatum, T_OutputDatum], str]:
-    return Ok(await asyncio.gather(*map(partial(_evaluate_for_sample, timeout=eval_fn_timeout), evaluation_params_list)))
+    return Ok(await asyncio.gather(*map(partial(_evaluate_for_sample, timeout_s=eval_fn_timeout_s), evaluation_params_list)))
 
 
 def eval_res_to_df(
@@ -235,11 +247,13 @@ class TestSuiteWithInputsSpec:
     test_suite: UserTestSuiteWithInputs
     prompt_name: str
     aiconfig: AIConfigRuntime
+    general_settings: TestSuiteGeneralSettings
 
 
 @dataclass(frozen=True)
 class TestSuiteOutputsOnlySpec:
     test_suite: UserTestSuiteOutputsOnly
+    general_settings: TestSuiteGeneralSettings
 
 
 TestSuiteSpec = TestSuiteWithInputsSpec | TestSuiteOutputsOnlySpec
@@ -263,7 +277,7 @@ async def run_test_suite_helper(
         eval_params_list: DatasetEvaluationParams[TextInput, TextOutput],
     ) -> Result[DatasetEvaluationResult[TextInput, TextOutput], str]:
         # TODO wire up the timeout more and improve default
-        return await evaluate(eval_params_list, eval_fn_timeout=1)
+        return await evaluate(eval_params_list, eval_fn_timeout_s=test_suite_spec.general_settings.eval_fn_timeout_s)
 
     res_evaluated = await eval_params_list.and_then_async(_evaluate_with_timeout)
     res_df_evaluated = res_evaluated.map(eval_res_to_df)

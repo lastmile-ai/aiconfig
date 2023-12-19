@@ -14,7 +14,7 @@ import pandas as pd
 import pytest
 from aiconfig.eval import common
 from aiconfig.eval.api import TestSuiteWithInputsSettings, metrics, run_test_suite_outputs_only, run_test_suite_with_inputs
-from aiconfig.eval.lib import MetricList, TestSuiteWithInputsSpec, run_test_suite_helper
+from aiconfig.eval.lib import MetricList, TestSuiteGeneralSettings, TestSuiteWithInputsSpec, run_test_suite_helper
 from result import Err, Ok, Result
 
 from . import mocks
@@ -155,9 +155,7 @@ async def test_run_test_suite_with_inputs(data: st.DataObject):
 
     out = await run_test_suite_helper(
         TestSuiteWithInputsSpec(
-            test_suite=user_test_suite_with_inputs,
-            prompt_name="prompt0",
-            aiconfig=mock_aiconfig,
+            test_suite=user_test_suite_with_inputs, prompt_name="prompt0", aiconfig=mock_aiconfig, general_settings=TestSuiteGeneralSettings()
         )
     )
 
