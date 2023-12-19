@@ -1,6 +1,7 @@
 import json
-from functools import total_ordering
-from typing import Any, Generic, Type
+from abc import abstractmethod
+from functools import partial, total_ordering
+from typing import Any, Callable, Generic, Protocol, Type
 
 import lastmile_utils.lib.core.api as cu
 import nltk
@@ -9,7 +10,7 @@ from aiconfig.eval import common
 from aiconfig.eval.common import CustomMetricValue, EvaluationFunction, EvaluationMetricMetadata, T_BaseModel, T_OutputDatum, TextRatingsData
 from aiconfig.eval.openai import OpenAIChatCompletionCreate, default_openai_chat_completion_create, make_fn_completion_text_to_serialized_json
 from attr import dataclass
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.sentiment.vader import SentimentIntensityAnalyzer as NLTKSentimentIntensityAnalyzer
 from result import Err, Ok, Result
 
 
@@ -35,41 +36,10 @@ def _check_substring(output_datum: str, substring: str, case_sensitive: bool) ->
         return substring.lower() in output_datum.lower()
 
 
-def substring_match(substring: str, case_sensitive: bool = True) -> Metric[str]:
-    async def _fn(output_datum: str) -> bool:
-        return _check_substring(
-            output_datum=output_datum,
-            substring=substring,
-            case_sensitive=case_sensitive,
-        )
-
-    return Metric(
-        evaluation_fn=_fn,
-        metric_metadata=EvaluationMetricMetadata(
-            name="substring_match",
-            description="True (pass) if contains given substring",
-            best_value=True,
-            worst_value=False,
-            extra_metadata=dict(substring=substring, case_sensitive=case_sensitive),
-        ),
-    )
-
-
 async def _calculate_brevity(output_datum: str) -> int:
     if len(output_datum) == 0:
         raise ValueError("Brevity is meaningless for empty string.")
     return len(output_datum)
-
-
-brevity: Metric[str] = Metric(
-    evaluation_fn=_calculate_brevity,
-    metric_metadata=EvaluationMetricMetadata(
-        name="brevity",
-        description="Absolute text length",
-        best_value=1.0,
-        worst_value=float("inf"),
-    ),
-)
 
 
 @dataclass
@@ -103,55 +73,58 @@ class TextOverallPositiveSentiment(CustomMetricValue):
         return self.pos - self.neg < other.pos - other.neg
 
 
-async def _get_sentiment_scores(output_datum: str) -> TextSentimentScores:
-    nltk.download("vader_lexicon", quiet=True)  # type: ignore
-    sid = SentimentIntensityAnalyzer()
-    mapping: dict[str, float] = sid.polarity_scores(output_datum)  # type: ignore
+class GetPolarityScores(Protocol):
+    @abstractmethod
+    def __call__(self, text: str) -> dict[str, float]:
+        pass
+
+
+def _get_nltk_polarity_scores(text: str, model: str) -> dict[str, float]:
+    nltk.download(model, quiet=True)  # type: ignore
+    return NLTKSentimentIntensityAnalyzer().polarity_scores(text)  # type: ignore
+
+
+def _get_sentiment_scores(output_datum: str, get_polarity_scores: GetPolarityScores) -> TextSentimentScores:
+    mapping: dict[str, float] = get_polarity_scores(output_datum)
     highest: str = pd.Series(mapping).idxmax()  # type: ignore
     return TextSentimentScores(mapping=mapping, **mapping, highest=highest)
 
 
-async def _get_sentiment(output_datum: str) -> str:
-    scores = await _get_sentiment_scores(output_datum)
-    return scores.highest
+def make_get_sentiment_scores(get_polarity_scores: GetPolarityScores) -> EvaluationFunction[str]:
+    async def _f(output_datum: str) -> TextSentimentScores:
+        return _get_sentiment_scores(output_datum, get_polarity_scores)
+
+    return _f
 
 
-async def _get_overall_positive_sentiment(output_datum: str) -> TextOverallPositiveSentiment:
-    scores = await _get_sentiment_scores(output_datum)
-    return TextOverallPositiveSentiment(pos=scores.pos, neg=scores.neg)
+def make_get_sentiment_class(get_polarity_scores: GetPolarityScores) -> EvaluationFunction[str]:
+    async def _f(output_datum: str) -> str:
+        scores = _get_sentiment_scores(output_datum, get_polarity_scores)
+        return scores.highest
+
+    return _f
 
 
-sentiment_scores: Metric[str] = Metric(
-    evaluation_fn=_get_sentiment_scores,
-    metric_metadata=EvaluationMetricMetadata(
-        name="sentiment_scores",
-        description="Sentiment scores container object",
-        best_value=None,
-        worst_value=None,
-    ),
-)
+def make_get_overall_positive_sentiment(get_polarity_scores: GetPolarityScores) -> EvaluationFunction[str]:
+    async def _f(output_datum: str) -> TextOverallPositiveSentiment:
+        scores = _get_sentiment_scores(output_datum, get_polarity_scores)
+        return TextOverallPositiveSentiment(pos=scores.pos, neg=scores.neg)
+
+    return _f
 
 
-sentiment_class: Metric[str] = Metric(
-    evaluation_fn=_get_sentiment,
-    metric_metadata=EvaluationMetricMetadata(
-        name="sentiment_class",
-        description="top sentiment class",
-        best_value=None,
-        worst_value=None,
-    ),
-)
-
-
-sentiment_score_overall_positive: Metric[str] = Metric(
-    evaluation_fn=_get_overall_positive_sentiment,
-    metric_metadata=EvaluationMetricMetadata(
-        name="sentiment_score_overall_positive",
-        description="Positive minus negative",
-        best_value=TextOverallPositiveSentiment(pos=1.0, neg=0.0),
-        worst_value=TextOverallPositiveSentiment(pos=0.0, neg=1.0),
-    ),
-)
+def make_sentiment_scores_metric(
+    get_polarity_scores: GetPolarityScores,
+    make_evaluation_fn: Callable[[GetPolarityScores], EvaluationFunction[str]],
+    name: str,
+    description: str,
+    best_value: common.MetricValue | None = None,
+    worst_value: common.MetricValue | None = None,
+) -> Metric[str]:
+    return Metric(
+        evaluation_fn=make_evaluation_fn(get_polarity_scores),
+        metric_metadata=EvaluationMetricMetadata(name=name, description=description, best_value=best_value, worst_value=worst_value),
+    )
 
 
 def make_structured_llm_metric(
@@ -241,6 +214,12 @@ def _make_openai_structured_llm_metric_helper(
     )
 
 
+## User interface
+
+
+# 1. functions that return metrics intended to be called directly
+
+
 def make_openai_structured_llm_metric(
     eval_llm_name: str,
     pydantic_basemodel_type: Type[T_BaseModel],
@@ -266,6 +245,39 @@ def make_openai_structured_llm_metric(
             raise ValueError(f"Error making metric: {e}")
 
 
+def substring_match(substring: str, case_sensitive: bool = True) -> Metric[str]:
+    async def _fn(output_datum: str) -> bool:
+        return _check_substring(
+            output_datum=output_datum,
+            substring=substring,
+            case_sensitive=case_sensitive,
+        )
+
+    return Metric(
+        evaluation_fn=_fn,
+        metric_metadata=EvaluationMetricMetadata(
+            name="substring_match",
+            description="True (pass) if contains given substring",
+            best_value=True,
+            worst_value=False,
+            extra_metadata=dict(substring=substring, case_sensitive=case_sensitive),
+        ),
+    )
+
+
+# 2. literal metrics
+
+brevity: Metric[str] = Metric(
+    evaluation_fn=_calculate_brevity,
+    metric_metadata=EvaluationMetricMetadata(
+        name="brevity",
+        description="Absolute text length",
+        best_value=1.0,
+        worst_value=float("inf"),
+    ),
+)
+
+
 gpt3_5_text_ratings = make_openai_structured_llm_metric(
     eval_llm_name="gpt-3.5-turbo-0613",
     pydantic_basemodel_type=TextRatingsData,
@@ -276,4 +288,27 @@ gpt3_5_text_ratings = make_openai_structured_llm_metric(
         conciseness_confidence="0 to 1.0 rating of confidence in conciseness rating",
         conciseness_reasoning="reasoning behind the conciseness rating",
     ),
+)
+
+nltk_sentiment_scores_vader = make_sentiment_scores_metric(
+    get_polarity_scores=partial(_get_nltk_polarity_scores, model="vader_lexicon"),
+    make_evaluation_fn=make_get_sentiment_scores,
+    name="nltk_sentiment_scores_vader",
+    description="NLTK sentiment scores using Vader",
+)
+
+nltk_sentiment_class_vader = make_sentiment_scores_metric(
+    get_polarity_scores=partial(_get_nltk_polarity_scores, model="vader_lexicon"),
+    make_evaluation_fn=make_get_sentiment_class,
+    name="nltk_sentiment_class_vader",
+    description="Highest-probability NLTK sentiment class using Vader",
+)
+
+nltk_sentiment_score_overall_positive = make_sentiment_scores_metric(
+    get_polarity_scores=partial(_get_nltk_polarity_scores, model="vader_lexicon"),
+    make_evaluation_fn=make_get_overall_positive_sentiment,
+    name="nltk_sentiment_score_overall_positive",
+    description="Positive minus negative",
+    best_value=TextOverallPositiveSentiment(pos=1.0, neg=0.0),
+    worst_value=TextOverallPositiveSentiment(pos=0.0, neg=1.0),
 )
