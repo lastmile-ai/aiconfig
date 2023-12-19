@@ -1,21 +1,34 @@
 import PromptParametersRenderer from "@/src/components/prompt/PromptParametersRenderer";
 import ModelSettingsRenderer from "@/src/components/prompt/model_settings/ModelSettingsRenderer";
 import PromptMetadataRenderer from "@/src/components/prompt/prompt_metadata/PromptMetadataRenderer";
+import { ClientPrompt } from "@/src/shared/types";
 import {
   PromptSchema,
   checkParametersSupported,
 } from "@/src/utils/promptUtils";
-import { ActionIcon, Button, Flex } from "@mantine/core";
+import { ActionIcon, Container, Flex } from "@mantine/core";
 import { IconClearAll } from "@tabler/icons-react";
-import { Prompt } from "aiconfig";
 import { memo, useState } from "react";
 
 type Props = {
-  prompt: Prompt;
+  prompt: ClientPrompt;
   promptSchema?: PromptSchema;
+  onUpdateModelSettings: (settings: Record<string, unknown>) => void;
 };
 
-export default memo(function PromptActionBar({ prompt, promptSchema }: Props) {
+// Don't default to config-level model settings since that could be confusing
+// to have them shown at the prompt level in the editor but not in the config
+function getModelSettings(prompt: ClientPrompt) {
+  if (typeof prompt.metadata?.model !== "string") {
+    return prompt.metadata?.model?.settings;
+  }
+}
+
+export default memo(function PromptActionBar({
+  prompt,
+  promptSchema,
+  onUpdateModelSettings,
+}: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
   // TODO: Handle drag-to-resize
   const modelSettingsSchema = promptSchema?.model_settings;
@@ -24,11 +37,15 @@ export default memo(function PromptActionBar({ prompt, promptSchema }: Props) {
   return (
     <Flex direction="column" justify="space-between">
       {isExpanded ? (
-        <>
+        <Container>
           <ActionIcon size="sm" onClick={() => setIsExpanded(false)}>
             <IconClearAll />
           </ActionIcon>
-          <ModelSettingsRenderer prompt={prompt} schema={modelSettingsSchema} />
+          <ModelSettingsRenderer
+            settings={getModelSettings(prompt)}
+            schema={modelSettingsSchema}
+            onUpdateModelSettings={onUpdateModelSettings}
+          />
           <PromptMetadataRenderer
             prompt={prompt}
             schema={promptMetadataSchema}
@@ -36,7 +53,7 @@ export default memo(function PromptActionBar({ prompt, promptSchema }: Props) {
           {checkParametersSupported(prompt) && (
             <PromptParametersRenderer prompt={prompt} />
           )}{" "}
-        </>
+        </Container>
       ) : (
         <ActionIcon size="sm" onClick={() => setIsExpanded(true)}>
           <IconClearAll />

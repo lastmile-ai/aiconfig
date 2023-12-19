@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ErrorResponse } from "@/src/shared/serverTypes";
-import { AIConfig, AIConfigRuntime } from "aiconfig";
+import { AIConfig, AIConfigRuntime, Output } from "aiconfig";
+import { ClientAIConfig } from "@/src/shared/types";
 
 type Data = {
   status: string;
@@ -8,7 +9,7 @@ type Data = {
 
 type RequestBody = {
   path: string;
-  aiconfig: AIConfig;
+  aiconfig: ClientAIConfig;
 };
 
 export default async function handler(
@@ -29,9 +30,27 @@ export default async function handler(
     return res.status(500).json({ error: "No aiconfig data provided" });
   }
 
+  // TODO: Once ouputs are properly structured, remove this and use body.aiconfig directly
+  const clientAIConfig = body.aiconfig;
+  const config = {
+    ...clientAIConfig,
+    prompts: clientAIConfig.prompts.map((prompt) => ({
+      ...prompt,
+      outputs: prompt.outputs?.map((output) => {
+        if (output.output_type === "execute_result") {
+          const outputWithoutRenderData = { ...output, renderData: undefined };
+          delete outputWithoutRenderData.renderData;
+          return outputWithoutRenderData as Output;
+        } else {
+          return output as Output;
+        }
+      }),
+    })),
+  };
+
   // Construct the config and ensure proper serialization for saving
-  const config = await AIConfigRuntime.loadJSON(body.aiconfig);
-  config.save(body.path, { serializeOutputs: true });
+  const serializedConfig = await AIConfigRuntime.loadJSON(config);
+  serializedConfig.save(body.path, { serializeOutputs: true });
 
   res.status(200).json({ status: "ok" });
 }
