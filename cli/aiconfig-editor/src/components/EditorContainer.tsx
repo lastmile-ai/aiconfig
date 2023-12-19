@@ -1,15 +1,26 @@
 import PromptContainer from "@/src/components/prompt/PromptContainer";
-import { Container, Text, Group, Button } from "@mantine/core";
+import { Container, Text, Group, Button, createStyles } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { AIConfig, PromptInput } from "aiconfig";
 import router from "next/router";
-import { useCallback, useState } from "react";
+import { useCallback, useReducer, useState } from "react";
+import aiconfigReducer from "@/src/components/aiconfigReducer";
+import { ClientAIConfig, clientConfigToAIConfig } from "@/src/shared/types";
 
 type Props = {
-  aiconfig: AIConfig;
+  aiconfig: ClientAIConfig;
   onBackNavigation: () => void;
   onSave: (aiconfig: AIConfig) => Promise<void>;
 };
+
+const useStyles = createStyles((theme) => ({
+  promptsContainer: {
+    [theme.fn.smallerThan("sm")]: {
+      padding: "0 0 200px 0",
+    },
+    paddingBottom: 400,
+  },
+}));
 
 export default function EditorContainer({
   aiconfig: initialAIConfig,
@@ -17,12 +28,15 @@ export default function EditorContainer({
   onSave,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
-  const [aiconfig, setAIConfig] = useState(initialAIConfig);
+  const [aiconfigState, dispatch] = useReducer(
+    aiconfigReducer,
+    initialAIConfig
+  );
 
   const save = useCallback(async () => {
     setIsSaving(true);
     try {
-      await onSave(aiconfig);
+      await onSave(clientConfigToAIConfig(aiconfigState));
     } catch (err: any) {
       showNotification({
         title: "Error saving",
@@ -32,20 +46,20 @@ export default function EditorContainer({
     } finally {
       setIsSaving(false);
     }
-  }, [aiconfig, onSave]);
+  }, [aiconfigState, onSave]);
 
-  // TODO: Move to EditorContext and update to handle non-text inputs
   const onChangePromptInput = useCallback(
     (i: number, newPromptInput: PromptInput) => {
-      // TODO: This is super basic, should probably update to reducer, etc.
-      // Also not optimized, etc.
-
-      const newPrompts = [...aiconfig.prompts];
-      newPrompts[i].input = newPromptInput;
-      setAIConfig({ ...aiconfig, prompts: newPrompts });
+      dispatch({
+        type: "UPDATE_PROMPT_INPUT",
+        index: i,
+        input: newPromptInput,
+      });
     },
-    [aiconfig]
+    [dispatch]
   );
+
+  const { classes } = useStyles();
 
   // TODO: Implement editor context for callbacks, readonly state, etc.
 
@@ -64,15 +78,15 @@ export default function EditorContainer({
           </Button>
         </Group>
       </Container>
-      <Container maw="80rem">
-        {aiconfig.prompts.map((prompt: any, i: number) => {
+      <Container maw="80rem" className={classes.promptsContainer}>
+        {aiconfigState.prompts.map((prompt: any, i: number) => {
           return (
             <PromptContainer
               index={i}
               prompt={prompt}
               key={prompt.name}
               onChangePromptInput={onChangePromptInput}
-              defaultConfigModelName={aiconfig.metadata.default_model}
+              defaultConfigModelName={aiconfigState.metadata.default_model}
             />
           );
         })}
