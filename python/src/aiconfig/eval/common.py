@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Generic, NewType, Protocol, Type, TypeVar
 
-import lastmile_utils.lib.core.api as cu
+import lastmile_utils.lib.core.api as core_utils
 import result
 from aiconfig.eval import common
 from pydantic import BaseModel
@@ -53,7 +53,7 @@ class EvaluationFunction(Protocol, Generic[T_Evaluable, T_MetricValue]):
         pass
 
 
-class EvaluationMetricMetadata(cu.Record, Generic[T_Evaluable, T_MetricValue]):
+class EvaluationMetricMetadata(core_utils.Record, Generic[T_Evaluable, T_MetricValue]):
 
     """A record to tie together metadata about an evaluation metric
     to ensure that numbers are interpreted as intended.
@@ -80,7 +80,7 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_Evaluable, T_MetricValue]):
 
     @property
     def id(self) -> str:
-        return cu.hash_id(
+        return core_utils.hash_id(
             f"{self.name}{self.description}{self.best_value}{self.worst_value}params={self._serialize_extra_metadata()}".encode("utf-8")
         )
 
@@ -154,7 +154,7 @@ class SampleMetricValue(Generic[T_Evaluable, T_MetricValue]):
             )
 
 
-class TextRatingsData(cu.Record):
+class TextRatingsData(core_utils.Record):
     conciseness_rating: int
     conciseness_confidence: float
     conciseness_reasoning: str
@@ -166,7 +166,7 @@ def get_llm_structured_response(
     basemodel_type: Type[common.T_BaseModel],
 ) -> Result[common.T_BaseModel, str]:
     return result.do(
-        cu.safe_model_validate_json(response_ok, basemodel_type)
+        core_utils.safe_model_validate_json(response_ok, basemodel_type)
         # get the serialized JSON response
         for response_ok in chat_completion_create(input_text)
     )

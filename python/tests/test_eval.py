@@ -5,7 +5,7 @@ from typing import Any
 
 import hypothesis
 import hypothesis.strategies as st
-import lastmile_utils.lib.core.api as cu
+import lastmile_utils.lib.core.api as core_utils
 import pandas as pd
 import pytest
 from aiconfig.eval.api import TestSuiteWithInputsSettings, metrics, run_test_suite_outputs_only, run_test_suite_with_inputs
@@ -120,7 +120,7 @@ async def test_run_test_suite_outputs_only(data: st.DataObject):
         "worst_possible_value",
     ]
     inputs = df["input"].astype(str).tolist()  # type: ignore
-    assert cu.only(inputs) == Ok("Missing")  # type: ignore
+    assert core_utils.only(inputs) == Ok("Missing")  # type: ignore
 
     df_brevity = df[df["metric_name"] == "brevity"]  # type: ignore
     assert (df_brevity["aiconfig_output"].apply(len) == df_brevity["value"]).all()  # type: ignore
