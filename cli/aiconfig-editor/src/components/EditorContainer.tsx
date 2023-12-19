@@ -5,9 +5,10 @@ import { AIConfig, PromptInput } from "aiconfig";
 import router from "next/router";
 import { useCallback, useReducer, useState } from "react";
 import aiconfigReducer from "@/src/components/aiconfigReducer";
+import { ClientAIConfig, clientConfigToAIConfig } from "@/src/shared/types";
 
 type Props = {
-  aiconfig: AIConfig;
+  aiconfig: ClientAIConfig;
   onBackNavigation: () => void;
   onSave: (aiconfig: AIConfig) => Promise<void>;
 };
@@ -35,7 +36,7 @@ export default function EditorContainer({
   const save = useCallback(async () => {
     setIsSaving(true);
     try {
-      await onSave(aiconfigState);
+      await onSave(clientConfigToAIConfig(aiconfigState));
     } catch (err: any) {
       showNotification({
         title: "Error saving",
