@@ -2,7 +2,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Protocol
 
-import lastmile_utils.lib.core.api as cu
+import lastmile_utils.lib.core.api as core_utils
 import openai
 import openai.types.chat as openai_types
 from aiconfig.eval import common
@@ -35,7 +35,7 @@ def default_openai_chat_completion_create(completion_params: OpenAIChatCompletio
         )
         return Ok(result)
     except Exception as e:
-        return cu.ErrWithTraceback(e)
+        return core_utils.ErrWithTraceback(e)
 
 
 def extract_json_from_chat_completion(chat_completion: openai_types.ChatCompletion) -> Result[common.SerializedJSON, str]:

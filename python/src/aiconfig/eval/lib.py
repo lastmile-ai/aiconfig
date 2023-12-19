@@ -5,13 +5,13 @@ from functools import partial
 from typing import Any, Generic, NewType, Sequence, Tuple, TypeVar
 
 import aiconfig.eval.common as common
-import lastmile_utils.lib.core.api as cu
+import lastmile_utils.lib.core.api as core_utils
 import pandas as pd
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.eval.metrics import Metric
 from result import Err, Ok, Result
 
-logging.basicConfig(format=cu.LOGGER_FMT)
+logging.basicConfig(format=core_utils.LOGGER_FMT)
 LOGGER = logging.getLogger(__name__)
 
 
@@ -28,13 +28,13 @@ class TestSuiteGeneralSettings:
     eval_fn_timeout_s: int = 5
 
 
-class TestSuiteWithInputsSettings(cu.Record):
+class TestSuiteWithInputsSettings(core_utils.Record):
     prompt_name: str
     aiconfig_path: str
     general_settings: TestSuiteGeneralSettings = TestSuiteGeneralSettings()
 
 
-class TestSuiteOutputsOnlySettings(cu.Record):
+class TestSuiteOutputsOnlySettings(core_utils.Record):
     general_settings: TestSuiteGeneralSettings = TestSuiteGeneralSettings()
 
 
@@ -65,7 +65,7 @@ async def run_test_suite_outputs_only(
 T = TypeVar("T")
 
 
-class NumericalEvalDataset(cu.Record):
+class NumericalEvalDataset(core_utils.Record):
     output: Sequence[float | int]
     ground_truth: Sequence[float | int]
 
@@ -77,7 +77,7 @@ TextOutput = NewType("TextOutput", str)
 # TODO:
 # GenericBeforeBaseModelWarning: Classes should inherit from `BaseModel` before generic classes (e.g. `typing.Generic[T]`) for pydantic generics to work properly.
 # But swapping the order breaks
-class SampleEvaluationResult(Generic[common.T_InputDatum, common.T_OutputDatum, common.T_MetricValue], cu.Record):
+class SampleEvaluationResult(Generic[common.T_InputDatum, common.T_OutputDatum, common.T_MetricValue], core_utils.Record):
     input_datum: common.T_InputDatum | None
     output_datum: common.T_OutputDatum
     metric_value: common.SampleMetricValue[common.T_OutputDatum, common.T_MetricValue]
@@ -121,7 +121,7 @@ async def _evaluate_for_sample(
                 LOGGER.error(f"Error evaluating {eval_params=}: {e}")
                 return None
 
-    res_ = await cu.run_thunk_safe(_calculate(), timeout=timeout_s)
+    res_ = await core_utils.run_thunk_safe(_calculate(), timeout=timeout_s)
     result = SampleEvaluationResult(
         input_datum=eval_params.input_sample,
         output_datum=sample,
@@ -195,8 +195,8 @@ async def user_test_suite_with_inputs_to_eval_params_list(
     res_outputs_: list[Result[TextOutput, str]] = []
     for input_datum in all_inputs:
         res_outputs_.append(await _run(input_datum))
-    res_outputs = cu.result_reduce_list_all_ok(res_outputs_)
-    # res_outputs = await cu.result_reduce_list_all_ok_async(list(map(_run, all_inputs)))
+    res_outputs = core_utils.result_reduce_list_all_ok(res_outputs_)
+    # res_outputs = await core_utils.result_reduce_list_all_ok_async(list(map(_run, all_inputs)))
 
     def _zip_inputs_outputs(outputs: list[TextOutput]):
         # This zip is safe because we have defined an order for the keys in `all_inputs`
@@ -239,7 +239,7 @@ async def run_aiconfig_helper(runtime: AIConfigRuntime, prompt_name: str, questi
         out = Ok(await runtime.run_and_get_output_text(prompt_name, params, run_with_dependencies=True))  # type: ignore[fixme, no-untyped-call]
         return out
     except Exception as e:
-        return cu.ErrWithTraceback(e)
+        return core_utils.ErrWithTraceback(e)
 
 
 @dataclass(frozen=True)

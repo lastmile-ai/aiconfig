@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from functools import partial, total_ordering
 from typing import Any, Callable, Generic, Protocol, Type
 
-import lastmile_utils.lib.core.api as cu
+import lastmile_utils.lib.core.api as core_utils
 import nltk
 import pandas as pd
 from aiconfig.eval import common
@@ -204,7 +204,7 @@ def _make_openai_structured_llm_metric_helper(
 
     def _with_description(key: str, value: dict[str, str]) -> dict[str, str]:
         if key in field_descriptions:
-            return cu.dict_union_allow_replace(value, {"description": field_descriptions[key]})
+            return core_utils.dict_union_allow_replace(value, {"description": field_descriptions[key]})
         return value
 
     properties = {k: _with_description(k, v) for k, v in properties.items()}
