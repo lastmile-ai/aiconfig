@@ -7,8 +7,8 @@ from typing import Any, Generic, NewType, Sequence, Tuple, TypeVar
 import lastmile_utils.lib.core.api as cu
 import pandas as pd
 from aiconfig.Config import AIConfigRuntime
-from aiconfig.eval.common import SampleMetricValue, T_InputDatum, T_MetricValue, T_OutputDatum
 from aiconfig.eval.metrics import Metric
+import aiconfig.eval.common as common
 from result import Err, Ok, Result
 
 logging.basicConfig(format=cu.LOGGER_FMT)
@@ -23,9 +23,19 @@ UserTestSuiteWithInputs = Sequence[Tuple[str, Metric[str, Any]]]
 UserTestSuiteOutputsOnly = Sequence[Tuple[str, Metric[str, Any]]]
 
 
+@dataclass(frozen=True)
+class TestSuiteGeneralSettings:
+    eval_fn_timeout_s: int = 5
+
+
 class TestSuiteWithInputsSettings(cu.Record):
     prompt_name: str
     aiconfig_path: str
+    general_settings: TestSuiteGeneralSettings = TestSuiteGeneralSettings()
+
+
+class TestSuiteOutputsOnlySettings(cu.Record):
+    general_settings: TestSuiteGeneralSettings = TestSuiteGeneralSettings()
 
 
 async def run_test_suite_with_inputs(
@@ -38,6 +48,7 @@ async def run_test_suite_with_inputs(
             test_suite=test_suite,
             prompt_name=settings.prompt_name,
             aiconfig=aiconfig,
+            general_settings=settings.general_settings,
         )
     )
     return res.unwrap_or_raise(ValueError)
@@ -45,8 +56,9 @@ async def run_test_suite_with_inputs(
 
 async def run_test_suite_outputs_only(
     test_suite: UserTestSuiteOutputsOnly,
+    settings: TestSuiteOutputsOnlySettings = TestSuiteOutputsOnlySettings(),
 ) -> pd.DataFrame:
-    res = await run_test_suite_helper(TestSuiteOutputsOnlySpec(test_suite=test_suite))
+    res = await run_test_suite_helper(TestSuiteOutputsOnlySpec(test_suite=test_suite, general_settings=settings.general_settings))
     return res.unwrap_or_raise(ValueError)
 
 
@@ -65,43 +77,43 @@ TextOutput = NewType("TextOutput", str)
 # TODO:
 # GenericBeforeBaseModelWarning: Classes should inherit from `BaseModel` before generic classes (e.g. `typing.Generic[T]`) for pydantic generics to work properly.
 # But swapping the order breaks
-class SampleEvaluationResult(Generic[T_InputDatum, T_OutputDatum, T_MetricValue], cu.Record):
-    input_datum: T_InputDatum | None
-    output_datum: T_OutputDatum
-    metric_value: SampleMetricValue[T_OutputDatum, T_MetricValue]
+class SampleEvaluationResult(Generic[common.T_InputDatum, common.T_OutputDatum, common.T_MetricValue], cu.Record):
+    input_datum: common.T_InputDatum | None
+    output_datum: common.T_OutputDatum
+    metric_value: common.SampleMetricValue[common.T_OutputDatum, common.T_MetricValue]
 
 
 @dataclass(frozen=True)
-class SampleEvaluationParams(Generic[T_InputDatum, T_OutputDatum, T_MetricValue]):
+class SampleEvaluationParams(Generic[common.T_InputDatum, common.T_OutputDatum, common.T_MetricValue]):
     # input_sample doesn't _need_ to be here, because we already have
     # output_sample ready to input to eval.
     # input_sample is here for documentation/debugging.
-    input_sample: T_InputDatum | None
-    output_sample: T_OutputDatum
-    metric: Metric[T_OutputDatum, T_MetricValue]
+    input_sample: common.T_InputDatum | None
+    output_sample: common.T_OutputDatum
+    metric: Metric[common.T_OutputDatum, common.T_MetricValue]
 
     def __str__(self) -> str:
         return f"\nSampleEvaluationParams:\n\t{self.output_sample=}\n\t{self.metric=}"
 
 
 # TODO: don't use Any.
-DatasetEvaluationResult = Sequence[SampleEvaluationResult[T_InputDatum, T_OutputDatum, Any]]
-DatasetEvaluationParams = Sequence[SampleEvaluationParams[T_InputDatum, T_OutputDatum, Any]]
-MetricList = list[Metric[T_OutputDatum, Any]]
+DatasetEvaluationResult = Sequence[SampleEvaluationResult[common.T_InputDatum, common.T_OutputDatum, Any]]
+DatasetEvaluationParams = Sequence[SampleEvaluationParams[common.T_InputDatum, common.T_OutputDatum, Any]]
+MetricList = list[Metric[common.T_OutputDatum, Any]]
 
 
 async def _evaluate_for_sample(
-    eval_params: SampleEvaluationParams[T_InputDatum, T_OutputDatum, T_MetricValue], timeout: int
-) -> SampleEvaluationResult[T_InputDatum, T_OutputDatum, T_MetricValue]:
+    eval_params: SampleEvaluationParams[common.T_InputDatum, common.T_OutputDatum, common.T_MetricValue], timeout_s: int
+) -> SampleEvaluationResult[common.T_InputDatum, common.T_OutputDatum, common.T_MetricValue]:
     sample, metric = (
         eval_params.output_sample,
         eval_params.metric,
     )
 
-    async def _calculate() -> T_MetricValue:
+    async def _calculate() -> common.T_MetricValue:
         return await metric.evaluation_fn(sample)
 
-    def _ok_with_log(res_: Result[T_MetricValue, str]) -> T_MetricValue | None:
+    def _ok_with_log(res_: Result[common.T_MetricValue, str]) -> common.T_MetricValue | None:
         match res_:
             case Ok(res):
                 return res
@@ -109,11 +121,11 @@ async def _evaluate_for_sample(
                 LOGGER.error(f"Error evaluating {eval_params=}: {e}")
                 return None
 
-    res_ = await cu.run_thunk_safe(_calculate(), timeout=timeout)
+    res_ = await cu.run_thunk_safe(_calculate(), timeout=timeout_s)
     result = SampleEvaluationResult(
         input_datum=eval_params.input_sample,
         output_datum=sample,
-        metric_value=SampleMetricValue(
+        metric_value=common.SampleMetricValue(
             #
             value=_ok_with_log(res_),
             metric_metadata=metric.metric_metadata,
@@ -123,13 +135,13 @@ async def _evaluate_for_sample(
 
 
 async def evaluate(
-    evaluation_params_list: DatasetEvaluationParams[T_InputDatum, T_OutputDatum], eval_fn_timeout: int
-) -> Result[DatasetEvaluationResult[T_InputDatum, T_OutputDatum], str]:
-    return Ok(await asyncio.gather(*map(partial(_evaluate_for_sample, timeout=eval_fn_timeout), evaluation_params_list)))
+    evaluation_params_list: DatasetEvaluationParams[common.T_InputDatum, common.T_OutputDatum], eval_fn_timeout_s: int
+) -> Result[DatasetEvaluationResult[common.T_InputDatum, common.T_OutputDatum], str]:
+    return Ok(await asyncio.gather(*map(partial(_evaluate_for_sample, timeout_s=eval_fn_timeout_s), evaluation_params_list)))
 
 
 def eval_res_to_df(
-    eval_res: DatasetEvaluationResult[T_InputDatum, T_OutputDatum],
+    eval_res: DatasetEvaluationResult[common.T_InputDatum, common.T_OutputDatum],
 ) -> pd.DataFrame:
     # TODO: dont use Any
     records: list[dict[str, Any]] = []
@@ -235,11 +247,13 @@ class TestSuiteWithInputsSpec:
     test_suite: UserTestSuiteWithInputs
     prompt_name: str
     aiconfig: AIConfigRuntime
+    general_settings: TestSuiteGeneralSettings
 
 
 @dataclass(frozen=True)
 class TestSuiteOutputsOnlySpec:
     test_suite: UserTestSuiteOutputsOnly
+    general_settings: TestSuiteGeneralSettings
 
 
 TestSuiteSpec = TestSuiteWithInputsSpec | TestSuiteOutputsOnlySpec
@@ -263,7 +277,7 @@ async def run_test_suite_helper(
         eval_params_list: DatasetEvaluationParams[TextInput, TextOutput],
     ) -> Result[DatasetEvaluationResult[TextInput, TextOutput], str]:
         # TODO wire up the timeout more and improve default
-        return await evaluate(eval_params_list, eval_fn_timeout=1)
+        return await evaluate(eval_params_list, eval_fn_timeout_s=test_suite_spec.general_settings.eval_fn_timeout_s)
 
     res_evaluated = await eval_params_list.and_then_async(_evaluate_with_timeout)
     res_df_evaluated = res_evaluated.map(eval_res_to_df)
