@@ -141,10 +141,16 @@ class GeminiModelParser(ParameterizedModelParser):
 
         completion_data = refine_chat_completion_params(model_settings)
 
+        
+
         messages = self._construct_chat_history(prompt, aiconfig, params)
         messages.append({"role": "user", "parts": [{"text": resolved_prompt}]})
 
-        completion_data["contents"] = messages
+        if "contents" in completion_data:
+            # If contents is already set, no need to construct chat history. Maybe this should be an addendum to the message chat construction?
+            pass
+        else:
+            completion_data["contents"] = messages
 
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
