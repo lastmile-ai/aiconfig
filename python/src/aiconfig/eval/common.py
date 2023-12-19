@@ -22,8 +22,11 @@ SerializedJSON = NewType("SerializedJSON", str)
 @dataclass(frozen=True)
 class CustomMetricValue(ABC):
     """
-    Subclass this if you want your metric to return a type not included in MetricValue.
-    A subclass (an implemntation of CustomMetricValue) can either be ordered or unordered.
+    Subclass this if you want your metric to return a type not listed below
+    (See the definition of T_MetricValue).
+    See `metrics.py:TextSentimentScores` and `metrics.py:nltk_sentiment_scores_vader for an example.
+
+    A subclass (an implementation of CustomMetricValue) can either be ordered or unordered.
     If ordered, it must implement the comparison operators <, <=, >, and >=.
     See TextOverallPositiveSentiment for example.
     See EvaluationMetricMetadata for more information about ordered metrics.
