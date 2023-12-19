@@ -1,18 +1,23 @@
-# type: ignore[no-untyped-call]
 import itertools
+import logging
 import os
-from typing import Any
+from typing import Any, cast
 
+import aiconfig.eval.openai as lib_openai
 import hypothesis
 import hypothesis.strategies as st
 import lastmile_utils.lib.core.api as cu
+import openai.types.chat as openai_chat_types
+import openai.types.chat.chat_completion as openai_chat_completion_types
+import openai.types.chat.chat_completion_message_tool_call as openai_tool_call_types
 import pandas as pd
 import pytest
 from aiconfig.Config import AIConfigRuntime
+from aiconfig.eval import common
 from aiconfig.eval.api import TestSuiteWithInputsSettings, metrics, run_test_suite_outputs_only, run_test_suite_with_inputs
 from aiconfig.eval.lib import TestSuiteWithInputsSpec, run_test_suite_helper
 from aiconfig.model_parser import InferenceOptions
-from result import Err, Ok
+from result import Err, Ok, Result
 
 brevity = metrics.brevity
 substring_match = metrics.substring_match
@@ -40,7 +45,7 @@ class MockAIConfigRuntime(AIConfigRuntime):
         prompt_name: str,
         params: dict[Any, Any] | None = None,
         options: InferenceOptions | None = None,
-        **kwargs,
+        **kwargs,  # type: ignore
     ) -> str:
         """
         This overrides the real method for mocking, but the output doesn't matter very much.
@@ -55,12 +60,13 @@ class MockAIConfigRuntime(AIConfigRuntime):
         return f"output_for_{prompt_name}_the_query_{the_query}"
 
 
-def test_metrics():
-    assert brevity("hello") == 5.0
+@pytest.mark.asyncio
+async def test_metrics():
+    assert await brevity("hello") == 5.0
 
-    assert substring_match("lo w")("hello world") == 1.0
-    assert substring_match("hello", case_sensitive=False)("HELLO world") == 1.0
-    assert substring_match("hello", case_sensitive=True)("HELLO world") == 0.0
+    assert await substring_match("lo w")("hello world") == 1.0
+    assert await substring_match("hello", case_sensitive=False)("HELLO world") == 1.0
+    assert await substring_match("hello", case_sensitive=True)("HELLO world") == 0.0
 
 
 @pytest.mark.asyncio
@@ -120,11 +126,11 @@ async def test_run_test_suite_outputs_only(data: st.DataObject):
         "best_possible_value",
         "worst_possible_value",
     ]
-    inputs = df["input"].astype(str).tolist()
-    assert cu.only(inputs) == Ok("Missing")
+    inputs = df["input"].astype(str).tolist()  # type: ignore
+    assert cu.only(inputs) == Ok("Missing")  # type: ignore
 
-    df_brevity = df[df["metric_name"] == "brevity"]
-    assert (df_brevity["aiconfig_output"].apply(len) == df_brevity["value"]).all()
+    df_brevity = df[df["metric_name"] == "brevity"]  # type: ignore
+    assert (df_brevity["aiconfig_output"].apply(len) == df_brevity["value"]).all()  # type: ignore
 
 
 @hypothesis.given(st.data())
@@ -179,11 +185,11 @@ async def test_run_test_suite_with_inputs(data: st.DataObject):
 
             assert input_pairs == result_pairs
 
-            df_brevity = df[df["metric_name"] == "brevity"]
-            assert (df_brevity["aiconfig_output"].apply(len) == df_brevity["value"]).all()
+            df_brevity = df[df["metric_name"] == "brevity"]  # type: ignore
+            assert (df_brevity["aiconfig_output"].apply(len) == df_brevity["value"]).all()  # type: ignore
 
-            df_substring = df[df["metric_name"] == "substring_match"]
-            assert (df_substring["value"].apply(lambda x: x in {False, True})).all()
+            df_substring = df[df["metric_name"] == "substring_match"]  # type: ignore
+            assert (df_substring["value"].apply(lambda x: x in {False, True})).all()  # type: ignore
 
         case Err(e):
             assert False, f"expected Ok, got Err({e})"
@@ -202,18 +208,129 @@ async def test_custom_metric_type():
         )
     )
     df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
-    result = df.set_index(["metric_name", "aiconfig_output"]).value.unstack(0).to_dict()
+    result = df.set_index(["metric_name", "aiconfig_output"]).value.unstack(0).to_dict()  # type: ignore
     assert result["sentiment_class"] == {
         "nltk is amazing": "pos",
         "whats for dinner?": "neu",
         "oh, bother": "neg",
     }
 
-    assert all(isinstance(v, metrics.TextSentimentScores) for v in result["sentiment_scores"].values())
+    assert all(isinstance(v, metrics.TextSentimentScores) for v in result["sentiment_scores"].values())  # type: ignore
 
-    assert all(isinstance(v, metrics.TextOverallPositiveSentiment) for v in result["sentiment_score_overall_positive"].values())
+    assert all(isinstance(v, metrics.TextOverallPositiveSentiment) for v in result["sentiment_score_overall_positive"].values())  # type: ignore
 
     neutral = metrics.TextOverallPositiveSentiment(pos=0.0, neg=0.0)
 
     assert result["sentiment_score_overall_positive"]["nltk is amazing"] > neutral
     assert result["sentiment_score_overall_positive"]["oh, bother"] < neutral
+
+
+@pytest.mark.asyncio
+async def test_exception_metric(caplog: pytest.LogCaptureFixture):
+    user_test_suite_outputs_only = list(
+        itertools.product(
+            ["Hundred Acre Wood", ""],
+            [metrics.brevity],
+        )
+    )
+    with caplog.at_level(logging.ERROR):
+        df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
+    mapping: dict[str, Any] = df.query("metric_name=='brevity'").set_index("aiconfig_output").value.to_dict()  # type: ignore
+    assert mapping["Hundred Acre Wood"] == 17.0
+    assert pd.isnull(mapping[""])  # type: ignore
+
+    assert any("Brevity is meaningless for empty string." in record.msg for record in caplog.records)
+
+
+def _mock_response(function_args: common.SerializedJSON) -> openai_chat_types.ChatCompletion:
+    return openai_chat_types.ChatCompletion(
+        id="123",
+        choices=[
+            openai_chat_completion_types.Choice(
+                index=0,
+                message=openai_chat_types.ChatCompletionMessage(
+                    content=None,
+                    role="assistant",
+                    tool_calls=[
+                        openai_chat_types.ChatCompletionMessageToolCall(
+                            id="cm-tk-1",
+                            type="function",
+                            function=openai_tool_call_types.Function(
+                                name="dummy",
+                                arguments=function_args,
+                            ),
+                        )
+                    ],
+                ),
+                finish_reason="stop",
+            )
+        ],
+        created=0,
+        model="",
+        object="chat.completion",
+    )
+
+
+def _make_mock_openai_chat_completion_create(function_arguments_return: common.SerializedJSON) -> lib_openai.OpenAIChatCompletionCreate:
+    def _mock_openai_chat_completion_create(
+        completion_params: lib_openai.OpenAIChatCompletionParams,
+    ) -> Result[openai_chat_types.ChatCompletion, str]:
+        return Ok(
+            _mock_response(
+                function_arguments_return,
+            )
+        )
+
+    return _mock_openai_chat_completion_create
+
+
+@pytest.mark.asyncio
+async def test_openai_structured_eval():
+    _mock_create = _make_mock_openai_chat_completion_create(
+        common.SerializedJSON('{"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it\'s pretty concise."}')
+    )
+    mock_metric = metrics.make_openai_structured_llm_metric(
+        eval_llm_name="gpt-3.5-turbo-0613",
+        pydantic_basemodel_type=common.TextRatingsData,
+        metric_name="text_ratings",
+        metric_description="Text ratings",
+        field_descriptions=dict(
+            conciseness_rating="1 to 5 rating of conciseness",
+            conciseness_confidence="0 to 1.0 rating of confidence in conciseness rating",
+            conciseness_reasoning="reasoning behind the conciseness rating",
+        ),
+        openai_chat_completion_create=_mock_create,
+    )
+
+    user_test_suite_outputs_only = [
+        ("one two three", mock_metric),
+    ]
+    df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
+    metric_data = cast(common.CustomMetricPydanticObject[metrics.TextRatingsData], df.loc[0, "value"]).data
+    assert isinstance(metric_data, common.TextRatingsData)
+    metric_json = metric_data.to_dict()
+    assert metric_json == {"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it's pretty concise."}
+
+
+@pytest.mark.asyncio
+async def test_bad_structured_eval_metric():
+    _mock_create = _make_mock_openai_chat_completion_create(
+        common.SerializedJSON('{"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it\'s pretty concise."}')
+    )
+
+    with pytest.raises(ValueError) as exc:
+        _ = metrics.make_openai_structured_llm_metric(
+            eval_llm_name="gpt-3.5-turbo-0613",
+            pydantic_basemodel_type=common.TextRatingsData,
+            metric_name="text_ratings",
+            metric_description="Text ratings",
+            field_descriptions=dict(
+                fake_field="123",
+                conciseness_rating="1 to 5 rating of conciseness",
+                conciseness_confidence="0 to 1.0 rating of confidence in conciseness rating",
+                conciseness_reasoning="reasoning behind the conciseness rating",
+            ),
+            openai_chat_completion_create=_mock_create,
+        )
+
+    assert "The following field_descriptions keys are not in the schema" in str(exc)

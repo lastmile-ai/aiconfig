@@ -1,13 +1,20 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Generic, Protocol, TypeVar
+from typing import Any, Generic, NewType, Protocol, Type, TypeVar
 
 import lastmile_utils.lib.core.api as cu
-from pydantic import root_validator
+import result
+from aiconfig.eval import common
+from pydantic import BaseModel, root_validator
+from result import Result
 
 T_InputDatum = TypeVar("T_InputDatum", contravariant=True)
 T_OutputDatum = TypeVar("T_OutputDatum", contravariant=True)
+
+T_BaseModel = TypeVar("T_BaseModel", bound=BaseModel)
+
+SerializedJSON = NewType("SerializedJSON", str)
 
 
 @dataclass
@@ -21,12 +28,23 @@ class CustomMetricValue(ABC):
     """
 
 
+class CompletionTextToSerializedJSON(Protocol):
+    @abstractmethod
+    def __call__(self, output_datum: str) -> Result[common.SerializedJSON, str]:
+        pass
+
+
 MetricValue = int | float | str | bool | CustomMetricValue
+
+
+@dataclass
+class CustomMetricPydanticObject(CustomMetricValue, Generic[T_BaseModel]):
+    data: T_BaseModel
 
 
 class EvaluationFunction(Protocol, Generic[T_OutputDatum]):
     @abstractmethod
-    def __call__(self, output_datum: T_OutputDatum) -> MetricValue:
+    async def __call__(self, output_datum: T_OutputDatum) -> MetricValue:
         pass
 
 
@@ -70,9 +88,15 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
     # e.g. {"substring": "hello", "case_sensitive": False}
     extra_metadata: dict[str, Any] = {}
 
+    def __repr__(self) -> str:
+        fields = self.__dict__
+        fields["id"] = self.id
+        s_json = json.dumps(fields, indent=2)
+        return f"EvaluationMetricMetadata({s_json})"
+
 
 class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
-    value: MetricValue
+    value: MetricValue | None
     metric_metadata: EvaluationMetricMetadata[T_OutputDatum]
 
     @root_validator(pre=True)
@@ -97,7 +121,7 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
             )
         elif worst_value == best_value:
             raise ValueError("best_value and worst_value cannot be equal")
-        elif worst_value < best_value and not worst_value <= value <= best_value:
+        elif value is not None and worst_value < best_value and not worst_value <= value <= best_value:
             raise ValueError(
                 f"""
                     [{values["metric_metadata"].name}]
@@ -108,7 +132,7 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
                     but got value outside that range.
                 """
             )
-        elif worst_value > best_value and not worst_value >= value >= best_value:
+        elif value is not None and worst_value > best_value and not worst_value >= value >= best_value:
             raise ValueError(
                 f"""
                     [{values["metric_metadata"].name}]
@@ -121,3 +145,21 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
             )
         else:
             return values
+
+
+class TextRatingsData(cu.Record):
+    conciseness_rating: int
+    conciseness_confidence: float
+    conciseness_reasoning: str
+
+
+def get_llm_structured_response(
+    input_text: str,
+    chat_completion_create: CompletionTextToSerializedJSON,
+    basemodel_type: Type[common.T_BaseModel],
+) -> Result[common.T_BaseModel, str]:
+    return result.do(
+        cu.safe_model_validate_json(response_ok, basemodel_type)
+        # get the serialized JSON response
+        for response_ok in chat_completion_create(input_text)
+    )
