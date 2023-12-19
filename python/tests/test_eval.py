@@ -12,12 +12,12 @@ import openai.types.chat.chat_completion as openai_chat_completion_types
 import openai.types.chat.chat_completion_message_tool_call as openai_tool_call_types
 import pandas as pd
 import pytest
-from aiconfig.Config import AIConfigRuntime
 from aiconfig.eval import common
 from aiconfig.eval.api import TestSuiteWithInputsSettings, metrics, run_test_suite_outputs_only, run_test_suite_with_inputs
 from aiconfig.eval.lib import MetricList, TestSuiteWithInputsSpec, run_test_suite_helper
-from aiconfig.model_parser import InferenceOptions
 from result import Err, Ok, Result
+
+from . import mocks
 
 brevity = metrics.brevity
 substring_match = metrics.substring_match
@@ -56,30 +56,6 @@ def set_pd():
 
 def current_dir():
     return os.path.dirname(os.path.realpath(__file__))
-
-
-class MockAIConfigRuntime(AIConfigRuntime):
-    def __init__(self):
-        pass
-
-    async def run_and_get_output_text(
-        self,
-        prompt_name: str,
-        params: dict[Any, Any] | None = None,
-        options: InferenceOptions | None = None,
-        **kwargs,  # type: ignore
-    ) -> str:
-        """
-        This overrides the real method for mocking, but the output doesn't matter very much.
-        We're currently not really testing properties of the output.
-        We just have to return a string so the tests work.
-
-        Real method: https://github.com/lastmile-ai/aiconfig/blob/a4376d1f951e19776633d397a3cda7fa85506eef/python/src/aiconfig/Config.py#L277
-        """
-        params_ = params or {}
-        assert params_.keys() == {"the_query"}, 'For eval, AIConfig params must have just the key "the_query".'
-        the_query = params_["the_query"]
-        return f"output_for_{prompt_name}_the_query_{the_query}"
 
 
 @pytest.mark.asyncio
@@ -175,7 +151,7 @@ async def test_run_test_suite_with_inputs(data: st.DataObject):
         )
     )
 
-    mock_aiconfig = MockAIConfigRuntime()
+    mock_aiconfig = mocks.MockAIConfigRuntime()
 
     out = await run_test_suite_helper(
         TestSuiteWithInputsSpec(
