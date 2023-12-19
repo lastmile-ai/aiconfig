@@ -2,35 +2,32 @@ import ModelSettingsConfigRenderer from "@/src/components/prompt/model_settings/
 import ModelSettingsSchemaRenderer from "@/src/components/prompt/model_settings/ModelSettingsSchemaRenderer";
 import { GenericPropertiesSchema } from "@/src/utils/promptUtils";
 import { Flex, Text } from "@mantine/core";
-import { Prompt } from "aiconfig";
+import { JSONObject } from "aiconfig";
 import { memo } from "react";
 
 type Props = {
-  prompt: Prompt;
+  settings?: JSONObject;
   schema?: GenericPropertiesSchema;
+  onUpdateModelSettings: (settings: Record<string, unknown>) => void;
 };
 
-// Don't default to config-level model settings since that could be confusing
-// to have them shown at the prompt level in the editor but not in the config
-function getModelSettings(prompt: Prompt) {
-  if (typeof prompt.metadata?.model !== "string") {
-    return prompt.metadata?.model?.settings;
-  }
-}
-
-export default memo(function ModelSettingsRenderer({ prompt, schema }: Props) {
-  const modelSettings = getModelSettings(prompt);
-
+export default memo(function ModelSettingsRenderer({
+  settings,
+  schema,
+  onUpdateModelSettings,
+}: Props) {
   let settingsComponent;
 
   if (schema) {
     settingsComponent = (
-      <ModelSettingsSchemaRenderer settings={modelSettings} schema={schema} />
+      <ModelSettingsSchemaRenderer
+        settings={settings}
+        schema={schema}
+        onUpdateModelSettings={onUpdateModelSettings}
+      />
     );
-  } else if (modelSettings) {
-    settingsComponent = (
-      <ModelSettingsConfigRenderer settings={modelSettings} />
-    );
+  } else if (settings) {
+    settingsComponent = <ModelSettingsConfigRenderer settings={settings} />;
   }
 
   return (

@@ -1,8 +1,8 @@
-import { Prompt } from "aiconfig";
+import { ClientPrompt } from "@/src/shared/types";
 import { memo } from "react";
 
 type Props = {
-  prompt: Prompt;
+  prompt: ClientPrompt;
 };
 
 export default memo(function PromptParametersRenderer({ prompt }: Props) {
