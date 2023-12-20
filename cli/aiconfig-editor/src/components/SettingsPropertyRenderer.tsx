@@ -13,17 +13,22 @@ import {
   AutocompleteItem,
   Select,
 } from "@mantine/core";
-import { useState, useCallback, useEffect, useMemo, memo, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { uniqueId } from "lodash";
 import { IconHelp, IconPlus, IconTrash } from "@tabler/icons-react";
-import { usePrevious } from "@mantine/hooks";
+import UnionPropertyControl, {
+  UnionProperty,
+} from "@/src/components/property_controls/UnionPropertyControl";
 
-type Props = {
+type StateSetFromPrevFn = (prev: any) => void;
+export type SetStateFn = (val: StateSetFromPrevFn | any) => void;
+
+export type PropertyRendererProps = {
   propertyName: string;
   property: { [key: string]: any };
   isRequired?: boolean;
-  initialValue: any;
-  setValue: (value: any) => void;
+  initialValue?: any;
+  setValue: SetStateFn;
 };
 
 export function PropertyLabel(props: {
@@ -50,9 +55,9 @@ export default function SettingsPropertyRenderer({
   propertyName,
   property,
   isRequired = false,
-  initialValue,
+  initialValue = null,
   setValue,
-}: Props) {
+}: PropertyRendererProps) {
   const propertyType = property.type;
   const defaultValue = property.default;
   const propertyDescription = property.description;
@@ -62,22 +67,24 @@ export default function SettingsPropertyRenderer({
 
   let propertyControl;
 
-  const prevValue = usePrevious(propertyValue);
-  useEffect(() => {
-    if (prevValue === propertyValue) {
-      return;
-    }
-    if (propertyName != null && propertyName.trim() !== "") {
-      setValue((oldValue: any) => {
-        return {
-          ...(oldValue ?? {}),
-          [propertyName]: propertyValue,
-        };
-      });
-    } else {
-      setValue(propertyValue);
-    }
-  }, [prevValue, propertyName, propertyValue, setValue]);
+  const setAndPropagateValue = useCallback(
+    (newValue: ((prev: any) => void) | any) => {
+      const valueToSet =
+        typeof newValue === "function" ? newValue(propertyValue) : newValue;
+
+      if (propertyName != null && propertyName.trim() !== "") {
+        setValue((prevValue: any) => ({
+          ...(prevValue && typeof prevValue === "object" ? prevValue : {}),
+          [propertyName]: valueToSet,
+        }));
+      } else {
+        setValue(valueToSet);
+      }
+
+      setPropertyValue(valueToSet);
+    },
+    [propertyName, propertyValue, setValue]
+  );
 
   // Used in the case the property is an array
   // TODO: Should initialize with values from settings if available
@@ -91,9 +98,9 @@ export default function SettingsPropertyRenderer({
       );
 
       itemValues.current.delete(key);
-      setPropertyValue(Array.from(itemValues.current.values()));
+      setAndPropagateValue(Array.from(itemValues.current.values()));
     },
-    [setPropertyValue]
+    [setAndPropagateValue]
   );
 
   const addItemToList = useCallback(async () => {
@@ -104,11 +111,9 @@ export default function SettingsPropertyRenderer({
         <SettingsPropertyRenderer
           propertyName=""
           property={property.items}
-          isRequired={false}
-          initialValue={null}
           setValue={(newItem) => {
             itemValues.current.set(key, newItem);
-            setPropertyValue(Array.from(itemValues.current.values()));
+            setAndPropagateValue(Array.from(itemValues.current.values()));
           }}
         />
         <ActionIcon onClick={() => removeItemFromList(key)}>
@@ -116,7 +121,7 @@ export default function SettingsPropertyRenderer({
         </ActionIcon>
       </Group>,
     ]);
-  }, [property, removeItemFromList]);
+  }, [property.items, removeItemFromList, setAndPropagateValue]);
 
   switch (propertyType) {
     case "string": {
@@ -145,10 +150,10 @@ export default function SettingsPropertyRenderer({
               return label.includes(val);
             }}
             required={isRequired}
-            placeholder={propertyValue}
+            placeholder={propertyValue ?? "select"}
             data={property.enum}
             value={propertyValue ?? ""}
-            onChange={setPropertyValue}
+            onChange={setAndPropagateValue}
           />
         );
       } else {
@@ -165,7 +170,9 @@ export default function SettingsPropertyRenderer({
             withAsterisk={isRequired}
             radius="md"
             value={propertyValue ?? ""}
-            onChange={(event) => setPropertyValue(event.currentTarget.value)}
+            onChange={(event) =>
+              setAndPropagateValue(event.currentTarget.value)
+            }
           />
         );
       }
@@ -185,7 +192,7 @@ export default function SettingsPropertyRenderer({
           withAsterisk={isRequired}
           radius="md"
           value={propertyValue ?? ""}
-          onChange={(event) => setPropertyValue(event.currentTarget.value)}
+          onChange={(event) => setAndPropagateValue(event.currentTarget.value)}
           autosize
         />
       );
@@ -207,7 +214,7 @@ export default function SettingsPropertyRenderer({
               step={property.step ?? 0.1}
               styles={{ markLabel: { display: "none" } }}
               value={propertyValue}
-              onChange={setPropertyValue}
+              onChange={setAndPropagateValue}
               style={{ padding: "0 0.5em" }}
             />
           </Stack>
@@ -230,7 +237,7 @@ export default function SettingsPropertyRenderer({
             withAsterisk={isRequired}
             radius="md"
             value={propertyValue ?? ""}
-            onChange={(val) => setPropertyValue(val)}
+            onChange={(val) => setAndPropagateValue(val)}
           />
         );
       }
@@ -252,7 +259,7 @@ export default function SettingsPropertyRenderer({
               step={property.step ?? 1}
               styles={{ markLabel: { display: "none" } }}
               value={propertyValue}
-              onChange={setPropertyValue}
+              onChange={setAndPropagateValue}
               style={{ padding: "0 0.5em" }}
             />
           </Stack>
@@ -274,7 +281,7 @@ export default function SettingsPropertyRenderer({
             withAsterisk={isRequired}
             radius="md"
             value={propertyValue ?? ""}
-            onChange={(val) => setPropertyValue(val)}
+            onChange={(val) => setAndPropagateValue(val)}
           />
         );
       }
@@ -290,7 +297,9 @@ export default function SettingsPropertyRenderer({
             />
           }
           checked={propertyValue}
-          onChange={(event) => setPropertyValue(event.currentTarget.checked)}
+          onChange={(event) =>
+            setAndPropagateValue(event.currentTarget.checked)
+          }
         />
       );
       break;
@@ -339,7 +348,7 @@ export default function SettingsPropertyRenderer({
             propertyName={subpropertyName}
             key={subpropertyName}
             initialValue={initialValue?.[subpropertyName]}
-            setValue={setPropertyValue}
+            setValue={setAndPropagateValue}
           />
         );
       }
@@ -372,12 +381,30 @@ export default function SettingsPropertyRenderer({
             data={property.values}
             value={propertyValue}
             onChange={(val) => {
-              setPropertyValue(val);
+              setAndPropagateValue(val);
             }}
             defaultValue={property.default}
           ></Select>
         );
       }
+    }
+    case "union": {
+      propertyControl = (
+        <Stack>
+          <PropertyLabel
+            propertyName={propertyName}
+            propertyDescription={propertyDescription}
+          />
+          <UnionPropertyControl
+            property={property as UnionProperty}
+            isRequired={isRequired}
+            propertyName={propertyName}
+            initialValue={initialValue}
+            setValue={setAndPropagateValue}
+            renderProperty={(props) => <SettingsPropertyRenderer {...props} />}
+          />
+        </Stack>
+      );
     }
     default: {
       console.warn(
