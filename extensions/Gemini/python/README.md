@@ -6,3 +6,10 @@ We are prioritizing the Python library Usage
 2. Import the extension `import aiconfig_extension_gemini`
 
 And you're all good to go! This extension automatically updates the model parser registry with the model "gemini-pro". Check out the Gemini Cookbook in the aiconfig repo for a full example.
+
+
+
+Development & Testing.
+
+
+run pytest in the root of this extension source code folder.

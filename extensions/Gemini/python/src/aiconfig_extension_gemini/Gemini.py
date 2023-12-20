@@ -1,19 +1,36 @@
 # Define a Model Parser for LLama-Guard
-from typing import TYPE_CHECKING, Dict, List, Optional, Any
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Any
+import copy
 
 import google.generativeai as genai
-
+import copy
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import ExecuteResult, Output, Prompt
-from aiconfig.util.params import resolve_prompt
-from aiconfig import CallbackEvent, get_api_key_from_environment, AIConfigRuntime
+from aiconfig.util.params import resolve_prompt, resolve_prompt_string
+from aiconfig import CallbackEvent, get_api_key_from_environment, AIConfigRuntime, PromptMetadata
+from google.generativeai.types import content_types
 
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
     from google.generativeai.types import AsyncGenerateContentResponse
+
+
+DOCSTRING = """
+Model Parser for Gemini text to text models. Doesn't support image generation yet. 
+Function calling is not available on the public release Gemini api. Function Calling is also not supported in this model parser.
+See this link for more information on api versions: https://ai.google.dev/docs/api_versions
+
+@ankush-lastmile 
+TODO: This model Parser does not support multimodal
+TODO: This model Parser does not support function calling (not available)
+TODO: This model Parser does not support serializing all different types of the Gemini API (ie protos)
+TODO: This model Parser does not support strongly structuring the input data containing the configmetadata for the Gemini API
+see: https://ai.google.dev/tutorials/python_quickstart#generation_configuration
+"""
+
 
 def construct_regular_outputs(response: "AsyncGenerateContentResponse") -> list[Output]:
     """
@@ -89,7 +106,23 @@ class GeminiModelParser(ParameterizedModelParser):
         **kwargs,
     ) -> List[Prompt]:
         """
-        Defines how a prompt and model inference settings get serialized in the .aiconfig.
+        Defines how a prompt or a multi turn prompt chain along with  model inference settings get serialized into prompts for AIConfig.
+        If given a conversation history, this method should return a list of prompts.
+        Check out the docs for multi-turn conversations here: https://ai.google.dev/tutorials/python_quickstart#multi-turn_conversations
+
+        The data passed in is the completion params a user would use to call the Gemini API directly.
+        If the user wanted to call the Gemini API directly, they might do something like this:
+        
+        ```
+        model = genai.GenerativeModel('gemini-pro')
+        completion_params = {"contents": "Hello"}
+        
+        model.generate_content(**completion_params)
+        # Note: The above line is the same as doing this: 
+        model.generate_content(contents="Hello")
+        ```
+        * Important: The contents field is what contains the input data. In this case, prompt input would be the contents field.
+        
 
         Args:
             prompt (str): The prompt to be serialized.
@@ -97,6 +130,26 @@ class GeminiModelParser(ParameterizedModelParser):
 
         Returns:
             str: Serialized representation of the prompt and inference settings.
+
+        Sample Usage:
+            1. 
+                completion_params = {"contents": "Hello"}
+                serialized_prompts = await ai_config.serialize("prompt", completion_params, "gemini-pro")
+
+            2.  completion_params = {"contents": ["Hello", "Hi]}
+                serialized_prompts = await ai_config.serialize("prompt", completion_params, "gemini-pro")
+
+            3.  completion_params = {"contents": {"role": "user", "parts": "Hello"}}
+                serialized_prompts = await ai_config.serialize("prompt", completion_params, "gemini-pro")
+
+            4.  completion_params = {"contents": {
+                                            [
+                                                {"role": "user", "parts": "[Hello]"},
+                                                {"role": "model", "parts": ["Hi!]"},
+                                                {"role": "user", "parts": ["What's your favorite condiment?"]},
+                                            ]
+                                                }}
+                serialized_prompts = await ai_config.serialize("prompt", completion_params, "gemini-pro")
         """
 
         event = CallbackEvent(
@@ -111,14 +164,64 @@ class GeminiModelParser(ParameterizedModelParser):
         )
         await ai_config.callback_manager.run_callbacks(event)
 
-        raise Exception("Not Implemented")
+        # Don't operate on the original data object
+        data = copy.deepcopy(data)
+        contents = data.pop("contents", None)
+
+        model_metadata = ai_config.get_model_metadata(data, self.model.model_name)
+
+        prompts = []
+
+        contents_is_str = isinstance(contents, str)
+        contents_is_list_of_strings = all(isinstance(item, str) for item in contents) if isinstance(contents, list) else False
+        
+        # Role Dict looks like this:
+        #     {'role':'user',
+        #      'parts': ["Briefly explain how a computer works to a young child."]
+        #     }
+        contents_is_role_dict = isinstance(contents, dict) and "role" in contents and "parts"
+        # Multi Turn means that the contents is a list of dicts with alternating role and parts. See for more info: https://ai.google.dev/tutorials/python_quickstart#multi-turn_conversations
+        contents_is_multi_turn = isinstance(contents, list) and all(isinstance(item, dict) and "role" in item and "parts" in item for item in contents)
+
+        if contents is None:
+            raise ValueError("No contents found in data. Gemini api request requires a contents field")
+        if contents_is_str:
+            # Just one string. Assume it's a one shot prompt
+            prompt = Prompt(**{"name": prompt_name, "input": contents, "metadata": {"model": model_metadata}})
+            prompts.append(prompt)
+        elif contents_is_list_of_strings:
+            # Just one contents object. Assume it's a one shot prompt
+            prompt = Prompt(**{"name": prompt_name, "input": {"contents": contents}, "metadata": {"model": model_metadata}})
+            prompts.append(prompt)
+        elif contents_is_role_dict:
+            # Just one contents object. Assume it's a one shot prompt
+            prompt = Prompt(**{"name": prompt_name, "input": {"contents": contents}, "metadata": {"model": model_metadata}})
+            prompts.append(prompt)
+        elif contents_is_multi_turn:
+            # Assume it's a multi-turn prompt. Each item in the list is a dict with role and parts
+            i = 0
+            while i < len(contents):
+                user_message = contents[i]
+                user_message_parts = user_message["parts"]
+                outputs = []
+                if i + 1 < len(contents):
+                    model_message = contents[i + 1]
+                    model_message_parts = model_message["parts"]
+                    # Gemini api currently only supports one candidate aka  one output. Model should only be retuning one part in response.
+                    # Should output data be this list of parts? or just the first one? TODO: figure out if Gemini outputs may contain more than one part.
+                    # see https://ai.google.dev/tutorials/python_quickstart#multi-turn_conversations:~:text=Note%3A%20For%20multi%2Dturn%20conversations%2C%20you%20need%20to%20send%20the%20whole%20conversation%20history%20with%20each%20request
+                    outputs = [ExecuteResult(**{"output_type": "execute_result", "data": model_message_parts[0]})]
+
+                prompt = Prompt(**{"name": prompt_name, "input": user_message_parts, "metadata": model_metadata, "outputs": outputs})
+        else:
+            raise ValueError("Unable to parse Data into prompts. Contents data is either invalid or contains unsupported objects like protobufs.")
 
         event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
         await ai_config.callback_manager.run_callbacks(event)
 
-    async def deserialize(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = None
-    ) -> Dict:
+        return prompts
+
+    async def deserialize(self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = None) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
         and constructs the completion params for that model.
@@ -134,7 +237,7 @@ class GeminiModelParser(ParameterizedModelParser):
                 "on_deserialize_start", __name__, {"prompt": prompt, "params": params}
             )
         )
-        resolved_prompt = resolve_prompt(prompt, params, aiconfig)
+
 
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
@@ -142,9 +245,24 @@ class GeminiModelParser(ParameterizedModelParser):
         completion_data = refine_chat_completion_params(model_settings)
 
         messages = self._construct_chat_history(prompt, aiconfig, params)
-        messages.append({"role": "user", "parts": [{"text": resolved_prompt}]})
 
-        completion_data["contents"] = messages
+
+        if contains_prompt_template(prompt):
+            resolved_prompt = resolve_prompt(prompt, params, aiconfig)
+            messages.append({"role": "user", "parts": [{"text": resolved_prompt}]})
+            completion_data["contents"] = messages
+        else:
+            prompt_input = prompt.input
+            # This is checking attributes and not a dict like object. in schema.py, PromptInput allows arbitrary attributes/data, and gets serialized as an attribute because it is a pydantic type
+            if not hasattr(prompt_input, "contents"):
+                raise ValueError("Unable to deserialize input. Prompt input type is not a string, Gemini Model Parser expects prompt input to contain a 'contents' field as expected by Gemini API")
+            
+            # If contents is already set, no need to construct chat history and completion data. There is a different data format as input. Supported types:
+            # - string
+            # - list of strings
+            # - role dict {"role": "user", "parts": "Hello"}
+            # - Role dict with multiple parts {"role": "user", "parts": ["Hello", "World"]}
+            completion_data['contents'] = parameterize_supported_gemini_input_data(completion_data['contents'], prompt, aiconfig, params)
 
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
@@ -290,6 +408,49 @@ def refine_chat_completion_params(model_settings):
             completion_data[key.lower()] = model_settings[key]
 
     return completion_data
+
+
+def parameterize_supported_gemini_input_data(part: Any, prompt: Prompt, aiconfig: "AIConfigRuntime", input_params: dict[str, Any]):
+    """
+    Parameterizes the input for the Gemini API based on the type of the input part.
+    This function specifically handles string-based types in the context of Gemini API.
+
+    Gemini API supports a variety of inputs, some of which are called 'parts', coined by Gemini API.
+    * Important: This method supports a subset of the Gemini API inputs. Specifically, types that contain strings (and not protos, images, etc)
+
+    Args:
+        part (Any): The part to be parameterized
+        prompt (Prompt): The prompt object
+        aiconfig (AIConfigRuntime): The AIConfigRuntime object
+        input_params (Dict): The input parameters to be used for parameterization
+
+    Returns:
+        Any: The parameterized part
+    """
+    if isinstance(part, str):
+        return resolve_prompt_string(prompt, input_params, aiconfig, part)
+    elif isinstance(part, list):
+        # This is expecting a list of strings. If its anything else, this will probably fail.
+        return [parameterize_supported_gemini_input_data(item, prompt, aiconfig, input_params) for item in part]
+    elif isinstance(part, dict):
+        # Expect "parts" key to be present in role dict
+        if "parts" in part:
+            part = copy.deepcopy(part)
+            part["parts"] = parameterize_supported_gemini_input_data(part["parts"], prompt, aiconfig, input_params)
+            return part
+        else:
+            raise ValueError(f"Input Dictionary to Gemini Model Parser must contain a 'parts' key. Input provided: {part}")
+    else:
+        raise ValueError(f"Unable to parameterize part. Unsupported type: {type(part)} with value: {part}")
+
+
+def contains_prompt_template(prompt: Prompt):
+    """
+    Check if a prompt's input is a valid string.
+    """
+    return isinstance(prompt.input, str) or (
+        hasattr(prompt.input, "data") and isinstance(prompt.input.data, str)
+    )
 
 
 AIConfigRuntime.register_model_parser(GeminiModelParser("gemini-pro"), "gemini-pro")
