@@ -1,0 +1,36 @@
+{
+    "name": "Question Answering Assistant",
+    "description": "Answer questions, helpfully.",
+    "schema_version": "latest",
+    "metadata": {
+      "models": {
+        "gpt-3.5-turbo": {
+          "model": "gpt-3.5-turbo",
+          "system_prompt": "Answer questions, helpfully.",
+          "top_p": 1,
+          "temperature": 1
+        },
+        "gpt-4": {
+          "model": "gpt-4",
+          "max_tokens": 3000,
+          "system_prompt": "Answer questions, helpfully."
+        }
+      },
+      "default_model": "gpt-3.5-turbo"
+    },
+    "prompts": [
+      {
+        "name": "qa",
+        "input": "Answer the following question: {{question}}",
+        "metadata": {
+          "model": "gpt-3.5-turbo",
+          "parameters": {
+            "question": "A question about something"
+          }
+        }
+      }
+    ]
+  }
+  
+  
+  
