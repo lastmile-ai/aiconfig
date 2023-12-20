@@ -1,0 +1,28 @@
+{
+    "name": "what's your favorite condiment?",
+    "schema_version": "latest",
+    "metadata": {
+        "models": {
+            "gemini-pro": {}
+        },
+        "parameters": {}
+    },
+    "prompts": [
+        {
+            "name": "cell_3",
+            "input": "what's your favorite condiment?",
+            "metadata": {
+                "model": "gemini-pro"
+            },
+            "parameters": {},
+            "remember_chat_context": true
+        },
+        {
+            "name": "cell_2",
+            "input": "test",
+            "metadata": {
+                "model": "gemini-pro"
+            }
+        }
+    ]
+}
