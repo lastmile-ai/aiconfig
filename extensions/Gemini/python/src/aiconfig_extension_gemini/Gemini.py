@@ -1,5 +1,6 @@
 # Define a Model Parser for LLama-Guard
-from typing import TYPE_CHECKING, Dict, List, Optional, Any
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Any
+import copy
 
 import google.generativeai as genai
 imoprt copy
@@ -15,6 +16,13 @@ from google.generativeai.types import content_types
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
     from google.generativeai.types import AsyncGenerateContentResponse
+
+
+"""
+Model Parser for Gemini text to text models. Doesn't support image generation yet. 
+Function calling is not available on the public release api, that is not supported yet either
+"""
+
 
 def construct_regular_outputs(response: "AsyncGenerateContentResponse") -> list[Output]:
     """
@@ -36,9 +44,7 @@ def construct_regular_outputs(response: "AsyncGenerateContentResponse") -> list[
     return output_list
 
 
-async def construct_stream_outputs(
-    response: "AsyncGenerateContentResponse", options: InferenceOptions
-) -> list[Output]:
+async def construct_stream_outputs(response: "AsyncGenerateContentResponse", options: InferenceOptions) -> list[Output]:
     """
     Construct Outputs while also streaming the response with stream callback
 
@@ -90,7 +96,8 @@ class GeminiModelParser(ParameterizedModelParser):
         **kwargs,
     ) -> List[Prompt]:
         """
-        Defines how a prompt and model inference settings get serialized in the .aiconfig.
+        Defines how a prompt or promp chain and model inference settings get serialized in the .aiconfig.
+        If given a conversation history, this method should return a list of prompts.
 
         Args:
             prompt (str): The prompt to be serialized.
@@ -112,14 +119,62 @@ class GeminiModelParser(ParameterizedModelParser):
         )
         await ai_config.callback_manager.run_callbacks(event)
 
-        raise Exception("Not Implemented")
+        data = copy.deepcopy(data)
+        contents = data.pop("contents", None)
+
+        # Extract model name from data
+
+        # Reform data object to be compatible with AIConfig Data Model (everything minus the prompt input and output)
+
+        # Parse into prompts. If no conversation history, return a single prompt
+
+        model_metadata = ai_config.get_model_metadata(data, self.model.model_name)
+
+        prompts = []
+        is_str = isinstance(contents, str)
+        is_list_of_strings = all(isinstance(item, str) for item in contents) if isinstance(contents, list) else False
+        is_role_dict = isinstance(contents, dict) and "role" in contents and "parts"
+        is_multi_turn = isinstance(contents, list) and all(isinstance(item, dict) and "role" in item and "parts" in item for item in contents)
+
+        if contents is None:
+            raise ValueError("No contents found in data. Gemini api request requires a contents field")
+        if is_str:
+            # Just one string. Assume it's a one shot prompt
+            prompt = Prompt(**{"name": prompt_name, "input": contents, "metadata": {"model": model_metadata}})
+            prompts.append(prompt)
+        elif is_list_of_strings:
+            # Just one contents object. Assume it's a one shot prompt
+            prompt = Prompt(**{"name": prompt_name, "input": {"contents": contents}, "metadata": {"model": model_metadata}})
+            prompts.append(prompt)
+        elif is_role_dict:
+            # Just one contents object. Assume it's a one shot prompt
+            prompt = Prompt(**{"name": prompt_name, "input": {"contents": contents}, "metadata": {"model": model_metadata}})
+            prompts.append(prompt)
+        elif is_multi_turn:
+            # Assume it's a multi-turn prompt. Each item in the list is a dict with role and parts
+            i = 0
+            while i < len(contents):
+                user_message = contents[i]
+                user_message_parts = user_message["parts"]
+                outputs = []
+                if i + 1 < len(contents):
+                    model_message = contents[i + 1]
+                    model_message_parts = model_message["parts"]
+                    # Gemini api currently only supports one candidate aka  one output. Model should only be retuning one part in response.
+                    # Should output data be this list of parts? or just the first one? TODO: figure out if Gemini outputs may contain more than one part.
+                    # see https://ai.google.dev/tutorials/python_quickstart#multi-turn_conversations:~:text=Note%3A%20For%20multi%2Dturn%20conversations%2C%20you%20need%20to%20send%20the%20whole%20conversation%20history%20with%20each%20request
+                    outputs = [ExecuteResult(**{"output_type": "execute_result", "data": model_message_parts[0]})]
+
+                prompt = Prompt(**{"name": prompt_name, "input": user_message_parts, "metadata": model_metadata, "outputs": outputs})
+        else:
+            raise ValueError("Unable to parse Data into prompts. Contents data is either invalid or contains unsupported objects like protobufs")
 
         event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
         await ai_config.callback_manager.run_callbacks(event)
 
-    async def deserialize(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = None
-    ) -> Dict:
+        return prompts
+
+    async def deserialize(self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = None) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
         and constructs the completion params for that model.
@@ -136,8 +191,6 @@ class GeminiModelParser(ParameterizedModelParser):
         model_settings = self.get_model_settings(prompt, aiconfig)
 
         completion_data = refine_chat_completion_params(model_settings)
-
-        
 
         messages = self._construct_chat_history(prompt, aiconfig, params)
 
@@ -159,11 +212,7 @@ class GeminiModelParser(ParameterizedModelParser):
             # - Role dict with multiple parts {"role": "user", "parts": ["Hello", "World"]}
             completion_data['contents'] = parameterize_support_gemini_input_data(completion_data['contents'], prompt, aiconfig, params)
 
-        await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent(
-                "on_deserialize_complete", __name__, {"output": completion_data}
-            )
-        )
+        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data}))
         return completion_data
 
     async def run_inference(
@@ -215,9 +264,7 @@ class GeminiModelParser(ParameterizedModelParser):
             outputs = construct_regular_outputs(response)
 
         prompt.outputs = outputs
-        await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs})
-        )
+        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs}))
         return prompt.outputs
 
     def get_output_text(
@@ -242,19 +289,14 @@ class GeminiModelParser(ParameterizedModelParser):
         else:
             return ""
 
-    def _construct_chat_history(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Dict
-    ) -> List:
+    def _construct_chat_history(self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Dict) -> List:
         """
         Constructs the chat history for the model
         """
         messages = []
         # Default to always use chat context
-        remember_chat_context = not hasattr(
-            prompt.metadata, "remember_chat_context"
-        ) or (
-            hasattr(prompt.metadata, "remember_chat_context")
-            and prompt.metadata.remember_chat_context != False
+        remember_chat_context = not hasattr(prompt.metadata, "remember_chat_context") or (
+            hasattr(prompt.metadata, "remember_chat_context") and prompt.metadata.remember_chat_context != False
         )
         if remember_chat_context:
             # handle chat history. check previous prompts for the same model. if same model, add prompt and its output to completion data if it has a completed output
@@ -263,21 +305,13 @@ class GeminiModelParser(ParameterizedModelParser):
                 if previous_prompt.name == prompt.name:
                     break
 
-                previous_prompt_is_same_model = aiconfig.get_model_name(
-                    previous_prompt
-                ) == aiconfig.get_model_name(prompt)
+                previous_prompt_is_same_model = aiconfig.get_model_name(previous_prompt) == aiconfig.get_model_name(prompt)
                 if previous_prompt_is_same_model:
-                    previous_prompt_template = resolve_prompt(
-                        previous_prompt, params, aiconfig
-                    )
+                    previous_prompt_template = resolve_prompt(previous_prompt, params, aiconfig)
                     previous_prompt_output = aiconfig.get_latest_output(previous_prompt)
-                    previous_prompt_output_text = self.get_output_text(
-                        previous_prompt, aiconfig, previous_prompt_output
-                    )
+                    previous_prompt_output_text = self.get_output_text(previous_prompt, aiconfig, previous_prompt_output)
 
-                    messages.append(
-                        {"role": "user", "parts": [{"text": previous_prompt_template}]}
-                    )
+                    messages.append({"role": "user", "parts": [{"text": previous_prompt_template}]})
                     messages.append(
                         {
                             "role": "model",

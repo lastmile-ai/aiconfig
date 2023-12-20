@@ -3,6 +3,8 @@ google-generativeai
 
 #Other
 asyncio
+copy 
 
 # AIConfig
 python-aiconfig
+
