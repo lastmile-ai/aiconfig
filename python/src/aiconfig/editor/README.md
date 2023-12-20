@@ -5,7 +5,7 @@
 Install python-aiconfig from pip, then set `aiconfig` alias (in shell, .bashrc, .zshrc, etc.)
 
 One-liner:
-`pip install python-aiconfig; alias aiconfig="python -m 'aiconfig.scripts.aiconfig'"`
+`pip install python-aiconfig; alias aiconfig="python -m 'aiconfig.scripts.aiconfig_cli'"`
 
 ## Usage
 
@@ -27,7 +27,11 @@ Go to url in browser to use app.
    Server code: `python/src/editor/server/server.py`
    Client code: `aiconfig/python/src/editor/client/src`
 
-2. Build react app: `npm run build`
+2. Start react app:
+
+```
+cd python/src/editor/client && yarn && yarn start
+```
 
 3. Rerun server (see usage)
 
