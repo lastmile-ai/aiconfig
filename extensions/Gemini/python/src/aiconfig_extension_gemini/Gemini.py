@@ -2,13 +2,14 @@
 from typing import TYPE_CHECKING, Dict, List, Optional, Any
 
 import google.generativeai as genai
-
+import copy
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import ExecuteResult, Output, Prompt
-from aiconfig.util.params import resolve_prompt
-from aiconfig import CallbackEvent, get_api_key_from_environment, AIConfigRuntime
+from aiconfig.util.params import resolve_prompt, resolve_prompt_string
+from aiconfig import CallbackEvent, get_api_key_from_environment, AIConfigRuntime, PromptMetadata
+from google.generativeai.types import content_types
 
 
 # Circuluar Dependency Type Hints
@@ -134,17 +135,34 @@ class GeminiModelParser(ParameterizedModelParser):
                 "on_deserialize_start", __name__, {"prompt": prompt, "params": params}
             )
         )
-        resolved_prompt = resolve_prompt(prompt, params, aiconfig)
+
 
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
 
         completion_data = refine_chat_completion_params(model_settings)
 
-        messages = self._construct_chat_history(prompt, aiconfig, params)
-        messages.append({"role": "user", "parts": [{"text": resolved_prompt}]})
+        
 
-        completion_data["contents"] = messages
+        messages = self._construct_chat_history(prompt, aiconfig, params)
+
+
+        if contains_prompt_template(prompt):
+            resolved_prompt = resolve_prompt(prompt, params, aiconfig)
+            messages.append({"role": "user", "parts": [{"text": resolved_prompt}]})
+            completion_data["contents"] = messages
+        else:
+            prompt_input = prompt.input
+            # This is checking attributes and not a dict like object. in schema.py, PromptInput allows arbitrary attributes/data, and gets serialized as an attribute because it is a pydantic type
+            if not hasattr(prompt_input, "contents"):
+                raise ValueError("Unable to deserialize input. Prompt input type is not a string, Gemini Model Parser expects prompt input to contain a 'contents' field as expected by Gemini API")
+            
+            # If contents is already set, no need to construct chat history and completion data. There is a different data format as input. Supported types:
+            # - string
+            # - list of strings
+            # - role dict {"role": "user", "parts": "Hello"}
+            # - Role dict with multiple parts {"role": "user", "parts": ["Hello", "World"]}
+            completion_data['contents'] = parameterize_supported_gemini_input_data(prompt_input.contents, prompt, aiconfig, params)
 
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
@@ -290,6 +308,49 @@ def refine_chat_completion_params(model_settings):
             completion_data[key.lower()] = model_settings[key]
 
     return completion_data
+
+
+def parameterize_supported_gemini_input_data(part: Any, prompt: Prompt, aiconfig: "AIConfigRuntime", input_params: dict[str, Any]):
+    """
+    Parameterizes the input for the Gemini API based on the type of the input part.
+    This function specifically handles string-based types in the context of Gemini API.
+
+    Gemini API supports a variety of inputs, some of which are called 'parts', coined by Gemini API.
+    * Important: This method supports a subset of the Gemini API inputs. Specifically, types that contain strings (and not protos, images, etc)
+
+    Args:
+        part (Any): The part to be parameterized
+        prompt (Prompt): The prompt object
+        aiconfig (AIConfigRuntime): The AIConfigRuntime object
+        input_params (Dict): The input parameters to be used for parameterization
+
+    Returns:
+        Any: The parameterized part
+    """
+    if isinstance(part, str):
+        return resolve_prompt_string(prompt, input_params, aiconfig, part)
+    elif isinstance(part, list):
+        # This is expecting a list of strings. If its anything else, this will probably fail.
+        return [parameterize_supported_gemini_input_data(item, prompt, aiconfig, input_params) for item in part]
+    elif isinstance(part, dict):
+        # Expect "parts" key to be present in role dict
+        if "parts" in part:
+            part = copy.deepcopy(part)
+            part["parts"] = parameterize_supported_gemini_input_data(part["parts"], prompt, aiconfig, input_params)
+            return part
+        else:
+            raise ValueError(f"Input Dictionary to Gemini Model Parser must contain a 'parts' key. Input provided: {part}")
+    else:
+        raise ValueError(f"Unable to parameterize part. Unsupported type: {type(part)} with value: {part}")
+
+
+def contains_prompt_template(prompt: Prompt):
+    """
+    Check if a prompt's input is a valid string.
+    """
+    return isinstance(prompt.input, str) or (
+        hasattr(prompt.input, "data") and isinstance(prompt.input.data, str)
+    )
 
 
 AIConfigRuntime.register_model_parser(GeminiModelParser("gemini-pro"), "gemini-pro")
