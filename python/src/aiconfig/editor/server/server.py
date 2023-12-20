@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class EditConfig(core_utils.Record):
-    server_port: int = 8888
+    server_port: int = 8080
     aiconfig_path: Optional[str] = None
     log_level: str | int = "INFO"
     server_mode: str
