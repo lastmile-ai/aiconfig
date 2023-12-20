@@ -6,7 +6,6 @@ Iterate on AIConfig faster. Measure AIConfig quality improvements and catch regr
 - Each test case is a pair of (data, evaluation_metric).
 - The test data can either be AIConfig _inputs_ or precomputed _outputs_.
 - The evaluation metrics can be general, like string length, or have values that depend on the specific test case (like substring match, see example below).
-- Metrics are represented as floats, but can represent anything numerical: float/int, or any boolean condition (pass/fail).
 - AIConfig eval library runs them through your AIConfig (if necessary) and presents you a table to compare the results. Example:
 
 Inputs:
@@ -75,6 +74,19 @@ instead of
 The library will just run your evaluations, skipping the AIConfig inference step. Due to this difference, you do not need to define test suite settings in this case.
 
 For a usage example, see the bottom half of the [notebook](https://github.com/lastmile-ai/aiconfig/blob/d79cf7dadf934b0ce09bc671cfde37aaecf05c1e/python/src/aiconfig/eval/custom_eval/examples/travel/travel_eval.ipynb#L4) under " Option 2: Run eval on already-computed AIConfig outputs."
+
+
+## More about Metrics
+
+### Tl;Dr
+* See metrics.py "User Interface" section. Two subsections: metric constructors and off-the-shelf metrics. You can also define arbitrary custom metrics.
+
+### Metrics Definition and Usage
+* A Metric at heart is just a function (EvaluationFunction) that takes data to some result you want to analyze. Currently the input data must be a string, and the output data can be anything (float, string, custom record, etc.). It is parametrized by its input and output types.
+* The Metric class ties together an EvaluationFunction with some metadata (EvaluationMetricMetadata) that makes the result clearer and easier to interpret. See the DataFrame outputs in the example notebook to understand the data and metadata associated with metrics and why it's useful to tie it all together.
+* the metrics module (`metrics.py`) contains some metrics you can use and some helper functions to construct new metrics. See the "User Interface" section, which is split into two parts: 1. helper functions and 2. ready-to-go metrics.
+* For an end-to-end example (defining a metric and a test suite, calling the evaluate API) see the notebook.
+
 
 # Usage Guide - Promptfoo Integration
 
