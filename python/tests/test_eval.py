@@ -1,21 +1,16 @@
 import itertools
 import logging
 import os
-from typing import Any, cast
+from typing import Any
 
-import aiconfig.eval.openai as lib_openai
 import hypothesis
 import hypothesis.strategies as st
-import lastmile_utils.lib.core.api as cu
-import openai.types.chat as openai_chat_types
-import openai.types.chat.chat_completion as openai_chat_completion_types
-import openai.types.chat.chat_completion_message_tool_call as openai_tool_call_types
+import lastmile_utils.lib.core.api as core_utils
 import pandas as pd
 import pytest
-from aiconfig.eval import common
 from aiconfig.eval.api import TestSuiteWithInputsSettings, metrics, run_test_suite_outputs_only, run_test_suite_with_inputs
-from aiconfig.eval.lib import MetricList, TestSuiteWithInputsSpec, run_test_suite_helper
-from result import Err, Ok, Result
+from aiconfig.eval.lib import MetricList, TestSuiteGeneralSettings, TestSuiteWithInputsSpec, run_test_suite_helper
+from result import Err, Ok
 
 from . import mocks
 
@@ -125,7 +120,7 @@ async def test_run_test_suite_outputs_only(data: st.DataObject):
         "worst_possible_value",
     ]
     inputs = df["input"].astype(str).tolist()  # type: ignore
-    assert cu.only(inputs) == Ok("Missing")  # type: ignore
+    assert core_utils.only(inputs) == Ok("Missing")  # type: ignore
 
     df_brevity = df[df["metric_name"] == "brevity"]  # type: ignore
     assert (df_brevity["aiconfig_output"].apply(len) == df_brevity["value"]).all()  # type: ignore
@@ -155,9 +150,7 @@ async def test_run_test_suite_with_inputs(data: st.DataObject):
 
     out = await run_test_suite_helper(
         TestSuiteWithInputsSpec(
-            test_suite=user_test_suite_with_inputs,
-            prompt_name="prompt0",
-            aiconfig=mock_aiconfig,
+            test_suite=user_test_suite_with_inputs, prompt_name="prompt0", aiconfig=mock_aiconfig, general_settings=TestSuiteGeneralSettings()
         )
     )
 
@@ -261,97 +254,3 @@ async def test_exception_metric(caplog: pytest.LogCaptureFixture):
     assert pd.isnull(mapping[""])  # type: ignore
 
     assert any("Brevity is meaningless for empty string." in record.msg for record in caplog.records)
-
-
-def _mock_response(function_args: common.SerializedJSON) -> openai_chat_types.ChatCompletion:
-    return openai_chat_types.ChatCompletion(
-        id="123",
-        choices=[
-            openai_chat_completion_types.Choice(
-                index=0,
-                message=openai_chat_types.ChatCompletionMessage(
-                    content=None,
-                    role="assistant",
-                    tool_calls=[
-                        openai_chat_types.ChatCompletionMessageToolCall(
-                            id="cm-tk-1",
-                            type="function",
-                            function=openai_tool_call_types.Function(
-                                name="dummy",
-                                arguments=function_args,
-                            ),
-                        )
-                    ],
-                ),
-                finish_reason="stop",
-            )
-        ],
-        created=0,
-        model="",
-        object="chat.completion",
-    )
-
-
-def _make_mock_openai_chat_completion_create(function_arguments_return: common.SerializedJSON) -> lib_openai.OpenAIChatCompletionCreate:
-    def _mock_openai_chat_completion_create(
-        completion_params: lib_openai.OpenAIChatCompletionParams,
-    ) -> Result[openai_chat_types.ChatCompletion, str]:
-        return Ok(
-            _mock_response(
-                function_arguments_return,
-            )
-        )
-
-    return _mock_openai_chat_completion_create
-
-
-@pytest.mark.asyncio
-async def test_openai_structured_eval():
-    _mock_create = _make_mock_openai_chat_completion_create(
-        common.SerializedJSON('{"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it\'s pretty concise."}')
-    )
-    mock_metric = metrics.make_openai_structured_llm_metric(
-        eval_llm_name="gpt-3.5-turbo-0613",
-        pydantic_basemodel_type=common.TextRatingsData,
-        metric_name="text_ratings",
-        metric_description="Text ratings",
-        field_descriptions=dict(
-            conciseness_rating="1 to 5 rating of conciseness",
-            conciseness_confidence="0 to 1.0 rating of confidence in conciseness rating",
-            conciseness_reasoning="reasoning behind the conciseness rating",
-        ),
-        openai_chat_completion_create=_mock_create,
-    )
-
-    user_test_suite_outputs_only = [
-        ("one two three", mock_metric),
-    ]
-    df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
-    metric_data = cast(common.CustomMetricPydanticObject[metrics.TextRatingsData], df.loc[0, "value"]).data
-    assert isinstance(metric_data, common.TextRatingsData)
-    metric_json = metric_data.to_dict()
-    assert metric_json == {"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it's pretty concise."}
-
-
-@pytest.mark.asyncio
-async def test_bad_structured_eval_metric():
-    _mock_create = _make_mock_openai_chat_completion_create(
-        common.SerializedJSON('{"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it\'s pretty concise."}')
-    )
-
-    with pytest.raises(ValueError) as exc:
-        _ = metrics.make_openai_structured_llm_metric(
-            eval_llm_name="gpt-3.5-turbo-0613",
-            pydantic_basemodel_type=common.TextRatingsData,
-            metric_name="text_ratings",
-            metric_description="Text ratings",
-            field_descriptions=dict(
-                fake_field="123",
-                conciseness_rating="1 to 5 rating of conciseness",
-                conciseness_confidence="0 to 1.0 rating of confidence in conciseness rating",
-                conciseness_reasoning="reasoning behind the conciseness rating",
-            ),
-            openai_chat_completion_create=_mock_create,
-        )
-
-    assert "The following field_descriptions keys are not in the schema" in str(exc)

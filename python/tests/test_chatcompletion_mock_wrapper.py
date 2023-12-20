@@ -1,4 +1,4 @@
-import lastmile_utils.lib.core.api as cu
+import lastmile_utils.lib.core.api as core_utils
 
 
 class MockRealCompletions:
@@ -20,6 +20,6 @@ class MockRealOpenAI:
 
 def test_wrap_openai_module():
     api = MockRealOpenAI()
-    mock = cu.make_wrap_object(api, "chat.completions.create", "mock")
+    mock = core_utils.make_wrap_object(api, "chat.completions.create", "mock")
     assert mock.chat.completions.create == "mock"
     assert mock.some_real_field == "the_real_value"
