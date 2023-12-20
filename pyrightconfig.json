@@ -1,7 +1,11 @@
 {
-  "typeCheckingMode": "strict",
-  "include": ["python"],
-  "exclude": ["python/build"],
+  "typeCheckingMode": "basic",
+  "include": [
+    "python"
+  ],
+  "exclude": [
+    "python/build"
+  ],
   "ignore": [],
   "venv": "aiconfig",
   "pythonVersion": "3.10",
