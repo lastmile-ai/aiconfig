@@ -16,6 +16,7 @@ import {
 import { useState, useCallback, useEffect, useMemo, memo, useRef } from "react";
 import { uniqueId } from "lodash";
 import { IconHelp, IconPlus, IconTrash } from "@tabler/icons-react";
+import { usePrevious } from "@mantine/hooks";
 
 type Props = {
   propertyName: string;
@@ -61,7 +62,11 @@ export default function SettingsPropertyRenderer({
 
   let propertyControl;
 
+  const prevValue = usePrevious(propertyValue);
   useEffect(() => {
+    if (prevValue === propertyValue) {
+      return;
+    }
     if (propertyName != null && propertyName.trim() !== "") {
       setValue((oldValue: any) => {
         return {
@@ -72,7 +77,7 @@ export default function SettingsPropertyRenderer({
     } else {
       setValue(propertyValue);
     }
-  }, [propertyName, propertyValue, setValue]);
+  }, [prevValue, propertyName, propertyValue, setValue]);
 
   // Used in the case the property is an array
   // TODO: Should initialize with values from settings if available
