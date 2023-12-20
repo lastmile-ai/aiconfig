@@ -16,12 +16,16 @@ import {
 import { useState, useCallback, useEffect, useMemo, memo, useRef } from "react";
 import { uniqueId } from "lodash";
 import { IconHelp, IconPlus, IconTrash } from "@tabler/icons-react";
+import { usePrevious } from "@mantine/hooks";
+import UnionPropertyControl, {
+  UnionProperty,
+} from "@/src/components/property_controls/UnionPropertyControl";
 
-type Props = {
+export type PropertyRendererProps = {
   propertyName: string;
   property: { [key: string]: any };
   isRequired?: boolean;
-  initialValue: any;
+  initialValue?: any;
   setValue: (value: any) => void;
 };
 
@@ -49,9 +53,9 @@ export default function SettingsPropertyRenderer({
   propertyName,
   property,
   isRequired = false,
-  initialValue,
+  initialValue = null,
   setValue,
-}: Props) {
+}: PropertyRendererProps) {
   const propertyType = property.type;
   const defaultValue = property.default;
   const propertyDescription = property.description;
@@ -61,7 +65,11 @@ export default function SettingsPropertyRenderer({
 
   let propertyControl;
 
+  const prevValue = usePrevious(propertyValue);
   useEffect(() => {
+    if (prevValue === propertyValue) {
+      return;
+    }
     if (propertyName != null && propertyName.trim() !== "") {
       setValue((oldValue: any) => {
         return {
@@ -72,7 +80,7 @@ export default function SettingsPropertyRenderer({
     } else {
       setValue(propertyValue);
     }
-  }, [propertyName, propertyValue, setValue]);
+  }, [prevValue, propertyName, propertyValue, setValue]);
 
   // Used in the case the property is an array
   // TODO: Should initialize with values from settings if available
@@ -99,8 +107,6 @@ export default function SettingsPropertyRenderer({
         <SettingsPropertyRenderer
           propertyName=""
           property={property.items}
-          isRequired={false}
-          initialValue={null}
           setValue={(newItem) => {
             itemValues.current.set(key, newItem);
             setPropertyValue(Array.from(itemValues.current.values()));
@@ -373,6 +379,24 @@ export default function SettingsPropertyRenderer({
           ></Select>
         );
       }
+    }
+    case "union": {
+      propertyControl = (
+        <Stack>
+          <PropertyLabel
+            propertyName={propertyName}
+            propertyDescription={propertyDescription}
+          />
+          <UnionPropertyControl
+            property={property as UnionProperty}
+            isRequired={isRequired}
+            propertyName={propertyName}
+            initialValue={initialValue}
+            setValue={setPropertyValue}
+            renderProperty={(props) => <SettingsPropertyRenderer {...props} />}
+          />
+        </Stack>
+      );
     }
     default: {
       console.warn(
