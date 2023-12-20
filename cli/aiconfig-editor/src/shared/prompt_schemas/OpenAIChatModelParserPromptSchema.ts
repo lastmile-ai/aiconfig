@@ -66,7 +66,6 @@ export const OpenAIChatModelParserPromptSchema: PromptSchema = {
         type: "integer",
         maximum: 4096,
         minimum: 16,
-        default: 4096,
       },
       n: {
         type: "integer",
