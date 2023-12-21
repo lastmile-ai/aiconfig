@@ -3,30 +3,41 @@ import { useSchemaState } from "@/src/hooks/useSchemaState";
 import { GenericPropertiesSchema } from "@/src/utils/promptUtils";
 import { Flex } from "@mantine/core";
 import { JSONObject } from "aiconfig/dist/common";
-import { memo } from "react";
+import { memo, useCallback, useMemo } from "react";
+import { debounce } from "lodash";
 
 type Props = {
   schema: GenericPropertiesSchema;
   settings?: JSONObject;
+  onUpdateModelSettings: (settings: Record<string, unknown>) => void;
 };
 
 export default memo(function ModelSettingsSchemaRenderer({
   schema,
   settings,
+  onUpdateModelSettings,
 }: Props) {
-  const { schemaState } = useSchemaState(schema, settings);
+  const debouncedConfigUpdate = useMemo(
+    () =>
+      debounce(
+        (newSettings: JSONObject) => onUpdateModelSettings(newSettings),
+        250
+      ),
+    [onUpdateModelSettings]
+  );
+
+  const setValue = useCallback(
+    (newSettings: JSONObject) => debouncedConfigUpdate(newSettings),
+    [debouncedConfigUpdate]
+  );
 
   return (
-    <Flex direction="column">
-      {Object.entries(schema.properties).map(([key, value]) => (
-        <SettingsPropertyRenderer
-          propertyName={key}
-          key={key}
-          property={value}
-          isRequired={schema.required?.includes(key)}
-          initialValue={schemaState[key].value}
-        />
-      ))}
-    </Flex>
+    <SettingsPropertyRenderer
+      propertyName={""}
+      property={schema}
+      isRequired={false}
+      initialValue={settings}
+      setValue={setValue}
+    />
   );
 });

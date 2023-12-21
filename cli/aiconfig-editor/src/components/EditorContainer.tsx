@@ -49,12 +49,25 @@ export default function EditorContainer({
   }, [aiconfigState, onSave]);
 
   const onChangePromptInput = useCallback(
-    (i: number, newPromptInput: PromptInput) => {
+    async (promptIndex: number, newPromptInput: PromptInput) => {
       dispatch({
         type: "UPDATE_PROMPT_INPUT",
-        index: i,
+        index: promptIndex,
         input: newPromptInput,
       });
+      // TODO: Call server-side endpoint to update prompt input
+    },
+    [dispatch]
+  );
+
+  const onUpdatePromptModelSettings = useCallback(
+    async (promptIndex: number, newModelSettings: any) => {
+      dispatch({
+        type: "UPDATE_PROMPT_MODEL_SETTINGS",
+        index: promptIndex,
+        modelSettings: newModelSettings,
+      });
+      // TODO: Call server-side endpoint to update model settings
     },
     [dispatch]
   );
@@ -86,6 +99,7 @@ export default function EditorContainer({
               prompt={prompt}
               key={prompt.name}
               onChangePromptInput={onChangePromptInput}
+              onUpdateModelSettings={onUpdatePromptModelSettings}
               defaultConfigModelName={aiconfigState.metadata.default_model}
             />
           );

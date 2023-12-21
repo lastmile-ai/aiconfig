@@ -1,9 +1,9 @@
+import { ClientPrompt } from "@/src/shared/types";
 import { GenericPropertiesSchema } from "@/src/utils/promptUtils";
-import { Prompt } from "aiconfig";
 import { memo } from "react";
 
 type Props = {
-  prompt: Prompt;
+  prompt: ClientPrompt;
   schema?: GenericPropertiesSchema;
 };
 

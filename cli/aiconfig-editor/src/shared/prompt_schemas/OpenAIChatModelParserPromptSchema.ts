@@ -5,6 +5,7 @@ export const OpenAIChatModelParserPromptSchema: PromptSchema = {
     type: "string",
   },
   model_settings: {
+    type: "object",
     properties: {
       system_prompt: {
         type: "string",
@@ -62,10 +63,12 @@ export const OpenAIChatModelParserPromptSchema: PromptSchema = {
         },
       },
       max_tokens: {
-        type: "number",
+        type: "integer",
+        maximum: 4096,
+        minimum: 16,
       },
       n: {
-        type: "number",
+        type: "integer",
       },
       presence_penalty: {
         type: "number",
@@ -97,6 +100,7 @@ export const OpenAIChatModelParserPromptSchema: PromptSchema = {
     },
   },
   prompt_metadata: {
+    type: "object",
     properties: {
       remember_chat_context: {
         type: "boolean",
