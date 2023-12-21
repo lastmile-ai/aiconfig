@@ -11,7 +11,7 @@ from aiconfig.schema import ExecuteResult, Output, Prompt
 from aiconfig.util.params import resolve_prompt, resolve_prompt_string
 from aiconfig import CallbackEvent, get_api_key_from_environment, AIConfigRuntime, PromptMetadata, PromptInput
 from google.generativeai.types import content_types
-
+from google.protobuf.json_format import MessageToDict
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -45,7 +45,8 @@ def construct_regular_outputs(response: "AsyncGenerateContentResponse") -> list[
                 "output_type": "execute_result",
                 "data": candidate.content.parts[0].text,
                 "execution_count": i,
-                "metadata": response.prompt_feedback.__dict__,
+                # .pb is the underlying protobuf object. We convert it to a dict so that it can be serialized
+                "metadata": MessageToDict(response.prompt_feedback._pb),
             }
         )
 
@@ -79,7 +80,8 @@ async def construct_stream_outputs(
             "output_type": "execute_result",
             "data": response.candidates[0].content.parts[0].text,
             "execution_count": 0,  # Hard coded for now. If api supports multiple candidates this can be updated.
-            "metadata": response.prompt_feedback.__dict__,
+            # .pb is the underlying protobuf object. We convert it to a dict so that it can be serialized
+            "metadata": MessageToDict(response.prompt_feedback._pb),
         }
     )
 
