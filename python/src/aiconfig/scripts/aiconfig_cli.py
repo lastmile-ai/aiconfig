@@ -86,15 +86,24 @@ def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], s
     p1, p2 = None, None
     try:
         p1 = subprocess.Popen(["yarn"], cwd="python/src/aiconfig/editor/client")
-        p2 = subprocess.Popen(["yarn", "start"], cwd="python/src/aiconfig/editor/client", stdin=subprocess.PIPE)
-        assert p2.stdin is not None
-        p2.stdin.write(b"n\n")
-        return Ok([p1, p2])
     except Exception as e:
         return core_utils.ErrWithTraceback(e)
     finally:
         sigint_res = _sigint([p for p in [p1, p2] if p is not None])
         LOGGER.info("sigint_res: %s", sigint_res)
+
+    try:
+        p2 = subprocess.Popen(["yarn", "start"], cwd="python/src/aiconfig/editor/client", stdin=subprocess.PIPE)
+    except Exception as e:
+        return core_utils.ErrWithTraceback(e)
+
+    try:
+        assert p2.stdin is not None
+        p2.stdin.write(b"n\n")
+    except Exception as e:
+        return core_utils.ErrWithTraceback(e)
+
+    return Ok([p1, p2])
 
 
 if __name__ == "__main__":
