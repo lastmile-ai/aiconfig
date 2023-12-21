@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+from enum import Enum
 import logging
 from types import ModuleType
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 import lastmile_utils.lib.core.api as core_utils
 from flask import Flask, request
+from pydantic import field_validator
 from result import Err, Ok, Result
 
 from aiconfig.Config import AIConfigRuntime
@@ -29,12 +31,28 @@ log_handler.setFormatter(formatter)
 LOGGER.addHandler(log_handler)
 
 
+class ServerMode(Enum):
+    # debug = "DEBUG"
+    DEBUG_SERVERS = "DEBUG_SERVERS"
+    DEBUG_BACKEND = "DEBUG_BACKEND"
+    PROD = "PROD"
+
+
 class EditServerConfig(core_utils.Record):
     server_port: int = 8080
     aiconfig_path: Optional[str] = None
     log_level: str | int = "INFO"
-    server_mode: str
+    server_mode: ServerMode
     parsers_module_path: str = "aiconfig_model_registry.py"
+
+    @field_validator("server_mode", mode="before")
+    def convert_to_mode(cls, value: Any) -> ServerMode:  # pylint: disable=no-self-argument
+        if isinstance(value, str):
+            try:
+                return ServerMode[value.upper()]
+            except KeyError as e:
+                raise ValueError(f"Unexpected value for mode: {value}") from e
+        return value
 
 
 @dataclass
@@ -246,7 +264,7 @@ def add_prompt():
         return {"message": f"<p>Failed to add prompt: {err}"}, 400
 
 
-def run_backend_server(edit_config: EditServerConfig) -> Result[int, str]:
+def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
     LOGGER.setLevel(edit_config.log_level)
     LOGGER.info("Edit config: %s", edit_config.model_dump_json())
     LOGGER.info(f"Starting server on http://localhost:{edit_config.server_port}")
@@ -254,24 +272,22 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[int, str]:
     app.server_state = ServerState()  # type: ignore
     _init_server_state(app, edit_config)
 
-    if edit_config.server_mode not in {"debug_servers", "debug_backend", "prod"}:
-        return Err(f"Unknown server mode: {edit_config.server_mode}")
-
-    debug = edit_config.server_mode in ["debug_servers", "debug_backend"]
+    debug = edit_config.server_mode in [ServerMode.DEBUG_BACKEND, ServerMode.DEBUG_SERVERS]
     LOGGER.info(f"Running in {edit_config.server_mode} mode")
     app.run(port=edit_config.server_port, debug=debug, use_reloader=True)
-    return Ok(0)
+    return Ok("Done")
 
 
 def _load_user_parser_module_if_exists(parsers_module_path: str) -> None:
-    _get_validated_request_path(parsers_module_path).and_then(_load_user_parser_module).map_or_else(
-        lambda e: LOGGER.warning(f"Failed to load parsers module: {e}"),  # type: ignore
-        lambda _: LOGGER.info(f"Loaded parsers module from {edit_config.parsers_module_path}"),  # type: ignore
-    )
+    res = _get_validated_request_path(parsers_module_path).and_then(_load_user_parser_module)
+    match res:
+        case Ok(_):
+            LOGGER.info(f"Loaded parsers module from {parsers_module_path}")
+        case Err(e):
+            LOGGER.warning(f"Failed to load parsers module: {e}")
 
 
 def _init_server_state(app: Flask, edit_config: EditServerConfig) -> None:
-    assert edit_config.server_mode in {"debug_servers", "debug_backend", "prod"}
     LOGGER.info("Initializing server state")
     _load_user_parser_module_if_exists(edit_config.parsers_module_path)
     state = _get_server_state(app)
