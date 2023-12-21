@@ -10,6 +10,9 @@ JSONObject = Dict[str, Any]
 # InferenceSettings represents settings for model inference as a JSON object
 InferenceSettings = JSONObject
 
+# The output type that data can conform to
+# Must be explicitly defined and returned by model parsers
+OutputData = Union[str, Any]
 
 class ExecuteResult(BaseModel):
     # Type of output
@@ -17,7 +20,7 @@ class ExecuteResult(BaseModel):
     # nth choice.
     execution_count: Union[int, None] = None
     # The result of the executing prompt.
-    data: Any
+    data: OutputData
     # The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
     mime_type: Optional[str] = None
     # Output metadata

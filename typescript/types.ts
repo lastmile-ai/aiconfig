@@ -1,4 +1,8 @@
 import { JSONObject, JSONValue } from "./common";
+import {
+  ChatCompletionMessageParam,
+  ChatCompletionRole,
+} from "openai/resources/chat/completions";
 
 /**
  * AIConfig schema, latest version. For older versions, see AIConfigV*.
@@ -171,6 +175,18 @@ export type Prompt = {
 //#region Prompt Outputs
 
 /**
+ * Supported output data types for ExecuteResult.data
+ */
+type OpenAIResponse = {
+  content?: string | null | undefined;
+  role: ChatCompletionRole;
+  function_call?: ChatCompletionMessageParam.FunctionCall | undefined;
+  name?: string | undefined;
+};
+// type ChatCompletionMessage
+export type OutputData = string | ChatCompletionMessage | OpenAIResponse;
+
+/**
  * Model inference result.
  */
 export type Output = ExecuteResult | Error;
@@ -192,7 +208,7 @@ export type ExecuteResult = {
   /**
    * The result of executing the prompt.
    */
-  data: JSONValue;
+  data: OutputData;
 
   /**
    * The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
