@@ -64,6 +64,9 @@ class ServerState:
     aiconfig: AIConfigRuntime | None = None
 
 
+FlaskPostResponse = NewType("FlaskPostResponse", tuple[dict[str, str | core_utils.JSONObject], int])
+
+
 @dataclass(frozen=True)
 class HttpPostResponse:
     message: str
@@ -76,14 +79,14 @@ class HttpPostResponse:
         "callback_manager": True,
     }
 
-    def to_flask_format(self) -> tuple[dict[str, str | core_utils.JSONObject], int]:
+    def to_flask_format(self) -> FlaskPostResponse:
         out: dict[str, str | core_utils.JSONObject] = {
             "message": self.message,
         }
         if self.aiconfig is not None:
             out["aiconfig"] = self.aiconfig.model_dump(exclude=HttpPostResponse.EXCLUDE_OPTIONS)
 
-        return out, self.code
+        return FlaskPostResponse((out, self.code))
 
 
 def _get_server_state(app: Flask) -> ServerState:
@@ -165,10 +168,10 @@ def home():
 
 
 @app.route("/api/load_model_parser_module", methods=["POST"])
-def load_model_parser_module():
+def load_model_parser_module() -> FlaskPostResponse:
     path = _validated_request_path()
 
-    def _to_flask(resp: HttpPostResponse) -> tuple[dict[str, str | core_utils.JSONObject], int]:
+    def _to_flask(resp: HttpPostResponse) -> FlaskPostResponse:
         return resp.to_flask_format()
 
     res_response = path.map(_get_http_response_load_user_parser_module).map(_to_flask)
@@ -199,7 +202,7 @@ def _validated_request_path(allow_create: bool = False) -> Result[ValidatedPath,
 
 
 @app.route("/api/load", methods=["POST"])
-def load():
+def load() -> FlaskPostResponse:
     state = _get_server_state(app)
 
     path_val = _validated_request_path()
@@ -214,7 +217,7 @@ def load():
 
 
 @app.route("/api/save", methods=["POST"])
-def save():
+def save() -> FlaskPostResponse:
     state = _get_server_state(app)
     if state.aiconfig is None:
         return HttpPostResponse(message="No AIConfig in memory, nothing to save.", code=400, aiconfig=None).to_flask_format()
@@ -238,14 +241,14 @@ def save():
 
 
 @app.route("/api/create", methods=["POST"])
-def create():
+def create() -> FlaskPostResponse:
     state = _get_server_state(app)
     state.aiconfig = AIConfigRuntime.create()  # type: ignore
-    return {"message": "Done"}, 200
+    return HttpPostResponse(message="Created new AIConfig", aiconfig=state.aiconfig).to_flask_format()
 
 
 @app.route("/api/run", methods=["POST"])
-async def run():
+async def run() -> FlaskPostResponse:
     state = _get_server_state(app)
     request_json = request.get_json()
     prompt_name = request_json.get("prompt_name", None)
@@ -255,32 +258,40 @@ async def run():
     try:
         result = await state.aiconfig.run(prompt_name, options=inference_options)  # type: ignore
         LOGGER.debug(f"Result: {result=}")
-        result_text = str(
-            state.aiconfig.get_output_text(prompt_name)  # type: ignore
-            #
-            if isinstance(result, list)
-            #
-            else result.data[0]  # type: ignore
-        )
-        return {"message": "Done", "output": result_text}, 200
+        return HttpPostResponse(
+            message="Done",
+            aiconfig=state.aiconfig,
+        ).to_flask_format()
+        # return {"message": "Done", "output": result_text}, 200
     except Exception as e:
         err: Err[str] = core_utils.ErrWithTraceback(e)
         LOGGER.error(f"Failed to run: {err}")
-        return {"message": f"<p>Failed to run: {err}"}, 400
+        return HttpPostResponse(
+            message=f"Failed to run: {err}",
+            code=400,
+            aiconfig=None,
+        ).to_flask_format()
 
 
 @app.route("/api/add_prompt", methods=["POST"])
-def add_prompt():
+def add_prompt() -> FlaskPostResponse:
     state = _get_server_state(app)
     request_json = request.get_json()
     try:
         LOGGER.info(f"Adding prompt: {request_json}")
         state.aiconfig.add_prompt(**request_json)  # type: ignore
-        return {"message": "Done"}, 200
+        return HttpPostResponse(
+            message="Done",
+            aiconfig=state.aiconfig,
+        ).to_flask_format()
     except Exception as e:
         err: Err[str] = core_utils.ErrWithTraceback(e)
         LOGGER.error(f"Failed to add prompt: {err}")
-        return {"message": f"<p>Failed to add prompt: {err}"}, 400
+        return HttpPostResponse(
+            message=f"Failed to add prompt: {err}",
+            code=400,
+            aiconfig=None,
+        ).to_flask_format()
 
 
 def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
@@ -322,7 +333,6 @@ def _safe_load_from_disk(aiconfig_path: ValidatedPath) -> Result[AIConfigRuntime
 def _safe_save_to_disk(aiconfig: AIConfigRuntime, aiconfig_path: ValidatedPath) -> Result[None, str]:
     try:
         save_res = aiconfig.save(aiconfig_path)
-        # type: ignore
         return Ok(save_res)
     except Exception as e:
         return core_utils.ErrWithTraceback(e)
