@@ -195,6 +195,82 @@
         }
       }
     },
+    "OutputData": {
+      "description": "The output type that data can conform to. Must be explicitly defined and returned by model parsers",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/definitions/TextAndChatCompletionOutputs"
+        }
+      ]
+    },
+    "TextAndChatCompletionOutputs": {
+      "description": "Helper type for text and chat completion output formats.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/GoogleChatCompletion"
+        },
+        {
+          "$ref": "#/definitions/HuggingFaceTextGeneration"
+        },
+        {
+          "$ref": "#/definitions/OpenAIChatCompletionMessage"
+        }
+      ]
+    },
+    "GoogleChatCompletionOutput": {
+      "description": "Output format for Google Chat completion.",
+      "type": ["string", "null"]
+    },
+    "HuggingFaceTextGenerationOutput": {
+      "description": "Output format for HuggingFaceTextGeneration for both streaming and non streaming responses.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/HuggingFaceTextGenerationNonStreamOutput"
+        },
+        {
+          "$ref": "#/definitions/HuggingFaceTextGenerationStreamOutput"
+        }
+      ]
+    },
+    "HuggingFaceTextGenerationNonStreamOutput": {
+      "description": "Output format for HuggingFaceTextGeneration for non streaming responses.",
+      "type": "object",
+      "properties": {
+        "generated_text": {
+          "description": "The continuated string",
+          "type": "string"
+        }
+      },
+      "required": [
+        "generated_text"
+      ]
+    },
+    "HuggingFaceTextGenerationStreamOutput": {
+      "description": "Output format for HuggingFaceTextGeneration for streaming responses.",
+      "type": "object",
+      "properties": {
+        "token": {
+          "description": "Generated token, one at a time",
+          "type": "string"
+        },
+        "generated_text": {
+          "description": "Complete generated text. Only available when the generation is finished",
+          "type": ["string", "null"]
+        },
+        "details": {
+          "description": "Generation details. Only available when the generation is finished",
+          "type": ["string", "null"]
+        }
+      },
+      "required": [
+        "token",
+        "generated_text",
+        "details"
+      ]
+    },
     "Output": {
       "description": "Model inference result.",
       "anyOf": [
@@ -212,7 +288,8 @@
               "type": "number"
             },
             "data": {
-              "description": "The result of executing the prompt."
+              "description": "The result of executing the prompt.",
+              "$ref": "#/definitions/OutputData"
             },
             "mime_type": {
               "description": "The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.",

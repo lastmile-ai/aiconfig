@@ -1,8 +1,14 @@
 import warnings
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from aiconfig.util.config_utils import extract_override_settings
+from google.generativeai.types.discuss_types import ChatResponse as GoogleChatCompletion
+from huggingface_hub.inference._text_generation import (
+    TextGenerationResponse,
+    TextGenerationStreamResponse,
+)
 from pydantic import BaseModel
+
+from aiconfig.util.config_utils import extract_override_settings
 
 # Pydantic doesn't handle circular type references very well, TODO: handle this better than defining as type Any
 # JSONObject represents a JSON object as a dictionary with string keys and JSONValue values
@@ -10,6 +16,18 @@ JSONObject = Dict[str, Any]
 # InferenceSettings represents settings for model inference as a JSON object
 InferenceSettings = JSONObject
 
+# The output type that data can conform to
+# Must be explicitly defined and returned by model parsers
+# Add palm text generation response type
+HuggingFaceTextGeneration = Union[TextGenerationResponse, TextGenerationStreamResponse]
+TextAndChatCompletionOutputs = Union[GoogleChatCompletion, HuggingFaceTextGeneration]
+OutputData = Union[
+    str,
+    # GoogleChatCompletion,
+    HuggingFaceTextGeneration,
+    Any,
+    # TextAndChatCompletionOutputs,
+]
 
 class ExecuteResult(BaseModel):
     # Type of output
@@ -17,7 +35,7 @@ class ExecuteResult(BaseModel):
     # nth choice.
     execution_count: Union[int, None] = None
     # The result of the executing prompt.
-    data: Any
+    data: OutputData
     # The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
     mime_type: Optional[str] = None
     # Output metadata
