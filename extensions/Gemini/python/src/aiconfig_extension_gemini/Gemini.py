@@ -1,5 +1,5 @@
 # Define a Model Parser for LLama-Guard
-from typing import TYPE_CHECKING, Dict, List, Optional, Any
+from typing import TYPE_CHECKING, Dict, List, Optional, Any, override
 import copy
 
 import google.generativeai as genai
@@ -11,7 +11,7 @@ from aiconfig.schema import ExecuteResult, Output, Prompt
 from aiconfig.util.params import resolve_prompt, resolve_prompt_string
 from aiconfig import CallbackEvent, get_api_key_from_environment, AIConfigRuntime, PromptMetadata, PromptInput
 from google.generativeai.types import content_types
-
+from google.protobuf.json_format import MessageToDict
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -28,6 +28,12 @@ TODO: This model Parser does not support multimodal
 TODO: This model Parser does not support function calling (not available)
 TODO: This model Parser does not support serializing all different types of the Gemini API (ie protos)
 TODO: This model Parser does not support chat history if the input of a prompt is NOT a template (aka a string)
+    - Currently only supports chats where prior messages from a user are only a single message string instance. 
+    - Ex (supported):   User: "yo what's good dog?"
+    -                   Model: "just chillin homie"
+    - Ex (unsupported)  User: {"role": "user", "parts": ["yo what's good dog?", "how are you doing?"]}
+    -                   Model: {"role": "model", "parts": ["just chillin homie", "I'm doing great!"]}
+    - See `get_prompt_template()` for more details
 TODO: This model Parser does not support strongly structuring the input data containing the configmetadata for the Gemini API
 - The `GenerationConfig` must be specified explicitly underneat `settings as its own nested dict. see #532 Test Plan for more info https://github.com/lastmile-ai/aiconfig/pull/532
 - Docs ref: https://ai.google.dev/tutorials/python_quickstart#generation_configuration
@@ -45,7 +51,8 @@ def construct_regular_outputs(response: "AsyncGenerateContentResponse") -> list[
                 "output_type": "execute_result",
                 "data": candidate.content.parts[0].text,
                 "execution_count": i,
-                "metadata": response.prompt_feedback.__dict__,
+                # .pb is the underlying protobuf object. We convert it to a dict so that it can be serialized
+                "metadata": MessageToDict(response.prompt_feedback._pb),
             }
         )
 
@@ -79,7 +86,8 @@ async def construct_stream_outputs(
             "output_type": "execute_result",
             "data": response.candidates[0].content.parts[0].text,
             "execution_count": 0,  # Hard coded for now. If api supports multiple candidates this can be updated.
-            "metadata": response.prompt_feedback.__dict__,
+            # .pb is the underlying protobuf object. We convert it to a dict so that it can be serialized
+            "metadata": MessageToDict(response.prompt_feedback._pb),
         }
     )
 
@@ -202,7 +210,7 @@ class GeminiModelParser(ParameterizedModelParser):
                 if i + 1 < len(contents):
                     model_message = contents[i + 1]
                     model_message_parts = model_message["parts"]
-                    # Gemini api currently only supports one candidate aka  one output. Model should only be retuning one part in response.
+                    # Gemini api currently only supports one candidate aka one output. Model should only be retuning one part in response.
                     # Should output data be this list of parts? or just the first one? TODO: figure out if Gemini outputs may contain more than one part.
                     # see https://ai.google.dev/tutorials/python_quickstart#multi-turn_conversations:~:text=Note%3A%20For%20multi%2Dturn%20conversations%2C%20you%20need%20to%20send%20the%20whole%20conversation%20history%20with%20each%20request
                     outputs = [ExecuteResult(**{"output_type": "execute_result", "data": model_message_parts[0], "metadata": {}})]
@@ -393,6 +401,7 @@ class GeminiModelParser(ParameterizedModelParser):
 
         return messages   
     
+    @override
     def get_prompt_template(self, prompt: Prompt, aiConfig: "AIConfigRuntime") -> str:
         """
         This method is overriden from the ParameterizedModelParser class. Its intended to be used only when collecting prompt references, nothing else.
