@@ -216,24 +216,63 @@ class PaLMChatParser(ParameterizedModelParser):
         )
         await ai_config.callback_manager.run_callbacks(event)
 
-        prompt_template = data.get("prompt", "")
-        data.pop("prompt", None)
+        data_for_settings = {
+            k: v for k, v in data.items() if k not in ["messages", "prompt", "client"]
+        }
+        model_metadata = ai_config.get_model_metadata(data_for_settings, self.id())
 
-        model_metadata = ai_config.get_model_metadata(data, self.id())
-        prompts = [
-            Prompt(
-                name=prompt_name,
-                input=prompt_template,
-                metadata=PromptMetadata(
-                    model=model_metadata,
-                    parameters=parameters,
-                    **kwargs,
-                ),
-            )
-        ]
+        prompts = []
+        prompt_template = data.get("prompt", "")
+        if prompt_template:
+            data.pop("prompt", None)
+
+            prompts = [
+                Prompt(
+                    name=prompt_name,
+                    input=prompt_template,
+                    metadata=PromptMetadata(
+                        model=model_metadata,
+                        parameters=parameters,
+                        **kwargs,
+                    ),
+                )
+            ]
+        else:
+            messages_array = data.get("messages", [])
+
+            i = 0
+            while i < len(messages_array):
+                message = messages_array[i]
+
+                message_template = message.get("content", "")
+
+                prompt = Prompt(
+                    name=prompt_name,
+                    input=message_template,
+                    metadata=PromptMetadata(
+                        model=model_metadata,
+                        parameters=parameters,
+                        **kwargs,
+                    ),
+                )
+                if i + 1 < len(messages_array):
+                    next_message = messages_array[i + 1]
+                    next_message_template = next_message.get("content", "")
+                    output = ExecuteResult(
+                        output_type="execute_result",
+                        data=next_message_template,
+                        metadata={},
+                    )
+                    prompt.outputs = [output]
+                    i += 1
+
+                prompts.append(prompt)
+                i += 1
 
         event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
         await ai_config.callback_manager.run_callbacks(event)
+
+        return prompts
 
     async def deserialize(
         self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}
