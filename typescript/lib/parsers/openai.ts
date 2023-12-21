@@ -568,13 +568,15 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
       );
 
       let outputs = new Map<number, ExecuteResult>();
-      let messages: Map<number, Chat.ChatCompletionMessage> | null = null;
       for await (const chunk of responseStream) {
-        messages = multiChoiceMessageReducer(messages, chunk);
+        let messages: Map<number, Chat.ChatCompletionMessage> =
+          multiChoiceMessageReducer(null, chunk);
 
         for (let i = 0; i < chunk.choices.length; i++) {
           const choice = chunk.choices[i];
-          const message = messages.get(choice.index);
+          const message = messages.get(
+            choice.index
+          ) as Chat.ChatCompletionMessage;
 
           // Send the stream callback for each choice
           options?.callbacks?.streamCallback(
