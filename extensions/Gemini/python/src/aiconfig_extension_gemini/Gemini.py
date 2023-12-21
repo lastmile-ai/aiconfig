@@ -1,5 +1,5 @@
 # Define a Model Parser for LLama-Guard
-from typing import TYPE_CHECKING, Dict, List, Optional, Any, override
+from typing import TYPE_CHECKING, Dict, List, Optional, Any
 import copy
 
 import google.generativeai as genai
@@ -400,8 +400,7 @@ class GeminiModelParser(ParameterizedModelParser):
                     )
 
         return messages   
-    
-    @override
+
     def get_prompt_template(self, prompt: Prompt, aiConfig: "AIConfigRuntime") -> str:
         """
         This method is overriden from the ParameterizedModelParser class. Its intended to be used only when collecting prompt references, nothing else.
