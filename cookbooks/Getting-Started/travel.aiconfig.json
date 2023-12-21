@@ -6,7 +6,6 @@
     "models": {
       "gpt-3.5-turbo": {
         "model": "gpt-3.5-turbo",
-        "system_prompt": null,
         "top_p": 1,
         "temperature": 1
       },

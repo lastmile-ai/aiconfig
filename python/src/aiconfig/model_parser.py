@@ -110,6 +110,7 @@ class ModelParser(ABC):
         for params in parameters_list:
             # Create a deep copy of the aiconfig object to prevent mutations that could affect other iterations
             aiconfig_deep_copy = copy.deepcopy(aiconfig)
+            prompt = aiconfig_deep_copy.get_prompt(prompt.name)
             # Asynchronously schedule 'run()' for execution with a set of parameters.
             # This approach enables concurrent processing of multiple aiconfigs.
             task = asyncio.create_task(self.run(prompt, aiconfig_deep_copy, options, params, **kwargs))
