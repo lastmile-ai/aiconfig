@@ -34,12 +34,12 @@ class EditServerConfig(core_utils.Record):
     aiconfig_path: Optional[str] = None
     log_level: str | int = "INFO"
     server_mode: str
-    parsers_module_path: Optional[str] = None
+    parsers_module_path: str = "aiconfig_model_registry.py"
 
 
 @dataclass
 class ServerState:
-    aiconfig_runtime: AIConfigRuntime | None = None
+    aiconfig: AIConfigRuntime | None = None
 
 
 @dataclass(frozen=True)
@@ -143,25 +143,34 @@ def load_model_parser_module():
     return _http_response_with_path(_run_with_path).to_flask_format()
 
 
+def _get_validated_request_path(raw_path: str) -> Result[str, str]:
+    if not raw_path:
+        return Err("No path provided")
+    resolved = _resolve_path(raw_path)
+    if not os.path.isfile(resolved):
+        return Err(f"File does not exist: {resolved}")
+    return Ok(resolved)
+
+
 def _http_response_with_path(path_fn: Callable[[str], HttpPOSTResponse]) -> HttpPOSTResponse:
     request_json = request.get_json()
-    path = request_json["path"]
-    if not path:
-        return HttpPOSTResponse(message="No path provided", code=400)
+    path = request_json.get("path", None)
 
-    resolved = _resolve_path(path)
-    if not os.path.isfile(resolved):
-        return HttpPOSTResponse(message=f"File does not exist: {path}", code=400)
-    return path_fn(resolved)
+    validated_path = _get_validated_request_path(path)
+    match validated_path:
+        case Ok(path):
+            return path_fn(path)
+        case Err(e):
+            return HttpPOSTResponse(message=e, code=400)
 
 
 @app.route("/api/load", methods=["POST"])
 def load():
     def _run_with_path(path: str) -> HttpPOSTResponse:
         LOGGER.info(f"Loading AIConfig from {path}")
-        ss = _get_server_state(app)
+        state = _get_server_state(app)
         try:
-            ss.aiconfig_runtime = AIConfigRuntime.load(path)  # type: ignore
+            state.aiconfig = AIConfigRuntime.load(path)  # type: ignore
             return HttpPOSTResponse(message="Done")
         except Exception as e:
             return HttpPOSTResponse(message=f"<p>Failed to load AIConfig from {path}: {e}", code=400)
@@ -173,9 +182,9 @@ def load():
 def save():
     def _run_with_path(path: str) -> HttpPOSTResponse:
         LOGGER.info(f"Saving AIConfig to {path}")
-        ss = _get_server_state(app)
+        state = _get_server_state(app)
         try:
-            ss.aiconfig_runtime.save(path)  # type: ignore
+            state.aiconfig.save(path)  # type: ignore
             return HttpPOSTResponse(message="Done")
         except Exception as e:
             err: Err[str] = core_utils.ErrWithTraceback(e)
@@ -187,24 +196,24 @@ def save():
 
 @app.route("/api/create", methods=["POST"])
 def create():
-    ss = _get_server_state(app)
-    ss.aiconfig_runtime = AIConfigRuntime.create()  # type: ignore
+    state = _get_server_state(app)
+    state.aiconfig = AIConfigRuntime.create()  # type: ignore
     return {"message": "Done"}, 200
 
 
 @app.route("/api/run", methods=["POST"])
 async def run():
-    ss = _get_server_state(app)
+    state = _get_server_state(app)
     request_json = request.get_json()
     prompt_name = request_json.get("prompt_name", None)
     stream = request_json.get("stream", True)
     LOGGER.info(f"Running prompt: {prompt_name}, {stream=}")
     inference_options = InferenceOptions(stream=stream)
     try:
-        result = await ss.aiconfig_runtime.run(prompt_name, options=inference_options)  # type: ignore
+        result = await state.aiconfig.run(prompt_name, options=inference_options)  # type: ignore
         LOGGER.debug(f"Result: {result=}")
         result_text = str(
-            ss.aiconfig_runtime.get_output_text(prompt_name)  # type: ignore
+            state.aiconfig.get_output_text(prompt_name)  # type: ignore
             #
             if isinstance(result, list)
             #
@@ -219,11 +228,11 @@ async def run():
 
 @app.route("/api/add_prompt", methods=["POST"])
 def add_prompt():
-    ss = _get_server_state(app)
+    state = _get_server_state(app)
     request_json = request.get_json()
     try:
         LOGGER.info(f"Adding prompt: {request_json}")
-        ss.aiconfig_runtime.add_prompt(**request_json)  # type: ignore
+        state.aiconfig.add_prompt(**request_json)  # type: ignore
         return {"message": "Done"}, 200
     except Exception as e:
         err: Err[str] = core_utils.ErrWithTraceback(e)
@@ -249,20 +258,22 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[int, str]:
 
 
 def _init_server_state(app: Flask, edit_config: EditServerConfig) -> None:
-    if edit_config.parsers_module_path is not None:
-        _load_user_module_from_path_and_register_model_parsers(edit_config.parsers_module_path)
+    parsers_module_path = _get_validated_request_path(edit_config.parsers_module_path)
+    parsers_module_path.map(_load_user_module_from_path_and_register_model_parsers).map_err(
+        lambda e: LOGGER.warning(f"Failed to load parsers module: {e}")
+    )
 
     LOGGER.info("Initializing server state")
     assert edit_config.server_mode in {"debug_servers", "debug_backend", "prod"}
-    ss = _get_server_state(app)
+    state = _get_server_state(app)
 
-    assert ss.aiconfig_runtime is None
+    assert state.aiconfig is None
     if edit_config.aiconfig_path:
         LOGGER.info(f"Loading AIConfig from {edit_config.aiconfig_path}")
         aiconfig_runtime = AIConfigRuntime.load(edit_config.aiconfig_path)  # type: ignore
-        ss.aiconfig_runtime = aiconfig_runtime
+        state.aiconfig = aiconfig_runtime
         LOGGER.info(f"Loaded AIConfig from {edit_config.aiconfig_path}")
     else:
         aiconfig_runtime = AIConfigRuntime.create()  # type: ignore
-        ss.aiconfig_runtime = aiconfig_runtime
+        state.aiconfig = aiconfig_runtime
         LOGGER.info("Created new AIConfig")
