@@ -4,7 +4,7 @@ from types import ModuleType
 from typing import Callable, Optional
 
 import lastmile_utils.lib.core.api as core_utils
-from flask import Flask
+from flask import Flask, request
 from result import Err, Ok, Result
 
 from aiconfig.Config import AIConfigRuntime
@@ -13,6 +13,8 @@ import importlib
 import importlib.util
 import sys
 import os
+
+from aiconfig.model_parser import InferenceOptions
 
 
 def _import_module_from_path(path_to_module: str) -> Result[ModuleType, str]:
@@ -67,7 +69,7 @@ def _load_user_module_from_path_and_register_model_parsers(path_to_module: str) 
             return Ok(msg)
         case Err(e):
             msg = f"Failed to register model parsers from {path_to_module}: {e}"
-            LOGGER.warning(msg)
+            LOGGER.error(msg)
             return Err(msg)
 
 
@@ -99,7 +101,6 @@ app = Flask(__name__, static_url_path="")
 
 @dataclass
 class ServerState:
-    count = 0
     aiconfig_runtime: AIConfigRuntime | None = None
 
 
@@ -109,27 +110,88 @@ def _get_server_state(app: Flask) -> ServerState:
 
 @app.route("/")
 def home():
-    ss = _get_server_state(app)
-    ss.count += 1
-    LOGGER.info("Count: %s", ss.count)
     return app.send_static_file("index.html")
 
 
-@app.route("/test")
-def test():
-    return {"key": 6}
+@app.route("/api/load", methods=["POST"])
+def load():
+    ss = _get_server_state(app)
+    request_json = request.get_json()
+    path = request_json["path"]
+    LOGGER.info(f"Loading AIConfig from {path}")
+    if not path:
+        return {"message": "No path provided"}, 400
+    elif not os.path.isfile(path):
+        return {"message": f"File does not exist: {path}"}, 400
+    else:
+        try:
+            ss.aiconfig_runtime = AIConfigRuntime.load(path)  # type: ignore
+            return {"message": "Done"}, 200
+        except Exception as e:
+            return {"message": f"<p>Failed to load AIConfig from {path}: {e}"}, 400
 
 
-@app.route("/api/run")
+@app.route("/api/save", methods=["POST"])
+def save():
+    ss = _get_server_state(app)
+    request_json = request.get_json()
+    path = request_json["path"]
+    LOGGER.info(f"Saving AIConfig to {path}")
+    if not path:
+        return {"message": "No path provided"}, 400
+    else:
+        try:
+            ss.aiconfig_runtime.save(path)  # type: ignore
+            return {"message": "Done"}, 200
+        except Exception as e:
+            err: Err[str] = core_utils.ErrWithTraceback(e)
+            return {"message": f"<p>Failed to save AIConfig to {path}: {err}"}, 400
+
+
+@app.route("/api/create", methods=["POST"])
+def create():
+    ss = _get_server_state(app)
+    ss.aiconfig_runtime = AIConfigRuntime.create()  # type: ignore
+    return {"message": "Done"}, 200
+
+
+@app.route("/api/run", methods=["POST"])
 async def run():
     ss = _get_server_state(app)
-    result = await ss.aiconfig_runtime.run(
-        "gen_packing_list",
-        #
-        params={"location": "central park"},
-    )
-    text = result.data[0]
-    return f"<p>{text}</p>"
+    request_json = request.get_json()
+    prompt_name = request_json.get("prompt_name", None)
+    stream = request_json.get("stream", True)
+    LOGGER.info(f"Running prompt: {prompt_name}, {stream=}")
+    inference_options = InferenceOptions(stream=stream)
+    try:
+        result = await ss.aiconfig_runtime.run(prompt_name, options=inference_options)  # type: ignore
+        LOGGER.debug(f"Result: {result=}")
+        result_text = str(
+            ss.aiconfig_runtime.get_output_text(prompt_name)  # type: ignore
+            #
+            if isinstance(result, list)
+            #
+            else result.data[0]  # type: ignore
+        )
+        return {"message": "Done", "output": result_text}, 200
+    except Exception as e:
+        err: Err[str] = core_utils.ErrWithTraceback(e)
+        LOGGER.error(f"Failed to run: {err}")
+        return {"message": f"<p>Failed to run: {err}"}, 400
+
+
+@app.route("/api/add_prompt", methods=["POST"])
+def add_prompt():
+    ss = _get_server_state(app)
+    request_json = request.get_json()
+    try:
+        LOGGER.info(f"Adding prompt: {request_json}")
+        ss.aiconfig_runtime.add_prompt(**request_json)  # type: ignore
+        return {"message": "Done"}, 200
+    except Exception as e:
+        err: Err[str] = core_utils.ErrWithTraceback(e)
+        LOGGER.error(f"Failed to add prompt: {err}")
+        return {"message": f"<p>Failed to add prompt: {err}"}, 400
 
 
 def run_backend_server(edit_config: EditServerConfig) -> Result[int, str]:
@@ -164,3 +226,7 @@ def _init_server_state(app: Flask, edit_config: EditServerConfig) -> None:
         aiconfig_runtime = AIConfigRuntime.load(edit_config.aiconfig_path)  # type: ignore
         ss.aiconfig_runtime = aiconfig_runtime
         LOGGER.info(f"Loaded AIConfig from {edit_config.aiconfig_path}")
+    else:
+        aiconfig_runtime = AIConfigRuntime.create()  # type: ignore
+        ss.aiconfig_runtime = aiconfig_runtime
+        LOGGER.info("Created new AIConfig")
