@@ -6,7 +6,7 @@ import sys
 
 import lastmile_utils.lib.core.api as core_utils
 import result
-from aiconfig.editor.server.server import EditConfig, run_backend_server
+from aiconfig.editor.server.server import EditServerConfig, run_backend_server
 from result import Err, Ok, Result
 
 
@@ -30,7 +30,7 @@ async def main(argv: list[str]) -> int:
 
 
 def run_subcommand(argv: list[str]) -> Result[int, str]:
-    subparser_rs = {"edit": EditConfig}
+    subparser_rs = {"edit": EditServerConfig}
     main_parser = core_utils.argparsify(AIConfigCLIConfig, subparser_rs=subparser_rs)
 
     res_cli_config = core_utils.parse_args(main_parser, argv[1:], AIConfigCLIConfig)
@@ -39,14 +39,14 @@ def run_subcommand(argv: list[str]) -> Result[int, str]:
     subparser_name = core_utils.get_subparser_name(main_parser, argv[1:])
 
     if subparser_name == "edit":
-        res_edit_config = core_utils.parse_args(main_parser, argv[1:], EditConfig)
-        _ = res_edit_config.and_then(_run_servers)
+        res_edit_config = core_utils.parse_args(main_parser, argv[1:], EditServerConfig)
+        _ = res_edit_config.and_then(_run_editor_servers)
         return Ok(0)
     else:
         return Err(f"Unknown subparser: {subparser_name}")
 
 
-def _run_servers(edit_config: EditConfig) -> Result[None, str]:
+def _run_editor_servers(edit_config: EditServerConfig) -> Result[None, str]:
     frontend_procs = _run_frontend_server_background() if edit_config.server_mode == "debug" else Ok([])
     print(f"{frontend_procs=}")
 
@@ -69,6 +69,7 @@ def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], s
     try:
         p1 = subprocess.Popen(["yarn"], cwd="python/src/aiconfig/editor/client")
         p2 = subprocess.Popen(["yarn", "start"], cwd="python/src/aiconfig/editor/client", stdin=subprocess.PIPE)
+        assert p2.stdin is not None
         p2.stdin.write(b"n\n")
         return Ok([p1, p2])
     except Exception as e:
