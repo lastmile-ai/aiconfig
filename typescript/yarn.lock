@@ -3001,9 +3001,9 @@ onetime@^5.1.2:
   dependencies:
     mimic-fn "^2.1.0"
 
-openai@^4.11.1:
+openai@4.11.1:
   version "4.11.1"
-  resolved "https://registry.npmjs.org/openai/-/openai-4.11.1.tgz"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-4.11.1.tgz#c2ed9b5e58c3c626b8d43e4eae0cfdbcd44cc844"
   integrity sha512-GU0HQWbejXuVAQlDjxIE8pohqnjptFDIm32aPlNT1H9ucMz1VJJD0DaTJRQsagNaJ97awWjjVLEG7zCM6sm4SA==
   dependencies:
     "@types/node" "^18.11.18"

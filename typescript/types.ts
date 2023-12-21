@@ -171,6 +171,11 @@ export type Prompt = {
 //#region Prompt Outputs
 
 /**
+ * Supported output data types for ExecuteResult.data
+ */
+export type OutputData = string;
+
+/**
  * Model inference result.
  */
 export type Output = ExecuteResult | Error;
@@ -192,7 +197,7 @@ export type ExecuteResult = {
   /**
    * The result of executing the prompt.
    */
-  data: JSONValue;
+  data: OutputData;
 
   /**
    * The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
