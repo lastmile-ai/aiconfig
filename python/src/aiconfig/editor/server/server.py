@@ -30,6 +30,12 @@ log_handler.setFormatter(formatter)
 
 LOGGER.addHandler(log_handler)
 
+EXCLUDE_OPTIONS = {
+    "prompt_index": True,
+    "file_path": True,
+    "callback_manager": True,
+}
+
 
 class ServerMode(Enum):
     # debug = "DEBUG"
@@ -167,7 +173,7 @@ def load_model_parser_module():
     return result.to_flask_format()
 
 
-def _get_validated_request_path(raw_path: str) -> Result[str, str]:
+def _get_validated_path(raw_path: str) -> Result[str, str]:
     if not raw_path:
         return Err("No path provided")
     resolved = _resolve_path(raw_path)
@@ -176,11 +182,14 @@ def _get_validated_request_path(raw_path: str) -> Result[str, str]:
     return Ok(resolved)
 
 
-def _http_response_with_path(path_fn: Callable[[str], HttpPostResponse]) -> HttpPostResponse:
+def _validated_request_path() -> Result[str, str]:
     request_json = request.get_json()
     path = request_json.get("path", None)
+    return _get_validated_path(path)
 
-    validated_path = _get_validated_request_path(path)
+
+def _http_response_with_path(path_fn: Callable[[str], HttpPostResponse]) -> HttpPostResponse:
+    validated_path = _validated_request_path()
     match validated_path:
         case Ok(path):
             return path_fn(path)
@@ -190,9 +199,12 @@ def _http_response_with_path(path_fn: Callable[[str], HttpPostResponse]) -> Http
 
 @app.route("/api/load", methods=["POST"])
 def load():
+    # value.model_dump(exclude=EXCLUDE_OPTIONS)
+    # path =
+    # LOGGER.info(f"Loading AIConfig from {path}")
+    state = _get_server_state(app)
+
     def _run_with_path(path: str) -> HttpPostResponse:
-        LOGGER.info(f"Loading AIConfig from {path}")
-        state = _get_server_state(app)
         try:
             state.aiconfig = AIConfigRuntime.load(path)  # type: ignore
             return HttpPostResponse(message="Done")
@@ -270,16 +282,21 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
     LOGGER.info(f"Starting server on http://localhost:{edit_config.server_port}")
 
     app.server_state = ServerState()  # type: ignore
-    _init_server_state(app, edit_config)
-
-    debug = edit_config.server_mode in [ServerMode.DEBUG_BACKEND, ServerMode.DEBUG_SERVERS]
-    LOGGER.info(f"Running in {edit_config.server_mode} mode")
-    app.run(port=edit_config.server_port, debug=debug, use_reloader=True)
-    return Ok("Done")
+    res_server_state_init = _init_server_state(app, edit_config)
+    match res_server_state_init:
+        case Ok(_):
+            LOGGER.info("Initialized server state")
+            debug = edit_config.server_mode in [ServerMode.DEBUG_BACKEND, ServerMode.DEBUG_SERVERS]
+            LOGGER.info(f"Running in {edit_config.server_mode} mode")
+            app.run(port=edit_config.server_port, debug=debug, use_reloader=True)
+            return Ok("Done")
+        case Err(e):
+            LOGGER.error(f"Failed to initialize server state: {e}")
+            return Err(f"Failed to initialize server state: {e}")
 
 
 def _load_user_parser_module_if_exists(parsers_module_path: str) -> None:
-    res = _get_validated_request_path(parsers_module_path).and_then(_load_user_parser_module)
+    res = _get_validated_path(parsers_module_path).and_then(_load_user_parser_module)
     match res:
         case Ok(_):
             LOGGER.info(f"Loaded parsers module from {parsers_module_path}")
@@ -287,7 +304,20 @@ def _load_user_parser_module_if_exists(parsers_module_path: str) -> None:
             LOGGER.warning(f"Failed to load parsers module: {e}")
 
 
-def _init_server_state(app: Flask, edit_config: EditServerConfig) -> None:
+def _safe_load_from_disk(aiconfig_path: str) -> Result[AIConfigRuntime, str]:
+    validated_path = _get_validated_path(aiconfig_path)
+
+    def _load(path: str) -> Result[AIConfigRuntime, str]:
+        try:
+            aiconfig = AIConfigRuntime.load(path)  # type: ignore
+            return Ok(aiconfig)
+        except Exception as e:
+            return core_utils.ErrWithTraceback(e)
+
+    return validated_path.and_then(_load)
+
+
+def _init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None, str]:
     LOGGER.info("Initializing server state")
     _load_user_parser_module_if_exists(edit_config.parsers_module_path)
     state = _get_server_state(app)
@@ -295,9 +325,16 @@ def _init_server_state(app: Flask, edit_config: EditServerConfig) -> None:
     assert state.aiconfig is None
     if edit_config.aiconfig_path:
         LOGGER.info(f"Loading AIConfig from {edit_config.aiconfig_path}")
-        aiconfig_runtime = AIConfigRuntime.load(edit_config.aiconfig_path)  # type: ignore
-        state.aiconfig = aiconfig_runtime
-        LOGGER.info(f"Loaded AIConfig from {edit_config.aiconfig_path}")
+        aiconfig_runtime = _safe_load_from_disk(edit_config.aiconfig_path)
+        LOGGER.debug(f"{aiconfig_runtime.is_ok()=}")
+        match aiconfig_runtime:
+            case Ok(aiconfig_runtime_):
+                state.aiconfig = aiconfig_runtime_
+                LOGGER.info(f"Loaded AIConfig from {edit_config.aiconfig_path}")
+                return Ok(None)
+            case Err(e):
+                LOGGER.error(f"Failed to load AIConfig from {edit_config.aiconfig_path}: {e}")
+                return Err(f"Failed to load AIConfig from {edit_config.aiconfig_path}: {e}")
     else:
         aiconfig_runtime = AIConfigRuntime.create()  # type: ignore
         state.aiconfig = aiconfig_runtime
