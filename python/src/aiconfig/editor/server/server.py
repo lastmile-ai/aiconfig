@@ -2,12 +2,13 @@ from dataclasses import dataclass
 from enum import Enum
 import logging
 from types import ModuleType
-from typing import Any, Callable, Optional
+from typing import Any, Callable, NewType, Optional
 
 import lastmile_utils.lib.core.api as core_utils
 from flask import Flask, request
 from pydantic import field_validator
 from result import Err, Ok, Result
+import result
 
 from aiconfig.Config import AIConfigRuntime
 import importlib
@@ -29,6 +30,9 @@ formatter = logging.Formatter(core_utils.LOGGER_FMT)
 log_handler.setFormatter(formatter)
 
 LOGGER.addHandler(log_handler)
+
+UnvalidatedPath = NewType("UnvalidatedPath", str)
+ValidatedPath = NewType("ValidatedPath", str)
 
 
 class ServerMode(Enum):
@@ -63,14 +67,21 @@ class ServerState:
 @dataclass(frozen=True)
 class HttpPostResponse:
     message: str
-    output: str | None = None
+    aiconfig: AIConfigRuntime | None
     code: int = 200
 
-    def to_flask_format(self) -> tuple[dict[str, str], int]:
-        out: dict[str, str] = {}
-        out["message"] = self.message
-        if self.output is not None:
-            out["output"] = self.output
+    EXCLUDE_OPTIONS = {
+        "prompt_index": True,
+        "file_path": True,
+        "callback_manager": True,
+    }
+
+    def to_flask_format(self) -> tuple[dict[str, str | core_utils.JSONObject], int]:
+        out: dict[str, str | core_utils.JSONObject] = {
+            "message": self.message,
+        }
+        if self.aiconfig is not None:
+            out["aiconfig"] = self.aiconfig.model_dump(exclude=HttpPostResponse.EXCLUDE_OPTIONS)
 
         return out, self.code
 
@@ -138,16 +149,11 @@ def _get_http_response_load_user_parser_module(path_to_module: str) -> HttpPostR
         case Ok(_):
             msg = f"Successfully registered model parsers from {path_to_module}"
             LOGGER.info(msg)
-            return HttpPostResponse(
-                message=msg,
-            )
+            return HttpPostResponse(message=msg, aiconfig=None)
         case Err(e):
             msg = f"Failed to register model parsers from {path_to_module}: {e}"
             LOGGER.error(msg)
-            return HttpPostResponse(
-                message=msg,
-                code=400,
-            )
+            return HttpPostResponse(message=msg, code=400, aiconfig=None)
 
 
 app = Flask(__name__, static_url_path="")
@@ -160,65 +166,75 @@ def home():
 
 @app.route("/api/load_model_parser_module", methods=["POST"])
 def load_model_parser_module():
-    def _run_with_path(path: str) -> HttpPostResponse:
-        return _get_http_response_load_user_parser_module(path)
+    path = _validated_request_path()
 
-    result = _http_response_with_path(_run_with_path)
-    return result.to_flask_format()
+    def _to_flask(resp: HttpPostResponse) -> tuple[dict[str, str | core_utils.JSONObject], int]:
+        return resp.to_flask_format()
+
+    res_response = path.map(_get_http_response_load_user_parser_module).map(_to_flask)
+    return res_response.unwrap_or(
+        HttpPostResponse(
+            message="Failed to load model parser module",
+            code=400,
+            aiconfig=None
+            #
+        ).to_flask_format()
+    )
 
 
-def _get_validated_path(raw_path: str) -> Result[str, str]:
+def _get_validated_path(raw_path: str, allow_create: bool = False) -> Result[ValidatedPath, str]:
+    LOGGER.debug(f"{allow_create=}")
     if not raw_path:
         return Err("No path provided")
     resolved = _resolve_path(raw_path)
-    if not os.path.isfile(resolved):
+    if not allow_create and not os.path.isfile(resolved):
         return Err(f"File does not exist: {resolved}")
-    return Ok(resolved)
+    return Ok(ValidatedPath(resolved))
 
 
-def _validated_request_path() -> Result[str, str]:
+def _validated_request_path(allow_create: bool = False) -> Result[ValidatedPath, str]:
     request_json = request.get_json()
     path = request_json.get("path", None)
-    return _get_validated_path(path)
-
-
-def _http_response_with_path(path_fn: Callable[[str], HttpPostResponse]) -> HttpPostResponse:
-    validated_path = _validated_request_path()
-    match validated_path:
-        case Ok(path):
-            return path_fn(path)
-        case Err(e):
-            return HttpPostResponse(message=e, code=400)
+    return _get_validated_path(path, allow_create=allow_create)
 
 
 @app.route("/api/load", methods=["POST"])
 def load():
     state = _get_server_state(app)
 
-    def _run_with_path(path: str) -> HttpPostResponse:
-        try:
-            state.aiconfig = AIConfigRuntime.load(path)  # type: ignore
-            return HttpPostResponse(message="Done")
-        except Exception as e:
-            return HttpPostResponse(message=f"<p>Failed to load AIConfig from {path}: {e}", code=400)
-
-    return _http_response_with_path(_run_with_path).to_flask_format()
+    path_val = _validated_request_path()
+    res_aiconfig = path_val.and_then(_safe_load_from_disk)
+    match res_aiconfig:
+        case Ok(aiconfig):
+            LOGGER.warning(f"Loaded AIConfig from {path_val}. This may have overwritten in-memory changes.")
+            state.aiconfig = aiconfig
+            return HttpPostResponse(message="Loaded", aiconfig=aiconfig).to_flask_format()
+        case Err(e):
+            return HttpPostResponse(message=f"Failed to load AIConfig: {path_val}, {e}", code=400, aiconfig=None).to_flask_format()
 
 
 @app.route("/api/save", methods=["POST"])
 def save():
-    def _run_with_path(path: str) -> HttpPostResponse:
-        LOGGER.info(f"Saving AIConfig to {path}")
-        state = _get_server_state(app)
-        try:
-            state.aiconfig.save(path)  # type: ignore
-            return HttpPostResponse(message="Done")
-        except Exception as e:
-            err: Err[str] = core_utils.ErrWithTraceback(e)
-            LOGGER.error(f"Failed to save AIConfig to {path}: {err}")
-            return HttpPostResponse(message=f"<p>Failed to save AIConfig to {path}: {err}", code=400)
+    state = _get_server_state(app)
+    if state.aiconfig is None:
+        return HttpPostResponse(message="No AIConfig in memory, nothing to save.", code=400, aiconfig=None).to_flask_format()
+    else:
+        aiconfig: AIConfigRuntime = state.aiconfig
 
-    return _http_response_with_path(_run_with_path).to_flask_format()
+        path_val = _validated_request_path(allow_create=True)
+        res_save: Result[HttpPostResponse, str] = result.do(
+            Ok(HttpPostResponse(message="Saved to disk", aiconfig=aiconfig))
+            for path_val_ok in path_val
+            for _ in _safe_save_to_disk(aiconfig, path_val_ok)
+        )
+        return res_save.unwrap_or(
+            HttpPostResponse(
+                #
+                message="Failed to save to disk",
+                code=400,
+                aiconfig=None,
+            )
+        ).to_flask_format()
 
 
 @app.route("/api/create", methods=["POST"])
@@ -295,17 +311,21 @@ def _load_user_parser_module_if_exists(parsers_module_path: str) -> None:
             LOGGER.warning(f"Failed to load parsers module: {e}")
 
 
-def _safe_load_from_disk(aiconfig_path: str) -> Result[AIConfigRuntime, str]:
-    validated_path = _get_validated_path(aiconfig_path)
+def _safe_load_from_disk(aiconfig_path: ValidatedPath) -> Result[AIConfigRuntime, str]:
+    try:
+        aiconfig = AIConfigRuntime.load(aiconfig_path)  # type: ignore
+        return Ok(aiconfig)
+    except Exception as e:
+        return core_utils.ErrWithTraceback(e)
 
-    def _load(path: str) -> Result[AIConfigRuntime, str]:
-        try:
-            aiconfig = AIConfigRuntime.load(path)  # type: ignore
-            return Ok(aiconfig)
-        except Exception as e:
-            return core_utils.ErrWithTraceback(e)
 
-    return validated_path.and_then(_load)
+def _safe_save_to_disk(aiconfig: AIConfigRuntime, aiconfig_path: ValidatedPath) -> Result[None, str]:
+    try:
+        save_res = aiconfig.save(aiconfig_path)
+        # type: ignore
+        return Ok(save_res)
+    except Exception as e:
+        return core_utils.ErrWithTraceback(e)
 
 
 def _init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None, str]:
@@ -316,7 +336,8 @@ def _init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None
     assert state.aiconfig is None
     if edit_config.aiconfig_path:
         LOGGER.info(f"Loading AIConfig from {edit_config.aiconfig_path}")
-        aiconfig_runtime = _safe_load_from_disk(edit_config.aiconfig_path)
+        val_path = _get_validated_path(edit_config.aiconfig_path)
+        aiconfig_runtime = val_path.and_then(_safe_load_from_disk)
         LOGGER.debug(f"{aiconfig_runtime.is_ok()=}")
         match aiconfig_runtime:
             case Ok(aiconfig_runtime_):
@@ -330,3 +351,4 @@ def _init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None
         aiconfig_runtime = AIConfigRuntime.create()  # type: ignore
         state.aiconfig = aiconfig_runtime
         LOGGER.info("Created new AIConfig")
+        return Ok(None)
