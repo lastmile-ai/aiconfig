@@ -34,7 +34,7 @@ class EditServerConfig(core_utils.Record):
     aiconfig_path: Optional[str] = None
     log_level: str | int = "INFO"
     server_mode: str
-    parsers_module_path: Optional[str] = None
+    parsers_module_path: str = "python/src/aiconfig/editor/default_user_model_parsers_plugin.py"
 
 
 @dataclass
@@ -249,8 +249,7 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[int, str]:
 
 
 def _init_server_state(app: Flask, edit_config: EditServerConfig) -> None:
-    if edit_config.parsers_module_path is not None:
-        _load_user_module_from_path_and_register_model_parsers(edit_config.parsers_module_path)
+    _load_user_module_from_path_and_register_model_parsers(edit_config.parsers_module_path)
 
     LOGGER.info("Initializing server state")
     assert edit_config.server_mode in {"debug_servers", "debug_backend", "prod"}
