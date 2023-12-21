@@ -17,9 +17,57 @@ import os
 from aiconfig.model_parser import InferenceOptions
 
 
+logging.getLogger("werkzeug").disabled = True
+
+logging.basicConfig(format=core_utils.LOGGER_FMT)
+LOGGER = logging.getLogger(__name__)
+
+log_handler = logging.FileHandler("editor_flask_server.log", mode="a")
+formatter = logging.Formatter(core_utils.LOGGER_FMT)
+log_handler.setFormatter(formatter)
+
+LOGGER.addHandler(log_handler)
+
+
+class EditServerConfig(core_utils.Record):
+    server_port: int = 8080
+    aiconfig_path: Optional[str] = None
+    log_level: str | int = "INFO"
+    server_mode: str
+    parsers_module_path: Optional[str] = None
+
+
+@dataclass
+class ServerState:
+    aiconfig_runtime: AIConfigRuntime | None = None
+
+
+@dataclass(frozen=True)
+class HttpPOSTResponse:
+    message: str
+    output: str | None = None
+    code: int = 200
+
+    def to_flask_format(self) -> tuple[dict[str, str], int]:
+        out: dict[str, str] = {}
+        out["message"] = self.message
+        if self.output is not None:
+            out["output"] = self.output
+
+        return out, self.code
+
+
+def _get_server_state(app: Flask) -> ServerState:
+    return app.server_state  # type: ignore
+
+
+def _resolve_path(path: str) -> str:
+    return os.path.abspath(os.path.expanduser(path))
+
+
 def _import_module_from_path(path_to_module: str) -> Result[ModuleType, str]:
     LOGGER.debug(f"{path_to_module=}")
-    resolved_path = os.path.abspath(os.path.expanduser(path_to_module))
+    resolved_path = _resolve_path(path_to_module)
     LOGGER.debug(f"{resolved_path=}")
     module_name = os.path.basename(resolved_path).replace(".py", "")
 
@@ -55,7 +103,8 @@ def _register_user_model_parsers(user_register_fn: Callable[[], None]) -> Result
         return core_utils.ErrWithTraceback(e)
 
 
-def _load_user_module_from_path_and_register_model_parsers(path_to_module: str) -> Result[str, str]:
+def _load_user_module_from_path_and_register_model_parsers(path_to_module: str) -> HttpPOSTResponse:
+    LOGGER.info(f"Importing parsers module from {path_to_module}")
     res_user_module = _import_module_from_path(path_to_module)
     register_result = (
         res_user_module.and_then(_load_register_fn_from_user_module)  #
@@ -66,46 +115,19 @@ def _load_user_module_from_path_and_register_model_parsers(path_to_module: str) 
         case Ok(_):
             msg = f"Successfully registered model parsers from {path_to_module}"
             LOGGER.info(msg)
-            return Ok(msg)
+            return HttpPOSTResponse(
+                message=msg,
+            )
         case Err(e):
             msg = f"Failed to register model parsers from {path_to_module}: {e}"
             LOGGER.error(msg)
-            return Err(msg)
-
-
-# UserClass = getattr(user_module, "UserClass")
-
-
-logging.getLogger("werkzeug").disabled = True
-
-logging.basicConfig(format=core_utils.LOGGER_FMT)
-LOGGER = logging.getLogger(__name__)
-
-log_handler = logging.FileHandler("editor_flask_server.log", mode="a")
-formatter = logging.Formatter(core_utils.LOGGER_FMT)
-log_handler.setFormatter(formatter)
-
-LOGGER.addHandler(log_handler)
-
-
-class EditServerConfig(core_utils.Record):
-    server_port: int = 8080
-    aiconfig_path: Optional[str] = None
-    log_level: str | int = "INFO"
-    server_mode: str
-    parsers_module_path: Optional[str] = None
+            return HttpPOSTResponse(
+                message=msg,
+                code=400,
+            )
 
 
 app = Flask(__name__, static_url_path="")
-
-
-@dataclass
-class ServerState:
-    aiconfig_runtime: AIConfigRuntime | None = None
-
-
-def _get_server_state(app: Flask) -> ServerState:
-    return app.server_state  # type: ignore
 
 
 @app.route("/")
@@ -113,39 +135,54 @@ def home():
     return app.send_static_file("index.html")
 
 
-@app.route("/api/load", methods=["POST"])
-def load():
-    ss = _get_server_state(app)
+@app.route("/api/load_model_parser_module", methods=["POST"])
+def load_model_parser_module():
+    def _run_with_path(path: str) -> HttpPOSTResponse:
+        return _load_user_module_from_path_and_register_model_parsers(path)
+
+    return _http_response_with_path(_run_with_path).to_flask_format()
+
+
+def _http_response_with_path(path_fn: Callable[[str], HttpPOSTResponse]) -> HttpPOSTResponse:
     request_json = request.get_json()
     path = request_json["path"]
-    LOGGER.info(f"Loading AIConfig from {path}")
     if not path:
-        return {"message": "No path provided"}, 400
-    elif not os.path.isfile(path):
-        return {"message": f"File does not exist: {path}"}, 400
-    else:
+        return HttpPOSTResponse(message="No path provided", code=400)
+
+    resolved = _resolve_path(path)
+    if not os.path.isfile(resolved):
+        return HttpPOSTResponse(message=f"File does not exist: {path}", code=400)
+    return path_fn(resolved)
+
+
+@app.route("/api/load", methods=["POST"])
+def load():
+    def _run_with_path(path: str) -> HttpPOSTResponse:
+        LOGGER.info(f"Loading AIConfig from {path}")
+        ss = _get_server_state(app)
         try:
             ss.aiconfig_runtime = AIConfigRuntime.load(path)  # type: ignore
-            return {"message": "Done"}, 200
+            return HttpPOSTResponse(message="Done")
         except Exception as e:
-            return {"message": f"<p>Failed to load AIConfig from {path}: {e}"}, 400
+            return HttpPOSTResponse(message=f"<p>Failed to load AIConfig from {path}: {e}", code=400)
+
+    return _http_response_with_path(_run_with_path).to_flask_format()
 
 
 @app.route("/api/save", methods=["POST"])
 def save():
-    ss = _get_server_state(app)
-    request_json = request.get_json()
-    path = request_json["path"]
-    LOGGER.info(f"Saving AIConfig to {path}")
-    if not path:
-        return {"message": "No path provided"}, 400
-    else:
+    def _run_with_path(path: str) -> HttpPOSTResponse:
+        LOGGER.info(f"Saving AIConfig to {path}")
+        ss = _get_server_state(app)
         try:
             ss.aiconfig_runtime.save(path)  # type: ignore
-            return {"message": "Done"}, 200
+            return HttpPOSTResponse(message="Done")
         except Exception as e:
             err: Err[str] = core_utils.ErrWithTraceback(e)
-            return {"message": f"<p>Failed to save AIConfig to {path}: {err}"}, 400
+            LOGGER.error(f"Failed to save AIConfig to {path}: {err}")
+            return HttpPOSTResponse(message=f"<p>Failed to save AIConfig to {path}: {err}", code=400)
+
+    return _http_response_with_path(_run_with_path).to_flask_format()
 
 
 @app.route("/api/create", methods=["POST"])
@@ -213,7 +250,6 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[int, str]:
 
 def _init_server_state(app: Flask, edit_config: EditServerConfig) -> None:
     if edit_config.parsers_module_path is not None:
-        LOGGER.info(f"Importing parsers module from {edit_config.parsers_module_path}")
         _load_user_module_from_path_and_register_model_parsers(edit_config.parsers_module_path)
 
     LOGGER.info("Initializing server state")
