@@ -38,7 +38,7 @@ export const OpenAIChatModelParserPromptSchema: PromptSchema = {
         items: {
           type: "object",
           required: ["name", "parameters"],
-          parameters: {
+          properties: {
             name: {
               type: "string",
             },
@@ -52,10 +52,7 @@ export const OpenAIChatModelParserPromptSchema: PromptSchema = {
         },
       },
       logit_bias: {
-        type: "map",
-        keys: {
-          type: "string",
-        },
+        type: "map", // map keyed with strings for now
         items: {
           type: "integer",
           minimum: -100,
