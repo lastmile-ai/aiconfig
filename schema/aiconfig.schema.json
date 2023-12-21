@@ -195,6 +195,14 @@
         }
       }
     },
+    "OutputData": {
+      "description": "The output type that data can conform to. Must be explicitly defined and returned by model parsers",
+      "anyOf": [
+        {
+          "type": "string"
+        }
+      ]
+    },
     "Output": {
       "description": "Model inference result.",
       "anyOf": [
@@ -212,7 +220,8 @@
               "type": "number"
             },
             "data": {
-              "description": "The result of executing the prompt."
+              "description": "The result of executing the prompt.",
+              "$ref": "#/definitions/OutputData"
             },
             "mime_type": {
               "description": "The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.",

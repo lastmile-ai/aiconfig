@@ -1,4 +1,11 @@
 import { JSONObject, JSONValue } from "./common";
+import {
+  HfInference,
+  TextGenerationArgs,
+  TextGenerationOutput,
+  TextGenerationStreamOutput,
+} from "@huggingface/inference";
+import { ChatCompletionMessage as OpenAIChatCompletionMessage } from "openai/resources/chat/completions";
 
 /**
  * AIConfig schema, latest version. For older versions, see AIConfigV*.
@@ -171,6 +178,24 @@ export type Prompt = {
 //#region Prompt Outputs
 
 /**
+ * Google does not make their types visible to other packages, so we need to
+ * maintain this manually. Do this to access the file and see for yourself:
+ * ```
+ * import { google } from "@google-ai/generativelanguage/build/protos/protos";
+ * google.ai.generativelanguage.v1beta2.ITextCompletion
+ * ```
+ */
+type GoogleChatCompletion = string | null | undefined;
+type HuggingFaceTextGeneration =
+  | TextGenerationOutput
+  | TextGenerationStreamOutput;
+type TextAndChatCompletionOutputs =
+  | OpenAIChatCompletionMessage
+  | GoogleChatCompletion
+  | HuggingFaceTextGeneration;
+export type OutputData = string | TextAndChatCompletionOutputs;
+
+/**
  * Model inference result.
  */
 export type Output = ExecuteResult | Error;
@@ -192,7 +217,7 @@ export type ExecuteResult = {
   /**
    * The result of executing the prompt.
    */
-  data: JSONValue;
+  data: OutputData;
 
   /**
    * The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
