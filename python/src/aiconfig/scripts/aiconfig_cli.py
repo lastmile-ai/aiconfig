@@ -67,8 +67,9 @@ def _process_cli_config(cli_config: AIConfigCLIConfig) -> Result[bool, str]:
 def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], str]:
     LOGGER.info("Running frontend server in background")
     try:
-        p1 = subprocess.Popen(["yarn"], cwd="src/aiconfig/editor/client")
-        p2 = subprocess.Popen(["yarn", "start"], cwd="src/aiconfig/editor/client")
+        p1 = subprocess.Popen(["yarn"], cwd="python/src/aiconfig/editor/client")
+        p2 = subprocess.Popen(["yarn", "start"], cwd="python/src/aiconfig/editor/client", stdin=subprocess.PIPE)
+        p2.stdin.write(b"n\n")
         return Ok([p1, p2])
     except Exception as e:
         return core_utils.ErrWithTraceback(e)
