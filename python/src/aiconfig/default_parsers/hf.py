@@ -12,7 +12,8 @@ from huggingface_hub.inference._text_generation import (
     TextGenerationStreamResponse,
 )
 
-from aiconfig.schema import ExecuteResult, Output, Prompt
+from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+from aiconfig import CallbackEvent
 
 from aiconfig.util.params import resolve_prompt
 
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
 # Step 1: define Helpers
 
 
-def refine_chat_completion_params(model_settings):
+def refine_chat_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
     """
     Refines the completion params for the HF text generation api. Removes any unsupported params.
     The supported keys were found by looking at the HF text generation api. `huggingface_hub.InferenceClient.text_generation()`
@@ -106,11 +107,10 @@ def construct_stream_output(
     return output
 
 
-def construct_regular_output(response, response_includes_details: bool) -> Output:
+def construct_regular_output(response: TextGenerationResponse, response_includes_details: bool) -> Output:
     metadata = {}
     data = response
     if response_includes_details:
-        response: TextGenerationResponse  # Expect response to be of type TextGenerationResponse
         data = response.generated_text
         metadata = {"details": response.details}
 
@@ -170,9 +170,9 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         prompt_name: str,
         data: Any,
         ai_config: "AIConfigRuntime",
-        parameters: Optional[Dict] = None,
+        parameters: Optional[dict[Any, Any]] = None,
         **kwargs,
-    ) -> Prompt:
+    ) -> list[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
@@ -205,9 +205,8 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         self,
         prompt: Prompt,
         aiconfig: "AIConfigRuntime",
-        options,
-        params: Optional[Dict] = {},
-    ) -> Dict:
+        params: Optional[dict[Any, Any]] = {},
+    ) -> dict[Any, Any]:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
         and constructs the completion params for that model.
@@ -230,7 +229,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         return completion_data
 
     async def run_inference(
-        self, prompt: Prompt, aiconfig, options, parameters
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: dict[Any, Any]
     ) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
