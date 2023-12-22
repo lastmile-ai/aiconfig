@@ -2,6 +2,10 @@
 
 ## Usage (prod)
 
+One liner for local testing; run this inside the root of aiconfig repo. Create a model parser registry py file to get started.
+
+`python -m 'aiconfig.scripts.aiconfig_cli' edit  --aiconfig-path=cookbooks/Getting-Started/travel.aiconfig.json --server-mode='prod' `
+
 ### Install:
 
 Install python-aiconfig from pip, then set `aiconfig` alias (in shell, .bashrc, .zshrc, etc.)
