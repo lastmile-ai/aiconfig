@@ -17,4 +17,6 @@ pytest-asyncio
 lastmile-utils==0.0.13
 hypothesis==6.91.0
 nltk
+# Editor server
 flask[async]
+flask-cors
