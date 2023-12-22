@@ -19,6 +19,7 @@ from aiconfig.editor.server.server_utils import (
 )
 from aiconfig.model_parser import InferenceOptions
 from flask import Flask, request
+from flask_cors import CORS
 from result import Err, Ok, Result
 
 logging.getLogger("werkzeug").disabled = True
@@ -34,6 +35,7 @@ LOGGER.addHandler(log_handler)
 
 
 app = Flask(__name__, static_url_path="")
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
 def _validated_request_path(allow_create: bool = False) -> Result[ValidatedPath, str]:
