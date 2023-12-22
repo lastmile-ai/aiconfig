@@ -1,4 +1,4 @@
-requests==2.30.0
+requests
 black
 flake8
 pylint
