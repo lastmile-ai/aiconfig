@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 # Step 1: define Helpers
 
 
-def refine_chat_completion_params(model_settings):
+def refine_chat_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
     """
     Refines the completion params for the HF text generation api. Removes any unsupported params.
     The supported keys were found by looking at the HF text generation api. `huggingface_hub.InferenceClient.text_generation()`
@@ -172,7 +172,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         ai_config: "AIConfigRuntime",
         parameters: Optional[Dict] = None,
         **kwargs,
-    ) -> Prompt:
+    ) -> list[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
@@ -230,7 +230,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         return completion_data
 
     async def run_inference(
-        self, prompt: Prompt, aiconfig, options, parameters
+        self, prompt: Prompt, aiconfig, options: InferenceOptions, parameters: dict[Any, Any]
     ) -> Output:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
