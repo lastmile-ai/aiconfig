@@ -6,6 +6,7 @@ from typing import Any, Callable, Optional
 
 import lastmile_utils.lib.core.api as core_utils
 from flask import Flask, request
+from flask_cors import CORS
 from pydantic import field_validator
 from result import Err, Ok, Result
 
@@ -151,6 +152,7 @@ def _get_http_response_load_user_parser_module(path_to_module: str) -> HttpPostR
 
 
 app = Flask(__name__, static_url_path="")
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
 @app.route("/")
