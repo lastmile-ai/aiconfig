@@ -2,6 +2,10 @@
 
 ## Usage (prod)
 
+One liner for local testing; run this inside the root of aiconfig repo. Create a model parser registry py file to get started.
+
+`python -m 'aiconfig.scripts.aiconfig_cli' edit  --aiconfig-path=cookbooks/Getting-Started/travel.aiconfig.json --server-mode='prod' `
+
 ### Install:
 
 Install python-aiconfig from pip, then set `aiconfig` alias (in shell, .bashrc, .zshrc, etc.)
@@ -59,7 +63,7 @@ e.g. `aiconfig edit --parsers-module-path="/path/to/my_editor_plugin.py"`
 ### Run backend and frontend servers:
 
 (debug mode will run the react server)
-`aiconfig edit  --aiconfig-path=/my/path --server-port=8080 --server-mode=debug`
+`aiconfig edit  --aiconfig-path=/my/path --server-port=8080 --server-mode=debug_servers`
 
 More info:
 `aiconfig --help`
