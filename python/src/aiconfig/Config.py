@@ -114,7 +114,7 @@ class AIConfigRuntime(AIConfig):
             Exception: If the request to the API is not successful.
         """
         if workbook_id:
-            API_ENDPOINT = "http://lastmileai.dev/api"
+            API_ENDPOINT = "https://lastmileai.dev/api"
 
             # Make sure to set the API key
             lastmileapi_token = os.environ.get("LASTMILE_API_TOKEN")
@@ -131,7 +131,7 @@ class AIConfigRuntime(AIConfig):
 
             data = resp.json()
 
-            aiconfigruntime = cls.model_validate_json(data)
+            aiconfigruntime = cls(**data)
             update_model_parser_registry_with_config_runtime(aiconfigruntime)
             return aiconfigruntime
 
