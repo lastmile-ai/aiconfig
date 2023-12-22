@@ -192,8 +192,12 @@ export type ExecuteResult = {
   /**
    * The result of executing the prompt.
    */
-  data: JSONValue;
-
+  data:
+    | JSONValue
+    | {
+        kind: "string" | "file_uri" | "base64";
+        value: string;
+      };
   /**
    * The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
    */
