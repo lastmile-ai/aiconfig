@@ -1,0 +1,556 @@
+{
+  "$defs": {
+    "BestOfSequence": {
+      "description": "Represents a best-of sequence generated during text generation.\n\nArgs:\n    generated_text (`str`):\n        The generated text.\n    finish_reason (`FinishReason`):\n        The reason for the generation to finish, represented by a `FinishReason` value.\n    generated_tokens (`int`):\n        The number of generated tokens in the sequence.\n    seed (`Optional[int]`):\n        The sampling seed if sampling was activated.\n    prefill (`List[InputToken]`):\n        The decoder input tokens. Empty if `decoder_input_details` is False. Defaults to an empty list.\n    tokens (`List[Token]`):\n        The generated tokens. Defaults to an empty list.",
+      "properties": {
+        "generated_text": {
+          "title": "Generated Text",
+          "type": "string"
+        },
+        "finish_reason": {
+          "$ref": "#/$defs/FinishReason"
+        },
+        "generated_tokens": {
+          "title": "Generated Tokens",
+          "type": "integer"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seed"
+        },
+        "prefill": {
+          "items": {
+            "$ref": "#/$defs/InputToken"
+          },
+          "title": "Prefill",
+          "type": "array"
+        },
+        "tokens": {
+          "items": {
+            "$ref": "#/$defs/Token"
+          },
+          "title": "Tokens",
+          "type": "array"
+        }
+      },
+      "required": [
+        "generated_text",
+        "finish_reason",
+        "generated_tokens"
+      ],
+      "title": "BestOfSequence",
+      "type": "object"
+    },
+    "ChatCompletionMessage": {
+      "additionalProperties": true,
+      "properties": {
+        "content": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Content"
+        },
+        "role": {
+          "const": "assistant",
+          "title": "Role"
+        },
+        "function_call": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FunctionCall"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tool_calls": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ChatCompletionMessageToolCall"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Calls"
+        }
+      },
+      "required": [
+        "content",
+        "role"
+      ],
+      "title": "ChatCompletionMessage",
+      "type": "object"
+    },
+    "ChatCompletionMessageToolCall": {
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "function": {
+          "$ref": "#/$defs/Function"
+        },
+        "type": {
+          "const": "function",
+          "title": "Type"
+        }
+      },
+      "required": [
+        "id",
+        "function",
+        "type"
+      ],
+      "title": "ChatCompletionMessageToolCall",
+      "type": "object"
+    },
+    "CitationMetadataDict": {
+      "properties": {
+        "citation_sources": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/CitationSourceDict"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Citation Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "citation_sources"
+      ],
+      "title": "CitationMetadataDict",
+      "type": "object"
+    },
+    "CitationSourceDict": {
+      "properties": {
+        "start_index": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Start Index"
+        },
+        "end_index": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "End Index"
+        },
+        "uri": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Uri"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "License"
+        }
+      },
+      "required": [
+        "start_index",
+        "end_index",
+        "uri",
+        "license"
+      ],
+      "title": "CitationSourceDict",
+      "type": "object"
+    },
+    "Details": {
+      "description": "Represents details of a text generation.\n\nArgs:\n    finish_reason (`FinishReason`):\n        The reason for the generation to finish, represented by a `FinishReason` value.\n    generated_tokens (`int`):\n        The number of generated tokens.\n    seed (`Optional[int]`):\n        The sampling seed if sampling was activated.\n    prefill (`List[InputToken]`, *optional*):\n        The decoder input tokens. Empty if `decoder_input_details` is False. Defaults to an empty list.\n    tokens (`List[Token]`):\n        The generated tokens. Defaults to an empty list.\n    best_of_sequences (`Optional[List[BestOfSequence]]`):\n        Additional sequences when using the `best_of` parameter.",
+      "properties": {
+        "finish_reason": {
+          "$ref": "#/$defs/FinishReason"
+        },
+        "generated_tokens": {
+          "title": "Generated Tokens",
+          "type": "integer"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seed"
+        },
+        "prefill": {
+          "items": {
+            "$ref": "#/$defs/InputToken"
+          },
+          "title": "Prefill",
+          "type": "array"
+        },
+        "tokens": {
+          "items": {
+            "$ref": "#/$defs/Token"
+          },
+          "title": "Tokens",
+          "type": "array"
+        },
+        "best_of_sequences": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/BestOfSequence"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Best Of Sequences"
+        }
+      },
+      "required": [
+        "finish_reason",
+        "generated_tokens"
+      ],
+      "title": "Details",
+      "type": "object"
+    },
+    "FinishReason": {
+      "enum": [
+        "length",
+        "eos_token",
+        "stop_sequence"
+      ],
+      "title": "FinishReason",
+      "type": "string"
+    },
+    "Function": {
+      "additionalProperties": true,
+      "properties": {
+        "arguments": {
+          "title": "Arguments",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "arguments",
+        "name"
+      ],
+      "title": "Function",
+      "type": "object"
+    },
+    "FunctionCall": {
+      "additionalProperties": true,
+      "properties": {
+        "arguments": {
+          "title": "Arguments",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "arguments",
+        "name"
+      ],
+      "title": "FunctionCall",
+      "type": "object"
+    },
+    "GoogleChatCompletionOutput": {
+      "description": "A dict representation of a `glm.Message`.",
+      "properties": {
+        "author": {
+          "title": "Author",
+          "type": "string"
+        },
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "citation_metadata": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CitationMetadataDict"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "author",
+        "content",
+        "citation_metadata"
+      ],
+      "title": "GoogleChatCompletionOutput",
+      "type": "object"
+    },
+    "InputToken": {
+      "description": "Represents an input token.\n\nArgs:\n    id (`int`):\n        Token ID from the model tokenizer.\n    text (`str`):\n        Token text.\n    logprob (`float` or `None`):\n        Log probability of the token. Optional since the logprob of the first token cannot be computed.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "integer"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "logprob": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Logprob"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "InputToken",
+      "type": "object"
+    },
+    "StreamDetails": {
+      "description": "Represents details of a text generation stream.\n\nArgs:\n    finish_reason (`FinishReason`):\n        The reason for the generation to finish, represented by a `FinishReason` value.\n    generated_tokens (`int`):\n        The number of generated tokens.\n    seed (`Optional[int]`):\n        The sampling seed if sampling was activated.",
+      "properties": {
+        "finish_reason": {
+          "$ref": "#/$defs/FinishReason"
+        },
+        "generated_tokens": {
+          "title": "Generated Tokens",
+          "type": "integer"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seed"
+        }
+      },
+      "required": [
+        "finish_reason",
+        "generated_tokens"
+      ],
+      "title": "StreamDetails",
+      "type": "object"
+    },
+    "TextGenerationResponse": {
+      "description": "Represents a response for text generation.\n\nOnly returned when `details=True`, otherwise a string is returned.\n\nArgs:\n    generated_text (`str`):\n        The generated text.\n    details (`Optional[Details]`):\n        Generation details. Returned only if `details=True` is sent to the server.",
+      "properties": {
+        "generated_text": {
+          "title": "Generated Text",
+          "type": "string"
+        },
+        "details": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Details"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "generated_text"
+      ],
+      "title": "TextGenerationResponse",
+      "type": "object"
+    },
+    "TextGenerationStreamResponse": {
+      "description": "Represents a response for streaming text generation.\n\nOnly returned when `details=True` and `stream=True`.\n\nArgs:\n    token (`Token`):\n        The generated token.\n    generated_text (`Optional[str]`, *optional*):\n        The complete generated text. Only available when the generation is finished.\n    details (`Optional[StreamDetails]`, *optional*):\n        Generation details. Only available when the generation is finished.",
+      "properties": {
+        "token": {
+          "$ref": "#/$defs/Token"
+        },
+        "generated_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Generated Text"
+        },
+        "details": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StreamDetails"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "token"
+      ],
+      "title": "TextGenerationStreamResponse",
+      "type": "object"
+    },
+    "Token": {
+      "description": "Represents a token.\n\nArgs:\n    id (`int`):\n        Token ID from the model tokenizer.\n    text (`str`):\n        Token text.\n    logprob (`float`):\n        Log probability of the token.\n    special (`bool`):\n        Indicates whether the token is a special token. It can be used to ignore\n        tokens when concatenating.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "integer"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "logprob": {
+          "title": "Logprob",
+          "type": "number"
+        },
+        "special": {
+          "title": "Special",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "logprob",
+        "special"
+      ],
+      "title": "Token",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "output_type": {
+      "const": "execute_result",
+      "title": "Output Type"
+    },
+    "execution_count": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Execution Count"
+    },
+    "data": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/GoogleChatCompletionOutput"
+        },
+        {
+          "$ref": "#/$defs/TextGenerationResponse"
+        },
+        {
+          "$ref": "#/$defs/TextGenerationStreamResponse"
+        },
+        {
+          "$ref": "#/$defs/ChatCompletionMessage"
+        },
+        {}
+      ],
+      "title": "Data"
+    },
+    "mime_type": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Mime Type"
+    },
+    "metadata": {
+      "title": "Metadata",
+      "type": "object"
+    }
+  },
+  "required": [
+    "output_type",
+    "data",
+    "metadata"
+  ],
+  "title": "ExecuteResult",
+  "type": "object"
+}

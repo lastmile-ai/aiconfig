@@ -349,10 +349,11 @@ class OpenAIInference(ParameterizedModelParser):
 
         if output.output_type == "execute_result":
             message = output.data
-            if message.get("content"):
-                return message.get("content")
-            elif message.get("function_call"):
-                return message.get("function_call")
+            print(f"{message=}")
+            if hasattr(message, "content"):
+                return message.content
+            elif hasattr(message, "function_call"):
+                return message.function_call
             else:
                 return ""
         else:

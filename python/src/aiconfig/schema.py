@@ -1,8 +1,17 @@
 import warnings
 from typing import Any, Dict, List, Literal, Optional, Union
+from typing_extensions import TypedDict
+
+from huggingface_hub.inference._text_generation import (
+    TextGenerationResponse as TextGenerationOutput,
+    TextGenerationStreamResponse as TextGenerationStreamOutput,
+)
+from openai.types.chat.chat_completion_message import (
+    ChatCompletionMessage as OpenAIChatCompletionMessage,
+)
+from pydantic import BaseModel
 
 from aiconfig.util.config_utils import extract_override_settings
-from pydantic import BaseModel
 
 # Pydantic doesn't handle circular type references very well, TODO: handle this better than defining as type Any
 # JSONObject represents a JSON object as a dictionary with string keys and JSONValue values
@@ -10,6 +19,44 @@ JSONObject = Dict[str, Any]
 # InferenceSettings represents settings for model inference as a JSON object
 InferenceSettings = JSONObject
 
+# TODO (rossdanlm): Use MessageDict from google.generativeai module
+# instead of manually defining it here to avoid this error:
+# ```
+# PydanticUserError: Please use `typing_extensions.TypedDict`
+# instead of `typing.TypedDict` on Python < 3.12.
+# ```
+# Rossdan: Google Chat here
+from google.generativeai.types.discuss_types import MessageDict as GoogleChatCompletionOutput
+
+class CitationSourceDict(TypedDict):
+    start_index: int | None
+    end_index: int | None
+    uri: str | None
+    license: str | None
+
+class CitationMetadataDict(TypedDict):
+    citation_sources: List[CitationSourceDict | None]
+
+class GoogleChatCompletionOutput(TypedDict):
+    """A dict representation of a `glm.Message`."""
+    author: str
+    content: str
+    citation_metadata: Optional[CitationMetadataDict]
+
+HuggingFaceTextGenerationOutput = Union[
+    TextGenerationOutput,
+    TextGenerationStreamOutput,
+]
+TextAndChatCompletionOutputs = Union[
+    GoogleChatCompletionOutput,
+    HuggingFaceTextGenerationOutput,
+    OpenAIChatCompletionMessage,
+]
+OutputData = Union[
+    str,
+    TextAndChatCompletionOutputs,
+    Any,
+]
 
 class ExecuteResult(BaseModel):
     # Type of output
@@ -17,7 +64,7 @@ class ExecuteResult(BaseModel):
     # nth choice.
     execution_count: Union[int, None] = None
     # The result of the executing prompt.
-    data: Any
+    data: OutputData
     # The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
     mime_type: Optional[str] = None
     # Output metadata
