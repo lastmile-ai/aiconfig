@@ -4,12 +4,15 @@ import { Flex, Loader } from "@mantine/core";
 import { AIConfig } from "aiconfig";
 import { useCallback, useEffect, useState } from "react";
 import { ufetch } from "ufetch";
+import { ROUTE_TABLE } from "./utils/api";
 
 export default function Editor() {
   const [aiconfig, setAiConfig] = useState<ClientAIConfig | undefined>();
 
   const loadConfig = useCallback(async () => {
-    const res = await ufetch.post(`/api/load`, {});
+    const res = await ufetch.post(ROUTE_TABLE.LOAD, {
+      path: "cli/aiconfig-editor/travel.aiconfig.json",
+    });
 
     setAiConfig(res.aiconfig);
   }, []);
@@ -17,10 +20,6 @@ export default function Editor() {
   useEffect(() => {
     loadConfig();
   }, [loadConfig]);
-
-  const onBackNavigation = useCallback(() => {
-    //  TODO: Handle file back navigation
-  }, []);
 
   const onSave = useCallback(async (aiconfig: AIConfig) => {
     const res = await ufetch.post(`/api/aiconfig/save`, {
@@ -37,11 +36,7 @@ export default function Editor() {
           <Loader size="xl" />
         </Flex>
       ) : (
-        <EditorContainer
-          aiconfig={aiconfig}
-          onBackNavigation={onBackNavigation}
-          onSave={onSave}
-        />
+        <EditorContainer aiconfig={aiconfig} onSave={onSave} />
       )}
     </div>
   );
