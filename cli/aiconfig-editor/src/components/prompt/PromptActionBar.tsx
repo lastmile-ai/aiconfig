@@ -1,3 +1,4 @@
+import ExecutePromptButton from "@/src/components/prompt/ExecutePromptButton";
 import PromptParametersRenderer from "@/src/components/prompt/PromptParametersRenderer";
 import ModelSettingsRenderer from "@/src/components/prompt/model_settings/ModelSettingsRenderer";
 import PromptMetadataRenderer from "@/src/components/prompt/prompt_metadata/PromptMetadataRenderer";
@@ -34,31 +35,28 @@ export default memo(function PromptActionBar({
   const modelSettingsSchema = promptSchema?.model_settings;
   const promptMetadataSchema = promptSchema?.prompt_metadata;
 
-  return (
-    <Flex direction="column" justify="space-between">
-      {isExpanded ? (
-        <Container miw="400px">
-          <ActionIcon size="sm" onClick={() => setIsExpanded(false)}>
-            <IconClearAll />
-          </ActionIcon>
-          <ModelSettingsRenderer
-            settings={getModelSettings(prompt)}
-            schema={modelSettingsSchema}
-            onUpdateModelSettings={onUpdateModelSettings}
-          />
-          <PromptMetadataRenderer
-            prompt={prompt}
-            schema={promptMetadataSchema}
-          />
-          {checkParametersSupported(prompt) && (
-            <PromptParametersRenderer prompt={prompt} />
-          )}{" "}
-        </Container>
-      ) : (
-        <ActionIcon size="sm" onClick={() => setIsExpanded(true)}>
-          <IconClearAll />
-        </ActionIcon>
-      )}
+  return isExpanded ? (
+    <Container miw="400px">
+      <ActionIcon size="sm" onClick={() => setIsExpanded(false)}>
+        <IconClearAll />
+      </ActionIcon>
+      <ModelSettingsRenderer
+        settings={getModelSettings(prompt)}
+        schema={modelSettingsSchema}
+        onUpdateModelSettings={onUpdateModelSettings}
+      />
+      <PromptMetadataRenderer prompt={prompt} schema={promptMetadataSchema} />
+      {checkParametersSupported(prompt) && (
+        <PromptParametersRenderer prompt={prompt} />
+      )}{" "}
+      <ExecutePromptButton prompt={prompt} />
+    </Container>
+  ) : (
+    <Flex direction="column" justify="space-between" h="100%">
+      <ActionIcon size="sm" onClick={() => setIsExpanded(true)}>
+        <IconClearAll />
+      </ActionIcon>
+      <ExecutePromptButton prompt={prompt} />
     </Flex>
   );
 });
