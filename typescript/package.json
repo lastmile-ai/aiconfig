@@ -45,7 +45,7 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@google-ai/generativelanguage": "^1.1.0",
+    "@google-ai/generativelanguage": "1.1.0",
     "@huggingface/inference": "^2.6.4",
     "axios": "^1.5.1",
     "google-auth-library": "^9.1.0",

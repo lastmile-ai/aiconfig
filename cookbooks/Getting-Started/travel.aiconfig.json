@@ -20,7 +20,7 @@
   "prompts": [
     {
       "name": "get_activities",
-      "input": "Tell me 10 fun attractions to do in NYC."
+      "input": "Tell me 2 fun attractions to do in NYC."
     },
     {
       "name": "gen_itinerary",
