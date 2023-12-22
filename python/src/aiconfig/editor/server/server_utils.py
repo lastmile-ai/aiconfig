@@ -6,13 +6,17 @@ import sys
 from dataclasses import dataclass
 from enum import Enum
 from types import ModuleType
-from typing import Any, Callable, NewType, Optional
+from typing import Any, Callable, NewType, Optional, Type, TypeVar, cast
+import typing
 
 import lastmile_utils.lib.core.api as core_utils
+import result
 from aiconfig.Config import AIConfigRuntime
 from flask import Flask
 from pydantic import field_validator
 from result import Err, Ok, Result
+
+MethodName = NewType("MethodName", str)
 
 logging.getLogger("werkzeug").disabled = True
 
@@ -25,9 +29,20 @@ log_handler.setFormatter(formatter)
 
 LOGGER.addHandler(log_handler)
 
+# TODO unhardcode
+LOGGER.setLevel(logging.INFO)
+
 
 UnvalidatedPath = NewType("UnvalidatedPath", str)
 ValidatedPath = NewType("ValidatedPath", str)
+
+OpArgs = NewType("OpArgs", dict[str, Any])
+
+
+T = TypeVar("T")
+
+# TODO: protocol
+Operation = Callable[[AIConfigRuntime, OpArgs], Result[T, str]]
 
 
 class ServerMode(Enum):
@@ -213,3 +228,115 @@ def init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None,
         state.aiconfig = aiconfig_runtime
         LOGGER.info("Created new AIConfig")
         return Ok(None)
+
+
+def safe_run_aiconfig_method(aiconfig: AIConfigRuntime, method_name: MethodName, method_args: OpArgs) -> Result[None, str]:
+    # TODO: use `out`
+    try:
+        method = getattr(aiconfig, method_name)
+        out = method(**method_args)
+        LOGGER.info(f"Method result ({method_name}): {out}")
+        return Ok(None)
+    except Exception as e:
+        LOGGER.info(f"Failed to run method ({method_name}): {e}")
+        return core_utils.ErrWithTraceback(e)
+
+
+def safe_run_aiconfig_static_method(method_name: MethodName, method_args: OpArgs, output_typ: Type[T]) -> Result[T, str]:
+    try:
+        method = getattr(AIConfigRuntime, method_name)
+        out = method(**method_args)
+        LOGGER.info(f"Method result: {out}")
+        return Ok(out)
+    except Exception as e:
+        LOGGER.info(f"Failed to run method: {e}")
+        return core_utils.ErrWithTraceback(e)
+
+
+def make_op_run_method(method_name: MethodName) -> Operation[None]:
+    def _op(aiconfig: AIConfigRuntime, operation_args: OpArgs) -> Result[None, str]:
+        LOGGER.info(f"Running method: {method_name}, {operation_args=}")
+        return safe_run_aiconfig_method(aiconfig, method_name, operation_args)
+
+    return _op
+
+
+def run_aiconfig_operation_with_op_args(
+    aiconfig: AIConfigRuntime | None,
+    operation_name: str,
+    operation: Operation[None],
+    res_op_args: Result[OpArgs, str],
+) -> FlaskResponse:
+    if aiconfig is None:
+        LOGGER.info(f"No AIConfig in memory, can't run {operation_name}.")
+        return HttpResponseWithAIConfig(
+            message=f"No AIConfig in memory, can't run {operation_name}.",
+            code=400,
+            aiconfig=None,
+        ).to_flask_format()
+
+    LOGGER.info(f"About to run operation: {operation_name}, {res_op_args=}")
+    res_run = result.do(
+        operation(aiconfig, OpArgs(op_args_ok))
+        #
+        for op_args_ok in res_op_args
+    )
+
+    LOGGER.info(f"{res_run=}")
+
+    match res_run:
+        case Ok(_):
+            return HttpResponseWithAIConfig(
+                message="Done",
+                aiconfig=aiconfig,
+            ).to_flask_format()
+        case Err(e):
+            return HttpResponseWithAIConfig(
+                message=f"Failed run {operation_name}: {e}",
+                code=400,
+                aiconfig=None,
+            ).to_flask_format()
+
+
+def validated_op_args_from_request_json(
+    request_json: core_utils.JSONObject,
+    signature: dict[str, Type[Any]],
+) -> Result[OpArgs, str]:
+    if signature.keys() != request_json.keys():
+        LOGGER.info(f"Expected keys: {signature.keys()}, got: {request_json.keys()}")
+        return Err(f"Expected keys: {signature.keys()}, got: {request_json.keys()}")
+
+    def _resolve(key: str, value: core_utils.JSONValue, signature: dict[str, Type[Any]]) -> Result[Any, str]:
+        LOGGER.info(f"Resolving: {key}, {value}, {signature[key]}")
+        _type = signature[key]
+        if isinstance(value, typing.Dict):
+            return core_utils.safe_model_validate_json_object(_type, value)
+        else:
+            return Ok(value)
+
+    operation_args_results = {key: _resolve(key, value, signature) for key, value in request_json.items()}
+    LOGGER.info(f"{operation_args_results=}")
+    res_op_args: Result[OpArgs, str] = cast(Result[OpArgs, str], core_utils.result_reduce_dict_all_ok(operation_args_results))
+
+    return res_op_args
+
+
+def run_aiconfig_operation_with_request_json(
+    aiconfig: AIConfigRuntime | None,
+    request_json: core_utils.JSONObject,
+    operation_name: str,
+    operation: Operation[None],
+    signature: dict[str, Type[Any]],
+) -> FlaskResponse:
+    LOGGER.info(f"{operation_name=}, {signature=}, {request_json=}")
+
+    op_args = validated_op_args_from_request_json(request_json, signature)
+    match op_args:
+        case Ok(op_args_ok):
+            return run_aiconfig_operation_with_op_args(aiconfig, operation_name, operation, Ok(op_args_ok))
+        case Err(e):
+            return HttpResponseWithAIConfig(
+                message=f"Failed to run {operation_name}: {e}",
+                code=400,
+                aiconfig=None,
+            ).to_flask_format()
