@@ -59,7 +59,7 @@ e.g. `aiconfig edit --parsers-module-path="/path/to/my_editor_plugin.py"`
 ### Run backend and frontend servers:
 
 (debug mode will run the react server)
-`aiconfig edit  --aiconfig-path=/my/path --server-port=8080 --server-mode=debug`
+`aiconfig edit  --aiconfig-path=/my/path --server-port=8080 --server-mode=debug_servers`
 
 More info:
 `aiconfig --help`
