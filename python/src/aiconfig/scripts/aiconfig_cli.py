@@ -5,6 +5,7 @@ import subprocess
 import sys
 
 import lastmile_utils.lib.core.api as core_utils
+import result
 from aiconfig.editor.server.server import EditServerConfig, ServerMode, run_backend_server
 from result import Err, Ok, Result
 
@@ -29,8 +30,9 @@ async def main(argv: list[str]) -> int:
 
 
 def run_subcommand(argv: list[str]) -> Result[str, str]:
+    LOGGER.info("Running subcommand")
     subparser_record_types = {"edit": EditServerConfig}
-    main_parser = core_utils.argparsify(AIConfigCLIConfig, subparser_record_types=subparser_record_types)
+    main_parser = core_utils.argparsify(AIConfigCLIConfig, subparser_rs=subparser_record_types)
 
     res_cli_config = core_utils.parse_args(main_parser, argv[1:], AIConfigCLIConfig)
     res_cli_config.and_then(_process_cli_config)
@@ -39,9 +41,17 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
     LOGGER.info(f"Running subcommand: {subparser_name}")
 
     if subparser_name == "edit":
+        LOGGER.debug("Running edit subcommand")
         res_edit_config = core_utils.parse_args(main_parser, argv[1:], EditServerConfig)
+        LOGGER.debug(f"{res_edit_config.is_ok()=}")
         res_servers = res_edit_config.and_then(_run_editor_servers)
-        return res_servers
+        out: Result[str, str] = result.do(
+            #
+            Ok(",".join(res_servers_ok))
+            #
+            for res_servers_ok in res_servers
+        )
+        return out
     else:
         return Err(f"Unknown subparser: {subparser_name}")
 
@@ -53,27 +63,28 @@ def _sigint(procs: list[subprocess.Popen[bytes]]) -> Result[str, str]:
     return Ok("Sent SIGINT to frontend servers.")
 
 
-def _run_editor_servers(edit_config: EditServerConfig) -> Result[str, str]:
+def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]:
     LOGGER.info("Running editor servers")
     frontend_procs = _run_frontend_server_background() if edit_config.server_mode in [ServerMode.DEBUG_SERVERS] else Ok([])
+    match frontend_procs:
+        case Ok(_):
+            pass
+        case Err(e):
+            return Err(e)
 
+    results: list[Result[str, str]] = []
     backend_res = run_backend_server(edit_config)
     match backend_res:
-        case Ok(msg):
-            LOGGER.info("Backend server res: Ok:\n%s", msg)
-            out = Ok(msg)
+        case Ok(_):
+            pass
         case Err(e):
-            LOGGER.critical("Backend server err: %s", e)
-            out = Err(e)
+            return Err(e)
+
+    results.append(backend_res)
 
     sigint_res = frontend_procs.and_then(_sigint)
-    match sigint_res:
-        case Ok(msg):
-            LOGGER.info("SIGINT res: Ok:\n%s", msg)
-        case Err(e):
-            LOGGER.critical("SIGINT err: %s", e)
-
-    return out
+    results.append(sigint_res)
+    return core_utils.result_reduce_list_all_ok(results)
 
 
 def _process_cli_config(cli_config: AIConfigCLIConfig) -> Result[bool, str]:

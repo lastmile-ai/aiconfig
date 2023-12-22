@@ -29,9 +29,10 @@ export function extractOverrideSettings(
   modelName: string
 ) {
   let modelMetadata: ModelMetadata | string;
-  const globalModelSettings: InferenceSettings =
-    {...(configRuntime.getGlobalSettings(modelName)) ?? {}};
-  inferenceSettings = {...(inferenceSettings) ?? {}}
+  const globalModelSettings: InferenceSettings = {
+    ...(configRuntime.getGlobalSettings(modelName) ?? {}),
+  };
+  inferenceSettings = { ...(inferenceSettings ?? {}) };
 
   if (globalModelSettings != null) {
     // Check if the model settings from the input data are the same as the global model settings
