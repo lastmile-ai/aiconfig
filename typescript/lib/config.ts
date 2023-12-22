@@ -11,8 +11,10 @@ import { InferenceOptions, ModelParser } from "./modelParser";
 import { ModelParserRegistry } from "./modelParserRegistry";
 import axios from "axios";
 import * as fs from "fs";
+import yaml from "js-yaml";
+import * as path from "path";
 import _ from "lodash";
-import { getAPIKeyFromEnv } from "./utils";
+import { getAPIKeyFromEnv, yamlToJson } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
 import { PaLMTextParser } from "./parsers/palm";
@@ -96,8 +98,11 @@ export class AIConfigRuntime implements AIConfig {
    * @param aiConfigFilePath File path to the AIConfig to load.
    */
   public static load(aiConfigFilePath: string) {
-    const aiConfigString = fs.readFileSync(aiConfigFilePath, "utf8");
-    const aiConfigObj = JSON.parse(aiConfigString);
+    let aiConfigObj = yamlToJson(aiConfigFilePath);
+    if (aiConfigObj == null) {
+      const aiConfigString = fs.readFileSync(aiConfigFilePath, "utf8");
+      aiConfigObj = JSON.parse(aiConfigString);
+    }
 
     const config = this.loadJSON(aiConfigObj);
     config.filePath = aiConfigFilePath;
@@ -211,7 +216,11 @@ export class AIConfigRuntime implements AIConfig {
    * @param filePath The path to the file to save to.
    * @param saveOptions Options that determine how to save the AIConfig to the file.
    */
-  public save(filePath?: string, saveOptions?: SaveOptions) {
+  public save(
+    filePath?: string,
+    saveOptions?: SaveOptions,
+    mode: "json" | "yaml" = "json"
+  ) {
     const keysToOmit = ["filePath", "callbackManager"] as const;
 
     try {
@@ -228,7 +237,12 @@ export class AIConfigRuntime implements AIConfig {
       }
 
       // TODO: saqadri - make sure that the object satisfies the AIConfig schema
-      const aiConfigString = JSON.stringify(aiConfigObj, null, 2);
+      let aiConfigString;
+      if (mode === "yaml") {
+        aiConfigString = yaml.dump(aiConfigObj, { indent: 2 });
+      } else {
+        aiConfigString = JSON.stringify(aiConfigObj, null, 2);
+      }
 
       if (!filePath) {
         filePath = this.filePath ?? "aiconfig.json";

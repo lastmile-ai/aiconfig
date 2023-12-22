@@ -1,4 +1,7 @@
 import _ from "lodash";
+import * as fs from "fs";
+import * as path from "path";
+import yaml from "js-yaml";
 import { AIConfigRuntime } from "./config";
 import { InferenceSettings, ModelMetadata } from "../types";
 import { JSONObject } from "../common";
@@ -29,9 +32,10 @@ export function extractOverrideSettings(
   modelName: string
 ) {
   let modelMetadata: ModelMetadata | string;
-  const globalModelSettings: InferenceSettings =
-    {...(configRuntime.getGlobalSettings(modelName)) ?? {}};
-  inferenceSettings = {...(inferenceSettings) ?? {}}
+  const globalModelSettings: InferenceSettings = {
+    ...(configRuntime.getGlobalSettings(modelName) ?? {}),
+  };
+  inferenceSettings = { ...(inferenceSettings ?? {}) };
 
   if (globalModelSettings != null) {
     // Check if the model settings from the input data are the same as the global model settings
@@ -56,4 +60,28 @@ export function extractOverrideSettings(
     return overrides;
   }
   return inferenceSettings;
+}
+
+/**
+ *  Check if a file is valid YAML.
+ *
+ *    This function checks if a file is valid YAML by trying to parse it as YAML.
+ * @param filePath The path to the file to check.
+ * @returns True if the file is valid YAML, false otherwise.
+ */
+export function yamlToJson(filePath: string) {
+  // Check file extension
+  const ext = path.extname(filePath);
+  if (ext !== ".yaml" && ext !== ".yml") {
+    return null;
+  }
+
+  // Try to parse it as YAML
+  try {
+    const fileContents = fs.readFileSync(filePath, "utf8");
+    return yaml.load(fileContents);
+  } catch {
+    // If parsing throws an error, it's not valid YAML
+    return null;
+  }
 }
