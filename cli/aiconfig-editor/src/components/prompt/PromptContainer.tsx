@@ -1,4 +1,5 @@
 import PromptActionBar from "@/src/components/prompt/PromptActionBar";
+import PromptOutputBar from "@/src/components/prompt/PromptOutputBar";
 import PromptInputRenderer from "@/src/components/prompt/prompt_input/PromptInputRenderer";
 import PromptOutputsRenderer from "@/src/components/prompt/prompt_outputs/PromptOutputsRenderer";
 import { ClientPrompt } from "@/src/shared/types";
@@ -67,6 +68,7 @@ export default memo(function PromptContainer({
             schema={inputSchema}
             onChangeInput={onChangeInput}
           />
+          <PromptOutputBar />
           {prompt.outputs && <PromptOutputsRenderer outputs={prompt.outputs} />}
         </Flex>
       </Card>

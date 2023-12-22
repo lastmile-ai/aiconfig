@@ -1,11 +1,19 @@
 import PromptContainer from "@/src/components/prompt/PromptContainer";
-import { Container, Text, Group, Button, createStyles } from "@mantine/core";
+import {
+  Container,
+  Text,
+  Group,
+  Button,
+  createStyles,
+  Stack,
+} from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { AIConfig, PromptInput } from "aiconfig";
 import router from "next/router";
 import { useCallback, useReducer, useState } from "react";
 import aiconfigReducer from "@/src/components/aiconfigReducer";
 import { ClientAIConfig, clientConfigToAIConfig } from "@/src/shared/types";
+import AddPromptButton from "@/src/components/prompt/AddPromptButton";
 
 type Props = {
   aiconfig: ClientAIConfig;
@@ -14,6 +22,27 @@ type Props = {
 };
 
 const useStyles = createStyles((theme) => ({
+  addPromptRow: {
+    borderRadius: "4px",
+    display: "inline-block",
+    bottom: -24,
+    left: -40,
+    "&:hover": {
+      backgroundColor:
+        theme.colorScheme === "light"
+          ? theme.colors.gray[1]
+          : "rgba(255, 255, 255, 0.1)",
+    },
+    [theme.fn.smallerThan("sm")]: {
+      marginLeft: "0",
+      display: "block",
+      position: "static",
+      bottom: -10,
+      left: 0,
+      height: 28,
+      margin: "10px 0",
+    },
+  },
   promptsContainer: {
     [theme.fn.smallerThan("sm")]: {
       padding: "0 0 200px 0",
@@ -94,14 +123,18 @@ export default function EditorContainer({
       <Container maw="80rem" className={classes.promptsContainer}>
         {aiconfigState.prompts.map((prompt: any, i: number) => {
           return (
-            <PromptContainer
-              index={i}
-              prompt={prompt}
-              key={prompt.name}
-              onChangePromptInput={onChangePromptInput}
-              onUpdateModelSettings={onUpdatePromptModelSettings}
-              defaultConfigModelName={aiconfigState.metadata.default_model}
-            />
+            <Stack key={prompt.name}>
+              <PromptContainer
+                index={i}
+                prompt={prompt}
+                onChangePromptInput={onChangePromptInput}
+                onUpdateModelSettings={onUpdatePromptModelSettings}
+                defaultConfigModelName={aiconfigState.metadata.default_model}
+              />
+              <div className={classes.addPromptRow}>
+                <AddPromptButton />
+              </div>
+            </Stack>
           );
         })}
       </Container>
