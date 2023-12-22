@@ -6,8 +6,10 @@ import sys
 
 import lastmile_utils.lib.core.api as core_utils
 import result
-from aiconfig.editor.server.server import EditServerConfig, ServerMode, run_backend_server
 from result import Err, Ok, Result
+from aiconfig.editor.server.server import run_backend_server
+
+from aiconfig.editor.server.server_utils import EditServerConfig, ServerMode
 
 
 class AIConfigCLIConfig(core_utils.Record):
