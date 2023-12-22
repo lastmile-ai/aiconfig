@@ -1,6 +1,7 @@
 import json
 import os
-from typing import Any, Dict, List, Optional, Tuple
+import yaml
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import requests
 from aiconfig.callback import CallbackEvent, CallbackManager
@@ -84,7 +85,7 @@ class AIConfigRuntime(AIConfig):
         )
 
     @classmethod
-    def load(cls, json_config_filepath) -> "AIConfigRuntime":
+    def load(cls, json_config_filepath: str) -> "AIConfigRuntime":
         """
         Constructs AIConfigRuntime from a JSON file given its file path and returns it.
 
@@ -92,10 +93,29 @@ class AIConfigRuntime(AIConfig):
             json_config_filepath (str): The file path to the JSON configuration file.
         """
         # open file
+
+        def yaml_to_json(file_path: str):
+            # Check file extension
+            _, ext = os.path.splitext(file_path)
+            if ext not in [".yaml", ".yml"]:
+                return False
+
+            # Try to parse it as YAML
+            try:
+                with open(file_path) as file:
+                    data = yaml.safe_load(file)
+                    return json.dumps(data)
+            except yaml.YAMLError:
+                return False
+
+        data = yaml_to_json(json_config_filepath)
+
         with open(json_config_filepath) as file:
+            data = data if data else file.read()
+
             # load the file as bytes and let pydantic handle the parsing
             # validated_data =  AIConfig.model_validate_json(file.read())
-            aiconfigruntime = cls.model_validate_json(file.read())
+            aiconfigruntime = cls.model_validate_json(data)
             update_model_parser_registry_with_config_runtime(aiconfigruntime)
 
             # set the file path. This is used when saving the config
@@ -114,7 +134,7 @@ class AIConfigRuntime(AIConfig):
             Exception: If the request to the API is not successful.
         """
         if workbook_id:
-            API_ENDPOINT = "http://lastmileai.dev/api"
+            API_ENDPOINT = "https://lastmileai.dev/api"
 
             # Make sure to set the API key
             lastmileapi_token = os.environ.get("LASTMILE_API_TOKEN")
@@ -131,7 +151,7 @@ class AIConfigRuntime(AIConfig):
 
             data = resp.json()
 
-            aiconfigruntime = cls.model_validate_json(data)
+            aiconfigruntime = cls(**data)
             update_model_parser_registry_with_config_runtime(aiconfigruntime)
             return aiconfigruntime
 
@@ -357,13 +377,7 @@ class AIConfigRuntime(AIConfig):
         result: Any = await self.run(prompt_name, params, options=options, **kwargs)
         return self.get_output_text(prompt_name, result[0])
 
-    #
-    #     Saves this AIConfig to a file.
-    #     @param filePath The path to the file to save to.
-    #    @param saveOptions Options that determine how to save the AIConfig to the file.
-    #    */
-
-    def save(self, json_config_filepath: str | None = None, include_outputs: bool = True):
+    def save(self, json_config_filepath: str | None = None, include_outputs: bool = True, mode: Literal["json", "yaml"] | str = "json"):
         """
         Save the AI Configuration to a JSON file.
 
@@ -371,6 +385,8 @@ class AIConfigRuntime(AIConfig):
             json_config_filepath (str, optional): The file path to the JSON configuration file.
                 Defaults to "aiconfig.json".
         """
+        # Decide if we want to serialize as YAML or JSON
+
         # AIConfig json should only contain the core data fields. These are auxiliary fields that should not be persisted
         exclude_options = {
             "prompt_index": True,
@@ -385,16 +401,27 @@ class AIConfigRuntime(AIConfig):
             json_config_filepath = self.file_path or "aiconfig.json"
 
         with open(json_config_filepath, "w") as file:
-            # Serialize the AI Configuration to JSON and save it to the file
-            json.dump(
-                self.model_dump(
-                    mode="json",
-                    exclude=exclude_options,
-                    exclude_none=True,
-                ),
-                file,
-                indent=2,
+            # Serialize the AIConfig to JSON
+            json_data = self.model_dump(
+                mode="json",
+                exclude=exclude_options,
+                exclude_none=True,
             )
+            if mode == "yaml":
+                # Convert AIConfig JSON to dict and save the dict as YAML to the file
+                dict_data = json.loads(json_data)
+                yaml.dump(
+                    dict_data,
+                    file,
+                    indent=2,
+                )
+            else:
+                # Save AIConfig as JSON to the file
+                json.dump(
+                    json_data,
+                    file,
+                    indent=2,
+                )
 
     def get_output_text(self, prompt: str | Prompt, output: Optional[dict] = None) -> str:
         """

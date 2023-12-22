@@ -1,20 +1,21 @@
-requests==2.30.0
 black
 flake8
+flask[async]
+google-generativeai
+huggingface_hub
+hypothesis==6.91.0
+lastmile-utils==0.0.13
+mock
+nest_asyncio
+nltk
+openai >= 1.0.0, < 1.5
+prompt_toolkit
+pybars3
+pydantic>=2.1
 pylint
 pytest
-pydantic>=2.1
-pybars3
-google-generativeai
-openai >= 1.0.0, < 1.5
-python-dotenv
-huggingface_hub
-result
-nest_asyncio
-prompt_toolkit
-mock
 pytest-asyncio
-lastmile-utils==0.0.13
-hypothesis==6.91.0
-nltk
-flask[async]
+python-dotenv
+pyyaml
+requests
+result
