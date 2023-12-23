@@ -95,14 +95,13 @@ export type Attachment = {
 export type PromptInput =
   | {
       /**
-       * Attachments can be used to pass in non-text inputs (ex: image, audio)
+       * Attachments can be used to pass in multiple inputs of varying MIME types (ex: image, audio)
        */
       attachments?: Attachment[];
 
       /**
        * Input to the model. This can represent a single input, or multiple inputs.
-       * The structure of the data object is up to the ModelParser. For example,
-       * a multi-modal ModelParser can choose to key the data by MIME type.
+       * The structure of the data object is up to the ModelParser.
        */
       data?: JSONValue;
 
@@ -192,8 +191,12 @@ export type ExecuteResult = {
   /**
    * The result of executing the prompt.
    */
-  data: JSONValue;
-
+  data:
+    | JSONValue
+    | {
+        kind: "string" | "file_uri" | "base64";
+        value: string;
+      };
   /**
    * The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
    */
