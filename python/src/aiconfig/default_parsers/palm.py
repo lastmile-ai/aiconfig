@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 
 import google.generativeai as palm
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_parameters, resolve_prompt
 from google.generativeai.text import Completion
 
@@ -138,7 +139,7 @@ class PaLMTextParser(ParameterizedModelParser):
             )
         )
 
-        # TODO: check api key here
+        set_api_key("PALM_KEY")
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         # Return Type is of type Completion from Google Library
         completion: Completion = palm.generate_text(**completion_data)
@@ -333,7 +334,7 @@ class PaLMChatParser(ParameterizedModelParser):
             )
         )
 
-        # TODO: check and handle api key here
+        set_api_key("PALM_KEY")
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         response = palm.chat(**completion_data)
         outputs = []
@@ -416,3 +417,9 @@ def refine_completion_params(model_settings):
             completion_data[key.lower()] = model_settings[key]
 
     return completion_data
+
+
+def set_api_key(env_key: str):
+    api_key = get_api_key_from_environment(env_key)
+    # TODO: don't overwrite if set
+    palm.configure(api_key=api_key)  # type: ignore
