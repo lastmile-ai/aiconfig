@@ -157,15 +157,32 @@
           "type": "object",
           "additionalProperties": {},
           "properties": {
-            "data": {
-              "description": "Input to the model. This can represent a single input, or multiple inputs.\nThe structure of the data object is up to the ModelParser. Attachments field should be leveraged for non-text inputs (e.g. image, audio)."
-            },
             "attachments": {
-              "description": "Used to include non-text inputs (e.g. image, audio) of specified MIME types in the prompt",
+              "description": "Attachments can be used to pass in multiple inputs of varying MIME types (ex: image, audio)",
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Attachment"
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "description": "The data representing the attachment"
+                  },
+                  "mime_type": {
+                    "description": "The MIME type of the result. If not specified, the MIME type will be\nassumed to be text/plain",
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "description": "Attachment metadata",
+                    "type": "object",
+                    "additionalProperties": {}
+                  }
+                },
+                "required": [
+                  "data"
+                ]
               }
+            },
+            "data": {
+              "description": "Input to the model. This can represent a single input, or multiple inputs.\nThe structure of the data object is up to the ModelParser."
             }
           }
         },
@@ -173,27 +190,6 @@
           "type": "string"
         }
       ]
-    },
-    "Attachment": {
-      "description": "Data of specified MIME type to attach to a prompt",
-      "type": "object",
-      "required": [
-        "data"
-      ],
-      "properties": {
-        "mime_type": {
-          "description": "MIME type of the attachment. If not specified, the MIME type will be assumed to be text/plain.",
-          "type": "string"
-        },
-        "data": {
-          "description": "Data representing the attachment"
-        },
-        "metadata": {
-          "description": "Attachment metadata.",
-          "type": "object",
-          "additionalProperties": {}
-        }
-      }
     },
     "Output": {
       "description": "Model inference result.",
