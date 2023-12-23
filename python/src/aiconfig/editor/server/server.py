@@ -5,8 +5,8 @@ import result
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.editor.server.server_utils import (
     EditServerConfig,
-    FlaskPostResponse,
-    HttpPostResponse,
+    FlaskResponse,
+    HttpResponseWithAIConfig,
     ServerMode,
     ServerState,
     ValidatedPath,
@@ -21,6 +21,8 @@ from aiconfig.model_parser import InferenceOptions
 from flask import Flask, request
 from flask_cors import CORS
 from result import Err, Ok, Result
+
+from aiconfig.registry import ModelParserRegistry
 
 logging.getLogger("werkzeug").disabled = True
 
@@ -50,15 +52,15 @@ def home():
 
 
 @app.route("/api/load_model_parser_module", methods=["POST"])
-def load_model_parser_module() -> FlaskPostResponse:
+def load_model_parser_module() -> FlaskResponse:
     path = _validated_request_path()
 
-    def _to_flask(resp: HttpPostResponse) -> FlaskPostResponse:
+    def _to_flask(resp: HttpResponseWithAIConfig) -> FlaskResponse:
         return resp.to_flask_format()
 
     res_response = path.map(get_http_response_load_user_parser_module).map(_to_flask)
     return res_response.unwrap_or(
-        HttpPostResponse(
+        HttpResponseWithAIConfig(
             message="Failed to load model parser module",
             code=400,
             aiconfig=None
@@ -68,7 +70,7 @@ def load_model_parser_module() -> FlaskPostResponse:
 
 
 @app.route("/api/load", methods=["POST"])
-def load() -> FlaskPostResponse:
+def load() -> FlaskResponse:
     state = get_server_state(app)
 
     path_val = _validated_request_path()
@@ -77,27 +79,27 @@ def load() -> FlaskPostResponse:
         case Ok(aiconfig):
             LOGGER.warning(f"Loaded AIConfig from {path_val}. This may have overwritten in-memory changes.")
             state.aiconfig = aiconfig
-            return HttpPostResponse(message="Loaded", aiconfig=aiconfig).to_flask_format()
+            return HttpResponseWithAIConfig(message="Loaded", aiconfig=aiconfig).to_flask_format()
         case Err(e):
-            return HttpPostResponse(message=f"Failed to load AIConfig: {path_val}, {e}", code=400, aiconfig=None).to_flask_format()
+            return HttpResponseWithAIConfig(message=f"Failed to load AIConfig: {path_val}, {e}", code=400, aiconfig=None).to_flask_format()
 
 
 @app.route("/api/save", methods=["POST"])
-def save() -> FlaskPostResponse:
+def save() -> FlaskResponse:
     state = get_server_state(app)
     if state.aiconfig is None:
-        return HttpPostResponse(message="No AIConfig in memory, nothing to save.", code=400, aiconfig=None).to_flask_format()
+        return HttpResponseWithAIConfig(message="No AIConfig in memory, nothing to save.", code=400, aiconfig=None).to_flask_format()
     else:
         aiconfig: AIConfigRuntime = state.aiconfig
 
         path_val = _validated_request_path(allow_create=True)
-        res_save: Result[HttpPostResponse, str] = result.do(
-            Ok(HttpPostResponse(message="Saved to disk", aiconfig=aiconfig))
+        res_save: Result[HttpResponseWithAIConfig, str] = result.do(
+            Ok(HttpResponseWithAIConfig(message="Saved to disk", aiconfig=aiconfig))
             for path_val_ok in path_val
             for _ in safe_save_to_disk(aiconfig, path_val_ok)
         )
         return res_save.unwrap_or(
-            HttpPostResponse(
+            HttpResponseWithAIConfig(
                 #
                 message="Failed to save to disk",
                 code=400,
@@ -107,14 +109,14 @@ def save() -> FlaskPostResponse:
 
 
 @app.route("/api/create", methods=["POST"])
-def create() -> FlaskPostResponse:
+def create() -> FlaskResponse:
     state = get_server_state(app)
     state.aiconfig = AIConfigRuntime.create()  # type: ignore
-    return HttpPostResponse(message="Created new AIConfig", aiconfig=state.aiconfig).to_flask_format()
+    return HttpResponseWithAIConfig(message="Created new AIConfig", aiconfig=state.aiconfig).to_flask_format()
 
 
 @app.route("/api/run", methods=["POST"])
-async def run() -> FlaskPostResponse:
+async def run() -> FlaskResponse:
     state = get_server_state(app)
     request_json = request.get_json()
     prompt_name = request_json.get("prompt_name", None)
@@ -124,15 +126,14 @@ async def run() -> FlaskPostResponse:
     try:
         result = await state.aiconfig.run(prompt_name, options=inference_options)  # type: ignore
         LOGGER.debug(f"Result: {result=}")
-        return HttpPostResponse(
+        return HttpResponseWithAIConfig(
             message="Done",
             aiconfig=state.aiconfig,
         ).to_flask_format()
-        # return {"message": "Done", "output": result_text}, 200
     except Exception as e:
         err: Err[str] = core_utils.ErrWithTraceback(e)
         LOGGER.error(f"Failed to run: {err}")
-        return HttpPostResponse(
+        return HttpResponseWithAIConfig(
             message=f"Failed to run: {err}",
             code=400,
             aiconfig=None,
@@ -140,24 +141,31 @@ async def run() -> FlaskPostResponse:
 
 
 @app.route("/api/add_prompt", methods=["POST"])
-def add_prompt() -> FlaskPostResponse:
+def add_prompt() -> FlaskResponse:
     state = get_server_state(app)
     request_json = request.get_json()
     try:
         LOGGER.info(f"Adding prompt: {request_json}")
         state.aiconfig.add_prompt(**request_json)  # type: ignore
-        return HttpPostResponse(
+        return HttpResponseWithAIConfig(
             message="Done",
             aiconfig=state.aiconfig,
         ).to_flask_format()
     except Exception as e:
         err: Err[str] = core_utils.ErrWithTraceback(e)
         LOGGER.error(f"Failed to add prompt: {err}")
-        return HttpPostResponse(
+        return HttpResponseWithAIConfig(
             message=f"Failed to add prompt: {err}",
             code=400,
             aiconfig=None,
         ).to_flask_format()
+
+
+@app.route("/api/list_models", methods=["GET"])
+def list_models() -> FlaskResponse:
+    out: list[str] = ModelParserRegistry.parser_ids()  # type: ignore
+    json_obj = core_utils.JSONObject({"data": core_utils.JSONList(out)})
+    return FlaskResponse((json_obj, 200))
 
 
 def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:

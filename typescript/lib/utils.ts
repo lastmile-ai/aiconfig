@@ -1,4 +1,7 @@
 import _ from "lodash";
+import * as fs from "fs";
+import * as path from "path";
+import yaml from "js-yaml";
 import { AIConfigRuntime } from "./config";
 import { InferenceSettings, ModelMetadata } from "../types";
 import { JSONObject } from "../common";
@@ -29,9 +32,10 @@ export function extractOverrideSettings(
   modelName: string
 ) {
   let modelMetadata: ModelMetadata | string;
-  const globalModelSettings: InferenceSettings =
-    {...(configRuntime.getGlobalSettings(modelName)) ?? {}};
-  inferenceSettings = {...(inferenceSettings) ?? {}}
+  const globalModelSettings: InferenceSettings = {
+    ...(configRuntime.getGlobalSettings(modelName) ?? {}),
+  };
+  inferenceSettings = { ...(inferenceSettings ?? {}) };
 
   if (globalModelSettings != null) {
     // Check if the model settings from the input data are the same as the global model settings
@@ -56,4 +60,9 @@ export function extractOverrideSettings(
     return overrides;
   }
   return inferenceSettings;
+}
+
+export function isYamlExt(filePath: string) {
+  const ext = path.extname(filePath)?.toLowerCase();
+  return ext === ".yaml" || ext === ".yml";
 }

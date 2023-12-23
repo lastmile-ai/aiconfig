@@ -33,6 +33,7 @@
   "devDependencies": {
     "@babel/preset-typescript": "^7.23.3",
     "@types/jest": "^29.5.10",
+    "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.14.197",
     "@typescript-eslint/eslint-plugin": "^6.7.2",
     "@typescript-eslint/parser": "^6.7.2",
@@ -51,6 +52,7 @@
     "google-auth-library": "^9.1.0",
     "gpt-3-encoder": "^1.1.4",
     "handlebars": "^4.7.8",
+    "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "node-fetch": "^3.3.2",
     "openai": "4.11.1",

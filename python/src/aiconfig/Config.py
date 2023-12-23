@@ -1,6 +1,7 @@
 import json
 import os
-from typing import Any, Dict, List, Optional, Tuple
+import yaml
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import requests
 from aiconfig.callback import CallbackEvent, CallbackManager
@@ -16,6 +17,7 @@ from .registry import (
     update_model_parser_registry_with_config_runtime,
 )
 from .schema import AIConfig, Prompt
+from .util.config_utils import is_yaml_ext
 
 gpt_models = [
     "gpt-4",
@@ -84,23 +86,29 @@ class AIConfigRuntime(AIConfig):
         )
 
     @classmethod
-    def load(cls, json_config_filepath) -> "AIConfigRuntime":
+    def load(cls, config_filepath: str) -> "AIConfigRuntime":
         """
-        Constructs AIConfigRuntime from a JSON file given its file path and returns it.
+        Constructs AIConfigRuntime from a JSON or YAML file given its file path and returns it.
 
         Args:
-            json_config_filepath (str): The file path to the JSON configuration file.
+            config_filepath (str): The file path to the configuration file.
         """
-        # open file
-        with open(json_config_filepath) as file:
-            # load the file as bytes and let pydantic handle the parsing
-            # validated_data =  AIConfig.model_validate_json(file.read())
-            aiconfigruntime = cls.model_validate_json(file.read())
-            update_model_parser_registry_with_config_runtime(aiconfigruntime)
 
-            # set the file path. This is used when saving the config
-            aiconfigruntime.file_path = json_config_filepath
-            return aiconfigruntime
+        with open(config_filepath) as file:
+            if is_yaml_ext(config_filepath):
+                yaml_data = yaml.safe_load(file)
+                data = json.dumps(yaml_data)
+            else:
+                data = file.read()
+
+        # load the file as bytes and let pydantic handle the parsing
+        # validated_data =  AIConfig.model_validate_json(file.read())
+        aiconfigruntime = cls.model_validate_json(data)
+        update_model_parser_registry_with_config_runtime(aiconfigruntime)
+
+        # set the file path. This is used when saving the config
+        aiconfigruntime.file_path = config_filepath
+        return aiconfigruntime
 
     @classmethod
     def load_from_workbook(cls, workbook_id: str) -> "AIConfigRuntime":
@@ -357,20 +365,16 @@ class AIConfigRuntime(AIConfig):
         result: Any = await self.run(prompt_name, params, options=options, **kwargs)
         return self.get_output_text(prompt_name, result[0])
 
-    #
-    #     Saves this AIConfig to a file.
-    #     @param filePath The path to the file to save to.
-    #    @param saveOptions Options that determine how to save the AIConfig to the file.
-    #    */
-
-    def save(self, json_config_filepath: str | None = None, include_outputs: bool = True):
+    def save(self, config_filepath: str | None = None, include_outputs: bool = True, mode: Literal["json", "yaml"] | None = None):
         """
-        Save the AI Configuration to a JSON file.
+        Save the AI Configuration to a file.
 
         Args:
-            json_config_filepath (str, optional): The file path to the JSON configuration file.
-                Defaults to "aiconfig.json".
+            config_filepath (str, optional): The file path to the JSON or YAML configuration file.
+                Defaults to "aiconfig.json" or "aiconfig.yaml", depending on the mode.
         """
+        # Decide if we want to serialize as YAML or JSON
+
         # AIConfig json should only contain the core data fields. These are auxiliary fields that should not be persisted
         exclude_options = {
             "prompt_index": True,
@@ -381,20 +385,39 @@ class AIConfigRuntime(AIConfig):
         if not include_outputs:
             exclude_options["prompts"] = {"__all__": {"outputs"}}
 
-        if not json_config_filepath:
-            json_config_filepath = self.file_path or "aiconfig.json"
+        default_filepath = "aiconfig.yaml" if mode == "yaml" else "aiconfig.json"
 
-        with open(json_config_filepath, "w") as file:
-            # Serialize the AI Configuration to JSON and save it to the file
-            json.dump(
-                self.model_dump(
-                    mode="json",
-                    exclude=exclude_options,
-                    exclude_none=True,
-                ),
-                file,
-                indent=2,
+        if not config_filepath:
+            config_filepath = self.file_path or default_filepath
+
+        if mode is None:
+            if is_yaml_ext(config_filepath):
+                mode = "yaml"
+            else:
+                # Default to JSON
+                mode = "json"
+
+        with open(config_filepath, "w") as file:
+            # Serialize the AIConfig to JSON
+            json_data = self.model_dump(
+                mode="json",
+                exclude=exclude_options,
+                exclude_none=True,
             )
+            if mode == "yaml":
+                # Save AIConfig JSON as YAML to the file
+                yaml.dump(
+                    json_data,
+                    file,
+                    indent=2,
+                )
+            else:
+                # Save AIConfig as JSON to the file
+                json.dump(
+                    json_data,
+                    file,
+                    indent=2,
+                )
 
     def get_output_text(self, prompt: str | Prompt, output: Optional[dict] = None) -> str:
         """

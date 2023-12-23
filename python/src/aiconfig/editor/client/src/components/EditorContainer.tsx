@@ -8,7 +8,6 @@ import { ClientAIConfig, clientConfigToAIConfig } from "../shared/types";
 
 type Props = {
   aiconfig: ClientAIConfig;
-  onBackNavigation: () => void;
   onSave: (aiconfig: AIConfig) => Promise<void>;
 };
 
@@ -23,7 +22,6 @@ const useStyles = createStyles((theme) => ({
 
 export default function EditorContainer({
   aiconfig: initialAIConfig,
-  onBackNavigation,
   onSave,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
@@ -79,9 +77,6 @@ export default function EditorContainer({
     <>
       <Container maw="80rem">
         <Group grow m="sm">
-          <Button onClick={onBackNavigation} variant="default" mr="lg">
-            Back
-          </Button>
           {/* <Text sx={{ textOverflow: "ellipsis", overflow: "hidden" }} size={14}>
             {path || "No path specified"}
           </Text> */}

@@ -16,11 +16,12 @@ const ExecuteResultOutput = memo(function ExecuteResultOutput({
 }: {
   output: ClientExecuteResult;
 }) {
-  switch (output.renderData.type) {
-    case "text":
-      return <TextRenderer content={output.renderData.text} />;
-    // TODO: Handle other types of outputs
-  }
+  return null;
+  // switch (output.renderData.type) {
+  //   case "text":
+  //     return <TextRenderer content={output.renderData.text} />;
+  //   // TODO: Handle other types of outputs
+  // }
 });
 
 const Output = memo(function Output({
