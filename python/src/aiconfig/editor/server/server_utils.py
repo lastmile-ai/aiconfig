@@ -59,11 +59,11 @@ class ServerState:
     aiconfig: AIConfigRuntime | None = None
 
 
-FlaskPostResponse = NewType("FlaskPostResponse", tuple[dict[str, str | core_utils.JSONObject], int])
+FlaskResponse = NewType("FlaskResponse", tuple[core_utils.JSONObject, int])
 
 
 @dataclass(frozen=True)
-class HttpPostResponse:
+class HttpResponseWithAIConfig:
     message: str
     aiconfig: AIConfigRuntime | None
     code: int = 200
@@ -74,14 +74,14 @@ class HttpPostResponse:
         "callback_manager": True,
     }
 
-    def to_flask_format(self) -> FlaskPostResponse:
-        out: dict[str, str | core_utils.JSONObject] = {
+    def to_flask_format(self) -> FlaskResponse:
+        out: core_utils.JSONObject = {
             "message": self.message,
         }
         if self.aiconfig is not None:
-            out["aiconfig"] = self.aiconfig.model_dump(exclude=HttpPostResponse.EXCLUDE_OPTIONS)
+            out["aiconfig"] = self.aiconfig.model_dump(exclude=HttpResponseWithAIConfig.EXCLUDE_OPTIONS)
 
-        return FlaskPostResponse((out, self.code))
+        return FlaskResponse((out, self.code))
 
 
 def get_server_state(app: Flask) -> ServerState:
@@ -151,17 +151,17 @@ def load_user_parser_module(path_to_module: str) -> Result[None, str]:
     return register_result
 
 
-def get_http_response_load_user_parser_module(path_to_module: str) -> HttpPostResponse:
+def get_http_response_load_user_parser_module(path_to_module: str) -> HttpResponseWithAIConfig:
     register_result = load_user_parser_module(path_to_module)
     match register_result:
         case Ok(_):
             msg = f"Successfully registered model parsers from {path_to_module}"
             LOGGER.info(msg)
-            return HttpPostResponse(message=msg, aiconfig=None)
+            return HttpResponseWithAIConfig(message=msg, aiconfig=None)
         case Err(e):
             msg = f"Failed to register model parsers from {path_to_module}: {e}"
             LOGGER.error(msg)
-            return HttpPostResponse(message=msg, code=400, aiconfig=None)
+            return HttpResponseWithAIConfig(message=msg, code=400, aiconfig=None)
 
 
 def _load_user_parser_module_if_exists(parsers_module_path: str) -> None:
