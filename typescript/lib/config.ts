@@ -11,8 +11,9 @@ import { InferenceOptions, ModelParser } from "./modelParser";
 import { ModelParserRegistry } from "./modelParserRegistry";
 import axios from "axios";
 import * as fs from "fs";
+import yaml from "js-yaml";
 import _ from "lodash";
-import { getAPIKeyFromEnv } from "./utils";
+import { getAPIKeyFromEnv, isYamlExt } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
 import { PaLMTextParser } from "./parsers/palm";
@@ -97,7 +98,9 @@ export class AIConfigRuntime implements AIConfig {
    */
   public static load(aiConfigFilePath: string) {
     const aiConfigString = fs.readFileSync(aiConfigFilePath, "utf8");
-    const aiConfigObj = JSON.parse(aiConfigString);
+    let aiConfigObj = isYamlExt(aiConfigFilePath)
+      ? yaml.load(aiConfigString)
+      : JSON.parse(aiConfigString);
 
     const config = this.loadJSON(aiConfigObj);
     config.filePath = aiConfigFilePath;
@@ -211,7 +214,11 @@ export class AIConfigRuntime implements AIConfig {
    * @param filePath The path to the file to save to.
    * @param saveOptions Options that determine how to save the AIConfig to the file.
    */
-  public save(filePath?: string, saveOptions?: SaveOptions) {
+  public save(
+    filePath?: string,
+    saveOptions?: SaveOptions,
+    mode?: "json" | "yaml"
+  ) {
     const keysToOmit = ["filePath", "callbackManager"] as const;
 
     try {
@@ -227,11 +234,27 @@ export class AIConfigRuntime implements AIConfig {
         aiConfigObj.prompts = prompts;
       }
 
-      // TODO: saqadri - make sure that the object satisfies the AIConfig schema
-      const aiConfigString = JSON.stringify(aiConfigObj, null, 2);
-
+      const defaultFilePath =
+        mode === "yaml" ? "aiconfig.yaml" : "aiconfig.json";
       if (!filePath) {
-        filePath = this.filePath ?? "aiconfig.json";
+        filePath = this.filePath ?? defaultFilePath;
+      }
+
+      if (mode == null) {
+        if (isYamlExt(filePath)) {
+          mode = "yaml";
+        } else {
+          // Default to JSON
+          mode = "json";
+        }
+      }
+
+      // TODO: saqadri - make sure that the object satisfies the AIConfig schema
+      let aiConfigString;
+      if (mode === "yaml") {
+        aiConfigString = yaml.dump(aiConfigObj, { indent: 2 });
+      } else {
+        aiConfigString = JSON.stringify(aiConfigObj, null, 2);
       }
 
       fs.writeFileSync(filePath, aiConfigString);
