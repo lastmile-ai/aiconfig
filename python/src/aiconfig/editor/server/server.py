@@ -25,6 +25,7 @@ from aiconfig.editor.server.server_utils import (
 )
 from aiconfig.model_parser import InferenceOptions
 from flask import Flask, request
+from flask_cors import CORS
 from result import Err, Ok, Result
 
 from aiconfig.registry import ModelParserRegistry
@@ -45,6 +46,7 @@ T = TypeVar("T")
 
 
 app = Flask(__name__, static_url_path="")
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
 def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
