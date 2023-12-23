@@ -587,10 +587,11 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
 
           const output: ExecuteResult = {
             output_type: "execute_result",
-            data: { ...message },
+            data: message?.content,
             execution_count: choice.index,
             metadata: {
               finish_reason: choice.finish_reason,
+              ...message,
             },
           };
           outputs.set(choice.index, output);
@@ -625,11 +626,10 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     }
 
     if (output.output_type === "execute_result") {
-      const message = output.data as Chat.ChatCompletionMessageParam;
-      if (message.content != null) {
-        return message.content;
-      } else if (message.function_call) {
-        return JSON.stringify(message.function_call);
+      if (output.data != null) {
+        return output.data as string;
+      } else if (output.metadata?.function_call) {
+        return JSON.stringify(output.metadata?.function_call);
       } else {
         return "";
       }
