@@ -412,7 +412,8 @@ class AIConfigRuntime(AIConfig):
                     indent=2,
                 )
             else:
-                # Save AIConfig as JSON to the file
+                # Save AIConfig as JSON to the file, with the schema specified
+                json_data["$schema"] = "https://json.schemastore.org/aiconfig-1.0"
                 json.dump(
                     json_data,
                     file,
