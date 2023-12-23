@@ -225,7 +225,7 @@ class AIConfig(BaseModel):
         if not prompt:
             raise Exception(f"Prompt '{prompt}' not found in config.")
 
-        if not prompt.metadata:
+        if not prompt.metadata or not prompt.metadata.model:
             # If the prompt doesn't have a model, use the default model
             default_model = self.metadata.default_model
             if not default_model:
