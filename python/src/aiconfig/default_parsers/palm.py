@@ -146,11 +146,14 @@ class PaLMTextParser(ParameterizedModelParser):
         outputs = []
         # completion.candidates has all outputs. Candidates is an attribute of completion. Candidates is a dict. Taken from Google API impl
         for i, candidate in enumerate(completion.candidates):
-            candidate: Dict
+            # candidate is a TextCompletion obj (https://shorturl.at/emuG2), 
+            # but Pydantic TypedDict breaks for Python v<3.12  so using
+            # generic Dict type
+            candidate: Dict 
             output = ExecuteResult(
                 output_type="execute_result",
                 execution_count=i,
-                data=candidate.get("output"),
+                data=candidate.get("output", ""),
                 metadata=candidate,
             )
             outputs.append(output)
@@ -338,10 +341,14 @@ class PaLMChatParser(ParameterizedModelParser):
         response = palm.chat(**completion_data)
         outputs = []
         for i, candidate in enumerate(response.candidates):
+            # candidate is a MessageDict obj (https://shorturl.at/jKY35), 
+            # but Pydantic TypedDict breaks for Python v<3.12  so using
+            # generic Dict type
+            candidate: Dict
             output = ExecuteResult(
                 **{
                     "output_type": "execute_result",
-                    "data": candidate,
+                    "data": candidate.get("content", ""),
                     "execution_count": i,
                     "metadata": {"response": response},
                 }
@@ -367,13 +374,9 @@ class PaLMChatParser(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            message = output.data
-            if message.get("content"):
-                return message.get("content")
-            else:
-                return ""
-        else:
-            return ""
+            if isinstance(output.data, str):
+                return output.data
+        return ""
 
 
 def refine_chat_completion_params(model_settings):
