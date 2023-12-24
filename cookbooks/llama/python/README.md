@@ -8,7 +8,7 @@ All GGUF LLaMA models from https://huggingface.co/TheBloke?search_models=gguf sh
 ## Install
 
 ```
-pip install python-aiconfig python-aiconfig-llama
+pip install python-aiconfig aiconfig-extension-llama
 ```
 
 ## Usage:
