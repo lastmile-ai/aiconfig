@@ -111,7 +111,7 @@ async def test_serialize(set_temporary_env_vars):
         )
         new_prompt = serialized_prompts[0]
 
-        assert new_prompt == Prompt(
+        my_prompt = Prompt(
             name="prompt",
             input="Hello!",
             metadata=PromptMetadata(
@@ -135,14 +135,18 @@ async def test_serialize(set_temporary_env_vars):
                 ExecuteResult(
                     output_type="execute_result",
                     execution_count=None,
-                    data={
-                        "role": "assistant",
-                        "content": "Hello! How can I assist you today?",
-                    },
-                    metadata={},
+                    data='Hello! How can I assist you today?',
+                    metadata={'role': 'assistant'},
+                    mime_type=None,
                 )
             ],
         )
+        assert new_prompt.input == my_prompt.input
+        assert new_prompt.metadata == my_prompt.metadata
+        assert new_prompt.outputs == my_prompt.outputs
+        assert new_prompt.name == my_prompt.name
+        assert new_prompt == my_prompt
+    
 
         # Test completion params with a function call input
 
@@ -269,6 +273,7 @@ async def test_serialize(set_temporary_env_vars):
             ],
         }
 
+        
         prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
         new_prompt = prompts[1]
         assert new_prompt == Prompt(
@@ -317,12 +322,9 @@ async def test_serialize(set_temporary_env_vars):
             },
             outputs=[
                 {
-                    "data": {
-                        "content": "The current weather in Boston is 22 degrees Celsius and sunny.",
-                        "role": "assistant",
-                    },
+                    "data": "The current weather in Boston is 22 degrees Celsius and sunny.",
                     "execution_count": None,
-                    "metadata": {},
+                    "metadata": {"role": "assistant"},
                     "output_type": "execute_result",
                 }
             ],
