@@ -106,6 +106,17 @@ class OpenAIInference(ParameterizedModelParser):
                     messsage["content"] if role == "user" else PromptInput(**messsage)
                 )
 
+                assistant_output = []
+                if assistant_response is not None:
+                    assistant_content = assistant_response.pop("content", "")
+                    assistant_output = [
+                        ExecuteResult(
+                            output_type="execute_result",
+                            execution_count=None,
+                            data=assistant_content,
+                            metadata={**assistant_response},
+                        )
+                    ]
                 prompt = Prompt(
                     name=new_prompt_name,
                     input=input,
@@ -116,16 +127,7 @@ class OpenAIInference(ParameterizedModelParser):
                             "remember_chat_context": True,
                         }
                     ),
-                    outputs=[
-                        ExecuteResult(
-                            output_type="execute_result",
-                            execution_count=None,
-                            data=assistant_response,
-                            metadata={},
-                        )
-                    ]
-                    if assistant_response
-                    else [],
+                    outputs=assistant_output,
                 )
                 prompts.append(prompt)
             i += 1
@@ -273,12 +275,14 @@ class OpenAIInference(ParameterizedModelParser):
                 response_without_choices.update(
                     {"finish_reason": choice.get("finish_reason")}
                 )
+                output_message = choice["message"]
+                output_content = output_message.pop("content", "")
                 output = ExecuteResult(
                     **{
                         "output_type": "execute_result",
-                        "data": choice["message"],
+                        "data": output_content,
                         "execution_count": i,
-                        "metadata": response_without_choices,
+                        "metadata": {**response_without_choices, **output_content},
                     }
                 )
 
@@ -348,11 +352,10 @@ class OpenAIInference(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            message = output.data
-            if message.get("content"):
-                return message.get("content")
-            elif message.get("function_call"):
-                return message.get("function_call")
+            if isinstance(output.data, str):
+                return output.data
+            elif output.metadata.get("function_call", None):
+                return output.metadata.get("function_call")
             else:
                 return ""
         else:
@@ -493,9 +496,21 @@ def add_prompt_as_message(
     output = aiconfig.get_latest_output(prompt)
     if output:
         if output.output_type == "execute_result":
-            output_message = output.data
-            if output_message["role"] == "assistant":
-                messages.append(output_message)
+            if output.metadata.get("role", "") == "assistant":
+                output_data = output.data
+                if isinstance(output_data, str):
+                    output_message = {
+                        "content": output_data,
+                        "role": "assistant",
+                    }
+                    function_call = output.metadata.get("function_call", None)
+                    name = output.metadata.get("name", None)
+                    if function_call:
+                        output_message["function_call"] = function_call
+                    if name:
+                        output_message["name"] = name
+                    messages.append(output_message)
+                # TODO (rossdanlm): Support function call handling as output_data
     return messages
 
 
