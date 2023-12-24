@@ -1,8 +1,6 @@
 # Changelog
 
-## Python Version 1.1.6 (2023-18-11)
-
-## NPM Version 1.1.1 (2023-18-11)
+## (2023-12-18) Python Version 1.1.6, NPM Version 1.1.1 
 
 ### Features
 
@@ -25,11 +23,8 @@
 - Created table of supported models ([#501](https://github.com/lastmile-ai/aiconfig/pull/501))
 - Updated cookbooks with explicit instructions on how to set API keys ([#441](https://github.com/lastmile-ai/aiconfig/pull/441))
 
-## Python Version 1.1.5 (2023-12-11)
 
-## NPM Version 1.0.8 (2023-12-11)
-
-Full Changelog:
+## (2023-12-11) Python Version 1.1.5, NPM Version 1.0.8
 
 ### Features
 
@@ -49,13 +44,8 @@ https://github.com/lastmile-ai/aiconfig/assets/141073967/918b4ed4-41d0-4543-a0e8
 - **python-extension:** Extension for LLama-Guard using pytorch ([86cf687](https://github.com/lastmile-ai/aiconfig/pull/438))
 - - LLama Guard ([Cookbook](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/LLaMA-Guard))
 
----
 
-## Python Version 1.1.4 (2023-12-04)
-
-## NPM Version 1.0.7 (2023-12-04)
-
-Full Changelog:
+## (2023-12-04) Python Version 1.1.4, NPM Version 1.0.7
 
 ### Features
 
