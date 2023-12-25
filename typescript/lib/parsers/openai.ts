@@ -365,6 +365,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
         const input: PromptInput =
           message.role === "user" ? message.content ?? "" : { ...message };
 
+        const responseWithoutContent = _.omit(assistantResponse, ["content"]);
         const prompt: Prompt = {
           name: `${promptName}_${prompts.length + 1}`,
           input,
@@ -378,7 +379,8 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
               ? [
                   {
                     output_type: "execute_result",
-                    data: { ...assistantResponse },
+                    data: assistantResponse.content,
+                    metadata: { ...responseWithoutContent },
                   },
                 ]
               : undefined,
@@ -536,13 +538,15 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
       const outputs: ExecuteResult[] = [];
       const responseWithoutChoices = _.omit(response, "choices");
       for (const choice of response.choices) {
+        const messageWithoutContent = _.omit(choice.message, ["content"]);
         const output: ExecuteResult = {
           output_type: "execute_result",
-          data: { ...choice.message },
+          data: choice.message?.content,
           execution_count: choice.index,
           metadata: {
             finish_reason: choice.finish_reason,
             ...responseWithoutChoices,
+            ...messageWithoutContent,
           },
         };
 
@@ -585,12 +589,16 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
             /*index*/ choice.index
           );
 
+          const messageWithoutContent = _.omit(message, ["content"]);
           const output: ExecuteResult = {
             output_type: "execute_result",
-            data: { ...message },
+            // TODO (rossdanlm): Handle ChatCompletionMessage.function_call
+            // too (next diff)
+            data: message?.content,
             execution_count: choice.index,
             metadata: {
               finish_reason: choice.finish_reason,
+              ...messageWithoutContent,
             },
           };
           outputs.set(choice.index, output);
@@ -625,11 +633,10 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     }
 
     if (output.output_type === "execute_result") {
-      const message = output.data as Chat.ChatCompletionMessageParam;
-      if (message.content != null) {
-        return message.content;
-      } else if (message.function_call) {
-        return JSON.stringify(message.function_call);
+      if (typeof output.data === "string") {
+        return output.data;
+      } else if (output.metadata?.function_call) {
+        return JSON.stringify(output.metadata?.function_call);
       } else {
         return "";
       }
@@ -671,11 +678,17 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     const output = aiConfig.getLatestOutput(prompt);
     if (output != null) {
       if (output.output_type === "execute_result") {
-        const outputMessage =
-          output.data as unknown as Chat.ChatCompletionMessageParam;
         // If the prompt has output saved, add it to the messages array
-        if (outputMessage.role === "assistant") {
-          messages.push(outputMessage);
+        if (output.metadata?.role === "assistant") {
+          if (typeof output.data === "string") {
+            messages.push({
+              content: output.data,
+              role: output.metadata?.role,
+              function_call: output.metadata?.function_call,
+              name: output.metadata?.name,
+            });
+          }
+          // TODO (rossdanlm): Support function_call
         }
       }
     }

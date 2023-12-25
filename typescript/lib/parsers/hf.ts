@@ -203,7 +203,7 @@ export class HuggingFaceTextGenerationParser extends ParameterizedModelParser<Te
       const response = await this.hfClient.textGenerationStream(
         textGenerationArgs
       );
-      output = await ConstructStreamOutput(
+      output = await constructStreamOutput(
         response,
         options as InferenceOptions
       );
@@ -240,8 +240,7 @@ export class HuggingFaceTextGenerationParser extends ParameterizedModelParser<Te
     }
 
     if (output.output_type === "execute_result") {
-      return (output.data as TextGenerationOutput | TextGenerationStreamOutput)
-        .generated_text as string;
+      return output.data as string;
     } else {
       return "";
     }
@@ -254,7 +253,7 @@ export class HuggingFaceTextGenerationParser extends ParameterizedModelParser<Te
  * @param options
  * @returns
  */
-async function ConstructStreamOutput(
+async function constructStreamOutput(
   response: AsyncGenerator<TextGenerationStreamOutput>,
   options: InferenceOptions
 ): Promise<Output> {
@@ -272,7 +271,7 @@ async function ConstructStreamOutput(
 
     output = {
       output_type: "execute_result",
-      data: delta,
+      data: accumulatedMessage,
       execution_count: index,
       metadata: metadata,
     } as ExecuteResult;
@@ -281,16 +280,12 @@ async function ConstructStreamOutput(
 }
 
 function constructOutput(response: TextGenerationOutput): Output {
-  const metadata = {};
-  const data = response;
-
   const output = {
     output_type: "execute_result",
-    data: data,
+    data: response.generated_text,
     execution_count: 0,
-    metadata: metadata,
+    metadata: _.omit(response, ["generated_text"]),
   } as ExecuteResult;
-
   return output;
 }
 
