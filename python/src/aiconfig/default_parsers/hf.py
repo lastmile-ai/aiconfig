@@ -1,10 +1,6 @@
 import copy
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.util.config_utils import get_api_key_from_environment
-
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
 from huggingface_hub.inference._text_generation import (
@@ -12,13 +8,19 @@ from huggingface_hub.inference._text_generation import (
     TextGenerationStreamResponse,
 )
 
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 from aiconfig import CallbackEvent
-
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    OutputData,
+    Prompt,
+    PromptMetadata,
+)
+from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt
 
-# ModelParser Utils
-# Type hint imports
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -94,11 +96,16 @@ def construct_stream_output(
         delta = data
         if options and options.stream_callback:
             options.stream_callback(delta, accumulated_message, index)
-
+        output_data : OutputData = OutputData(
+            kind="string",
+            value=accumulated_message
+                if isinstance(accumulated_message, str)
+                else "",
+        )
         output = ExecuteResult(
             **{
                 "output_type": "execute_result",
-                "data": copy.deepcopy(accumulated_message),
+                "data": output_data,
                 "execution_count": index,
                 "metadata": metadata,
             }
@@ -109,15 +116,20 @@ def construct_stream_output(
 
 def construct_regular_output(response: TextGenerationResponse, response_includes_details: bool) -> Output:
     metadata = {}
-    data = response
+    data = response.generated_text
     if response_includes_details:
-        data = response.generated_text
         metadata = {"details": response.details}
 
+    output_data : OutputData = OutputData(
+        kind="string",
+        value=data
+            if isinstance(data, str)
+            else "",
+    )
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": data,
+            "data": output_data,
             "execution_count": 0,
             "metadata": metadata,
         }
@@ -318,7 +330,8 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
+            if isinstance(output.data, OutputData):
+                return output.data.value
+            elif isinstance(output.data, str):
                 return output.data
-        else:
-            return ""
+        return ""
