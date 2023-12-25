@@ -109,15 +109,13 @@ def construct_stream_output(
 
 def construct_regular_output(response: TextGenerationResponse, response_includes_details: bool) -> Output:
     metadata = {}
-    data = response
     if response_includes_details:
-        data = response.generated_text
         metadata = {"details": response.details}
 
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": data,
+            "data": response.generated_text,
             "execution_count": 0,
             "metadata": metadata,
         }
