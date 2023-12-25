@@ -1,10 +1,11 @@
 import { JSONObject, JSONValue } from "../../common";
 import {
-  Prompt,
-  Output,
-  PromptInput,
-  ModelMetadata,
   ExecuteResult,
+  ModelMetadata,
+  Output,
+  OutputData,
+  Prompt,
+  PromptInput,
 } from "../../types";
 import { AIConfigRuntime } from "../config";
 import { ParameterizedModelParser } from "../parameterizedModelParser";
@@ -172,9 +173,13 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
       const outputs: ExecuteResult[] = [];
       const responseWithoutChoices = _.omit(response, "choices");
       for (const choice of response.choices) {
+        const data: OutputData = {
+          kind: "string",
+          value: choice.text,
+        };
         const output: ExecuteResult = {
           output_type: "execute_result",
-          data: choice.text,
+          data,
           execution_count: choice.index,
           metadata: {
             finish_reason: choice.finish_reason,
@@ -218,9 +223,13 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
           );
 
           const chunkWithoutChoices = _.omit(chunk, "choices");
+          const data: OutputData = {
+            kind: "string",
+            value: accumulatedText,
+          };
           const output: ExecuteResult = {
             output_type: "execute_result",
-            data: accumulatedText,
+            data,
             execution_count: choice.index,
             metadata: {
               finish_reason: choice.finish_reason,
@@ -253,10 +262,13 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
     }
 
     if (output.output_type === "execute_result") {
-      return output.data as string;
-    } else {
-      return "";
+      if (output.data?.hasOwnProperty("value")) {
+        return (output.data as OutputData).value;
+      } else if (typeof output.data === "string") {
+        return output.data;
+      }
     }
+    return "";
   }
 }
 
@@ -365,7 +377,21 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
         const input: PromptInput =
           message.role === "user" ? message.content ?? "" : { ...message };
 
-        const responseWithoutContent = _.omit(assistantResponse, ["content"]);
+        let outputs: Output[] | undefined = undefined;
+        if (assistantResponse != null) {
+          const responseWithoutContent = _.omit(assistantResponse, ["content"]);
+          const assistantOutputData: OutputData = {
+            kind: "string",
+            value: assistantResponse.content ?? "",
+          };
+          outputs = [
+            {
+              output_type: "execute_result",
+              data: assistantOutputData,
+              metadata: { ...responseWithoutContent },
+            },
+          ];
+        }
         const prompt: Prompt = {
           name: `${promptName}_${prompts.length + 1}`,
           input,
@@ -374,16 +400,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
             parameters: params ?? {},
             remember_chat_context: true,
           },
-          outputs:
-            assistantResponse != null
-              ? [
-                  {
-                    output_type: "execute_result",
-                    data: assistantResponse.content,
-                    metadata: { ...responseWithoutContent },
-                  },
-                ]
-              : undefined,
+          outputs,
         };
 
         prompts.push(prompt);
@@ -539,9 +556,13 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
       const responseWithoutChoices = _.omit(response, "choices");
       for (const choice of response.choices) {
         const messageWithoutContent = _.omit(choice.message, ["content"]);
+        const data: OutputData = {
+          kind: "string",
+          value: choice.message?.content ?? "",
+        };
         const output: ExecuteResult = {
           output_type: "execute_result",
-          data: choice.message?.content,
+          data,
           execution_count: choice.index,
           metadata: {
             finish_reason: choice.finish_reason,
@@ -590,11 +611,15 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
           );
 
           const messageWithoutContent = _.omit(message, ["content"]);
+          const data: OutputData = {
+            kind: "string",
+            value: message?.content ?? "",
+          };
           const output: ExecuteResult = {
             output_type: "execute_result",
             // TODO (rossdanlm): Handle ChatCompletionMessage.function_call
             // too (next diff)
-            data: message?.content,
+            data,
             execution_count: choice.index,
             metadata: {
               finish_reason: choice.finish_reason,
@@ -633,16 +658,15 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     }
 
     if (output.output_type === "execute_result") {
-      if (typeof output.data === "string") {
+      if (output.data?.hasOwnProperty("value")) {
+        return (output.data as OutputData).value;
+      } else if (typeof output.data === "string") {
         return output.data;
       } else if (output.metadata?.function_call) {
         return JSON.stringify(output.metadata?.function_call);
-      } else {
-        return "";
       }
-    } else {
-      return "";
     }
+    return "";
   }
 
   private addPromptAsMessage(
@@ -679,10 +703,14 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     if (output != null) {
       if (output.output_type === "execute_result") {
         // If the prompt has output saved, add it to the messages array
+        output as ExecuteResult;
+        const content: string = output.data?.hasOwnProperty("value")
+          ? (output.data as OutputData).value
+          : (output.data as string);
         if (output.metadata?.role === "assistant") {
           if (typeof output.data === "string") {
             messages.push({
-              content: output.data,
+              content,
               role: output.metadata?.role,
               function_call: output.metadata?.function_call,
               name: output.metadata?.name,

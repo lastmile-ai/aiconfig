@@ -175,6 +175,15 @@ export type Prompt = {
 export type Output = ExecuteResult | Error;
 
 /**
+ * The output type of the result from executing a prompt.
+ * We use this the kind field to determine how to parse it.
+ */
+export type OutputData = {
+  kind: "string" | "file_uri" | "base64";
+  value: string;
+};
+
+/**
  * Result of executing a prompt.
  */
 export type ExecuteResult = {
@@ -191,12 +200,7 @@ export type ExecuteResult = {
   /**
    * The result of executing the prompt.
    */
-  data:
-    | JSONValue
-    | {
-        kind: "string" | "file_uri" | "base64";
-        value: string;
-      };
+  data: OutputData | JSONValue;
   /**
    * The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
    */
