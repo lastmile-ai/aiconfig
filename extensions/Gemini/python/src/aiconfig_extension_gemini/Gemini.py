@@ -5,11 +5,22 @@ import copy
 import google.generativeai as genai
 import copy
 
+from aiconfig import (
+    AIConfigRuntime,
+    CallbackEvent,
+    get_api_key_from_environment,
+)
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult, Output, Prompt
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    OutputData,
+    Prompt,
+    PromptInput,
+    PromptMetadata,
+)
 from aiconfig.util.params import resolve_prompt, resolve_prompt_string
-from aiconfig import CallbackEvent, get_api_key_from_environment, AIConfigRuntime, PromptMetadata, PromptInput
 from google.generativeai.types import content_types
 from google.protobuf.json_format import MessageToDict
 
@@ -46,10 +57,14 @@ def construct_regular_outputs(response: "AsyncGenerateContentResponse") -> list[
     """
     output_list = []
     for i, candidate in enumerate(response.candidates):
+        output_data : OutputData = OutputData(
+            kind="string",
+            value=candidate.content.parts[0].text,
+        )
         output = ExecuteResult(
             **{
                 "output_type": "execute_result",
-                "data": candidate.content.parts[0].text,
+                "data": output_data,
                 "execution_count": i,
                 # .pb is the underlying protobuf object. We convert it to a dict so that it can be serialized
                 "metadata": MessageToDict(response.prompt_feedback._pb),
@@ -81,10 +96,14 @@ async def construct_stream_outputs(
         if options is not None and options.stream_callback is not None:
             options.stream_callback(data, acc, 0)
 
+    output_data : OutputData = OutputData(
+        kind="string",
+        value=response.candidates[0].content.parts[0].text,
+    )
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": response.candidates[0].content.parts[0].text,
+            "data": output_data,
             "execution_count": 0,  # Hard coded for now. If api supports multiple candidates this can be updated.
             # .pb is the underlying protobuf object. We convert it to a dict so that it can be serialized
             "metadata": MessageToDict(response.prompt_feedback._pb),
@@ -210,6 +229,10 @@ class GeminiModelParser(ParameterizedModelParser):
                 if i + 1 < len(contents):
                     model_message = contents[i + 1]
                     model_message_parts = model_message["parts"]
+                    output_data : OutputData = OutputData(
+                        kind="string",
+                        value=model_message_parts[0],
+                    )
                     # Gemini api currently only supports one candidate aka one output. Model should only be retuning one part in response.
                     # Should output data be this list of parts? or just the first one? TODO: figure out if Gemini outputs may contain more than one part.
                     # see https://ai.google.dev/tutorials/python_quickstart#multi-turn_conversations:~:text=Note%3A%20For%20multi%2Dturn%20conversations%2C%20you%20need%20to%20send%20the%20whole%20conversation%20history%20with%20each%20request
@@ -217,7 +240,7 @@ class GeminiModelParser(ParameterizedModelParser):
                         ExecuteResult(
                             **{
                                 "output_type": "execute_result", 
-                                "data": model_message_parts[0], 
+                                "data": output_data, 
                                 "metadata": {}
                             }
                         )
@@ -356,13 +379,13 @@ class GeminiModelParser(ParameterizedModelParser):
 
         if output.output_type == "execute_result":
             output_data = output.data
-            if isinstance(output_data, str):
+            if isinstance(output_data, OutputData):
+                return output_data.value
+            elif isinstance(output_data, str):
                 return output_data
             else:
                 raise ValueError("Not Implemented")
-
-        else:
-            return ""
+        return ""
 
     def _construct_chat_history(
         self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Dict

@@ -1,13 +1,19 @@
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import google.generativeai as palm
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.util.params import resolve_parameters, resolve_prompt
 from google.generativeai.text import Completion
+from aiconfig.callback import CallbackEvent
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    ExecuteResult, 
+    Output, 
+    OutputData, 
+    Prompt, 
+    PromptMetadata,
+)
+from aiconfig.util.params import resolve_parameters, resolve_prompt
 
-from ..callback import CallbackEvent
-from ..model_parser import InferenceOptions
-from ..schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
@@ -150,10 +156,14 @@ class PaLMTextParser(ParameterizedModelParser):
             # but Pydantic TypedDict breaks for Python v<3.12  so using
             # generic Dict type
             candidate: Dict 
+            output_data : OutputData = OutputData(
+                kind="string",
+                value=candidate.get("output", ""),
+            )
             output = ExecuteResult(
                 output_type="execute_result",
                 execution_count=i,
-                data=candidate.get("output", ""),
+                data=output_data,
                 metadata=candidate,
             )
             outputs.append(output)
@@ -345,10 +355,14 @@ class PaLMChatParser(ParameterizedModelParser):
             # but Pydantic TypedDict breaks for Python v<3.12  so using
             # generic Dict type
             candidate: Dict
+            output_data : OutputData = OutputData(
+                kind="string",
+                value=candidate.get("content", ""),
+            )
             output = ExecuteResult(
                 **{
                     "output_type": "execute_result",
-                    "data": candidate.get("content", ""),
+                    "data": output_data,
                     "execution_count": i,
                     "metadata": {"response": response},
                 }
@@ -374,7 +388,9 @@ class PaLMChatParser(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
+            if isinstance(output.data, OutputData):
+                return output.data.value
+            elif isinstance(output.data, str):
                 return output.data
         return ""
 

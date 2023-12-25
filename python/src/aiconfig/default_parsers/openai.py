@@ -6,6 +6,9 @@ import openai
 from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    OutputData,
+)
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import (
     resolve_prompt,
@@ -108,12 +111,16 @@ class OpenAIInference(ParameterizedModelParser):
 
                 assistant_output = []
                 if assistant_response is not None:
-                    assistant_content = assistant_response.pop("content", "")
+                    assistant_content : str = assistant_response.pop("content", "") or ""
+                    output_data : OutputData = OutputData(
+                        kind="string",
+                        value=assistant_content
+                    )
                     assistant_output = [
                         ExecuteResult(
                             output_type="execute_result",
                             execution_count=None,
-                            data=assistant_content,
+                            data=output_data,
                             metadata={**assistant_response},
                         )
                     ]
@@ -277,10 +284,14 @@ class OpenAIInference(ParameterizedModelParser):
                 )
                 output_message = choice["message"]
                 output_content = output_message.pop("content", "")
+                output_data : OutputData = OutputData(
+                    kind="string",
+                    value=output_content,
+                )
                 output = ExecuteResult(
                     **{
                         "output_type": "execute_result",
-                        "data": output_content,
+                        "data": output_data,
                         "execution_count": i,
                         "metadata": {**response_without_choices, **output_message},
                     }
@@ -298,7 +309,7 @@ class OpenAIInference(ParameterizedModelParser):
 
                 for i, choice in enumerate(chunk["choices"]):
                     index = choice.get("index")
-                    accumulated_message_for_choice = messages.get(index, {})
+                    accumulated_message_for_choice = messages.get(index, "")
                     delta = choice.get("delta")
 
                     if options and options.stream_callback:
@@ -306,10 +317,16 @@ class OpenAIInference(ParameterizedModelParser):
                             delta, accumulated_message_for_choice, index
                         )
 
+                    output_data : OutputData = OutputData(
+                        kind="string",
+                        value=accumulated_message_for_choice
+                            if isinstance(accumulated_message_for_choice, str)
+                            else "",
+                    )
                     output = ExecuteResult(
                         **{
                             "output_type": "execute_result",
-                            "data": copy.deepcopy(accumulated_message_for_choice),
+                            "data": output_data,
                             "execution_count": index,
                             "metadata": {"finish_reason": choice.get("finish_reason")},
                         }
@@ -352,14 +369,13 @@ class OpenAIInference(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
+            if isinstance(output.data, OutputData):
+                return output.data.value
+            elif isinstance(output.data, str):
                 return output.data
-            elif output.metadata.get("function_call", None):
-                return output.metadata.get("function_call")
-            else:
-                return ""
-        else:
-            return ""
+            elif hasattr(output, "metadata") and output.metadata.get("function_call", None):
+                return output.metadata.get("function_call", "")
+        return ""
 
 
 class DefaultOpenAIParser(OpenAIInference):
@@ -498,18 +514,23 @@ def add_prompt_as_message(
         if output.output_type == "execute_result":
             if output.metadata.get("role", "") == "assistant":
                 output_data = output.data
-                if isinstance(output_data, str):
-                    output_message = {
-                        "content": output_data,
-                        "role": "assistant",
-                    }
-                    function_call = output.metadata.get("function_call", None)
-                    name = output.metadata.get("name", None)
-                    if function_call:
-                        output_message["function_call"] = function_call
-                    if name:
-                        output_message["name"] = name
-                    messages.append(output_message)
+                output_message = {}
+
+                content = ""
+                if isinstance(output_data, OutputData):
+                    content = output_data.value
+                elif isinstance(output_data, str):
+                    content = output_data
+                output_message["content"] = content
+                output_message["role"] = "assistant"
+                
+                function_call = output.metadata.get("function_call", None)
+                name = output.metadata.get("name", None)
+                if function_call:
+                    output_message["function_call"] = function_call
+                if name:
+                    output_message["name"] = name
+                messages.append(output_message)
                 # TODO (rossdanlm): Support function call handling as output_data
     return messages
 
