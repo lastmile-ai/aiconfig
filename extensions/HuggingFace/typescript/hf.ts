@@ -6,15 +6,16 @@ import {
 } from "@huggingface/inference";
 
 import {
-  Prompt,
-  Output,
-  PromptInput,
-  ParameterizedModelParser,
-  ModelMetadata,
-  ExecuteResult,
   AIConfigRuntime,
-  InferenceOptions,
   CallbackEvent,
+  ExecuteResult,
+  InferenceOptions,
+  ModelMetadata,
+  Output,
+  OutputData,
+  ParameterizedModelParser,
+  Prompt,
+  PromptInput,
 } from "aiconfig";
 import _ from "lodash";
 import * as aiconfig from "aiconfig";
@@ -248,10 +249,13 @@ export class HuggingFaceTextGenerationModelParserExtension extends Parameterized
     }
 
     if (output.output_type === "execute_result") {
-      return output.data ?? "";
-    } else {
-      return "";
+      if (output.data?.hasOwnProperty("value")) {
+        return (output.data as OutputData).value;
+      } else if (typeof output.data === "string") {
+        return output.data;
+      }
     }
+    return "";
   }
 }
 
@@ -277,9 +281,13 @@ async function constructStreamOutput(
     const index = 0;
     options.callbacks!.streamCallback(delta, accumulatedMessage, 0);
 
+    const outputData: OutputData = {
+      kind: "string",
+      value: accumulatedMessage,
+    };
     output = {
       output_type: "execute_result",
-      data: accumulatedMessage,
+      data: outputData,
       execution_count: index,
       metadata: metadata,
     } as ExecuteResult;
@@ -288,14 +296,15 @@ async function constructStreamOutput(
 }
 
 function constructOutput(response: TextGenerationOutput): Output {
-  const metadata = {};
-  const data = response;
-
+  const data: OutputData = {
+    kind: "string",
+    value: response.generated_text,
+  };
   const output = {
     output_type: "execute_result",
-    data: data.generated_text,
+    data,
     execution_count: 0,
-    metadata: metadata,
+    metadata: {},
   } as ExecuteResult;
 
   return output;

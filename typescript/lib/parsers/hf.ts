@@ -12,6 +12,7 @@ import {
   ExecuteResult,
   ModelMetadata,
   Output,
+  OutputData,
   Prompt,
   PromptInput,
 } from "../../types";
@@ -240,10 +241,13 @@ export class HuggingFaceTextGenerationParser extends ParameterizedModelParser<Te
     }
 
     if (output.output_type === "execute_result") {
-      return output.data as string;
-    } else {
-      return "";
+      if (output.data?.hasOwnProperty("value")) {
+        return (output.data as OutputData).value;
+      } else if (typeof output.data === "string") {
+        return output.data;
+      }
     }
+    return "";
   }
 }
 
@@ -261,28 +265,35 @@ async function constructStreamOutput(
   let output = {} as ExecuteResult;
 
   for await (const iteration of response) {
-    const data = iteration.token.text;
+    const new_text = iteration.token.text;
     const metadata = iteration;
 
-    accumulatedMessage += data;
-    const delta = data;
+    accumulatedMessage += new_text;
     const index = 0;
-    options.callbacks!.streamCallback(delta, accumulatedMessage, 0);
+    options.callbacks!.streamCallback(new_text, accumulatedMessage, 0);
 
+    const data: OutputData = {
+      kind: "string",
+      value: accumulatedMessage,
+    };
     output = {
       output_type: "execute_result",
-      data: accumulatedMessage,
+      data,
       execution_count: index,
-      metadata: metadata,
+      metadata: { ...metadata, ..._.omit(response, ["generated_text"]) },
     } as ExecuteResult;
   }
   return output;
 }
 
 function constructOutput(response: TextGenerationOutput): Output {
+  const data: OutputData = {
+    kind: "string",
+    value: response.generated_text,
+  };
   const output = {
     output_type: "execute_result",
-    data: response.generated_text,
+    data,
     execution_count: 0,
     metadata: _.omit(response, ["generated_text"]),
   } as ExecuteResult;
