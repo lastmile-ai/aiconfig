@@ -14,11 +14,10 @@ async def test_serialize_basic(set_temporary_env_vars: None):
         "size": "1024x1024",
     }
     aiconfig = AIConfigRuntime.create()
-    serialized_prompts = await aiconfig.serialize(
+    serialized_prompt = await aiconfig.serialize(
         "dall-e-3", completion_params, prompt_name="panda_eating_dumplings"
     )
-    new_prompt = serialized_prompts[0]
-    assert new_prompt == Prompt(
+    assert serialized_prompt == Prompt(
         name="panda_eating_dumplings",
         input="Panda eating dumplings on a yellow mountain",
         metadata=PromptMetadata(
