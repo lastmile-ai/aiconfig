@@ -83,7 +83,11 @@ class LlamaModelParser(ParameterizedModelParser):
                 if options:
                     options.stream_callback(data, acc, index)
             print(flush=True)
-            return ExecuteResult(output_type="execute_result", data=[acc], metadata={})
+            return ExecuteResult(
+                output_type="execute_result",
+                data=acc,
+                metadata={}
+            )
         else:
             response = llm(model_input)
             try:
@@ -91,13 +95,19 @@ class LlamaModelParser(ParameterizedModelParser):
             except TypeError:
                 texts = [response["choices"][0]["text"]]
 
-            return ExecuteResult(output_type="execute_result", data=texts, metadata={})
+            return ExecuteResult(
+                output_type="execute_result",
+                data=texts[0],
+                metadata={}
+            )
 
     def get_output_text(
         self, prompt: Prompt, aiconfig: AIConfigRuntime, output: Output | None = None
     ) -> str:
         match output:
             case ExecuteResult(data=d):
-                return d
+                if isinstance(d, str):
+                    return d
+                return ""
             case _:
                 raise ValueError(f"Unexpected output type: {type(output)}")
