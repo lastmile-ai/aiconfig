@@ -254,6 +254,8 @@ export class AIConfigRuntime implements AIConfig {
       if (mode === "yaml") {
         aiConfigString = yaml.dump(aiConfigObj, { indent: 2 });
       } else {
+        // Add the $schema property to the JSON object before saving it. In the future this can respect the version specified in the AIConfig.
+        aiConfigObj["$schema"] = "https://json.schemastore.org/aiconfig-1.0";
         aiConfigString = JSON.stringify(aiConfigObj, null, 2);
       }
 
@@ -396,7 +398,7 @@ export class AIConfigRuntime implements AIConfig {
     promptName: string,
     params: JSONObject = {},
     options?: InferenceOptions
-  ) {
+  ): Promise<Output[]> {
     const startEvent = {
       name: "on_run_start",
       file: __filename,
@@ -450,7 +452,7 @@ export class AIConfigRuntime implements AIConfig {
     promptName: string,
     params: JSONObject = {},
     options?: InferenceOptions
-  ) {
+  ): Promise<Output[]> {
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
       throw new Error(

@@ -225,7 +225,7 @@ class AIConfig(BaseModel):
         if not prompt:
             raise Exception(f"Prompt '{prompt}' not found in config.")
 
-        if not prompt.metadata:
+        if not prompt.metadata or not prompt.metadata.model:
             # If the prompt doesn't have a model, use the default model
             default_model = self.metadata.default_model
             if not default_model:
@@ -355,7 +355,7 @@ class AIConfig(BaseModel):
             raise IndexError("Prompt '{}' not found in config, available prompts are:\n {}".format(prompt_name, list(self.prompt_index.keys())))
         return self.prompt_index[prompt_name]
 
-    def add_prompt(self, prompt_name: str, prompt_data: Prompt):
+    def add_prompt(self, prompt_name: str, prompt_data: Prompt, index: int | None = None):
         """
         Adds a prompt to the .aiconfig.
 
@@ -370,7 +370,10 @@ class AIConfig(BaseModel):
 
         prompt_data.name = prompt_name
         self.prompt_index[prompt_name] = prompt_data
-        self.prompts.append(prompt_data)
+        if index is None:
+            self.prompts.append(prompt_data)
+        else:
+            self.prompts.insert(index, prompt_data)
 
     def update_prompt(self, prompt_name: str, prompt_data: Prompt):
         """
