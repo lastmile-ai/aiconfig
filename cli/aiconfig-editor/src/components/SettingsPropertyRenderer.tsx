@@ -13,12 +13,15 @@ import {
   AutocompleteItem,
   Select,
 } from "@mantine/core";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { uniqueId } from "lodash";
 import { IconHelp, IconPlus, IconTrash } from "@tabler/icons-react";
 import UnionPropertyControl, {
   UnionProperty,
 } from "@/src/components/property_controls/UnionPropertyControl";
+import MapPropertyControl, {
+  MapProperty,
+} from "@/src/components/property_controls/MapPropertyControl";
 
 type StateSetFromPrevFn = (prev: any) => void;
 export type SetStateFn = (val: StateSetFromPrevFn | any) => void;
@@ -32,8 +35,8 @@ export type PropertyRendererProps = {
 };
 
 export function PropertyLabel(props: {
-  propertyName: string;
-  propertyDescription: string;
+  propertyName?: string;
+  propertyDescription?: string;
 }) {
   const { propertyName, propertyDescription } = props;
   return propertyDescription != null && propertyDescription.trim() !== "" ? (
@@ -387,6 +390,7 @@ export default function SettingsPropertyRenderer({
           ></Select>
         );
       }
+      break;
     }
     case "union": {
       propertyControl = (
@@ -405,6 +409,20 @@ export default function SettingsPropertyRenderer({
           />
         </Stack>
       );
+      break;
+    }
+    case "map": {
+      propertyControl = (
+        <MapPropertyControl
+          property={property as MapProperty}
+          isRequired={isRequired}
+          propertyName={propertyName}
+          initialValue={initialValue}
+          setValue={setAndPropagateValue}
+          renderProperty={(props) => <SettingsPropertyRenderer {...props} />}
+        />
+      );
+      break;
     }
     default: {
       console.warn(

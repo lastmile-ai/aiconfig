@@ -38,7 +38,6 @@ export default memo(function UnionPropertyControl(props: Props) {
 
   const selectTab = useCallback(
     (tab: string) => {
-      console.log("set value: ", controlledData.get(tab));
       setValue(controlledData.get(tab));
       setActiveTab(tab);
     },
