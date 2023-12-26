@@ -1,7 +1,9 @@
 import logging
 
 import lastmile_utils.lib.core.api as core_utils
+import json
 import result
+import time
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.editor.server.server_utils import (
     EditServerConfig,
@@ -18,7 +20,8 @@ from aiconfig.editor.server.server_utils import (
     safe_save_to_disk,
 )
 from aiconfig.model_parser import InferenceOptions
-from flask import Flask, request
+from aiconfig.schema import ExecuteResult, Prompt
+from flask import Flask, Response, request, stream_with_context
 from flask_cors import CORS # TODO: add this to requirements.txt
 from result import Err, Ok, Result
 
@@ -113,6 +116,61 @@ def create() -> FlaskResponse:
     state = get_server_state(app)
     state.aiconfig = AIConfigRuntime.create()  # type: ignore
     return HttpResponseWithAIConfig(message="Created new AIConfig", aiconfig=state.aiconfig).to_flask_format()
+
+@app.route('/api/test_streaming', methods=["POST"])
+def test_streaming():
+    EXCLUDE_OPTIONS = {
+        "prompt_index": True,
+        "file_path": True,
+        "callback_manager": True,
+    }
+    state = get_server_state(app)
+    request_json = request.get_json()
+    num_stream_steps : int = request_json.get("num_stream_steps", 10)
+    print(f"{num_stream_steps=}")
+    print(f"{type(num_stream_steps)=}")
+    def generate(num_stream_steps: int):
+        prompt : Prompt = state.aiconfig.get_prompt('get_activities')
+        for i in range(num_stream_steps):
+            time.sleep(1)
+            output = ExecuteResult(
+                output_type="execute_result",
+                execution_count=0,
+                data = "Rossdan" + str(i+1),
+                metadata = {},
+            )
+            prompt.outputs = [output]
+            print(f"Done step {i+1}/{num_stream_steps}...")
+
+            aiconfig_json = state.aiconfig.model_dump(exclude=EXCLUDE_OPTIONS)
+            # print(f"{aiconfig_json=}\n")
+            # yield_output = core_utils.JSONObject({"data": aiconfig_json})
+            # print(f"{yield_output=}")
+            print(f"{str(aiconfig_json)=}\n")
+            yield str(aiconfig_json) + "\n\n"
+            # yield aiconfig_json
+
+            # HttpResponseWithAIConfig(
+            #     message=f"Done step {i+1}/{num_stream_steps}...",
+            #     aiconfig=state.aiconfig,
+            # ).to_flask_format()
+    try:
+        LOGGER.info(f"Testing streaming: {request_json}")
+        # Stream based on https://stackoverflow.com/questions/73275517/flask-not-streaming-json-response
+        return Response(
+            stream_with_context(generate(num_stream_steps)), 
+            status=200, 
+            content_type='application/json',
+        )
+        # return generate(num_stream_steps) #, {"Content-Type": "application/json"}
+    except Exception as e:
+        err: Err[str] = core_utils.ErrWithTraceback(e)
+        LOGGER.error(f"Failed to test streaming: {err}")
+        return HttpResponseWithAIConfig(
+            message=f"Failed to test streaming: {err}",
+            code=400,
+            aiconfig=None,
+        ).to_flask_format()
 
 
 @app.route("/api/run", methods=["POST"])
