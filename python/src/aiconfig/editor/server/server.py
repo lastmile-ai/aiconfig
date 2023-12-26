@@ -19,7 +19,7 @@ from aiconfig.editor.server.server_utils import (
 )
 from aiconfig.model_parser import InferenceOptions
 from flask import Flask, request
-from flask_cors import CORS
+from flask_cors import CORS # TODO: add this to requirements.txt
 from result import Err, Ok, Result
 
 from aiconfig.registry import ModelParserRegistry
@@ -156,6 +156,26 @@ def add_prompt() -> FlaskResponse:
         LOGGER.error(f"Failed to add prompt: {err}")
         return HttpResponseWithAIConfig(
             message=f"Failed to add prompt: {err}",
+            code=400,
+            aiconfig=None,
+        ).to_flask_format()
+
+@app.route("/api/delete_prompt", methods=["POST"])
+def delete_prompt() -> FlaskResponse:
+    state = get_server_state(app)
+    request_json = request.get_json()
+    try:
+        LOGGER.info(f"Deleting prompt: {request_json}")
+        state.aiconfig.delete_prompt(**request_json)  # type: ignore
+        return HttpResponseWithAIConfig(
+            message="Done",
+            aiconfig=state.aiconfig,
+        ).to_flask_format()
+    except Exception as e:
+        err: Err[str] = core_utils.ErrWithTraceback(e)
+        LOGGER.error(f"Failed to delete prompt: {err}")
+        return HttpResponseWithAIConfig(
+            message=f"Failed to delete prompt: {err}",
             code=400,
             aiconfig=None,
         ).to_flask_format()
