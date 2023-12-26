@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
@@ -61,16 +61,16 @@ class LlamaModelParser(ParameterizedModelParser):
         aiconfig: AIConfigRuntime,
         options: InferenceOptions | None,
         parameters: dict,
-    ) -> ExecuteResult:
+    ) -> List[Output]:
         resolved = await self.deserialize(prompt, aiconfig, parameters)
         model_input = resolved["model_input"]
         result = await self._run_inference_helper(model_input, options)
 
         self.qa.append((model_input, result.data[0]))
 
-        return result
+        return [result]
 
-    async def _run_inference_helper(self, model_input, options) -> ExecuteResult:
+    async def _run_inference_helper(self, model_input, options) -> List[Output]:
         llm = Llama(self.model_path)
         acc = ""
         stream = options.stream if options else True
