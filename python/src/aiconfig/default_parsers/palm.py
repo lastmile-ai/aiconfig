@@ -114,7 +114,7 @@ class PaLMTextParser(ParameterizedModelParser):
         aiconfig: "AIConfigRuntime",
         options: InferenceOptions,
         parameters,
-    ) -> Output:
+    ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -313,7 +313,7 @@ class PaLMChatParser(ParameterizedModelParser):
         aiconfig: "AIConfigRuntime",
         options: InferenceOptions,
         parameters,
-    ) -> Output:
+    ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
