@@ -3,11 +3,14 @@ from typing import Any
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    ExecuteResult,
+    OutputData,
+    Output,
+    Prompt,
+)
 from aiconfig.util.params import resolve_prompt
 from llama_cpp import Llama
-
-from aiconfig import Output, Prompt
-from aiconfig.schema import ExecuteResult
 
 
 class LlamaModelParser(ParameterizedModelParser):
@@ -83,9 +86,15 @@ class LlamaModelParser(ParameterizedModelParser):
                 if options:
                     options.stream_callback(data, acc, index)
             print(flush=True)
+
+            output_data_value : str = ''
+            if isinstance(acc, str):
+                output_data_value = acc
+            else:
+                raise ValueError(f"Output {acc} needs to be of type 'str' but is of type: {type(acc)}")
             return ExecuteResult(
                 output_type="execute_result",
-                data=acc,
+                data=OutputData(kind="string", value=output_data_value),
                 metadata={}
             )
         else:
@@ -95,19 +104,29 @@ class LlamaModelParser(ParameterizedModelParser):
             except TypeError:
                 texts = [response["choices"][0]["text"]]
 
+            output_data_value : str = ''
+            if isinstance(texts[0], str):
+                output_data_value = texts[0]
+            else:
+                raise ValueError(f"Output {texts[0]} needs to be of type 'str' but is of type: {type(texts[0])}")
             return ExecuteResult(
                 output_type="execute_result",
-                data=texts[0],
+                data=OutputData(kind="string", value=output_data_value),
                 metadata={}
             )
 
     def get_output_text(
         self, prompt: Prompt, aiconfig: AIConfigRuntime, output: Output | None = None
     ) -> str:
-        match output:
-            case ExecuteResult(data=d):
-                if isinstance(d, str):
-                    return d
-                return ""
-            case _:
-                raise ValueError(f"Unexpected output type: {type(output)}")
+        if not output:
+            output = aiconfig.get_latest_output(prompt)
+
+        if not output:
+            return ""
+
+        if output.output_type == "execute_result":
+            if isinstance(output.data, OutputData):
+                return output.data.value
+            elif isinstance(output.data, str):
+                return output.data
+        raise ValueError(f"Output is an unexpected output type: {type(output)}")

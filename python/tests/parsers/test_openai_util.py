@@ -2,9 +2,15 @@ import openai
 import pytest
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.default_parsers.openai import refine_chat_completion_params
+from aiconfig.schema import (
+    ExecuteResult,
+    OutputData,
+    Prompt,
+    PromptMetadata,
+)
 from mock import patch
 
-from aiconfig import ExecuteResult, Prompt, PromptMetadata
+
 
 from ..conftest import mock_openai_chat_completion
 from ..util.file_path_utils import get_absolute_file_path_from_relative
@@ -135,7 +141,10 @@ async def test_serialize(set_temporary_env_vars):
                 ExecuteResult(
                     output_type="execute_result",
                     execution_count=None,
-                    data='Hello! How can I assist you today?',
+                    data=OutputData(
+                        kind="string",
+                        value='Hello! How can I assist you today?',
+                    ),
                     metadata={'role': 'assistant'},
                     mime_type=None,
                 )
@@ -273,7 +282,7 @@ async def test_serialize(set_temporary_env_vars):
             ],
         }
 
-        
+
         prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
         new_prompt = prompts[1]
         assert new_prompt == Prompt(
@@ -322,7 +331,10 @@ async def test_serialize(set_temporary_env_vars):
             },
             outputs=[
                 {
-                    "data": "The current weather in Boston is 22 degrees Celsius and sunny.",
+                    "data": OutputData(
+                        kind="string",
+                        value="The current weather in Boston is 22 degrees Celsius and sunny.",  
+                    ),
                     "execution_count": None,
                     "metadata": {"role": "assistant"},
                     "output_type": "execute_result",
