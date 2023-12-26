@@ -3,12 +3,12 @@
 
 import typing
 from abc import abstractmethod
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from aiconfig.model_parser import InferenceOptions, ModelParser
 from aiconfig.util.params import get_dependency_graph, resolve_prompt_string
 
-from aiconfig.schema import AIConfig, ExecuteResult, JSONObject, Prompt, PromptInput
+from aiconfig.schema import AIConfig, ExecuteResult, JSONObject, Output, Prompt, PromptInput
 
 if typing.TYPE_CHECKING:
     from aiconfig import AIConfigRuntime
@@ -36,7 +36,7 @@ class ParameterizedModelParser(ModelParser):
         """
 
     @abstractmethod
-    async def run_inference(self):
+    async def run_inference(self) -> List[Output]:
         pass
 
     async def run(
@@ -46,7 +46,7 @@ class ParameterizedModelParser(ModelParser):
         options: Optional[InferenceOptions] = None,
         parameters: Dict = {},
         **kwargs,
-    ) -> ExecuteResult:
+    ) -> List[Output]:
         # maybe use prompt metadata instead of kwargs?
         if kwargs.get("run_with_dependencies", False):
             return await self.run_with_dependencies(
@@ -57,7 +57,7 @@ class ParameterizedModelParser(ModelParser):
 
     async def run_with_dependencies(
         self, prompt: Prompt, aiconfig: AIConfig, options=None, parameters: Dict = {}
-    ) -> ExecuteResult:
+    ) -> List[Output]:
         """
         Executes the AI model with the resolved dependencies and prompt references and returns the API response.
 
@@ -95,11 +95,11 @@ class ParameterizedModelParser(ModelParser):
             for dependency_prompt_name in dependency_graph[prompt_name]:
                 await execute_recursive(dependency_prompt_name)
 
-            output = await aiconfig.run(prompt_name, parameters, options)
+            outputs = await aiconfig.run(prompt_name, parameters, options)
 
             # Return the output of the original prompt being executed
             if prompt_name == prompt.name:
-                return output
+                return outputs
 
         return await execute_recursive(prompt.name)
 
