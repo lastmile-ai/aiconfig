@@ -63,10 +63,10 @@ export abstract class ParameterizedModelParser<
     aiConfig: AIConfigRuntime,
     options?: InferenceOptions,
     params: JSONObject = {}
-  ) {
+  ): Promise<Output[]> {
     const dependencyGraph = getDependencyGraph(aiConfig);
 
-    return await this.runWithDependenciesInternal(
+    const result =  await this.runWithDependenciesInternal(
       promptName,
       aiConfig,
       params,
@@ -74,6 +74,12 @@ export abstract class ParameterizedModelParser<
       /*alreadyExecutedPrompts*/ new Set<string>(),
       options
     );
+    if (result === undefined) {
+      // Should never happen. If it does, it's a bug. This check is to help define the return type of this function.
+      throw new Error(`runWithDependencies() for Prompt ${promptName} returned undefined, something went wrong`);
+    }
+
+    return result;
   }
 
   private async runWithDependenciesInternal(

@@ -184,7 +184,7 @@ export class HuggingFaceTextGenerationModelParserExtension extends Parameterized
     aiConfig: AIConfigRuntime,
     options?: InferenceOptions | undefined,
     params?: JSONObject | undefined
-  ): Promise<Output | Output[]> {
+  ): Promise<Output[]> {
     const startEvent = {
       name: "on_run_start",
       file: __filename,
