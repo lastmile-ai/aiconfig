@@ -170,7 +170,6 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
 
       // Save response as Output(s) in the Prompt
       const outputs: ExecuteResult[] = [];
-      const responseWithoutChoices = _.omit(response, "choices");
       for (const choice of response.choices) {
         const output: ExecuteResult = {
           output_type: "execute_result",
@@ -179,7 +178,7 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
           metadata: {
             finish_reason: choice.finish_reason,
             logprobs: choice.logprobs,
-            ...responseWithoutChoices,
+            rawResponse: response,
           },
         };
         outputs.push(output);
@@ -378,7 +377,8 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
               ? [
                   {
                     output_type: "execute_result",
-                    data: { ...assistantResponse },
+                    data: assistantResponse.content,
+                    metadata: { rawResponse: assistantResponse },
                   },
                 ]
               : undefined,
@@ -538,11 +538,12 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
       for (const choice of response.choices) {
         const output: ExecuteResult = {
           output_type: "execute_result",
-          data: { ...choice.message },
+          data: choice.message?.content,
           execution_count: choice.index,
           metadata: {
             finish_reason: choice.finish_reason,
             ...responseWithoutChoices,
+            rawResponse: choice.message,
           },
         };
 
@@ -587,10 +588,13 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
 
           const output: ExecuteResult = {
             output_type: "execute_result",
-            data: { ...message },
+            // TODO (rossdanlm): Handle ChatCompletionMessage.function_call
+            // too (next diff)
+            data: message?.content,
             execution_count: choice.index,
             metadata: {
               finish_reason: choice.finish_reason,
+              rawResponse: message,
             },
           };
           outputs.set(choice.index, output);
@@ -625,17 +629,26 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     }
 
     if (output.output_type === "execute_result") {
-      const message = output.data as Chat.ChatCompletionMessageParam;
-      if (message.content != null) {
-        return message.content;
-      } else if (message.function_call) {
-        return JSON.stringify(message.function_call);
-      } else {
-        return "";
+      // TODO: Add in OutputData another way to support function calls
+      if (typeof output.data === "string") {
+        return output.data;
       }
-    } else {
-      return "";
+
+      // Doing this to be backwards-compatible with old output format
+      // where we used to save the ChatCompletionMessageParam in output.data
+      if (
+        output.data?.hasOwnProperty("content") &&
+        output.data?.hasOwnProperty("role")
+      ) {
+        const message = output.data as Chat.ChatCompletionMessageParam;
+        if (message.content != null) {
+          return message.content;
+        } else if (message.function_call) {
+          return JSON.stringify(message.function_call);
+        }
+      }
     }
+    return "";
   }
 
   private addPromptAsMessage(
@@ -671,11 +684,17 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     const output = aiConfig.getLatestOutput(prompt);
     if (output != null) {
       if (output.output_type === "execute_result") {
-        const outputMessage =
-          output.data as unknown as Chat.ChatCompletionMessageParam;
         // If the prompt has output saved, add it to the messages array
-        if (outputMessage.role === "assistant") {
-          messages.push(outputMessage);
+        if (output.metadata?.role === "assistant") {
+          if (typeof output.data === "string") {
+            messages.push({
+              content: output.data,
+              role: output.metadata?.role,
+              function_call: output.metadata?.function_call,
+              name: output.metadata?.name,
+            });
+          }
+          // TODO (rossdanlm): Support function_call
         }
       }
     }
