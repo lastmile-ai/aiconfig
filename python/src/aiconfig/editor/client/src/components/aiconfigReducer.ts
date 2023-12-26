@@ -4,7 +4,8 @@ import { AIConfig, JSONObject, PromptInput } from "aiconfig";
 
 type AIConfigReducerAction =
   | UpdatePromptInputAction
-  | UpdatePromptModelSettingsAction;
+  | UpdatePromptModelSettingsAction
+  | UpdatePromptParametersAction;
 
 export type UpdatePromptInputAction = {
   type: "UPDATE_PROMPT_INPUT";
@@ -16,6 +17,13 @@ export type UpdatePromptModelSettingsAction = {
   type: "UPDATE_PROMPT_MODEL_SETTINGS";
   index: number;
   modelSettings: JSONObject;
+};
+
+// TODO: saqadri - can likely use this same action for global parameters update
+export type UpdatePromptParametersAction = {
+  type: "UPDATE_PROMPT_PARAMETERS";
+  index: number;
+  parameters: JSONObject;
 };
 
 function reduceReplacePrompt(
@@ -64,6 +72,16 @@ export default function aiconfigReducer(
             ),
             settings: action.modelSettings,
           },
+        },
+      }));
+    }
+    case "UPDATE_PROMPT_PARAMETERS": {
+      console.log(JSON.stringify(action));
+      return reduceReplacePrompt(state, action.index, (prompt) => ({
+        ...prompt,
+        metadata: {
+          ...prompt.metadata,
+          parameters: action.parameters,
         },
       }));
     }
