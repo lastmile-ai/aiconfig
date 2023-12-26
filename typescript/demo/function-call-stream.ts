@@ -191,16 +191,8 @@ async function functionCallingWithAIConfig() {
           _index: any
         ) => {
           let text;
-          if (data?.content) {
-            text = data.content;
-          } else if (data?.function_call) {
-            if (data.function_call.name) {
-              text = `${data.function_call.name}(`;
-            } else if (data.function_call.arguments) {
-              text = data.function_call.arguments;
-            } else {
-              text = `)`;
-            }
+          if (typeof data === "string") {
+            text = data;
           } else {
             text = "\n";
           }
