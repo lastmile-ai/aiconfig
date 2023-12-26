@@ -1,6 +1,33 @@
 # Changelog
 
-## (2023-12-18) Python Version 1.1.6, NPM Version 1.1.1 
+## (2023-12-26) Python Version 1.1.8, NPM Version 1.1.2
+
+### Features
+
+- Added support for YAML file format in addition to JSON for improved readability of AIConfigs: ([#583](https://github.com/lastmile-ai/aiconfig/pull/583))
+- **python-sdk:** Added optional param in `add_prompt()` method to specify index where to add prompt ([#599](https://github.com/lastmile-ai/aiconfig/pull/599))
+- eval: Added generalized metric builder for creating your own metric evaluation class ([#513](https://github.com/lastmile-ai/aiconfig/pull/513))
+- **python-sdk:** Supported using default model if no prompt model is provided ([#600](https://github.com/lastmile-ai/aiconfig/pull/600))
+- **python-sdk:** Refactored `update_model()` method to take in model name and settings as separate arguments ([#507](https://github.com/lastmile-ai/aiconfig/pull/507))
+- **python-sdk:** Supported additional types in Gemini model parser. Now includes list of strings, Content string, and Content struct: ([#532](https://github.com/lastmile-ai/aiconfig/pull/532))
+- extensions: Added callback handlers to HuggingFace extensions ([#597](https://github.com/lastmile-ai/aiconfig/pull/597))
+- **python-sdk:** Pinned `google-generativeai` to version 0.3.1 on Gemini model parser ([#534](https://github.com/lastmile-ai/aiconfig/pull/534))
+- Added explicit output types to the `ExecuteResult.data` schema. Freeform also still supported ([#589](https://github.com/lastmile-ai/aiconfig/pull/589))
+
+### Bug Fixes / Tasks
+
+- Checked for null in system prompt ([#541](https://github.com/lastmile-ai/aiconfig/pull/541))
+- Converted protobuf to dict to fix pydantic BaseModel errors on Gemini (#558)([#558](https://github.com/lastmile-ai/aiconfig/pull/558))
+- Fixed issue where we were overwriting a single prompt output instead of creating a new one in batch execution ([#566](https://github.com/lastmile-ai/aiconfig/pull/566))
+- Unpinned `requests==2.30.0` dependency and using https instead of http in `load_from_workbook()` method ([#582](https://github.com/lastmile-ai/aiconfig/pull/582))
+- **typescript-sdk:** Created automated test for typescript `save()` API ([#198](https://github.com/lastmile-ai/aiconfig/pull/198))
+
+### Documentation
+
+- OpenAI Prompt Engineering Guide: https://openai-prompt-guide.streamlit.app/
+- Chain-of-Verification Demo: https://chain-of-verification.streamlit.app/
+
+## (2023-12-18) Python Version 1.1.7, NPM Version 1.1.1
 
 ### Features
 
@@ -23,7 +50,6 @@
 - Created table of supported models ([#501](https://github.com/lastmile-ai/aiconfig/pull/501))
 - Updated cookbooks with explicit instructions on how to set API keys ([#441](https://github.com/lastmile-ai/aiconfig/pull/441))
 
-
 ## (2023-12-11) Python Version 1.1.5, NPM Version 1.0.8
 
 ### Features
@@ -43,7 +69,6 @@ https://github.com/lastmile-ai/aiconfig/assets/141073967/918b4ed4-41d0-4543-a0e8
 
 - **python-extension:** Extension for LLama-Guard using pytorch ([86cf687](https://github.com/lastmile-ai/aiconfig/pull/438))
 - - LLama Guard ([Cookbook](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/LLaMA-Guard))
-
 
 ## (2023-12-04) Python Version 1.1.4, NPM Version 1.0.7
 
