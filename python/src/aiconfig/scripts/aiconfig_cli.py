@@ -3,6 +3,7 @@ import logging
 import signal
 import subprocess
 import sys
+import socket
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -44,8 +45,12 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
 
     if subparser_name == "edit":
         LOGGER.debug("Running edit subcommand")
+        print(argv)
         res_edit_config = core_utils.parse_args(main_parser, argv[1:], EditServerConfig)
         LOGGER.debug(f"{res_edit_config.is_ok()=}")
+        print(type(res_edit_config))
+
+
         res_servers = res_edit_config.and_then(_run_editor_servers)
         out: Result[str, str] = result.do(
             #
@@ -64,8 +69,27 @@ def _sigint(procs: list[subprocess.Popen[bytes]]) -> Result[str, str]:
         p.send_signal(signal.SIGINT)
     return Ok("Sent SIGINT to frontend servers.")
 
+def is_port_in_use(port: int) -> bool:
+    """ 
+    Checks if a port is in use at localhost
+    
+    Context manager will automatically close the connection
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('localhost', port)) == 0
+
 
 def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]:
+    # Check if server is already running
+    port = edit_config.server_port
+
+    while is_port_in_use(port):
+        LOGGER.warning(f"Port {port} is in use. Trying next port.")
+        port += 1
+        edit_config_dict = edit_config.model_dump()
+        edit_config_dict["server_port"] = port
+        edit_config = EditServerConfig(**edit_config_dict)
+
     LOGGER.info("Running editor servers")
     frontend_procs = _run_frontend_server_background() if edit_config.server_mode in [ServerMode.DEBUG_SERVERS] else Ok([])
     match frontend_procs:
@@ -119,3 +143,5 @@ def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], s
 if __name__ == "__main__":
     retcode: int = asyncio.run(main(sys.argv))
     sys.exit(retcode)
+
+
