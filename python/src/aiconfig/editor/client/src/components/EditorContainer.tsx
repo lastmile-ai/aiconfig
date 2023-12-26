@@ -69,6 +69,18 @@ export default function EditorContainer({
     [dispatch]
   );
 
+  const onUpdatePromptParameters = useCallback(
+    async (promptIndex: number, newParameters: any) => {
+      dispatch({
+        type: "UPDATE_PROMPT_PARAMETERS",
+        index: promptIndex,
+        parameters: newParameters,
+      });
+      // TODO: Call server-side endpoint to update model settings
+    },
+    [dispatch]
+  );
+
   const { classes } = useStyles();
 
   // TODO: Implement editor context for callbacks, readonly state, etc.
@@ -94,6 +106,7 @@ export default function EditorContainer({
               key={prompt.name}
               onChangePromptInput={onChangePromptInput}
               onUpdateModelSettings={onUpdatePromptModelSettings}
+              onUpdateParameters={onUpdatePromptParameters}
               defaultConfigModelName={aiconfigState.metadata.default_model}
             />
           );
