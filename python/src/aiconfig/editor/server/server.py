@@ -182,7 +182,8 @@ async def run() -> FlaskResponse:
 @app.route("/api/add_prompt", methods=["POST"])
 def add_prompt() -> FlaskResponse:
     method_name = MethodName("add_prompt")
-    signature: dict[str, Type[Any]] = {"prompt_name": str, "prompt_data": Prompt}
+    # TODO: Support specifying index
+    signature: dict[str, Type[Any]] = {"prompt_name": str, "prompt_data": Prompt, "index": int}
 
     state = get_server_state(app)
     aiconfig = state.aiconfig
