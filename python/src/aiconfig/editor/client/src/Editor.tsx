@@ -10,9 +10,7 @@ export default function Editor() {
   const [aiconfig, setAiConfig] = useState<ClientAIConfig | undefined>();
 
   const loadConfig = useCallback(async () => {
-    const res = await ufetch.post(ROUTE_TABLE.LOAD, {
-      path: "cli/aiconfig-editor/travel.aiconfig.json",
-    });
+    const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
 
     setAiConfig(res.aiconfig);
   }, []);
