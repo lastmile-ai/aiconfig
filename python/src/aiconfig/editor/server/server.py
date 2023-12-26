@@ -119,12 +119,23 @@ def create() -> FlaskResponse:
 async def run() -> FlaskResponse:
     state = get_server_state(app)
     request_json = request.get_json()
-    prompt_name = request_json.get("prompt_name", None)
-    stream = request_json.get("stream", True)
+    prompt_name : str = request_json.get("prompt_name", None)
+    if prompt_name is None:
+        return HttpResponseWithAIConfig(
+            message="No prompt name provided, cannot execute `run` command",
+            code=400,
+            aiconfig=None,
+        ).to_flask_format()
+    params : str = request_json.get("params", None)
+    stream : bool = request_json.get("stream", True)
     LOGGER.info(f"Running prompt: {prompt_name}, {stream=}")
     inference_options = InferenceOptions(stream=stream)
     try:
-        result = await state.aiconfig.run(prompt_name, options=inference_options)  # type: ignore
+        result = await state.aiconfig.run( # type: ignore
+            prompt_name,
+            params,
+            options=inference_options,
+        ) 
         LOGGER.debug(f"Result: {result=}")
         return HttpResponseWithAIConfig(
             message="Done",
