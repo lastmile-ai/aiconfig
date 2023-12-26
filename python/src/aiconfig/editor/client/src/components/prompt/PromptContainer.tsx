@@ -6,12 +6,14 @@ import { getPromptModelName, getPromptSchema } from "../../utils/promptUtils";
 import { Flex, Card, Text, createStyles } from "@mantine/core";
 import { PromptInput as AIConfigPromptInput } from "aiconfig";
 import { memo, useCallback } from "react";
+import { ParametersArray } from "../ParametersRenderer";
 
 type Props = {
   index: number;
   prompt: ClientPrompt;
   onChangePromptInput: (i: number, newPromptInput: AIConfigPromptInput) => void;
   onUpdateModelSettings: (i: number, newModelSettings: any) => void;
+  onUpdateParameters: (i: number, newParameters: any) => void;
   defaultConfigModelName?: string;
 };
 
@@ -34,6 +36,7 @@ export default memo(function PromptContainer({
   onChangePromptInput,
   defaultConfigModelName,
   onUpdateModelSettings,
+  onUpdateParameters,
 }: Props) {
   const onChangeInput = useCallback(
     (newInput: AIConfigPromptInput) => onChangePromptInput(index, newInput),
@@ -43,6 +46,24 @@ export default memo(function PromptContainer({
   const updateModelSettings = useCallback(
     (newModelSettings: any) => onUpdateModelSettings(index, newModelSettings),
     [index, onUpdateModelSettings]
+  );
+
+  const updateParameters = useCallback(
+    (data: {
+      promptName?: string | undefined;
+      newParameters: ParametersArray;
+    }) => {
+      const newParameters: Record<string, unknown> = {};
+      for (const paramTuple of data.newParameters ?? []) {
+        const key = paramTuple.parameterName;
+        const val = paramTuple.parameterValue;
+
+        newParameters[key] = val;
+      }
+
+      onUpdateParameters(index, newParameters);
+    },
+    [index, onUpdateParameters]
   );
 
   // TODO: When adding support for custom PromptContainers, implement a PromptContainerRenderer which
@@ -75,6 +96,7 @@ export default memo(function PromptContainer({
           prompt={prompt}
           promptSchema={promptSchema}
           onUpdateModelSettings={updateModelSettings}
+          onUpdateParameters={updateParameters}
         />
       </Card>
     </Flex>
