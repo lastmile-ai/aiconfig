@@ -194,7 +194,7 @@ export type ExecuteResult = {
   data:
     | JSONValue
     | {
-        kind: "string" | "file_uri" | "base64";
+        kind: "string" | "file_uri" | "base64" | "function";
         value: string;
       };
   /**
