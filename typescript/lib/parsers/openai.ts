@@ -606,7 +606,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
             output_type: "execute_result",
             // TODO (rossdanlm): Handle ChatCompletionMessage.function_call
             // too (next diff)
-            data: message?.content,
+            data: message?.content ?? null,
             execution_count: choice.index,
             metadata: {
               finish_reason: choice.finish_reason,
