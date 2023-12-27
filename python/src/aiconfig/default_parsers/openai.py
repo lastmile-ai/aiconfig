@@ -3,17 +3,17 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import openai
+from openai.types.chat import ChatCompletionMessage
 from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import ExecuteResult, Output, Prompt, PromptInput, PromptMetadata
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import (
     resolve_prompt,
     resolve_prompt_string,
     resolve_system_prompt,
 )
-
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptInput, PromptMetadata
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
@@ -106,6 +106,17 @@ class OpenAIInference(ParameterizedModelParser):
                     messsage["content"] if role == "user" else PromptInput(**messsage)
                 )
 
+                assistant_output = []
+                if assistant_response is not None:
+                    assistant_content = assistant_response.get("content", "")
+                    assistant_output = [
+                        ExecuteResult(
+                            output_type="execute_result",
+                            execution_count=None,
+                            data=assistant_content,
+                            metadata={"rawResponse": assistant_response},
+                        )
+                    ]
                 prompt = Prompt(
                     name=new_prompt_name,
                     input=input,
@@ -116,16 +127,7 @@ class OpenAIInference(ParameterizedModelParser):
                             "remember_chat_context": True,
                         }
                     ),
-                    outputs=[
-                        ExecuteResult(
-                            output_type="execute_result",
-                            execution_count=None,
-                            data=assistant_response,
-                            metadata={},
-                        )
-                    ]
-                    if assistant_response
-                    else [],
+                    outputs=assistant_output,
                 )
                 prompts.append(prompt)
             i += 1
@@ -273,12 +275,15 @@ class OpenAIInference(ParameterizedModelParser):
                 response_without_choices.update(
                     {"finish_reason": choice.get("finish_reason")}
                 )
+                output_message = choice["message"]
+                # TODO (rossdanlm): Support function call handling as output_data
+                output_content = output_message.get("content", "")
                 output = ExecuteResult(
                     **{
                         "output_type": "execute_result",
-                        "data": choice["message"],
+                        "data": output_content,
                         "execution_count": i,
-                        "metadata": response_without_choices,
+                        "metadata": {"rawResponse": output_message, **response_without_choices},
                     }
                 )
 
@@ -349,14 +354,19 @@ class OpenAIInference(ParameterizedModelParser):
 
         if output.output_type == "execute_result":
             message = output.data
-            if message.get("content"):
-                return message.get("content")
-            elif message.get("function_call"):
-                return message.get("function_call")
-            else:
-                return ""
-        else:
-            return ""
+            if isinstance(message, str):
+                return message
+            elif output.metadata["rawResponse"].get("function_call", None):
+                return output.metadata["rawResponse"].function_call
+
+            # Doing this to be backwards-compatible with old output format
+            # where we used to save the ChatCompletionMessage in output.data
+            if isinstance(message, ChatCompletionMessage):
+                if hasattr(message, "content") and message.content is not None:
+                    return message.content
+                elif message.function_call is not None:
+                    return str(message.function_call)
+        return ""
 
 
 class DefaultOpenAIParser(OpenAIInference):
@@ -493,9 +503,29 @@ def add_prompt_as_message(
     output = aiconfig.get_latest_output(prompt)
     if output:
         if output.output_type == "execute_result":
-            output_message = output.data
-            if output_message["role"] == "assistant":
-                messages.append(output_message)
+            assert isinstance(output, ExecuteResult)
+            output_data = output.data
+            # TODO (rossdanlm): Support function call handling as output_data
+            if isinstance(output_data, str):
+                if output.metadata["rawResponse"].get("role", "") == "assistant":
+                    output_message = {
+                        "content": output_data,
+                        "role": "assistant",
+                    }
+                    function_call = output.metadata["rawResponse"].get("function_call", None)
+                    tool_calls = output.metadata["rawResponse"].get("tool_calls", None)
+                    if function_call is not None:
+                        output_message["function_call"] = function_call
+                    if tool_calls is not None:
+                        output_message["tool_calls"] = tool_calls
+                    messages.append(output_message)
+
+            # Doing this to be backwards-compatible with old output format
+            # where we used to save the ChatCompletionMessage in output.data
+            elif isinstance(output_data, ChatCompletionMessage):
+                if output_data.role == "assistant":
+                    messages.append(output_data)
+                    
     return messages
 
 
