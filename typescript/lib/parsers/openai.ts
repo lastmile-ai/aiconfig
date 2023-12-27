@@ -154,7 +154,7 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
     aiConfig: AIConfigRuntime,
     options?: InferenceOptions,
     params?: JSONObject | undefined
-  ): Promise<Output | Output[]> {
+  ): Promise<Output[]> {
     if (!this.openai) {
       const apiKey = getAPIKeyFromEnv("OPENAI_API_KEY");
       this.openai = new OpenAI({ apiKey, ...(this.openaiOptions || {}) });
@@ -541,7 +541,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     aiConfig: AIConfigRuntime,
     options?: InferenceOptions,
     params?: JSONObject | undefined
-  ): Promise<Output | Output[]> {
+  ): Promise<Output[]> {
     const startEvent = {
       name: "on_run_start",
       file: __filename,
