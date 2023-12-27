@@ -57,12 +57,23 @@ export default function Editor() {
     });
   }, []);
 
+  const updatePrompt = useCallback(
+    async (promptName: string, promptData: Prompt) => {
+      return await ufetch.post(ROUTE_TABLE.UPDATE_PROMPT, {
+        prompt_name: promptName,
+        prompt_data: promptData,
+      });
+    },
+    []
+  );
+
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
       getModels,
       runPrompt,
       save,
+      updatePrompt,
     }),
     [save, getModels, addPrompt, runPrompt]
   );
