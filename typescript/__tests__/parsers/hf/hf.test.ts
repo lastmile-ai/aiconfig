@@ -257,9 +257,13 @@ describe("HuggingFaceTextGeneration ModelParser", () => {
 
     const expectedOutput = {
       output_type: "execute_result",
-      data: { generated_text: "Test text generation" },
+      data: "Test text generation",
       execution_count: 0,
-      metadata: {},
+      metadata: {
+        rawResponse: {
+          generated_text: "Test text generation",
+        },
+      },
     };
 
     expect(outputWithConfigParam).toEqual([expectedOutput]);
