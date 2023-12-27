@@ -245,13 +245,13 @@
                   }
                 },
                 {
+                  "description": "This represents the output content that is storied as a string, but we use\nboth the `kind` field here and the `mime_type` in ExecuteResult to convert\nthe string into the output format we want.",
                   "type": "object",
                   "properties": {
                     "kind": {
                       "enum": [
                         "base64",
-                        "file_uri",
-                        "string"
+                        "file_uri"
                       ],
                       "type": "string"
                     },

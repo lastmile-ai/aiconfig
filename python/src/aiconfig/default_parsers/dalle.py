@@ -6,7 +6,7 @@ from aiconfig.default_parsers.parameterized_model_parser import ParameterizedMod
 from aiconfig.schema import (
     ExecuteResult,
     Output,
-    OutputData,
+    OutputDataWithValue,
     Prompt,
     PromptMetadata,
 )
@@ -48,9 +48,9 @@ def refine_image_completion_params(model_settings):
 def construct_output(image_data: Image, execution_count: int) -> Output:
     data = None
     if image_data.b64_json is not None:
-        data = OutputData(kind="base64", value=image_data.b64_json)
+        data = OutputDataWithValue(kind="base64", value=image_data.b64_json)
     elif image_data.url is not None:
-        data = OutputData(kind="file_uri", value=image_data.url)
+        data = OutputDataWithValue(kind="file_uri", value=image_data.url)
     else:
         raise ValueError(
             f"Did not receive a valid image type from image_data: {image_data}"
@@ -215,7 +215,7 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         # TODO (rossdanlm): Handle multiple outputs in list
         # https://github.com/lastmile-ai/aiconfig/issues/467
         if output.output_type == "execute_result":
-            if isinstance(output.data, OutputData):
+            if isinstance(output.data, OutputDataWithValue):
                 return output.data.value
             elif isinstance(output.data, str):
                 return output.data
