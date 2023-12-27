@@ -185,7 +185,7 @@ class GeminiModelParser(ParameterizedModelParser):
 
         contents_is_str = isinstance(contents, str)
         contents_is_list_of_strings = all(isinstance(item, str) for item in contents) if isinstance(contents, list) else False
-        
+
         # Role Dict looks like this:
         #     {'role':'user',
         #      'parts': ["Briefly explain how a computer works to a young child."]

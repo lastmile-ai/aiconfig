@@ -3,14 +3,19 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import openai
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    OutputData,
+    Prompt,
+    PromptMetadata,
+)
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt
 from openai import OpenAI
 
 # Dall-E API imports
 from openai.types import Image, ImagesResponse
-
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 # ModelParser Utils
 # Type hint imports
@@ -41,10 +46,19 @@ def refine_image_completion_params(model_settings):
 
 
 def construct_output(image_data: Image, execution_count: int) -> Output:
+    data = None
+    if image_data.b64_json is not None:
+        data = OutputData(kind="base64", value=image_data.b64_json)
+    elif image_data.url is not None:
+        data = OutputData(kind="file_uri", value=image_data.url)
+    else:
+        raise ValueError(
+            f"Did not receive a valid image type from image_data: {image_data}"
+        )
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": image_data.b64_json or image_data.url,
+            "data": data,
             "execution_count": execution_count,
             "metadata": {"revised_prompt": image_data.revised_prompt},
             "mime_type": "image/png",
@@ -97,7 +111,7 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         ai_config: "AIConfigRuntime",
         parameters: Optional[Dict] = None,
         **kwargs,
-    ) -> Prompt:
+    ) -> List[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
@@ -201,7 +215,8 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         # TODO (rossdanlm): Handle multiple outputs in list
         # https://github.com/lastmile-ai/aiconfig/issues/467
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
+            if isinstance(output.data, OutputData):
+                return output.data.value
+            elif isinstance(output.data, str):
                 return output.data
-        else:
-            return ""
+        return ""

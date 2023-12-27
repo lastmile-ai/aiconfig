@@ -144,7 +144,7 @@ class LLamaGuardParser(ParameterizedModelParser):
         ai_config: "AIConfigRuntime",
         parameters: Optional[Dict[str, Any]] = None,
         **kwargs,
-    ) -> Prompt:
+    ) -> List[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
@@ -171,7 +171,7 @@ class LLamaGuardParser(ParameterizedModelParser):
                 model=model_metadata, parameters=parameters, **kwargs
             ),
         )
-        return prompt
+        return [prompt]
 
     async def deserialize(
         self,
