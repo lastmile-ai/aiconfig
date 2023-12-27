@@ -174,6 +174,26 @@ export type Prompt = {
  */
 export type Output = ExecuteResult | Error;
 
+export type OutputDataStringValue = {
+  kind: "string" | "file_uri" | "base64";
+  value: string;
+};
+
+export type OutputDataFunctionValue = {
+  kind: "function";
+  value: {
+    name: string;
+    arguments: string;
+    [k: string]: any;
+  };
+};
+
+/**
+ * The output type of the result from executing a prompt.
+ * We use this the kind field to determine how to parse it.
+ */
+export type OutputData = OutputDataStringValue | OutputDataFunctionValue;
+
 /**
  * Result of executing a prompt.
  */
@@ -191,20 +211,7 @@ export type ExecuteResult = {
   /**
    * The result of executing the prompt.
    */
-  data:
-    | JSONValue
-    | {
-        kind: "string" | "file_uri" | "base64";
-        value: string;
-      }
-    | {
-        kind: "function";
-        value: {
-          name: string;
-          arguments: string;
-          [k: string]: any;
-        }[];
-      };
+  data: OutputData | JSONValue;
   /**
    * The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
    */

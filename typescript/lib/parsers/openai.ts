@@ -1,10 +1,12 @@
 import { JSONObject, JSONValue } from "../../common";
 import {
-  Prompt,
-  Output,
-  PromptInput,
-  ModelMetadata,
   ExecuteResult,
+  ModelMetadata,
+  Output,
+  OutputData,
+  OutputDataFunctionValue,
+  Prompt,
+  PromptInput,
 } from "../../types";
 import { AIConfigRuntime } from "../config";
 import { ParameterizedModelParser } from "../parameterizedModelParser";
@@ -171,9 +173,13 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
       // Save response as Output(s) in the Prompt
       const outputs: ExecuteResult[] = [];
       for (const choice of response.choices) {
+        const data: OutputData = {
+          kind: "string",
+          value: choice.text,
+        };
         const output: ExecuteResult = {
           output_type: "execute_result",
-          data: choice.text,
+          data,
           execution_count: choice.index,
           metadata: {
             finish_reason: choice.finish_reason,
@@ -217,9 +223,13 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
           );
 
           const chunkWithoutChoices = _.omit(chunk, "choices");
+          const data: OutputData = {
+            kind: "string",
+            value: accumulatedText,
+          };
           const output: ExecuteResult = {
             output_type: "execute_result",
-            data: accumulatedText,
+            data,
             execution_count: choice.index,
             metadata: {
               finish_reason: choice.finish_reason,
@@ -253,7 +263,13 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
 
     if (output.output_type === "execute_result") {
       // TODO: Add in OutputData another way to support function calls
-      if (typeof output.data === "string") {
+      if (output.data?.hasOwnProperty("value")) {
+        const outputData = output.data as OutputData;
+        if (typeof outputData.value === "string") {
+          return outputData.value as string;
+        }
+        return JSON.stringify(outputData.value); // function_call
+      } else if (typeof output.data === "string") {
         return output.data;
       }
 
@@ -380,6 +396,20 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
         const input: PromptInput =
           message.role === "user" ? message.content ?? "" : { ...message };
 
+        let outputs: Output[] | undefined = undefined;
+        if (assistantResponse != null) {
+          const assistantOutputData: OutputData = {
+            kind: "string",
+            value: assistantResponse.content ?? "",
+          };
+          outputs = [
+            {
+              output_type: "execute_result",
+              data: assistantOutputData,
+              metadata: { rawResponse: assistantResponse },
+            },
+          ];
+        }
         const prompt: Prompt = {
           name: `${promptName}_${prompts.length + 1}`,
           input,
@@ -388,16 +418,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
             parameters: params ?? {},
             remember_chat_context: true,
           },
-          outputs:
-            assistantResponse != null
-              ? [
-                  {
-                    output_type: "execute_result",
-                    data: assistantResponse.content,
-                    metadata: { rawResponse: assistantResponse },
-                  },
-                ]
-              : undefined,
+          outputs,
         };
 
         prompts.push(prompt);
@@ -552,9 +573,13 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
       const outputs: ExecuteResult[] = [];
       const responseWithoutChoices = _.omit(response, "choices");
       for (const choice of response.choices) {
+        const data: OutputData = {
+          kind: "string",
+          value: choice.message?.content ?? "",
+        };
         const output: ExecuteResult = {
           output_type: "execute_result",
-          data: choice.message?.content,
+          data,
           execution_count: choice.index,
           metadata: {
             finish_reason: choice.finish_reason,
@@ -602,11 +627,15 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
             /*index*/ choice.index
           );
 
+          const data: OutputData = {
+            kind: "string",
+            // TODO (rossdanlm): Handle ChatCompletionMessage.function_call
+            // too. See comment: https://github.com/lastmile-ai/aiconfig/pull/603#discussion_r1436524131
+            value: message?.content ?? "",
+          };
           const output: ExecuteResult = {
             output_type: "execute_result",
-            // TODO (rossdanlm): Handle ChatCompletionMessage.function_call
-            // too (next diff)
-            data: message?.content,
+            data,
             execution_count: choice.index,
             metadata: {
               finish_reason: choice.finish_reason,
@@ -645,9 +674,16 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     }
 
     if (output.output_type === "execute_result") {
-      // TODO: Add in OutputData another way to support function calls
-      if (typeof output.data === "string") {
+      if (output.data?.hasOwnProperty("value")) {
+        const outputData = output.data as OutputData;
+        if (typeof outputData.value === "string") {
+          return outputData.value as string;
+        }
+        return JSON.stringify(outputData.value); // function_call
+      } else if (typeof output.data === "string") {
         return output.data;
+      } else if (output.metadata?.rawResponse?.function_call) {
+        return JSON.stringify(output.metadata?.rawResponse?.function_call);
       }
 
       // Doing this to be backwards-compatible with old output format
@@ -701,11 +737,16 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     if (output != null) {
       if (output.output_type === "execute_result") {
         // If the prompt has output saved, add it to the messages array
+        output as ExecuteResult;
         if (output.metadata?.rawResponse?.role === "assistant") {
+          const content: string =
+            output.data != null && output.data.hasOwnProperty("value")
+              ? ((output.data as OutputData).value as string)
+              : (output.data as string);
           if (typeof output.data === "string") {
             messages.push({
-              content: output.data,
               // TODO (rossdanlm): Support function_call and don't rely on rawResponse
+              content,
               role: output.metadata?.rawResponse?.role,
               function_call: output.metadata?.rawResponse?.function_call,
               name: output.metadata?.rawResponse?.name,

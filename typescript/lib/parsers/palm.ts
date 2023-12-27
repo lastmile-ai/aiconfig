@@ -1,6 +1,12 @@
 import { TextServiceClient, protos } from "@google-ai/generativelanguage";
 import { JSONObject } from "../../common";
-import { Prompt, Output, ModelMetadata, ExecuteResult } from "../../types";
+import {
+  ExecuteResult,
+  ModelMetadata,
+  Output,
+  OutputData,
+  Prompt,
+} from "../../types";
 import { AIConfigRuntime } from "../config";
 import { InferenceOptions } from "../modelParser";
 import { ParameterizedModelParser } from "../parameterizedModelParser";
@@ -180,10 +186,17 @@ export class PaLMTextParser extends ParameterizedModelParser {
     }
 
     if (output.output_type === "execute_result") {
-      return output.data as string;
-    } else {
-      return "";
+      if (output.data?.hasOwnProperty("value")) {
+        const outputData = output.data as OutputData;
+        if (typeof outputData.value === "string") {
+          return outputData.value;
+        }
+        return "fix me";
+      } else if (typeof output.data === "string") {
+        return output.data;
+      }
     }
+    return "";
   }
 }
 
@@ -230,9 +243,13 @@ function constructOutputs(
 
   for (let i = 0; i < response.candidates.length; i++) {
     const candidate = response.candidates[i];
+    const data: OutputData = {
+      kind: "string",
+      value: candidate.output ?? "",
+    };
     const output: ExecuteResult = {
       output_type: "execute_result",
-      data: candidate.output,
+      data,
       execution_count: i,
       metadata: { rawResponse: candidate },
     };
