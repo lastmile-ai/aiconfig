@@ -107,7 +107,7 @@ def resolve_path(path: str) -> str:
     return os.path.abspath(os.path.expanduser(path))
 
 
-def get_validated_path(raw_path: str, allow_create: bool = False) -> Result[ValidatedPath, str]:
+def get_validated_path(raw_path: str | None, allow_create: bool = False) -> Result[ValidatedPath, str]:
     LOGGER.debug(f"{allow_create=}")
     if not raw_path:
         return Err("No path provided")
