@@ -272,23 +272,20 @@
                       "const": "function"
                     },
                     "value": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "additionalProperties": {},
-                        "properties": {
-                          "name": {
-                            "type": "string"
-                          },
-                          "arguments": {
-                            "type": "string"
-                          }
+                      "type": "object",
+                      "additionalProperties": {},
+                      "properties": {
+                        "name": {
+                          "type": "string"
                         },
-                        "required": [
-                          "arguments",
-                          "name"
-                        ]
-                      }
+                        "arguments": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "arguments",
+                        "name"
+                      ]
                     }
                   },
                   "required": [
