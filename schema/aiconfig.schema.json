@@ -164,6 +164,7 @@
                 "type": "object",
                 "properties": {
                   "data": {
+                    "$ref": "#/definitions/JSONValue",
                     "description": "The data representing the attachment"
                   },
                   "mime_type": {
@@ -182,12 +183,35 @@
               }
             },
             "data": {
+              "$ref": "#/definitions/JSONValue",
               "description": "Input to the model. This can represent a single input, or multiple inputs.\nThe structure of the data object is up to the ModelParser."
             }
           }
         },
         {
           "type": "string"
+        }
+      ]
+    },
+    "JSONValue": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/JSONValue"
+          }
+        },
+        {
+          "type": [
+            "null",
+            "string",
+            "number",
+            "boolean"
+          ]
         }
       ]
     },
@@ -208,7 +232,79 @@
               "type": "number"
             },
             "data": {
-              "description": "The result of executing the prompt."
+              "description": "The result of executing the prompt.",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": {}
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/JSONValue"
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "base64",
+                        "file_uri",
+                        "string"
+                      ],
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "function"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": {},
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "arguments": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "arguments",
+                          "name"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "value"
+                  ]
+                },
+                {
+                  "type": [
+                    "null",
+                    "string",
+                    "number",
+                    "boolean"
+                  ]
+                }
+              ]
             },
             "mime_type": {
               "description": "The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.",
