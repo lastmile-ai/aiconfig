@@ -1,6 +1,6 @@
 import EditorContainer from "./components/EditorContainer";
 import { ClientAIConfig } from "./shared/types";
-import { Flex, Loader } from "@mantine/core";
+import { Flex, Loader, MantineProvider } from "@mantine/core";
 import { AIConfig, Prompt } from "aiconfig";
 import { useCallback, useEffect, useState } from "react";
 import { ufetch } from "ufetch";
@@ -51,18 +51,20 @@ export default function Editor() {
 
   return (
     <div>
-      {!aiconfig ? (
-        <Flex justify="center" mt="xl">
-          <Loader size="xl" />
-        </Flex>
-      ) : (
-        <EditorContainer
-          aiconfig={aiconfig}
-          onSave={onSave}
-          getModels={getModels}
-          addPrompt={addPrompt}
-        />
-      )}
+      <MantineProvider withGlobalStyles withNormalizeCSS>
+        {!aiconfig ? (
+          <Flex justify="center" mt="xl">
+            <Loader size="xl" />
+          </Flex>
+        ) : (
+          <EditorContainer
+            aiconfig={aiconfig}
+            onSave={onSave}
+            getModels={getModels}
+            addPrompt={addPrompt}
+          />
+        )}
+      </MantineProvider>
     </div>
   );
 }
