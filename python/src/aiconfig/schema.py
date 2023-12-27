@@ -16,7 +16,7 @@ class OutputData(BaseModel):
     OutputData represents the output content in a standard format.
     """
 
-    kind: Literal["string", "file_uri", "base64"]
+    kind: Literal["string", "file_uri", "base64", "function"]
     value: str
 
 

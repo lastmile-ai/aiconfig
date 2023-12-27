@@ -3,11 +3,14 @@ import logging
 import signal
 import subprocess
 import sys
+import socket
 
 import lastmile_utils.lib.core.api as core_utils
 import result
-from aiconfig.editor.server.server import EditServerConfig, ServerMode, run_backend_server
 from result import Err, Ok, Result
+from aiconfig.editor.server.server import run_backend_server
+
+from aiconfig.editor.server.server_utils import EditServerConfig, ServerMode
 
 
 class AIConfigCLIConfig(core_utils.Record):
@@ -62,8 +65,33 @@ def _sigint(procs: list[subprocess.Popen[bytes]]) -> Result[str, str]:
         p.send_signal(signal.SIGINT)
     return Ok("Sent SIGINT to frontend servers.")
 
+def is_port_in_use(port: int) -> bool:
+    """ 
+    Checks if a port is in use at localhost.
+    
+    Creates a temporary connection.
+    Context manager will automatically close the connection
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('localhost', port)) == 0
+
 
 def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]:
+    
+    port = edit_config.server_port
+
+    while is_port_in_use(port):
+        LOGGER.warning(f"Port {port} is in use. Checking next port.")
+        port += 1
+
+    # Must reconstruct, EditServerConfig is an immutable type (frozen dataclass)
+    edit_config_dict = edit_config.model_dump()
+    edit_config_dict["server_port"] = port
+    edit_config = EditServerConfig(**edit_config_dict)
+
+    LOGGER.warning(f"Using {port}.")
+
+    # Check if server is already running
     LOGGER.info("Running editor servers")
     frontend_procs = _run_frontend_server_background() if edit_config.server_mode in [ServerMode.DEBUG_SERVERS] else Ok([])
     match frontend_procs:
