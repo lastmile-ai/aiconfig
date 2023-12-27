@@ -182,7 +182,7 @@ class HuggingFaceText2ImageDiffusor(ParameterizedModelParser):
         ai_config: "AIConfigRuntime",
         parameters: Optional[Dict[str, Any]] = None,
         **completion_params,
-    ) -> Prompt:
+    ) -> List[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
@@ -213,7 +213,7 @@ class HuggingFaceText2ImageDiffusor(ParameterizedModelParser):
                 model=model_metadata, parameters=parameters, **completion_params
             ),
         )
-        return prompt
+        return [prompt]
 
     async def deserialize(
         self,
