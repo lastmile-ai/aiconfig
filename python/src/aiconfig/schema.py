@@ -10,8 +10,7 @@ JSONObject = Dict[str, Any]
 # InferenceSettings represents settings for model inference as a JSON object
 InferenceSettings = JSONObject
 
-
-class OutputData(BaseModel):
+class OutputDataWithStringValue(BaseModel):
     """
     OutputData represents the output content in a standard format.
     """
@@ -32,13 +31,16 @@ class FunctionCallData(BaseModel):
         extra = "allow"
 
 
-class FunctionCall(BaseModel):
+class OutputDataWithFunctionValue(BaseModel):
     """
     Standard format for data representing function call(s)
     """
 
     kind: Literal["function"]
     value: List[FunctionCallData]
+
+
+OutputData = Union[OutputDataWithStringValue, OutputDataWithFunctionValue]
 
 
 class ExecuteResult(BaseModel):
@@ -51,7 +53,7 @@ class ExecuteResult(BaseModel):
     # nth choice.
     execution_count: Union[int, None] = None
     # The result of the executing prompt.
-    data: Union[Any, OutputData]
+    data: Union[OutputData, Any]
     # The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
     mime_type: Optional[str] = None
     # Output metadata

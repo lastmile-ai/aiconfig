@@ -20,6 +20,7 @@ from .schema import (
     JSONObject,
     ModelMetadata,
     Output,
+    OutputData,
     Prompt,
     PromptInput,
     PromptMetadata,

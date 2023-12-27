@@ -265,15 +265,15 @@
                   ]
                 },
                 {
-                  "type": "object",
-                  "properties": {
-                    "kind": {
-                      "type": "string",
-                      "const": "function"
-                    },
-                    "value": {
-                      "type": "array",
-                      "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "function"
+                      },
+                      "value": {
                         "type": "object",
                         "additionalProperties": {},
                         "properties": {
@@ -289,12 +289,12 @@
                           "name"
                         ]
                       }
-                    }
-                  },
-                  "required": [
-                    "kind",
-                    "value"
-                  ]
+                    },
+                    "required": [
+                      "kind",
+                      "value"
+                    ]
+                  }
                 },
                 {
                   "type": [
