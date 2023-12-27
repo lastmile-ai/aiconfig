@@ -69,8 +69,10 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
 
 
 def _validated_request_path(request_json: core_utils.JSONObject, allow_create: bool = False) -> Result[ValidatedPath, str]:
-    path = str(request_json.get("path", None))
-    return get_validated_path(path, allow_create=allow_create)
+    if "path" not in request_json or not isinstance(request_json["path"], str):
+        return Err("Request JSON must contain a 'path' field with a string value.")
+    else:
+        return get_validated_path(request_json["path"], allow_create=allow_create)
 
 
 @app.route("/")
@@ -102,6 +104,10 @@ def load_model_parser_module() -> FlaskResponse:
 def load() -> FlaskResponse:
     state = get_server_state(app)
     request_json = request.get_json()
+    if not request_json.keys() <= {"path"}:
+        return HttpResponseWithAIConfig(
+            message="Request JSON must contain a 'path' field with a string value, or no arguments.", code=400, aiconfig=None
+        ).to_flask_format()
     path: str | None = request_json.get("path", None)
     if path is None:
         aiconfig = state.aiconfig
@@ -129,11 +135,11 @@ def save() -> FlaskResponse:
 
     _op = make_op_run_method(MethodName("save"))
 
-    path_val = _validated_request_path(request_json, allow_create=True)
+    res_path_val: Result[ValidatedPath, str] = _validated_request_path(request_json, allow_create=True)
     op_args: Result[OpArgs, str] = result.do(
-        Ok(OpArgs({"path": path_val_ok}))
+        Ok(OpArgs({"config_filepath": path_val_ok}))
         #
-        for path_val_ok in path_val
+        for path_val_ok in res_path_val
     )
 
     return run_aiconfig_operation_with_op_args(aiconfig, "save", _op, op_args)

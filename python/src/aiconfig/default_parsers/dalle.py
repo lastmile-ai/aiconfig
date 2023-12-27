@@ -97,7 +97,7 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         ai_config: "AIConfigRuntime",
         parameters: Optional[Dict] = None,
         **kwargs,
-    ) -> Prompt:
+    ) -> List[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
