@@ -3054,10 +3054,8 @@ agentkeepalive@^4.2.1:
   dependencies:
     humanize-ms "^1.2.1"
 
-aiconfig@^1.1.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/aiconfig/-/aiconfig-1.1.1.tgz#e4a13b0891140e487cdfe50da3652345e671789a"
-  integrity sha512-rkmzOKfas6n5rCnRf2++rgLkzm+8cJovNgtZIuJ9trnzmwUyZx+LRHzzEiSQbaQmhU5HjCcrLx6CuTdIXAM4SQ==
+aiconfig@../../../../../typescript:
+  version "1.1.2"
   dependencies:
     "@google-ai/generativelanguage" "^1.1.0"
     "@huggingface/inference" "^2.6.4"
@@ -3065,7 +3063,9 @@ aiconfig@^1.1.0:
     google-auth-library "^9.1.0"
     gpt-3-encoder "^1.1.4"
     handlebars "^4.7.8"
+    js-yaml "^4.1.0"
     lodash "^4.17.21"
+    node-fetch "^3.3.2"
     openai "4.11.1"
     typescript-json-schema "^0.60.0"
     uuid "^9.0.1"
