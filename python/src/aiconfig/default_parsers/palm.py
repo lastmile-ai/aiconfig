@@ -1,15 +1,21 @@
+import json
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import google.generativeai as palm
 from google.generativeai.text import Completion
 from google.generativeai.types.discuss_types import MessageDict
+from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    ExecuteResult, 
+    Output, 
+    OutputDataWithValue, 
+    Prompt, 
+    PromptMetadata,
+)
 from aiconfig.util.params import resolve_parameters, resolve_prompt
 
-
-from ..callback import CallbackEvent
-from ..model_parser import InferenceOptions
-from ..schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
@@ -377,15 +383,19 @@ class PaLMChatParser(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            assert isinstance(output, ExecuteResult)
             output_data = output.data
-
             if isinstance(output_data, str):
                 return output_data
+            if isinstance(output_data, OutputDataWithValue):
+                if isinstance(output_data.value, str):
+                    return output_data.value
+                # HuggingFace Text generation does not support function
+                # calls so shouldn't get here, but just being safe
+                return json.dumps(output_data.value, indent=2)
 
             # Doing this to be backwards-compatible with old output format
             # where we used to save the MessageDict in output.data
-            elif isinstance(output_data, MessageDict):
+            if isinstance(output_data, MessageDict):
                 if output_data.get("content"):
                     return output_data("content")
         return ""

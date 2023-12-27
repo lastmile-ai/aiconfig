@@ -1,17 +1,27 @@
 # Define a Model Parser for LLama-Guard
 from typing import TYPE_CHECKING, Dict, List, Optional, Any
 import copy
+import json
 
 import google.generativeai as genai
-import copy
-
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult, Output, Prompt
-from aiconfig.util.params import resolve_prompt, resolve_prompt_string
-from aiconfig import CallbackEvent, get_api_key_from_environment, AIConfigRuntime, PromptMetadata, PromptInput
 from google.generativeai.types import content_types
 from google.protobuf.json_format import MessageToDict
+
+from aiconfig import (
+    AIConfigRuntime,
+    CallbackEvent,
+    get_api_key_from_environment,
+)
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    OutputDataWithValue,
+    Prompt,
+    PromptInput,
+)
+from aiconfig.util.params import resolve_prompt, resolve_prompt_string
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -218,8 +228,8 @@ class GeminiModelParser(ParameterizedModelParser):
                         ExecuteResult(
                             **{
                                 "output_type": "execute_result", 
-                                "data": model_message_parts[0], 
-                                "metadata": {"rawResponse": model_message}
+                                "data": model_message_parts[0],
+                                "metadata": {"rawResponse": model_message},
                             }
                         )
                     ]
@@ -359,11 +369,14 @@ class GeminiModelParser(ParameterizedModelParser):
             output_data = output.data
             if isinstance(output_data, str):
                 return output_data
-            else:
-                raise ValueError("Not Implemented")
-
-        else:
-            return ""
+            if isinstance(output_data, OutputDataWithValue):
+                if isinstance(output_data.value, str):
+                    return output_data.value
+                # Gemini does not support function calls so shouldn't
+                # get here, but just being safe
+                return json.dumps(output_data.value, indent=2)
+            raise ValueError("Not Implemented")
+        return ""
 
     def _construct_chat_history(
         self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Dict
