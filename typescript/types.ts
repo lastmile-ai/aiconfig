@@ -196,6 +196,14 @@ export type ExecuteResult = {
     | {
         kind: "string" | "file_uri" | "base64" | "function";
         value: string;
+      }
+    | {
+        kind: "function";
+        value: {
+          name: string;
+          arguments: string;
+          [k: string]: any;
+        }[];
       };
   /**
    * The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.

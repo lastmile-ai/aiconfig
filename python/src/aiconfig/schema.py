@@ -20,6 +20,27 @@ class OutputData(BaseModel):
     value: str
 
 
+class FunctionCallData(BaseModel):
+    """
+    Function call data reprsenting a single function call
+    """
+
+    name: str
+    arguments: str
+
+    class Config:
+        extra = "allow"
+
+
+class FunctionCall(BaseModel):
+    """
+    Standard format for data representing function call(s)
+    """
+
+    kind: Literal["function"]
+    value: List[FunctionCallData]
+
+
 class ExecuteResult(BaseModel):
     """
     ExecuteResult represents the result of executing a prompt.
