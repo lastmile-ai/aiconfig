@@ -7,6 +7,7 @@ import { Flex, Card, Text, createStyles } from "@mantine/core";
 import { PromptInput as AIConfigPromptInput } from "aiconfig";
 import { memo, useCallback } from "react";
 import { ParametersArray } from "../ParametersRenderer";
+import PromptOutputBar from "./PromptOutputBar";
 
 type Props = {
   index: number;
@@ -24,7 +25,9 @@ const useStyles = createStyles((theme) => ({
     borderBottomRightRadius: 0,
     borderTopRightRadius: 0,
   },
-  actionBarCard: {
+  actionBar: {
+    border: `1px solid ${theme.colors.gray[3]}`,
+    borderRadius: "0.25em",
     borderBottomLeftRadius: 0,
     borderTopLeftRadius: 0,
   },
@@ -88,17 +91,18 @@ export default memo(function PromptContainer({
             schema={inputSchema}
             onChangeInput={onChangeInput}
           />
+          <PromptOutputBar />
           {prompt.outputs && <PromptOutputsRenderer outputs={prompt.outputs} />}
         </Flex>
       </Card>
-      <Card withBorder className={classes.actionBarCard}>
+      <div className={classes.actionBar}>
         <PromptActionBar
           prompt={prompt}
           promptSchema={promptSchema}
           onUpdateModelSettings={updateModelSettings}
           onUpdateParameters={updateParameters}
         />
-      </Card>
+      </div>
     </Flex>
   );
 });
