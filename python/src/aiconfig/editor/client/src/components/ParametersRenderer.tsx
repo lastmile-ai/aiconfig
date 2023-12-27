@@ -193,9 +193,6 @@ export default memo(function ParametersRenderer(props: {
     });
   }, [onUpdateParameters]);
 
-  // TODO: saqadri - add MantineProvider wrapper inside EditorContainer in order for this to pick up context
-  const theme = useMantineTheme();
-
   return (
     <div
       style={{

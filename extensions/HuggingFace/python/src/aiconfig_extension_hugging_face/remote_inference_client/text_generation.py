@@ -1,10 +1,6 @@
 import copy
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.util.config_utils import get_api_key_from_environment
-
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
 from huggingface_hub.inference._text_generation import (
@@ -12,13 +8,19 @@ from huggingface_hub.inference._text_generation import (
     TextGenerationStreamResponse,
 )
 
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 from aiconfig import CallbackEvent
-
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    OutputDataWithValue,
+    Prompt,
+    PromptMetadata,
+)
+from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt
 
-# ModelParser Utils
-# Type hint imports
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -98,7 +100,7 @@ def construct_stream_output(
         output = ExecuteResult(
             **{
                 "output_type": "execute_result",
-                "data": copy.deepcopy(accumulated_message),
+                "data": accumulated_message,
                 "execution_count": index,
                 "metadata": metadata,
             }
@@ -316,7 +318,8 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
+            if isinstance(output.data, OutputDataWithValue):
+                return output.data.value
+            elif isinstance(output.data, str):
                 return output.data
-        else:
-            return ""
+        return ""

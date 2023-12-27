@@ -3,11 +3,14 @@ from typing import Any, List
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    ExecuteResult,
+    OutputDataWithValue,
+    Output,
+    Prompt,
+)
 from aiconfig.util.params import resolve_prompt
 from llama_cpp import Llama
-
-from aiconfig import Output, Prompt
-from aiconfig.schema import ExecuteResult
 
 
 class LlamaModelParser(ParameterizedModelParser):
@@ -83,9 +86,15 @@ class LlamaModelParser(ParameterizedModelParser):
                 if options:
                     options.stream_callback(data, acc, index)
             print(flush=True)
+
+            output_data_value : str = ''
+            if isinstance(acc, str):
+                output_data_value = acc
+            else:
+                raise ValueError(f"Output {acc} needs to be of type 'str' but is of type: {type(acc)}")
             return ExecuteResult(
                 output_type="execute_result",
-                data=acc,
+                data=output_data_value,
                 metadata={}
             )
         else:
@@ -95,25 +104,37 @@ class LlamaModelParser(ParameterizedModelParser):
             except TypeError:
                 texts = [response["choices"][0]["text"]]
 
+            output_data_value : str = ''
+            last_response = texts[-1]
+            if isinstance(last_response, str):
+                output_data_value = last_response
+            else:
+                raise ValueError(f"Output {last_response} needs to be of type 'str' but is of type: {type(last_response)}")
             return ExecuteResult(
                 output_type="execute_result",
-                data=texts[-1],
+                data=output_data_value,
                 metadata={}
             )
 
     def get_output_text(
         self, prompt: Prompt, aiconfig: AIConfigRuntime, output: Output | None = None
     ) -> str:
-        match output:
-            case ExecuteResult(data=d):
-                if isinstance(d, str):
-                    return d
+        if not output:
+            output = aiconfig.get_latest_output(prompt)
 
-                # Doing this to be backwards-compatible with old output format
+        if not output:
+            return ""
+
+        if output.output_type == "execute_result":
+            if isinstance(output.data, OutputDataWithValue):
+                return output.data.value
+            elif isinstance(output.data, str):
+                return output.data
+
+            # Doing this to be backwards-compatible with old output format
                 # where we used to save a list in output.data
                 # See https://github.com/lastmile-ai/aiconfig/issues/630
-                elif isinstance(d, list):
-                    return d
-                return ""
-            case _:
-                raise ValueError(f"Unexpected output type: {type(output)}")
+            elif isinstance(output.data, list):
+                return output.data
+            return ""
+        raise ValueError(f"Output is an unexpected output type: {type(output)}")

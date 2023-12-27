@@ -7,7 +7,14 @@ from openai.types.chat import ChatCompletionMessage
 from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptInput, PromptMetadata
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    OutputDataWithValue,
+    Prompt,
+    PromptInput,
+    PromptMetadata,
+)
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import (
     resolve_prompt,
@@ -109,11 +116,15 @@ class OpenAIInference(ParameterizedModelParser):
                 assistant_output = []
                 if assistant_response is not None:
                     assistant_content = assistant_response.get("content", "")
+                    output_data : OutputDataWithValue = OutputDataWithValue(
+                        kind="string",
+                        value=assistant_content
+                    )
                     assistant_output = [
                         ExecuteResult(
                             output_type="execute_result",
                             execution_count=None,
-                            data=assistant_content,
+                            data=output_data,
                             metadata={"rawResponse": assistant_response},
                         )
                     ]
@@ -276,12 +287,15 @@ class OpenAIInference(ParameterizedModelParser):
                     {"finish_reason": choice.get("finish_reason")}
                 )
                 output_message = choice["message"]
-                # TODO (rossdanlm): Support function call handling as output_data
                 output_content = output_message.get("content", "")
+                output_data : OutputDataWithValue = OutputDataWithValue(
+                    kind="string",
+                    value=output_content,
+                )
                 output = ExecuteResult(
                     **{
                         "output_type": "execute_result",
-                        "data": output_content,
+                        "data": output_data,
                         "execution_count": i,
                         "metadata": {"rawResponse": output_message, **response_without_choices},
                     }
@@ -299,7 +313,7 @@ class OpenAIInference(ParameterizedModelParser):
 
                 for i, choice in enumerate(chunk["choices"]):
                     index = choice.get("index")
-                    accumulated_message_for_choice = messages.get(index, {})
+                    accumulated_message_for_choice = messages.get(index, "")
                     delta = choice.get("delta")
 
                     if options and options.stream_callback:
@@ -307,10 +321,16 @@ class OpenAIInference(ParameterizedModelParser):
                             delta, accumulated_message_for_choice, index
                         )
 
+                    output_data : OutputDataWithValue = OutputDataWithValue(
+                        kind="string",
+                        value=accumulated_message_for_choice
+                            if isinstance(accumulated_message_for_choice, str)
+                            else "",
+                    )
                     output = ExecuteResult(
                         **{
                             "output_type": "execute_result",
-                            "data": copy.deepcopy(accumulated_message_for_choice),
+                            "data": output_data,
                             "execution_count": index,
                             "metadata": {"finish_reason": choice.get("finish_reason")},
                         }
@@ -354,7 +374,9 @@ class OpenAIInference(ParameterizedModelParser):
 
         if output.output_type == "execute_result":
             message = output.data
-            if isinstance(message, str):
+            if isinstance(message, OutputDataWithValue):
+                return message.value
+            elif isinstance(message, str):
                 return message
             elif output.metadata["rawResponse"].get("function_call", None):
                 return output.metadata["rawResponse"].function_call
@@ -505,13 +527,20 @@ def add_prompt_as_message(
         if output.output_type == "execute_result":
             assert isinstance(output, ExecuteResult)
             output_data = output.data
+            
             # TODO (rossdanlm): Support function call handling as output_data
-            if isinstance(output_data, str):
+            if isinstance(output_data, OutputDataWithValue) or isinstance(output_data, str):
                 if output.metadata["rawResponse"].get("role", "") == "assistant":
-                    output_message = {
-                        "content": output_data,
-                        "role": "assistant",
-                    }
+                    output_message = {}
+                    content = ""
+                    if isinstance(output_data, OutputDataWithValue):
+                        content = output_data.value
+                    elif isinstance(output_data, str):
+                        content = output_data
+                    
+                    output_message["content"] = content
+                    output_message["role"] = "assistant"
+                    
                     function_call = output.metadata["rawResponse"].get("function_call", None)
                     tool_calls = output.metadata["rawResponse"].get("tool_calls", None)
                     if function_call is not None:

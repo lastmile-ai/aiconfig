@@ -2,9 +2,15 @@ import openai
 import pytest
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.default_parsers.openai import refine_chat_completion_params
+from aiconfig.schema import (
+    ExecuteResult,
+    OutputDataWithValue,
+    Prompt,
+    PromptInput,
+    PromptMetadata,
+)
 from mock import patch
 
-from aiconfig import ExecuteResult, Prompt, PromptInput, PromptMetadata
 
 from ..conftest import mock_openai_chat_completion
 from ..util.file_path_utils import get_absolute_file_path_from_relative
@@ -135,7 +141,10 @@ async def test_serialize(set_temporary_env_vars):
                 ExecuteResult(
                     output_type="execute_result",
                     execution_count=None,
-                    data='Hello! How can I assist you today?',
+                    data=OutputDataWithValue(
+                        kind="string",
+                        value='Hello! How can I assist you today?',
+                    ),
                     metadata={'rawResponse': {
                         'role': 'assistant',
                         'content': 'Hello! How can I assist you today?'
@@ -277,7 +286,7 @@ async def test_serialize(set_temporary_env_vars):
             ],
         }
 
-        
+
         prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
         new_prompt = prompts[1]
         
@@ -329,7 +338,10 @@ async def test_serialize(set_temporary_env_vars):
                 ExecuteResult(
                     output_type="execute_result",
                     execution_count=None,
-                    data="The current weather in Boston is 22 degrees Celsius and sunny.",
+                    data=OutputDataWithValue(
+                        kind="string",
+                        value="The current weather in Boston is 22 degrees Celsius and sunny.",  
+                    ),
                     metadata={'rawResponse': {
                         'role': 'assistant',
                         'content': 'The current weather in Boston is 22 degrees Celsius and sunny.',

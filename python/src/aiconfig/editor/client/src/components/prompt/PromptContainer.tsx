@@ -7,13 +7,18 @@ import { Flex, Card, Text, createStyles } from "@mantine/core";
 import { PromptInput as AIConfigPromptInput } from "aiconfig";
 import { memo, useCallback } from "react";
 import { ParametersArray } from "../ParametersRenderer";
+import PromptOutputBar from "./PromptOutputBar";
 
 type Props = {
   index: number;
   prompt: ClientPrompt;
-  onChangePromptInput: (i: number, newPromptInput: AIConfigPromptInput) => void;
-  onUpdateModelSettings: (i: number, newModelSettings: any) => void;
-  onUpdateParameters: (i: number, newParameters: any) => void;
+  onChangePromptInput: (
+    promptIndex: number,
+    newPromptInput: AIConfigPromptInput
+  ) => void;
+  onRunPrompt(promptIndex: number): Promise<void>;
+  onUpdateModelSettings: (promptIndex: number, newModelSettings: any) => void;
+  onUpdateParameters: (promptIndex: number, newParameters: any) => void;
   defaultConfigModelName?: string;
 };
 
@@ -24,7 +29,9 @@ const useStyles = createStyles((theme) => ({
     borderBottomRightRadius: 0,
     borderTopRightRadius: 0,
   },
-  actionBarCard: {
+  actionBar: {
+    border: `1px solid ${theme.colors.gray[3]}`,
+    borderRadius: "0.25em",
     borderBottomLeftRadius: 0,
     borderTopLeftRadius: 0,
   },
@@ -35,6 +42,7 @@ export default memo(function PromptContainer({
   index,
   onChangePromptInput,
   defaultConfigModelName,
+  onRunPrompt,
   onUpdateModelSettings,
   onUpdateParameters,
 }: Props) {
@@ -66,6 +74,11 @@ export default memo(function PromptContainer({
     [index, onUpdateParameters]
   );
 
+  const runPrompt = useCallback(
+    async () => await onRunPrompt(index),
+    [index, onRunPrompt]
+  );
+
   // TODO: When adding support for custom PromptContainers, implement a PromptContainerRenderer which
   // will take in the index and callback and render the appropriate PromptContainer with new memoized
   // callback and not having to pass index down to PromptContainer
@@ -88,17 +101,19 @@ export default memo(function PromptContainer({
             schema={inputSchema}
             onChangeInput={onChangeInput}
           />
+          <PromptOutputBar />
           {prompt.outputs && <PromptOutputsRenderer outputs={prompt.outputs} />}
         </Flex>
       </Card>
-      <Card withBorder className={classes.actionBarCard}>
+      <div className={classes.actionBar}>
         <PromptActionBar
           prompt={prompt}
           promptSchema={promptSchema}
+          onRunPrompt={runPrompt}
           onUpdateModelSettings={updateModelSettings}
           onUpdateParameters={updateParameters}
         />
-      </Card>
+      </div>
     </Flex>
   );
 });
