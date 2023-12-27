@@ -14,6 +14,7 @@ import RunPromptButton from "./RunPromptButton";
 type Props = {
   prompt: ClientPrompt;
   promptSchema?: PromptSchema;
+  onRunPrompt: () => Promise<void>;
   onUpdateModelSettings: (settings: Record<string, unknown>) => void;
   onUpdateParameters: (data: {
     promptName?: string;
@@ -36,6 +37,7 @@ function getPromptParameters(prompt: ClientPrompt) {
 export default memo(function PromptActionBar({
   prompt,
   promptSchema,
+  onRunPrompt,
   onUpdateModelSettings,
   onUpdateParameters,
 }: Props) {
@@ -88,7 +90,7 @@ export default memo(function PromptActionBar({
               )}
             </Tabs>
           </Container>
-          <RunPromptButton prompt={prompt} size="full" />
+          <RunPromptButton runPrompt={onRunPrompt} size="full" />
         </>
       ) : (
         <Flex direction="column" justify="space-between" h="100%">
@@ -97,7 +99,7 @@ export default memo(function PromptActionBar({
               <IconClearAll />
             </ActionIcon>
           </Flex>
-          <RunPromptButton prompt={prompt} size="compact" />
+          <RunPromptButton runPrompt={onRunPrompt} size="compact" />
         </Flex>
       )}
     </Flex>

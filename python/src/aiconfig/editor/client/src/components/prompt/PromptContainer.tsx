@@ -12,9 +12,13 @@ import PromptOutputBar from "./PromptOutputBar";
 type Props = {
   index: number;
   prompt: ClientPrompt;
-  onChangePromptInput: (i: number, newPromptInput: AIConfigPromptInput) => void;
-  onUpdateModelSettings: (i: number, newModelSettings: any) => void;
-  onUpdateParameters: (i: number, newParameters: any) => void;
+  onChangePromptInput: (
+    promptIndex: number,
+    newPromptInput: AIConfigPromptInput
+  ) => void;
+  onRunPrompt(promptIndex: number): Promise<void>;
+  onUpdateModelSettings: (promptIndex: number, newModelSettings: any) => void;
+  onUpdateParameters: (promptIndex: number, newParameters: any) => void;
   defaultConfigModelName?: string;
 };
 
@@ -38,6 +42,7 @@ export default memo(function PromptContainer({
   index,
   onChangePromptInput,
   defaultConfigModelName,
+  onRunPrompt,
   onUpdateModelSettings,
   onUpdateParameters,
 }: Props) {
@@ -67,6 +72,11 @@ export default memo(function PromptContainer({
       onUpdateParameters(index, newParameters);
     },
     [index, onUpdateParameters]
+  );
+
+  const runPrompt = useCallback(
+    async () => await onRunPrompt(index),
+    [index, onRunPrompt]
   );
 
   // TODO: When adding support for custom PromptContainers, implement a PromptContainerRenderer which
@@ -99,6 +109,7 @@ export default memo(function PromptContainer({
         <PromptActionBar
           prompt={prompt}
           promptSchema={promptSchema}
+          onRunPrompt={runPrompt}
           onUpdateModelSettings={updateModelSettings}
           onUpdateParameters={updateParameters}
         />

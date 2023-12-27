@@ -10,13 +10,18 @@ import { getDefaultNewPromptName } from "../utils/aiconfigStateUtils";
 
 type Props = {
   aiconfig: ClientAIConfig;
+  callbacks: AIConfigCallbacks;
+};
+
+export type AIConfigCallbacks = {
   addPrompt: (
     promptName: string,
     prompt: Prompt,
     index: number
   ) => Promise<{ aiconfig: AIConfig }>;
-  onSave: (aiconfig: AIConfig) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
+  runPrompt: (promptName: string) => Promise<void>;
+  save: (aiconfig: AIConfig) => Promise<void>;
 };
 
 const useStyles = createStyles((theme) => ({
@@ -51,9 +56,7 @@ const useStyles = createStyles((theme) => ({
 
 export default function EditorContainer({
   aiconfig: initialAIConfig,
-  addPrompt,
-  onSave,
-  getModels,
+  callbacks,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [aiconfigState, dispatch] = useReducer(
@@ -64,10 +67,10 @@ export default function EditorContainer({
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
 
-  const save = useCallback(async () => {
+  const onSave = useCallback(async () => {
     setIsSaving(true);
     try {
-      await onSave(clientConfigToAIConfig(aiconfigState));
+      await callbacks.save(clientConfigToAIConfig(aiconfigState));
     } catch (err: any) {
       showNotification({
         title: "Error saving",
@@ -77,7 +80,7 @@ export default function EditorContainer({
     } finally {
       setIsSaving(false);
     }
-  }, [aiconfigState, onSave]);
+  }, [aiconfigState, callbacks.save]);
 
   const onChangePromptInput = useCallback(
     async (promptIndex: number, newPromptInput: PromptInput) => {
@@ -135,7 +138,7 @@ export default function EditorContainer({
       dispatch(action);
 
       try {
-        const serverConfigRes = await addPrompt(
+        const serverConfigRes = await callbacks.addPrompt(
           promptName,
           newPrompt,
           promptIndex
@@ -153,7 +156,23 @@ export default function EditorContainer({
         });
       }
     },
-    [addPrompt, dispatch]
+    [callbacks.addPrompt, dispatch]
+  );
+
+  const onRunPrompt = useCallback(
+    async (promptIndex: number) => {
+      const promptName = aiconfigState.prompts[promptIndex].name;
+      try {
+        await callbacks.runPrompt(promptName);
+      } catch (err: any) {
+        showNotification({
+          title: "Error running prompt",
+          message: err.message,
+          color: "red",
+        });
+      }
+    },
+    [callbacks.runPrompt]
   );
 
   const { classes } = useStyles();
@@ -167,7 +186,7 @@ export default function EditorContainer({
           {/* <Text sx={{ textOverflow: "ellipsis", overflow: "hidden" }} size={14}>
             {path || "No path specified"}
           </Text> */}
-          <Button loading={isSaving} ml="lg" onClick={save}>
+          <Button loading={isSaving} ml="lg" onClick={onSave}>
             Save
           </Button>
         </Group>
@@ -180,13 +199,14 @@ export default function EditorContainer({
                 index={i}
                 prompt={prompt}
                 onChangePromptInput={onChangePromptInput}
+                onRunPrompt={onRunPrompt}
                 onUpdateModelSettings={onUpdatePromptModelSettings}
                 onUpdateParameters={onUpdatePromptParameters}
                 defaultConfigModelName={aiconfigState.metadata.default_model}
               />
               <div className={classes.addPromptRow}>
                 <AddPromptButton
-                  getModels={getModels}
+                  getModels={callbacks.getModels}
                   addPrompt={(model: string) =>
                     onAddPrompt(
                       i + 1 /* insert below current prompt index */,

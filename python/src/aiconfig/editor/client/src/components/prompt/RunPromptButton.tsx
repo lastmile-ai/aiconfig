@@ -1,10 +1,9 @@
-import { ClientPrompt } from "../../shared/types";
 import { Button, createStyles, Flex, Text } from "@mantine/core";
 import { IconPlayerPlayFilled } from "@tabler/icons-react";
 import { memo } from "react";
 
 type Props = {
-  prompt: ClientPrompt;
+  runPrompt: () => Promise<void>;
   size: "compact" | "full";
 };
 
@@ -16,11 +15,11 @@ const useStyles = createStyles(() => ({
   },
 }));
 
-export default memo(function RunPromptButton({ prompt, size }: Props) {
+export default memo(function RunPromptButton({ runPrompt, size }: Props) {
   const { classes } = useStyles();
   return (
     <Button
-      onClick={() => {}}
+      onClick={runPrompt}
       p="xs"
       size="xs"
       fullWidth={size === "full"}
