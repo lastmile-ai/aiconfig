@@ -122,6 +122,9 @@ describe("PaLM Text ModelParser", () => {
     const aiconfig = AIConfigRuntime.load(PALM_CONFIG_PATH);
 
     const [result] = (await aiconfig.run("prompt1")) as Output[];
-    expect((result as ExecuteResult).data).toEqual("Ranch");
+    expect((result as ExecuteResult).data).toEqual({
+      kind: "string",
+      value: "Ranch",
+    });
   });
 });
