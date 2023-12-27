@@ -6,15 +6,16 @@ import {
 } from "@huggingface/inference";
 
 import {
-  Prompt,
-  Output,
-  PromptInput,
-  ParameterizedModelParser,
-  ModelMetadata,
-  ExecuteResult,
   AIConfigRuntime,
-  InferenceOptions,
   CallbackEvent,
+  ExecuteResult,
+  InferenceOptions,
+  ModelMetadata,
+  Output,
+  OutputDataWithValue,
+  ParameterizedModelParser,
+  Prompt,
+  PromptInput,
 } from "aiconfig";
 import _ from "lodash";
 import * as aiconfig from "aiconfig";
@@ -252,6 +253,16 @@ export class HuggingFaceTextGenerationModelParserExtension extends Parameterized
         return output.data;
       }
 
+      if (output.data?.hasOwnProperty("value")) {
+        const outputData = output.data as OutputDataWithValue;
+        if (typeof outputData.value === "string") {
+          return outputData.value;
+        }
+        // should never get here for this model parser since hugging face
+        // does not support function calling, just being safe
+        return JSON.stringify(outputData.value);
+      }
+
       // Doing this to be backwards-compatible with old output format
       // where we used to save the response in output.data
       if (output.data?.hasOwnProperty("generated_text")) {
@@ -278,21 +289,18 @@ async function constructStreamOutput(
   let output = {} as ExecuteResult;
 
   for await (const iteration of response) {
-    const data = iteration.token.text;
-    const metadata = iteration;
+    const newText = iteration.token.text;
 
-    accumulatedMessage += data;
-    const delta = data;
+    accumulatedMessage += newText;
     const index = 0;
-    options.callbacks!.streamCallback(delta, accumulatedMessage, 0);
-
+    options.callbacks!.streamCallback(newText, accumulatedMessage, index);
     output = {
       output_type: "execute_result",
       // TODO: Investigate if we should use the accumulated message instead
-      // of delta: https://github.com/lastmile-ai/aiconfig/issues/620
-      data: delta,
+      // of newText: https://github.com/lastmile-ai/aiconfig/issues/620
+      data: newText,
       execution_count: index,
-      metadata: metadata,
+      metadata: iteration,
     } as ExecuteResult;
   }
   return output;
