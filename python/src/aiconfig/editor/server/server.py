@@ -132,15 +132,19 @@ def save() -> FlaskResponse:
     state = get_server_state(app)
     aiconfig = state.aiconfig
     request_json = request.get_json()
+    path: str | None = request_json.get("path", None)
+
+    if path is None:
+        if aiconfig is None:
+            return HttpResponseWithAIConfig(message="No AIConfig loaded", code=400, aiconfig=None).to_flask_format()
+        else:
+            path = aiconfig.file_path
+
+    if path is None:
+        return HttpResponseWithAIConfig(message="No path to save to", code=400, aiconfig=None).to_flask_format()
 
     _op = make_op_run_method(MethodName("save"))
-
-    res_path_val: Result[ValidatedPath, str] = _validated_request_path(request_json, allow_create=True)
-    op_args: Result[OpArgs, str] = result.do(
-        Ok(OpArgs({"config_filepath": path_val_ok}))
-        #
-        for path_val_ok in res_path_val
-    )
+    op_args: Result[OpArgs, str] = result.Ok(OpArgs({"config_filepath": path}))
 
     return run_aiconfig_operation_with_op_args(aiconfig, "save", _op, op_args)
 
