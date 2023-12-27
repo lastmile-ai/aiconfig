@@ -1,11 +1,21 @@
 import copy
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from transformers import AutoTokenizer, Pipeline, pipeline, TextIteratorStreamer
 import threading
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from transformers import (
+    AutoTokenizer,
+    Pipeline,
+    pipeline,
+    TextIteratorStreamer,
+)
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    Prompt,
+    PromptMetadata,
+)
 from aiconfig.util.params import resolve_prompt
 
 # Circuluar Dependency Type Hints
@@ -115,9 +125,10 @@ def construct_stream_output(
             }
         )
     for new_text in streamer:
-        accumulated_message += new_text
-        options.stream_callback(new_text, accumulated_message, 0)
-        output.data = accumulated_message
+        if isinstance(new_text, str):
+            accumulated_message += new_text
+            options.stream_callback(new_text, accumulated_message, 0)
+            output.data = accumulated_message
     return output
 
 
@@ -283,7 +294,8 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         # TODO (rossdanlm): Handle multiple outputs in list
         # https://github.com/lastmile-ai/aiconfig/issues/467
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
+            if isinstance(output.data, OutputDataWithValue):
+                return output.data.value
+            elif isinstance(output.data, str):
                 return output.data
-        else:
-            return ""
+        return ""

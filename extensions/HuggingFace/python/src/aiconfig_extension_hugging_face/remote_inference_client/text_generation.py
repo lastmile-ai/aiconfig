@@ -1,9 +1,5 @@
 import copy
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
-
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.util.config_utils import get_api_key_from_environment
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
 
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
@@ -12,13 +8,19 @@ from huggingface_hub.inference._text_generation import (
     TextGenerationStreamResponse,
 )
 
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 from aiconfig import CallbackEvent
-
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    OutputDataWithValue,
+    Prompt,
+    PromptMetadata,
+)
+from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt
 
-# ModelParser Utils
-# Type hint imports
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -63,7 +65,7 @@ def refine_chat_completion_params(model_settings: dict[Any, Any]) -> dict[str, A
 
 
 def construct_stream_output(
-    response: TextGenerationStreamResponse,
+    response: Iterable[TextGenerationStreamResponse],
     response_includes_details: bool,
     options: InferenceOptions,
 ) -> Output:
@@ -79,13 +81,13 @@ def construct_stream_output(
     accumulated_message = ""
     for iteration in response:
         metadata = {}
+        # If response_includes_details is false, `iteration` will be a string, 
+        # otherwise, `iteration` is a TextGenerationStreamResponse
         data = iteration
         if response_includes_details:
             iteration: TextGenerationStreamResponse
             data = iteration.token.text
             metadata = {"token": iteration.token, "details": iteration.details}
-        else:
-            data: str
 
         # Reduce
         accumulated_message += data
@@ -98,7 +100,7 @@ def construct_stream_output(
         output = ExecuteResult(
             **{
                 "output_type": "execute_result",
-                "data": copy.deepcopy(accumulated_message),
+                "data": accumulated_message,
                 "execution_count": index,
                 "metadata": metadata,
             }
@@ -316,7 +318,8 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
+            if isinstance(output.data, OutputDataWithValue):
+                return output.data.value
+            elif isinstance(output.data, str):
                 return output.data
-        else:
-            return ""
+        return ""

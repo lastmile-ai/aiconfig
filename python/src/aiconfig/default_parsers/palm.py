@@ -3,13 +3,18 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 import google.generativeai as palm
 from google.generativeai.text import Completion
 from google.generativeai.types.discuss_types import MessageDict
+from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    ExecuteResult, 
+    Output, 
+    OutputDataWithValue, 
+    Prompt, 
+    PromptMetadata,
+)
 from aiconfig.util.params import resolve_parameters, resolve_prompt
 
-
-from ..callback import CallbackEvent
-from ..model_parser import InferenceOptions
-from ..schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
@@ -380,7 +385,9 @@ class PaLMChatParser(ParameterizedModelParser):
             assert isinstance(output, ExecuteResult)
             output_data = output.data
 
-            if isinstance(output_data, str):
+            if isinstance(output_data, OutputDataWithValue):
+                return output_data.value
+            elif isinstance(output_data, str):
                 return output_data
 
             # Doing this to be backwards-compatible with old output format
