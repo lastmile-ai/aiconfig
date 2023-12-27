@@ -1,6 +1,6 @@
 import SettingsPropertyRenderer from "../../SettingsPropertyRenderer";
 import { GenericPropertiesSchema } from "../../../utils/promptUtils";
-import { JSONObject } from "aiconfig/dist/common";
+import { JSONObject } from "aiconfig";
 import { memo, useCallback, useMemo } from "react";
 import { debounce } from "lodash";
 

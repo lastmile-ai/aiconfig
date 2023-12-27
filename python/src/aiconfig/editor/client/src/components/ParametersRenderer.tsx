@@ -11,14 +11,7 @@ import {
 import { IconTrash, IconPlus } from "@tabler/icons-react";
 import { debounce, uniqueId } from "lodash";
 import { useState, useCallback, memo, useMemo } from "react";
-
-interface JSONArray extends Array<JSONValue> {}
-
-interface JSONObject {
-  [x: string]: JSONValue;
-}
-
-type JSONValue = string | number | boolean | JSONObject | JSONArray | unknown;
+import { JSONValue, JSONObject } from "aiconfig";
 
 type Parameter = { parameterName: string; parameterValue: JSONValue };
 
