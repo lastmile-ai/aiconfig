@@ -88,7 +88,8 @@ function reduceConsolidateAIConfig(
   responseConfig: AIConfig
 ): ClientAIConfig {
   switch (action.type) {
-    case "ADD_PROMPT_AT_INDEX": {
+    case "ADD_PROMPT_AT_INDEX":
+    case "UPDATE_PROMPT_INPUT": {
       // Make sure prompt structure is properly updated. Client input and metadata takes precedence
       // since it may have been updated by the user while the request was in flight
       return reduceReplacePrompt(state, action.index, (prompt) => {
