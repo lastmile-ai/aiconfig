@@ -108,16 +108,14 @@ def construct_stream_output(
 
 
 def construct_regular_output(response: TextGenerationResponse, response_includes_details: bool) -> Output:
-    metadata = {}
-    data = response
+    metadata = {"rawResponse": response}
     if response_includes_details:
-        data = response.generated_text
-        metadata = {"details": response.details}
+        metadata["details"] = response.details
 
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": data,
+            "data": response.generated_text,
             "execution_count": 0,
             "metadata": metadata,
         }
@@ -318,7 +316,13 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
-                return output.data
-        else:
-            return ""
+            assert isinstance(output, ExecuteResult)
+            output_data = output.data
+            if isinstance(output_data, str):
+                return output_data
+            
+            # Doing this to be backwards-compatible with old output format
+            # where we used to save the MessageDict in output.data
+            elif isinstance(output_data, TextGenerationResponse) or isinstance(output_data, TextGenerationStreamResponse):
+                return output_data.generated_text
+        return ""
