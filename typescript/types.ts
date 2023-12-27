@@ -174,8 +174,13 @@ export type Prompt = {
  */
 export type Output = ExecuteResult | Error;
 
+/**
+ * This represents the output content that is storied as a string, but we use
+ * both the `kind` field here and the `mime_type` in ExecuteResult to convert
+ * the string into the output format we want.
+ */
 type OutputDataWithStringValue = {
-  kind: "string" | "file_uri" | "base64";
+  kind: "file_uri" | "base64";
   value: string;
 };
 
@@ -224,7 +229,7 @@ export type OutputDataWithToolCallsValue = {
  * The output type of the result from executing a prompt.
  * We use this the kind field to determine how to parse it.
  */
-export type OutputData =
+export type OutputDataWithValue =
   | OutputDataWithStringValue
   | OutputDataWithToolCallsValue;
 
@@ -245,7 +250,7 @@ export type ExecuteResult = {
   /**
    * The result of executing the prompt.
    */
-  data: OutputData | JSONValue;
+  data: OutputDataWithValue | string | JSONValue;
 
   /**
    * The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.

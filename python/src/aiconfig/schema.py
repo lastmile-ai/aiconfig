@@ -12,10 +12,12 @@ InferenceSettings = JSONObject
 
 class OutputDataWithStringValue(BaseModel):
     """
-    OutputData represents the output content in a standard format.
+    This represents the output content that is storied as a string, but we use
+    both the `kind` field here and the `mime_type` in ExecuteResult to convert
+    the string into the output format we want.
     """
 
-    kind: Literal["string", "file_uri", "base64"]
+    kind: Literal["file_uri", "base64"]
     value: str
 
 
@@ -65,7 +67,10 @@ class OutputDataWithToolCallsValue(BaseModel):
     value: List[ToolCallData]
 
 
-OutputData = Union[OutputDataWithStringValue, OutputDataWithToolCallsValue]
+OutputDataWithValue = Union[
+    OutputDataWithStringValue,
+    OutputDataWithToolCallsValue,
+]
 
 
 class ExecuteResult(BaseModel):
@@ -78,7 +83,7 @@ class ExecuteResult(BaseModel):
     # nth choice.
     execution_count: Union[int, None] = None
     # The result of the executing prompt.
-    data: Union[OutputData, Any]
+    data: Union[OutputDataWithValue, str, Any]
     # The MIME type of the result. If not specified, the MIME type will be assumed to be plain text.
     mime_type: Optional[str] = None
     # Output metadata

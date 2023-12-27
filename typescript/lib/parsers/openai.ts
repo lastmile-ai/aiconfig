@@ -252,7 +252,7 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
     }
 
     if (output.output_type === "execute_result") {
-      // TODO: Add in OutputData another way to support function calls
+      // TODO: Add in OutputDataWithValue another way to support function calls
       if (typeof output.data === "string") {
         return output.data;
       }
@@ -645,7 +645,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
     }
 
     if (output.output_type === "execute_result") {
-      // TODO: Add in OutputData another way to support function calls
+      // TODO: Add in OutputDataWithValue another way to support function calls
       if (typeof output.data === "string") {
         return output.data;
       }
