@@ -398,7 +398,7 @@ export class AIConfigRuntime implements AIConfig {
     promptName: string,
     params: JSONObject = {},
     options?: InferenceOptions
-  ) {
+  ): Promise<Output[]> {
     const startEvent = {
       name: "on_run_start",
       file: __filename,
@@ -452,7 +452,7 @@ export class AIConfigRuntime implements AIConfig {
     promptName: string,
     params: JSONObject = {},
     options?: InferenceOptions
-  ) {
+  ): Promise<Output[] | undefined> {
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
       throw new Error(
