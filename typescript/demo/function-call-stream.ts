@@ -10,7 +10,12 @@ import {
 } from "openai/resources/chat";
 import * as path from "path";
 import { AIConfigRuntime } from "../lib/config";
-import { Prompt } from "../types";
+import {
+  FunctionData,
+  Prompt,
+  OutputDataWithValue,
+  OutputDataWithToolCallsValue,
+} from "../types";
 import { uniqueId } from "lodash";
 
 // This example is taken from https://github.com/openai/openai-node/blob/v4/examples/function-call-stream.ts
@@ -217,12 +222,20 @@ async function functionCallingWithAIConfig() {
       return;
     }
 
-    const rawResponse = output.metadata?.rawResponse;
-    const functionCall = rawResponse?.function_call;
+    let functionCall: FunctionData | null = null;
+    if (output.data?.hasOwnProperty("value")) {
+      const outputData = output.data as OutputDataWithValue;
+      if (outputData.kind === "tool_calls") {
+        outputData as OutputDataWithToolCallsValue;
+        // Typescript schema does not support array of function calls yet,
+        // but Python does so doing this for forward compatibility
+        functionCall = outputData.value[outputData.value.length - 1].function;
+      }
+    }
     console.log("functionCall=", functionCall);
 
     // If there is no function call, we're done and can exit this loop
-    if (!functionCall) {
+    if (functionCall === null) {
       return;
     }
 
