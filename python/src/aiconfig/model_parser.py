@@ -1,7 +1,14 @@
 from abc import ABC, abstractmethod
 import asyncio
 import copy
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+)
 
 from aiconfig.schema import AIConfig, ExecuteResult, Output, Prompt
 
@@ -24,9 +31,10 @@ class ModelParser(ABC):
         ai_config: "AIConfigRuntime",
         parameters: Optional[Dict] = None,
         **kwargs,
-    ) -> Prompt:
+    ) -> List[Prompt]:
         """
-        Serialize a prompt and additional metadata/model settings into a Prompt object that can be saved in the AIConfig.
+        Serialize a prompt and additional metadata/model settings into a 
+        list of Prompt objects that can be saved in the AIConfig.
 
         Args:
             prompt_name (str): Name to identify the prompt.
@@ -36,7 +44,7 @@ class ModelParser(ABC):
             **kwargs: Additional keyword arguments, if needed.
 
         Returns:
-            Prompt: Serialized representation of the input data.
+            List[Prompt]: Serialized representation of the input data.
         """
 
     @abstractmethod

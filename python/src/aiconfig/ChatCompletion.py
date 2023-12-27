@@ -76,7 +76,10 @@ def extract_outputs_from_response(response) -> List[Output]:
     return outputs
 
 
-def async_run_serialize_helper(aiconfig: AIConfigRuntime, request_kwargs: Dict):
+def async_run_serialize_helper(
+    aiconfig: AIConfigRuntime, 
+    request_kwargs: Dict,
+) -> List[Prompt]:
     """
     Method serialize() of AIConfig is an async method. If not, create a new one and await serialize().
     """

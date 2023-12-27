@@ -23,7 +23,7 @@ class LlamaModelParser(ParameterizedModelParser):
         ai_config: AIConfigRuntime,
         parameters: dict | None = None,
         **kwargs,
-    ) -> Prompt:
+    ) -> List[Prompt]:
         parameters = parameters or {}
         out = Prompt(name=prompt_name, input=data)
         return [out]

@@ -239,6 +239,7 @@ class PaLMChatParser(ParameterizedModelParser):
 
         event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
         await ai_config.callback_manager.run_callbacks(event)
+        return prompts
 
     async def deserialize(
         self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}

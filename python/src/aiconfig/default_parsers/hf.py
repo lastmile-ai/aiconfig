@@ -170,7 +170,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         ai_config: "AIConfigRuntime",
         parameters: Optional[dict[Any, Any]] = None,
         **kwargs,
-    ) -> list[Prompt]:
+    ) -> List[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
