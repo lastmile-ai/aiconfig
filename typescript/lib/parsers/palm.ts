@@ -232,7 +232,7 @@ function constructOutputs(
     const candidate = response.candidates[i];
     const output: ExecuteResult = {
       output_type: "execute_result",
-      data: candidate.output,
+      data: candidate.output ?? null,
       execution_count: i,
       metadata: { rawResponse: candidate },
     };
