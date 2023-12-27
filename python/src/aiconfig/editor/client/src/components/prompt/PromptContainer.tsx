@@ -25,7 +25,9 @@ const useStyles = createStyles((theme) => ({
     borderBottomRightRadius: 0,
     borderTopRightRadius: 0,
   },
-  actionBarCard: {
+  actionBar: {
+    border: `1px solid ${theme.colors.gray[3]}`,
+    borderRadius: "0.25em",
     borderBottomLeftRadius: 0,
     borderTopLeftRadius: 0,
   },
@@ -93,14 +95,14 @@ export default memo(function PromptContainer({
           {prompt.outputs && <PromptOutputsRenderer outputs={prompt.outputs} />}
         </Flex>
       </Card>
-      <Card withBorder className={classes.actionBarCard}>
+      <div className={classes.actionBar}>
         <PromptActionBar
           prompt={prompt}
           promptSchema={promptSchema}
           onUpdateModelSettings={updateModelSettings}
           onUpdateParameters={updateParameters}
         />
-      </Card>
+      </div>
     </Flex>
   );
 });
