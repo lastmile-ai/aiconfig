@@ -1,9 +1,6 @@
 import copy
+import json
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.util.config_utils import get_api_key_from_environment
 
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
@@ -12,13 +9,19 @@ from huggingface_hub.inference._text_generation import (
     TextGenerationStreamResponse,
 )
 
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 from aiconfig import CallbackEvent
-
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    OutputDataWithValue,
+    Prompt,
+    PromptMetadata,
+)
+from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt
 
-# ModelParser Utils
-# Type hint imports
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -94,11 +97,10 @@ def construct_stream_output(
         delta = data
         if options and options.stream_callback:
             options.stream_callback(delta, accumulated_message, index)
-
         output = ExecuteResult(
             **{
                 "output_type": "execute_result",
-                "data": copy.deepcopy(accumulated_message),
+                "data": accumulated_message or '',
                 "execution_count": index,
                 "metadata": metadata,
             }
@@ -115,7 +117,7 @@ def construct_regular_output(response: TextGenerationResponse, response_includes
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": response.generated_text,
+            "data": response.generated_text or '',
             "execution_count": 0,
             "metadata": metadata,
         }
@@ -316,14 +318,19 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            assert isinstance(output, ExecuteResult)
             output_data = output.data
             if isinstance(output_data, str):
                 return output_data
+            if isinstance(output_data, OutputDataWithValue):
+                if isinstance(output_data.value, str):
+                    return output_data.value
+                # HuggingFace Text generation does not support function
+                # calls so shouldn't get here, but just being safe
+                return json.dumps(output_data.value, indent=2)
 
             # Doing this to be backwards-compatible with old output format
             # where we used to save the TextGenerationResponse or
             # TextGenerationStreamResponse in output.data
-            elif hasattr(output_data, "generated_text"):
+            if hasattr(output_data, "generated_text"):
                 return output_data.generated_text
         return ""
