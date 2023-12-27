@@ -208,12 +208,21 @@ class GeminiModelParser(ParameterizedModelParser):
                 user_message_parts = user_message["parts"]
                 outputs = []
                 if i + 1 < len(contents):
+                    # TODO (rossdanlm): Support function calls
                     model_message = contents[i + 1]
                     model_message_parts = model_message["parts"]
                     # Gemini api currently only supports one candidate aka one output. Model should only be retuning one part in response.
                     # Should output data be this list of parts? or just the first one? TODO: figure out if Gemini outputs may contain more than one part.
                     # see https://ai.google.dev/tutorials/python_quickstart#multi-turn_conversations:~:text=Note%3A%20For%20multi%2Dturn%20conversations%2C%20you%20need%20to%20send%20the%20whole%20conversation%20history%20with%20each%20request
-                    outputs = [ExecuteResult(**{"output_type": "execute_result", "data": model_message_parts[0], "metadata": {}})]
+                    outputs = [
+                        ExecuteResult(
+                            **{
+                                "output_type": "execute_result", 
+                                "data": model_message_parts[0], 
+                                "metadata": {"rawResponse": model_message}
+                            }
+                        )
+                    ]
                     i += 1
                 prompt = Prompt(**{"name": f'{prompt_name}_{len(prompts) + 1}', "input": user_message_parts, "metadata": {"model": model_metadata}, "outputs": outputs})
                 prompts.append(prompt)
