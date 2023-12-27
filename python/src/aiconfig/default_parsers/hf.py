@@ -1,5 +1,5 @@
 import copy
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
@@ -108,16 +108,14 @@ def construct_stream_output(
 
 
 def construct_regular_output(response: TextGenerationResponse, response_includes_details: bool) -> Output:
-    metadata = {}
-    data = response
+    metadata = {"rawResponse": response}
     if response_includes_details:
-        data = response.generated_text
-        metadata = {"details": response.details}
+        metadata["details"] = response.details
 
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": data,
+            "data": response.generated_text,
             "execution_count": 0,
             "metadata": metadata,
         }
@@ -172,7 +170,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         ai_config: "AIConfigRuntime",
         parameters: Optional[dict[Any, Any]] = None,
         **kwargs,
-    ) -> list[Prompt]:
+    ) -> List[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
@@ -254,7 +252,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
 
     async def run_inference(
         self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: dict[Any, Any]
-    ) -> Output:
+    ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -318,7 +316,14 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
-                return output.data
-        else:
-            return ""
+            assert isinstance(output, ExecuteResult)
+            output_data = output.data
+            if isinstance(output_data, str):
+                return output_data
+
+            # Doing this to be backwards-compatible with old output format
+            # where we used to save the TextGenerationResponse or
+            # TextGenerationStreamResponse in output.data
+            elif hasattr(output_data, "generated_text"):
+                return output_data.generated_text
+        return ""

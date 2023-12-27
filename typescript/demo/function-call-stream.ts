@@ -217,18 +217,20 @@ async function functionCallingWithAIConfig() {
       return;
     }
 
-    const message = output.data as ChatCompletionMessageParam;
+    const rawResponse = output.metadata?.rawResponse;
+    const functionCall = rawResponse?.function_call;
+    console.log("functionCall=", functionCall);
 
     // If there is no function call, we're done and can exit this loop
-    if (!message.function_call) {
+    if (!functionCall) {
       return;
     }
 
     // If there is a function call, we generate a new message with the role 'function'.
-    const result = await callFunction(message.function_call);
+    const result = await callFunction(functionCall);
     const newMessage = {
       role: "function" as const,
-      name: message.function_call.name!,
+      name: functionCall.name!,
       content: JSON.stringify(result),
     };
 

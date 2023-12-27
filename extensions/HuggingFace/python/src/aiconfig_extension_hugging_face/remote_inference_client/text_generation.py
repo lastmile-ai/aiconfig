@@ -1,5 +1,5 @@
 import copy
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
@@ -108,16 +108,14 @@ def construct_stream_output(
 
 
 def construct_regular_output(response: TextGenerationResponse, response_includes_details: bool) -> Output:
-    metadata = {}
-    data = response
+    metadata = {"rawResponse": response}
     if response_includes_details:
-        data = response.generated_text
-        metadata = {"details": response.details}
+        metadata["details"] = response.details
 
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": data,
+            "data": response.generated_text,
             "execution_count": 0,
             "metadata": metadata,
         }
@@ -254,7 +252,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
 
     async def run_inference(
         self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: dict[Any, Any]
-    ) -> Output:
+    ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.

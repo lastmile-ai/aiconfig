@@ -14,7 +14,7 @@ import {
   ExecuteResult,
   AIConfigRuntime,
   InferenceOptions,
-  CallbackEvent
+  CallbackEvent,
 } from "aiconfig";
 import _ from "lodash";
 import * as aiconfig from "aiconfig";
@@ -211,7 +211,7 @@ export class HuggingFaceTextGenerationModelParserExtension extends Parameterized
       const response = await this.hfClient.textGenerationStream(
         textGenerationArgs
       );
-      output = await ConstructStreamOutput(
+      output = await constructStreamOutput(
         response,
         options as InferenceOptions
       );
@@ -248,11 +248,19 @@ export class HuggingFaceTextGenerationModelParserExtension extends Parameterized
     }
 
     if (output.output_type === "execute_result") {
-      return (output.data as TextGenerationOutput | TextGenerationStreamOutput)
-        .generated_text as string;
-    } else {
-      return "";
+      if (typeof output.data === "string") {
+        return output.data;
+      }
+
+      // Doing this to be backwards-compatible with old output format
+      // where we used to save the response in output.data
+      if (output.data?.hasOwnProperty("generated_text")) {
+        return (
+          output.data as TextGenerationOutput | TextGenerationStreamOutput
+        ).generated_text as string;
+      }
     }
+    return "";
   }
 }
 
@@ -262,7 +270,7 @@ export class HuggingFaceTextGenerationModelParserExtension extends Parameterized
  * @param options
  * @returns
  */
-async function ConstructStreamOutput(
+async function constructStreamOutput(
   response: AsyncGenerator<TextGenerationStreamOutput>,
   options: InferenceOptions
 ): Promise<Output> {
@@ -280,6 +288,8 @@ async function ConstructStreamOutput(
 
     output = {
       output_type: "execute_result",
+      // TODO: Investigate if we should use the accumulated message instead
+      // of delta: https://github.com/lastmile-ai/aiconfig/issues/620
       data: delta,
       execution_count: index,
       metadata: metadata,
@@ -289,14 +299,11 @@ async function ConstructStreamOutput(
 }
 
 function constructOutput(response: TextGenerationOutput): Output {
-  const metadata = {};
-  const data = response;
-
   const output = {
     output_type: "execute_result",
-    data: data,
+    data: response.generated_text,
     execution_count: 0,
-    metadata: metadata,
+    metadata: { rawResponse: response },
   } as ExecuteResult;
 
   return output;
