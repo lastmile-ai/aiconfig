@@ -8,3 +8,7 @@ export function getDefaultNewPromptName(aiconfig: AIConfig): string {
   }
   return `prompt_${i}`;
 }
+
+export function getPromptName(aiconfig: AIConfig, promptIndex: number): string {
+  return aiconfig.prompts[promptIndex]!.name;
+}
