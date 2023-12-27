@@ -12,6 +12,7 @@ import {
   ExecuteResult,
   ModelMetadata,
   Output,
+  OutputDataWithValue,
   Prompt,
   PromptInput,
 } from "../../types";
@@ -240,7 +241,15 @@ export class HuggingFaceTextGenerationParser extends ParameterizedModelParser<Te
     }
 
     if (output.output_type === "execute_result") {
-      if (typeof output.data === "string") {
+      if (output.data?.hasOwnProperty("value")) {
+        const outputData = output.data as OutputDataWithValue;
+        if (typeof outputData.value === "string") {
+          return outputData.value;
+        }
+        // Sarmad + Ryan, let me know if you prefer I do something else
+        // Was basing this off existing code for function calls in openai.ts
+        return JSON.stringify(outputData.value);
+      } else if (typeof output.data === "string") {
         return output.data;
       }
 
@@ -270,21 +279,20 @@ async function constructStreamOutput(
   let output = {} as ExecuteResult;
 
   for await (const iteration of response) {
-    const data = iteration.token.text;
+    const newText = iteration.token.text;
     const metadata = iteration;
 
-    accumulatedMessage += data;
-    const delta = data;
+    accumulatedMessage += newText;
     const index = 0;
-    options.callbacks!.streamCallback(delta, accumulatedMessage, 0);
+    options.callbacks!.streamCallback(newText, accumulatedMessage, 0);
 
     output = {
       output_type: "execute_result",
       // TODO: Investigate if we should use the accumulated message instead
-      // of delta: https://github.com/lastmile-ai/aiconfig/issues/620
-      data: delta,
+      // of newText: https://github.com/lastmile-ai/aiconfig/issues/620
+      data: newText,
       execution_count: index,
-      metadata: { metadata },
+      metadata,
     } as ExecuteResult;
   }
   return output;
