@@ -1,10 +1,8 @@
-import { Error } from "aiconfig";
-import { ClientExecuteResult, ClientPromptOutput } from "../../../shared/types";
+import { Error, ExecuteResult, Output } from "aiconfig";
 import { memo } from "react";
-import { TextRenderer } from "../TextRenderer";
 
 type Props = {
-  outputs: ClientPromptOutput[];
+  outputs: Output[];
 };
 
 const ErrorOutput = memo(function ErrorOutput({ output }: { output: Error }) {
@@ -14,7 +12,7 @@ const ErrorOutput = memo(function ErrorOutput({ output }: { output: Error }) {
 const ExecuteResultOutput = memo(function ExecuteResultOutput({
   output,
 }: {
-  output: ClientExecuteResult;
+  output: ExecuteResult;
 }) {
   return null;
   // switch (output.renderData.type) {
@@ -24,11 +22,7 @@ const ExecuteResultOutput = memo(function ExecuteResultOutput({
   // }
 });
 
-const Output = memo(function Output({
-  output,
-}: {
-  output: ClientPromptOutput;
-}) {
+const OutputRenderer = memo(function Output({ output }: { output: Output }) {
   switch (output.output_type) {
     case "execute_result":
       return <ExecuteResultOutput output={output} />;
@@ -38,5 +32,5 @@ const Output = memo(function Output({
 });
 
 export default memo(function PromptOutputsRenderer({ outputs }: Props) {
-  return outputs.map((output, i) => <Output key={i} output={output} />);
+  return outputs.map((output, i) => <OutputRenderer key={i} output={output} />);
 });

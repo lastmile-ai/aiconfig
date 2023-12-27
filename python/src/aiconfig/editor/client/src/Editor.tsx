@@ -1,7 +1,6 @@
 import EditorContainer, {
   AIConfigCallbacks,
 } from "./components/EditorContainer";
-import { ClientAIConfig } from "./shared/types";
 import { Flex, Loader, MantineProvider } from "@mantine/core";
 import { AIConfig, Prompt } from "aiconfig";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -9,7 +8,7 @@ import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
 
 export default function Editor() {
-  const [aiconfig, setAiConfig] = useState<ClientAIConfig | undefined>();
+  const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
 
   const loadConfig = useCallback(async () => {
     const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
