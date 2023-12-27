@@ -13,7 +13,13 @@ from transformers import Pipeline
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    OutputData,
+    Prompt,
+    PromptMetadata,
+)
 from aiconfig.util.params import resolve_prompt
 
 # Circuluar Dependency Type Hints
@@ -116,7 +122,7 @@ def refine_image_completion_params(unfiltered_completion_params: Dict[str, Any])
     return completion_params
 
 
-def construct_regular_output(
+def construct_output(
         image: Image.Image, 
         has_nsfw: Optional[bool],
         execution_count: int
@@ -135,10 +141,14 @@ def construct_regular_output(
         img.save(buffered, format="PNG")
         return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
+    data = OutputData(
+        kind="base64",
+        value=pillow_image_to_base64_string(image),
+    )
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": pillow_image_to_base64_string(image),
+            "data": data,
             "execution_count": execution_count,
             "metadata": {"has_nsfw": has_nsfw},
             "mime_type": "image/png",
@@ -315,7 +325,7 @@ If that doesn't work, you can also try less computationally intensive models.
                 has_nsfw_responses,
             )
         ):
-            output = construct_regular_output(image, has_nsfw, count)
+            output = construct_output(image, has_nsfw, count)
             outputs.append(output)
 
         prompt.outputs = outputs
@@ -336,15 +346,15 @@ If that doesn't work, you can also try less computationally intensive models.
         # TODO (rossdanlm): Handle multiple outputs in list
         # https://github.com/lastmile-ai/aiconfig/issues/467
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
+            if isinstance(output.data, OutputData):
+                return output.data.value
+            elif isinstance(output.data, str):
                 return output.data
-        else:
-            return ""
+        return ""
 
     def _get_device(self) -> str:
         if torch.cuda.is_available():
             return "cuda"
         elif torch.backends.mps.is_available():
             return "mps"
-        else:
-            "cpu"
+        return "cpu"
