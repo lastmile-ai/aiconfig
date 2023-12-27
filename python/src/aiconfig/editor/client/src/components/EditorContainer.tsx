@@ -2,11 +2,12 @@ import PromptContainer from "./prompt/PromptContainer";
 import { Container, Group, Button, createStyles, Stack } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { AIConfig, Prompt, PromptInput } from "aiconfig";
-import { useCallback, useReducer, useRef, useState } from "react";
+import { useCallback, useMemo, useReducer, useRef, useState } from "react";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import { ClientAIConfig, clientConfigToAIConfig } from "../shared/types";
 import AddPromptButton from "./prompt/AddPromptButton";
 import { getDefaultNewPromptName } from "../utils/aiconfigStateUtils";
+import { debounce } from "lodash";
 
 type Props = {
   aiconfig: ClientAIConfig;
@@ -22,6 +23,10 @@ export type AIConfigCallbacks = {
   getModels: (search: string) => Promise<string[]>;
   runPrompt: (promptName: string) => Promise<void>;
   save: (aiconfig: AIConfig) => Promise<void>;
+  updatePrompt: (
+    promptName: string,
+    promptData: Prompt
+  ) => Promise<{ aiconfig: AIConfig }>;
 };
 
 const useStyles = createStyles((theme) => ({
@@ -82,16 +87,47 @@ export default function EditorContainer({
     }
   }, [aiconfigState, callbacks.save]);
 
+  const debouncedUpdatePrompt = useMemo(
+    () =>
+      debounce(
+        (promptName: string, newPrompt: Prompt) =>
+          callbacks.updatePrompt(promptName, newPrompt),
+        250
+      ),
+    [callbacks.updatePrompt]
+  );
+
   const onChangePromptInput = useCallback(
     async (promptIndex: number, newPromptInput: PromptInput) => {
-      dispatch({
+      const action: AIConfigReducerAction = {
         type: "UPDATE_PROMPT_INPUT",
         index: promptIndex,
         input: newPromptInput,
-      });
-      // TODO: Call server-side endpoint to update prompt input
+      };
+
+      dispatch(action);
+
+      try {
+        const prompt = aiconfigState.prompts[promptIndex];
+        const serverConfigRes = await debouncedUpdatePrompt(prompt.name, {
+          ...prompt,
+          input: newPromptInput,
+        });
+
+        dispatch({
+          type: "CONSOLIDATE_AICONFIG",
+          action,
+          config: serverConfigRes!.aiconfig,
+        });
+      } catch (err: any) {
+        showNotification({
+          title: "Error adding prompt to config",
+          message: err.message,
+          color: "red",
+        });
+      }
     },
-    [dispatch]
+    [dispatch, debouncedUpdatePrompt]
   );
 
   const onUpdatePromptModelSettings = useCallback(
