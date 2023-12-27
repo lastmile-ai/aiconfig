@@ -153,16 +153,16 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         ai_config: "AIConfigRuntime",
         parameters: Optional[Dict[str, Any]] = None,
         **kwargs,
-    ) -> Prompt:
+    ) -> List[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
         Args:
-            prompt (str): The prompt to be serialized.
+            prompt_name (str): The prompt to be serialized.
             inference_settings (dict): Model-specific inference settings to be serialized.
 
         Returns:
-            str: Serialized representation of the prompt and inference settings.
+            List[Prompt]: Serialized representation of the prompt and inference settings.
         """
         data = copy.deepcopy(data)
 
@@ -180,7 +180,7 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
                 model=model_metadata, parameters=parameters, **kwargs
             ),
         )
-        return prompt
+        return [prompt]
 
     async def deserialize(
         self,
