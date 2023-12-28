@@ -105,7 +105,7 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
     data: LlamaCompletionParams,
     aiConfig: AIConfigRuntime,
     params?: JSONObject | undefined
-  ): Prompt | Prompt[] {
+  ): Prompt[] {
     const startEvent = {
       name: "on_serialize_start",
       file: __filename,
@@ -163,7 +163,7 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
       },
     };
 
-    let result: Prompt | Prompt[] = prompt;
+    let result: Prompt[] = [prompt];
     if (prompts.length > 0) {
       prompts.push(prompt);
       result = prompts;

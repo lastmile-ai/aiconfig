@@ -38,11 +38,11 @@ describe("PaLM Text ModelParser", () => {
       };
 
     // Casting as JSONObject since the type of completionParams is protos.google.ai.generativelanguage.v1beta2.IGenerateTextRequest doesn't confrom to shape even though it looks like it does
-    const prompts = (await aiConfig.serialize(
+    const prompts: Prompt[] = await aiConfig.serialize(
       "models/text-bison-001",
       completionParams as JSONObject,
       "interestingThingsToronto"
-    )) as Prompt[];
+    );
 
     expect(prompts).toHaveLength(1);
     const prompt = prompts[0];
