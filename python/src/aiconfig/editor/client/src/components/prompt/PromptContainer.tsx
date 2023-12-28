@@ -8,6 +8,7 @@ import { PromptInput as AIConfigPromptInput } from "aiconfig";
 import { memo, useCallback } from "react";
 import { ParametersArray } from "../ParametersRenderer";
 import PromptOutputBar from "./PromptOutputBar";
+import PromptName from "./PromptName";
 
 type Props = {
   index: number;
@@ -16,6 +17,7 @@ type Props = {
     promptIndex: number,
     newPromptInput: AIConfigPromptInput
   ) => void;
+  onChangePromptName: (promptIndex: number, newName: string) => void;
   onRunPrompt(promptIndex: number): Promise<void>;
   onUpdateModelSettings: (promptIndex: number, newModelSettings: any) => void;
   onUpdateParameters: (promptIndex: number, newParameters: any) => void;
@@ -41,6 +43,7 @@ export default memo(function PromptContainer({
   prompt,
   index,
   onChangePromptInput,
+  onChangePromptName,
   defaultConfigModelName,
   onRunPrompt,
   onUpdateModelSettings,
@@ -49,6 +52,11 @@ export default memo(function PromptContainer({
   const onChangeInput = useCallback(
     (newInput: AIConfigPromptInput) => onChangePromptInput(index, newInput),
     [index, onChangePromptInput]
+  );
+
+  const onChangeName = useCallback(
+    (newName: string) => onChangePromptName(index, newName),
+    [index, onChangePromptName]
   );
 
   const updateModelSettings = useCallback(
@@ -92,8 +100,8 @@ export default memo(function PromptContainer({
     <Flex justify="space-between" mt="md">
       <Card withBorder className={classes.promptInputCard}>
         <Flex direction="column">
-          <Flex justify="space-between">
-            <Text weight="bold">{`{{${prompt.name}}}}`}</Text>
+          <Flex justify="space-between" mb="0.5em">
+            <PromptName name={prompt.name} onUpdate={onChangeName} />
             <Text>{getPromptModelName(prompt, defaultConfigModelName)}</Text>
           </Flex>
           <PromptInputRenderer
