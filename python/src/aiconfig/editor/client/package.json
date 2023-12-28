@@ -33,7 +33,7 @@
     "@mantine/notifications": "^6.0.7",
     "@mantine/prism": "^6.0.7",
     "@tabler/icons-react": "^2.44.0",
-    "aiconfig": "^1.1.0",
+    "aiconfig": "../../../../../typescript",
     "lodash": "^4.17.21",
     "node-fetch": "^3.3.2",
     "react": "^18",

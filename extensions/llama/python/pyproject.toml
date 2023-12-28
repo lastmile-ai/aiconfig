@@ -2,7 +2,7 @@
 requires = ["setuptools", "wheel"]
 
 [project]
-name = "python-aiconfig"
+name = "aiconfig_extension_llama"
 version = "0.0.1"
 authors = [
   { name="Jonathan Lessinger", email="jonathan@lastmileai.dev" },

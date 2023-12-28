@@ -245,10 +245,15 @@ class LLamaGuardParser(ParameterizedModelParser):
         output_text = self.tokenizer.decode(
             response[0][prompt_len:], skip_special_tokens=True
         )
+        output_data_content : str = ''
+        if isinstance(output_text, str):
+            output_data_content = output_text
+        else:
+            raise ValueError(f"Output {output_text} needs to be of type 'str' but is of type: {type(output_text)}")
         output = ExecuteResult(
             **{
                 "output_type": "execute_result",
-                "data": output_text,
+                "data": output_data_content,
                 "execution_count": 0,
                 "metadata": {},
             }
