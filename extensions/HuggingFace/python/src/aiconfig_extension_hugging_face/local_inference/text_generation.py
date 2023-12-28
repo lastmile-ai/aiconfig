@@ -1,11 +1,23 @@
 import copy
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from transformers import AutoTokenizer, Pipeline, pipeline, TextIteratorStreamer
+import json
 import threading
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from transformers import (
+    AutoTokenizer,
+    Pipeline,
+    pipeline,
+    TextIteratorStreamer,
+)
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    OutputDataWithValue,
+    Prompt,
+    PromptMetadata,
+)
 from aiconfig.util.params import resolve_prompt
 
 # Circuluar Dependency Type Hints
@@ -101,19 +113,21 @@ def construct_stream_output(
     Constructs the output for a stream response.
 
     Args:
-        streamer (TextIteratorStreamer): Streams the output. See https://huggingface.co/docs/transformers/v4.35.2/en/internal/generation_utils#transformers.TextIteratorStreamer
-        options (InferenceOptions): The inference options. Used to determine the stream callback.
+        streamer (TextIteratorStreamer): Streams the output. See:
+            https://huggingface.co/docs/transformers/v4.35.2/en/internal/generation_utils#transformers.TextIteratorStreamer
+        options (InferenceOptions): The inference options. Used to determine
+            the stream callback.
 
     """
-    accumulated_message = ""
     output = ExecuteResult(
             **{
                 "output_type": "execute_result",
-                "data": accumulated_message,
+                "data": "", # We update this below
                 "execution_count": 0, #Multiple outputs are not supported for streaming
                 "metadata": {},
             }
         )
+    accumulated_message = ""
     for new_text in streamer:
         accumulated_message += new_text
         options.stream_callback(new_text, accumulated_message, 0)
@@ -283,7 +297,13 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         # TODO (rossdanlm): Handle multiple outputs in list
         # https://github.com/lastmile-ai/aiconfig/issues/467
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
-                return output.data
-        else:
-            return ""
+            output_data = output.data
+            if isinstance(output_data, str):
+                return output_data
+            if isinstance(output_data, OutputDataWithValue):
+                if isinstance(output_data.value, str):
+                    return output_data.value
+                # HuggingFace Text generation does not support function
+                # calls so shouldn't get here, but just being safe
+                return json.dumps(output_data.value, indent=2)
+        return ""

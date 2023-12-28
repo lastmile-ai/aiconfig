@@ -1,4 +1,5 @@
 import copy
+import json
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
@@ -7,7 +8,17 @@ from openai.types.chat import ChatCompletionMessage
 from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptInput, PromptMetadata
+from aiconfig.schema import (
+    ExecuteResult,
+    FunctionCallData,
+    Output,
+    OutputDataWithValue,
+    OutputDataWithToolCallsValue,
+    Prompt,
+    PromptInput,
+    PromptMetadata,
+    ToolCallData,
+)
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import (
     resolve_prompt,
@@ -94,7 +105,7 @@ class OpenAIInference(ParameterizedModelParser):
             role = messsage["role"]
             if role == "user" or role == "function":
                 # Serialize User message as a prompt and save the assistant response as an output
-                assistant_response = None
+                assistant_response : Union[ChatCompletionMessage, None] = None
                 if i + 1 < len(conversation_data["messages"]):
                     next_message = conversation_data["messages"][i + 1]
                     if next_message["role"] == "assistant":
@@ -108,13 +119,16 @@ class OpenAIInference(ParameterizedModelParser):
 
                 assistant_output = []
                 if assistant_response is not None:
-                    assistant_content = assistant_response.get("content", "")
+                    output_data = build_output_data(assistant_response)
+                    metadata = {"rawResponse": assistant_response}
+                    if assistant_response.get("role", None) is not None:
+                        metadata["role"] = assistant_response.get("role")
                     assistant_output = [
                         ExecuteResult(
                             output_type="execute_result",
                             execution_count=None,
-                            data=assistant_content,
-                            metadata={"rawResponse": assistant_response},
+                            data=output_data,
+                            metadata=metadata,
                         )
                     ]
                 prompt = Prompt(
@@ -272,18 +286,25 @@ class OpenAIInference(ParameterizedModelParser):
                 if key != "choices"
             }
             for i, choice in enumerate(response.get("choices")):
+                output_message = choice["message"]
+                output_data = build_output_data(output_message)
+
                 response_without_choices.update(
                     {"finish_reason": choice.get("finish_reason")}
                 )
-                output_message = choice["message"]
-                # TODO (rossdanlm): Support function call handling as output_data
-                output_content = output_message.get("content", "")
+                metadata = {
+                    "rawResponse": output_message, 
+                    **response_without_choices
+                }
+                if output_message.get("role", None) is not None:
+                    metadata["role"] = output_message.get("role")
+
                 output = ExecuteResult(
                     **{
                         "output_type": "execute_result",
-                        "data": output_content,
+                        "data": output_data,
                         "execution_count": i,
-                        "metadata": {"rawResponse": output_message, **response_without_choices},
+                        "metadata": metadata,
                     }
                 )
 
@@ -299,7 +320,7 @@ class OpenAIInference(ParameterizedModelParser):
 
                 for i, choice in enumerate(chunk["choices"]):
                     index = choice.get("index")
-                    accumulated_message_for_choice = messages.get(index, {})
+                    accumulated_message_for_choice = messages.get(index, "")
                     delta = choice.get("delta")
 
                     if options and options.stream_callback:
@@ -310,7 +331,7 @@ class OpenAIInference(ParameterizedModelParser):
                     output = ExecuteResult(
                         **{
                             "output_type": "execute_result",
-                            "data": copy.deepcopy(accumulated_message_for_choice),
+                            "data": accumulated_message_for_choice,
                             "execution_count": index,
                             "metadata": {"finish_reason": choice.get("finish_reason")},
                         }
@@ -353,19 +374,22 @@ class OpenAIInference(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            message = output.data
-            if isinstance(message, str):
-                return message
-            elif output.metadata["rawResponse"].get("function_call", None):
-                return output.metadata["rawResponse"].function_call
+            output_data = output.data
+            if isinstance(output_data, str):
+                return output_data
+            if isinstance(output_data, OutputDataWithValue):
+                if isinstance(output_data.value, str):
+                    return output_data.value
+                # If we get here that means it must be of kind tool_calls
+                return json.dumps(output_data.value, indent=2)
 
             # Doing this to be backwards-compatible with old output format
             # where we used to save the ChatCompletionMessage in output.data
-            if isinstance(message, ChatCompletionMessage):
-                if hasattr(message, "content") and message.content is not None:
-                    return message.content
-                elif message.function_call is not None:
-                    return str(message.function_call)
+            if isinstance(output_data, ChatCompletionMessage):
+                if hasattr(output_data, "content") and output_data.content is not None:
+                    return output_data.content
+                elif output_data.function_call is not None:
+                    return str(output_data.function_call)
         return ""
 
 
@@ -505,27 +529,49 @@ def add_prompt_as_message(
         if output.output_type == "execute_result":
             assert isinstance(output, ExecuteResult)
             output_data = output.data
+            role = output.metadata.get("role", None) or \
+                ("rawResponse" in output.metadata and
+                    output.metadata["rawResponse"].get("role", None))
+
+            if role == "assistant":
+                output_message = {}
+                content : Union[str, None] = None
+                function_call : Union[FunctionCallData, None] = None
+                if isinstance(output_data, str):
+                    content = output_data
+                elif isinstance(output_data, OutputDataWithValue):
+                    if isinstance(output_data.value, str):
+                        content = output_data.value
+                    elif output_data.kind == "tool_calls":
+                        assert isinstance(output, OutputDataWithToolCallsValue)
+                        function_call = \
+                            output_data.value[len(output_data.value) - 1] \
+                            .function
+
+                output_message["content"] = content
+                output_message["role"] = role
+
+                # We should update this to use ChatCompletionAssistantMessageParam
+                # object with field `tool_calls. See comment for details:
+                # https://github.com/lastmile-ai/aiconfig/pull/610#discussion_r1437174736 
+                if function_call is not None:
+                    output_message["function_call"] = function_call
+
+                name = output.metadata.get("name", None) or \
+                    ("rawResponse" in output.metadata and
+                        output.metadata["rawResponse"].get("name", None))
+                if name is not None:
+                    output_message["name"] = name
+
+                messages.append(output_message)
             # TODO (rossdanlm): Support function call handling as output_data
-            if isinstance(output_data, str):
-                if output.metadata["rawResponse"].get("role", "") == "assistant":
-                    output_message = {
-                        "content": output_data,
-                        "role": "assistant",
-                    }
-                    function_call = output.metadata["rawResponse"].get("function_call", None)
-                    tool_calls = output.metadata["rawResponse"].get("tool_calls", None)
-                    if function_call is not None:
-                        output_message["function_call"] = function_call
-                    if tool_calls is not None:
-                        output_message["tool_calls"] = tool_calls
-                    messages.append(output_message)
 
             # Doing this to be backwards-compatible with old output format
             # where we used to save the ChatCompletionMessage in output.data
             elif isinstance(output_data, ChatCompletionMessage):
                 if output_data.role == "assistant":
                     messages.append(output_data)
-                    
+
     return messages
 
 
@@ -536,3 +582,52 @@ def is_prompt_template(prompt: Prompt):
     return isinstance(prompt.input, str) or (
         hasattr(prompt.input, "data") and isinstance(prompt.input.data, str)
     )
+
+def build_output_data(
+    message: Union[ChatCompletionMessage, None],
+) -> Union[OutputDataWithValue, str, None]:
+    if message is None:
+        return None
+
+    output_data : Union[OutputDataWithValue, str, None] = None
+    if message.get("content") is not None:
+        output_data = message.get("content") #string
+    elif message.get("tool_calls") is not None:
+        tool_calls = [
+                ToolCallData(
+                    id = item.id,
+                    function=FunctionCallData(
+                        arguments=item.function.arguments,
+                        name=item.function.name,
+                    ),
+                    type='function'
+                )
+            for item in message.get("tool_calls")
+                # It's possible that ChatCompletionMessageToolCall may
+                # support more than just function calls in the future
+                # so filter out other types
+                if item.type == 'function'
+        ]
+        output_data = OutputDataWithToolCallsValue(
+            kind="tool_calls",
+            value = tool_calls,
+        )
+
+    # Deprecated, use tool_calls instead
+    elif message.get("function_call") is not None:
+        function_call = message.get("function_call")
+        tool_calls = [
+            ToolCallData(
+                id = "function_call_data", # value here does not matter
+                function=FunctionCallData(
+                    arguments=function_call["arguments"],
+                    name=function_call["name"],
+                ),
+                type='function'
+            )
+        ]
+        output_data = OutputDataWithToolCallsValue(
+            kind="tool_calls",
+            value = tool_calls,
+        )
+    return output_data
