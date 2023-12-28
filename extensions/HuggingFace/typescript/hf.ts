@@ -47,7 +47,7 @@ export class HuggingFaceTextGenerationModelParserExtension extends Parameterized
     data: TextGenerationArgs,
     aiConfig: AIConfigRuntime,
     params?: JSONObject | undefined
-  ): Prompt | Prompt[] {
+  ): Prompt[] {
     const startEvent = {
       name: "on_serialize_start",
       file: __filename,

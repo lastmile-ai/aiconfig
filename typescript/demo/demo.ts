@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import * as path from "path";
 import { AIConfigRuntime } from "../lib/config";
 import { InferenceOptions } from "../lib/modelParser";
+import { Prompt } from "../types";
 
 // This example is taken from https://github.com/openai/openai-node/blob/v4/examples/demo.ts
 // and modified to show the same functionality using AIConfig.
@@ -104,14 +105,10 @@ async function createAIConfig() {
   };
 
   const aiConfig = AIConfigRuntime.create("demo", "this is a demo AIConfig");
-  const result = await aiConfig.serialize(model, data, "demoPrompt");
+  const prompts: Prompt[] = await aiConfig.serialize(model, data, "demoPrompt");
 
-  if (Array.isArray(result)) {
-    for (const prompt of result) {
-      aiConfig.addPrompt(prompt);
-    }
-  } else {
-    aiConfig.addPrompt(result);
+  for (const prompt of prompts) {
+    aiConfig.addPrompt(prompt);
   }
 
   aiConfig.save("demo/demo.aiconfig.json", { serializeOutputs: true });

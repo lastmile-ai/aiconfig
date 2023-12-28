@@ -23,11 +23,11 @@ async function run() {
   console.log("Latest output: ", config.getOutputText("prompt1"));
 
   console.log("serialize prompt2: ");
-  const prompts = (await config.serialize(
+  const prompts: Prompt[] = await config.serialize(
     "mistralai/Mistral-7B-v0.1",
     { inputs: "Hello, world!" },
     "prompt2"
-  )) as Prompt[];
+  );
 
   const prompt2 = prompts[0];
 
