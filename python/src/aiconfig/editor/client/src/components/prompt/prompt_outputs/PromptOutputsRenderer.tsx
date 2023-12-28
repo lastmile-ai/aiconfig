@@ -53,6 +53,7 @@ const ExecuteResultOutput = memo(function ExecuteResultOutput({
 });
 
 const OutputRenderer = memo(function Output({ output }: { output: Output }) {
+  // TODO: Add toggle for raw JSON renderer
   switch (output.output_type) {
     case "execute_result":
       return <ExecuteResultOutput output={output} />;
