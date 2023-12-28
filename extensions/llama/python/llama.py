@@ -87,9 +87,15 @@ class LlamaModelParser(ParameterizedModelParser):
                 if options:
                     options.stream_callback(data, acc, index)
             print(flush=True)
+
+            output_data_value: str = ''
+            if isinstance(acc, str):
+                output_data_value = acc
+            else:
+                raise ValueError(f"Output {acc} needs to be of type 'str' but is of type: {type(acc)}")
             return ExecuteResult(
                 output_type="execute_result",
-                data=acc,
+                data=output_data_value,
                 metadata={}
             )
         else:
