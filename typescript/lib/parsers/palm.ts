@@ -35,7 +35,7 @@ export class PaLMTextParser extends ParameterizedModelParser {
     data: JSONObject,
     aiConfig: AIConfigRuntime,
     params?: JSONObject | undefined
-  ): Prompt | Prompt[] {
+  ): Prompt[] {
     const startEvent = {
       name: "on_serialize_start",
       file: __filename,

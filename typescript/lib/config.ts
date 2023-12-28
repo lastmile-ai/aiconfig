@@ -360,7 +360,7 @@ export class AIConfigRuntime implements AIConfig {
     data: JSONObject,
     promptName: string,
     params?: JSONObject
-  ): Promise<Prompt | Prompt[]> {
+  ): Promise<Prompt[]> {
     const startEvent = {
       name: "on_serialize_start",
       file: __filename,
@@ -376,7 +376,12 @@ export class AIConfigRuntime implements AIConfig {
       );
     }
 
-    const prompts = modelParser.serialize(promptName, data, this, params);
+    const prompts: Prompt[] = modelParser.serialize(
+      promptName,
+      data,
+      this,
+      params
+    );
     const endEvent = {
       name: "on_serialize_end",
       file: __filename,
