@@ -52,9 +52,11 @@ export default function Editor() {
   );
 
   const runPrompt = useCallback(async (promptName: string) => {
-    return await ufetch.post(ROUTE_TABLE.RUN_PROMPT, {
+    const res = await ufetch.post("http://localhost:8080/api/test_streaming", {
       prompt_name: promptName,
     });
+    console.log("stream res: ", res);
+    return res;
   }, []);
 
   const callbacks: AIConfigCallbacks = useMemo(
