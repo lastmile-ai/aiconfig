@@ -129,9 +129,10 @@ def construct_stream_output(
         )
     accumulated_message = ""
     for new_text in streamer:
-        accumulated_message += new_text
-        options.stream_callback(new_text, accumulated_message, 0)
-        output.data = accumulated_message
+        if isinstance(new_text, str):
+            accumulated_message += new_text
+            options.stream_callback(new_text, accumulated_message, 0)
+            output.data = accumulated_message
     return output
 
 
