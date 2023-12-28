@@ -1,6 +1,6 @@
 import { PromptInputObjectDataSchema } from "../../../../utils/promptUtils";
 import { Textarea } from "@mantine/core";
-import { JSONValue } from "aiconfig/dist/common";
+import { JSONValue } from "aiconfig";
 import { memo } from "react";
 
 type Props = {
