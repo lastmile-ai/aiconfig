@@ -9,6 +9,8 @@ import {
 import { memo } from "react";
 import { TextRenderer } from "../TextRenderer";
 import { Prism } from "@mantine/prism";
+import { ActionIcon, CopyButton, Flex, Tooltip } from "@mantine/core";
+import { IconCheck, IconCopy } from "@tabler/icons-react";
 
 type Props = {
   outputs: Output[];
@@ -26,6 +28,31 @@ function JSONOutput({ content }: { content: JSONValue }) {
   );
 }
 
+function CopiableOutput({
+  copyContent,
+  children,
+}: {
+  copyContent: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <Flex justify="flex-end">
+        <CopyButton value={copyContent} timeout={2000}>
+          {({ copied, copy }) => (
+            <Tooltip label={copied ? "Copied" : "Copy"} withArrow>
+              <ActionIcon color={copied ? "teal" : "gray"} onClick={copy}>
+                {copied ? <IconCheck size="1rem" /> : <IconCopy size="1rem" />}
+              </ActionIcon>
+            </Tooltip>
+          )}
+        </CopyButton>
+      </Flex>
+      {children}
+    </>
+  );
+}
+
 const ExecuteResultOutput = memo(function ExecuteResultOutput({
   output,
 }: {
@@ -36,7 +63,11 @@ const ExecuteResultOutput = memo(function ExecuteResultOutput({
   }
 
   if (typeof output.data === "string") {
-    return <TextRenderer content={output.data} />;
+    return (
+      <CopiableOutput copyContent={output.data}>
+        <TextRenderer content={output.data} />
+      </CopiableOutput>
+    );
   } else if (
     typeof output.data === "object" &&
     output.data.hasOwnProperty("kind")
