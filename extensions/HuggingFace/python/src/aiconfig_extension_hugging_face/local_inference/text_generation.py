@@ -251,11 +251,6 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
             not "stream" in completion_data or completion_data.get("stream") != False
         )
         if should_stream:
-            # TODO (rossdanlm): I noticed that some models are incohorent when used as a tokenizer for streaming
-            # mistralai/Mistral-7B-v0.1 is able to generate text no problem, but doesn't make sense when it tries to tokenize
-            # in these cases, I would use `gpt2`. I'm wondering if there's a heuristic 
-            # we can use to determine if a model is applicable for being used as a tokenizer
-            # For now I can just default the line below to gpt2? Maybe we can also define it somehow in the aiconfig?
             tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
             streamer = TextIteratorStreamer(tokenizer)
             completion_data["streamer"] = streamer
