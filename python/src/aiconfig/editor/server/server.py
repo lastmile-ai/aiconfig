@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Type, TypeVar
+from typing import Any, Type
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -24,11 +24,11 @@ from aiconfig.editor.server.server_utils import (
     safe_run_aiconfig_static_method,
 )
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.registry import ModelParserRegistry
 from flask import Flask, request
 from flask_cors import CORS
 from result import Err, Ok, Result
 
-from aiconfig.registry import ModelParserRegistry
 from aiconfig.schema import Prompt
 
 logging.getLogger("werkzeug").disabled = True
@@ -41,8 +41,6 @@ formatter = logging.Formatter(core_utils.LOGGER_FMT)
 log_handler.setFormatter(formatter)
 
 LOGGER.addHandler(log_handler)
-
-T = TypeVar("T")
 
 
 app = Flask(__name__, static_url_path="")
