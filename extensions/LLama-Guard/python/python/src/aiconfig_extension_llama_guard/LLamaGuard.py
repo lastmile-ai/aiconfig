@@ -1,24 +1,27 @@
-# Define a Model Parser for LLama-Guard
-
+"""Define a Model Parser for LLama-Guard"""
 
 import copy
+import json
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from transformers import AutoTokenizer
-
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
-from aiconfig.util.params import resolve_prompt
-from aiconfig import CallbackEvent
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
+from aiconfig import CallbackEvent
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    OutputDataWithValue,
+    Prompt,
+    PromptMetadata,
+)
+from aiconfig.util.params import resolve_prompt
+
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
-
-
 
 
 # Step 1: define Helpers
@@ -242,8 +245,7 @@ class LLamaGuardParser(ParameterizedModelParser):
         output_text = self.tokenizer.decode(
             response[0][prompt_len:], skip_special_tokens=True
         )
-
-        Output = ExecuteResult(
+        output = ExecuteResult(
             **{
                 "output_type": "execute_result",
                 "data": output_text,
@@ -252,7 +254,7 @@ class LLamaGuardParser(ParameterizedModelParser):
             }
         )
 
-        prompt.outputs = [Output]
+        prompt.outputs = [output]
         return prompt.outputs
 
     def get_output_text(
@@ -268,7 +270,13 @@ class LLamaGuardParser(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
-                return output.data
-        else:
-            return ""
+            output_data = output.data
+            if isinstance(output_data, str):
+                return output_data
+            if isinstance(output_data, OutputDataWithValue):
+                if isinstance(output_data.value, str):
+                    return output_data.value
+                # LlamaGuard does not support function
+                # calls so shouldn't get here, but just being safe
+                return json.dumps(output_data.value, indent=2)
+        return ""
