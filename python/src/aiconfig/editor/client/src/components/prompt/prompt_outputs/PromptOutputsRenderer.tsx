@@ -1,16 +1,14 @@
 import {
   Error,
   ExecuteResult,
-  JSONValue,
   Output,
   OutputDataWithToolCallsValue,
   OutputDataWithValue,
 } from "aiconfig";
 import { memo } from "react";
 import { TextRenderer } from "../TextRenderer";
-import { Prism } from "@mantine/prism";
-import { ActionIcon, CopyButton, Flex, Tooltip } from "@mantine/core";
-import { IconCheck, IconCopy } from "@tabler/icons-react";
+import JSONOutput from "./JSONOutput";
+import PromptOutputWrapper from "./PromptOutputWrapper";
 
 type Props = {
   outputs: Output[];
@@ -18,39 +16,6 @@ type Props = {
 
 function ErrorOutput({ output }: { output: Error }) {
   return <div>{output.evalue}</div>;
-}
-
-function JSONOutput({ content }: { content: JSONValue }) {
-  return (
-    <Prism language="json" styles={{ code: { textWrap: "pretty" } }}>
-      {JSON.stringify(content, null, 2)}
-    </Prism>
-  );
-}
-
-function CopiableOutput({
-  copyContent,
-  children,
-}: {
-  copyContent: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <Flex justify="flex-end">
-        <CopyButton value={copyContent} timeout={2000}>
-          {({ copied, copy }) => (
-            <Tooltip label={copied ? "Copied" : "Copy"} withArrow>
-              <ActionIcon color={copied ? "teal" : "gray"} onClick={copy}>
-                {copied ? <IconCheck size="1rem" /> : <IconCopy size="1rem" />}
-              </ActionIcon>
-            </Tooltip>
-          )}
-        </CopyButton>
-      </Flex>
-      {children}
-    </>
-  );
 }
 
 const ExecuteResultOutput = memo(function ExecuteResultOutput({
@@ -64,9 +29,13 @@ const ExecuteResultOutput = memo(function ExecuteResultOutput({
 
   if (typeof output.data === "string") {
     return (
-      <CopiableOutput copyContent={output.data}>
+      <PromptOutputWrapper
+        copyContent={output.data}
+        output={output}
+        withRawJSONToggle
+      >
         <TextRenderer content={output.data} />
-      </CopiableOutput>
+      </PromptOutputWrapper>
     );
   } else if (
     typeof output.data === "object" &&
