@@ -89,7 +89,7 @@ export abstract class ModelParser<T = JSONObject, R = T> {
     aiConfig: AIConfigRuntime,
     options?: InferenceOptions,
     params?: JSONObject
-  ): Promise<Output | Output[]>;
+  ): Promise<Output[]>;
 
   /**
    * Get the string representing the output from a prompt.
