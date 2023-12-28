@@ -3,12 +3,13 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "aiconfig_extension_llama_guard"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="LastMile AI" },
   { name="Ankush Pala", email="ankush@lastmileai.dev" },
+  { name="Rossdan Craig", email="rossdan@lastmileai.dev" },
 ]
-description = "An extension for using llama-guard with aiconfig"
+description = "An extension for using LLama Guard with aiconfig"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [

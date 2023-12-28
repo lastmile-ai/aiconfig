@@ -183,7 +183,7 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
           metadata: {
             finish_reason: choice.finish_reason,
             logprobs: choice.logprobs,
-            rawResponse: response,
+            raw_response: response,
           },
         };
         outputs.push(output);
@@ -402,7 +402,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
                 output_type: "execute_result",
                 data: assistantOutputData,
                 metadata: {
-                  rawResponse: assistantResponse,
+                  raw_response: assistantResponse,
                   ..._.omit(assistantResponse, ["content", "function_call"]),
                 },
               },
@@ -585,7 +585,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
           metadata: {
             finish_reason: choice.finish_reason,
             ...responseWithoutChoices,
-            rawResponse: choice.message,
+            raw_response: choice.message,
             ..._.omit(choice.message, ["content", "function_call"]),
           },
         };
@@ -643,7 +643,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
             execution_count: choice.index,
             metadata: {
               finish_reason: choice.finish_reason,
-              rawResponse: message,
+              raw_response: message,
             },
           };
           outputs.set(choice.index, output);
@@ -742,7 +742,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
       if (output.output_type === "execute_result") {
         if (
           output.metadata?.role ??
-          output.metadata?.rawResponse?.role === "assistant"
+          output.metadata?.raw_response?.role === "assistant"
         ) {
           output as ExecuteResult;
           let content: string | null = null;
@@ -764,7 +764,7 @@ export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCom
           }
 
           const name: string | undefined | null =
-            output.metadata?.name ?? output.metadata?.rawResponse?.name;
+            output.metadata?.name ?? output.metadata?.raw_response?.name;
           messages.push({
             content,
             role: "assistant",

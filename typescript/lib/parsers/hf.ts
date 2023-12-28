@@ -305,7 +305,7 @@ function constructOutput(response: TextGenerationOutput): Output {
     output_type: "execute_result",
     data: response.generated_text,
     execution_count: 0,
-    metadata: { rawResponse: response },
+    metadata: { raw_response: response },
   } as ExecuteResult;
   return output;
 }
