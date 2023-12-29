@@ -40,7 +40,7 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
     data: CompletionCreateParams,
     aiConfig: AIConfigRuntime,
     params?: JSONObject
-  ): Prompt {
+  ): Prompt[] {
     // Serialize prompt input
     let input: PromptInput;
     if (typeof data.prompt === "string") {
@@ -105,7 +105,7 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
       },
     };
 
-    return prompt;
+    return [prompt];
   }
 
   public deserialize(

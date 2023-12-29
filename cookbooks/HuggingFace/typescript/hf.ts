@@ -45,7 +45,7 @@ export class HuggingFaceTextGenerationModelParser extends aiconfig.Parameterized
     data: TextGenerationArgs,
     aiConfig: AIConfigRuntime,
     params?: JSONObject | undefined
-  ): Prompt | Prompt[] {
+  ): Prompt[] {
     const input: PromptInput = data.inputs;
 
     let modelMetadata: ModelMetadata | string;
