@@ -335,6 +335,85 @@ class AIConfig(BaseModel):
         else:
             return self.metadata
 
+
+    def get_parameters(
+        self,
+        prompt_or_prompt_name: Optional[str | Prompt] = None,
+    ) -> JSONObject:
+        """
+        Get the parameters for a prompt, using the global parameters if 
+        needed.
+        
+        Args:
+            prompt_or_prompt_name Optional[str | Prompt]: The name of the 
+                prompt or the prompt object. If not specified, use the 
+                global parameters.
+        """
+        prompt = prompt_or_prompt_name
+        if isinstance(prompt_or_prompt_name, str):
+            if prompt_or_prompt_name not in self.prompt_index:
+                raise IndexError(f"Prompt '{prompt_or_prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}")
+            prompt = self.prompt_index[prompt_or_prompt_name]
+
+        assert prompt is None or isinstance(prompt, Prompt)
+        if prompt is None or not prompt.metadata or not prompt.metadata.parameters:
+            return self.get_global_parameters()
+
+        return self.get_prompt_parameters(prompt)
+
+    # pylint: disable=W0102
+    def get_global_parameters(
+        self,
+        default_return_value: JSONObject = {},
+    ) -> JSONObject:
+        """
+        Get the global parameters for the AIConfig. If they're not defined,
+        return a default value ({} unless overridden)
+        
+        Args:
+            default_return_value JSONObject - Default value to return if 
+                global parameters are not defined.
+        """
+        return self._get_global_parameters_exact() or default_return_value
+    # pylint: enable=W0102
+
+    def _get_global_parameters_exact(self) -> JSONObject | None:
+        """
+        Get the global parameters for the AIConfig. This should be the
+        the explicit value (ie: if parameters is None, return None, not {})
+        """
+        return self.metadata.parameters
+
+    # pylint: disable=W0102
+    def get_prompt_parameters(
+        self,
+        prompt: Prompt,
+        default_return_value: JSONObject = {},
+    ) -> JSONObject:
+        """
+        Get the prompt's local parameters. If they're not defined,
+        return a default value ({} unless overridden)
+        
+        Args:
+            default_return_value JSONObject - Default value to return if 
+                prompt parameters are not defined.
+        """
+        return self._get_prompt_parameters_exact(prompt) \
+            or default_return_value
+    # pylint: enable=W0102
+
+    def _get_prompt_parameters_exact(
+        self,
+        prompt: Prompt,
+    ) -> JSONObject | None:
+        """
+        Get the global parameters for the AIConfig. This should be the
+        the explicit value (ie: if parameters is None, return None, not {})
+        """
+        if not prompt.metadata:
+            return prompt.metadata
+        return prompt.metadata.parameters
+
     def set_parameter(self, parameter_name: str, parameter_value, prompt_name: Optional[str] = None):
         """
         Sets a parameter in the AI configuration metadata. If a prompt_name is specified, it adds the parameter to
@@ -732,14 +811,6 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         Args:
             prompt (str|Prompt): The name of the prompt or the prompt object.
         """
-
-    def get_prompt_parameters(self, prompt: Prompt):
-        """
-        Gets the prompt's local parameters for a prompt.
-        """
-        if not prompt.metadata:
-            return {}
-        return prompt.metadata.parameters
 
     """
     Library Helpers
