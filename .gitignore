@@ -87,6 +87,9 @@ web_modules/
 .next
 out
 
+# Production build folder
+build
+
 # Nuxt.js build / generate output
 .nuxt
 dist
