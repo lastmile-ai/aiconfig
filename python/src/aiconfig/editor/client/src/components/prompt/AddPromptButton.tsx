@@ -1,7 +1,7 @@
 import { ActionIcon, Menu, TextInput } from "@mantine/core";
 import { IconPlus, IconSearch, IconTextCaption } from "@tabler/icons-react";
-import { memo, useCallback, useEffect, useState } from "react";
-import { showNotification } from "@mantine/notifications";
+import { memo, useCallback, useState } from "react";
+import useLoadModels from "../../hooks/useLoadModels";
 
 type Props = {
   addPrompt: (prompt: string) => void;
@@ -41,30 +41,14 @@ function ModelMenuItems({
 
 export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
   const [modelSearch, setModelSearch] = useState("");
-  const [models, setModels] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-
-  const loadModels = useCallback(async (modelSearch: string) => {
-    try {
-      const models = await getModels(modelSearch);
-      setModels(models);
-    } catch (err: any) {
-      showNotification({
-        title: "Error loading models",
-        message: err?.message,
-        color: "red",
-      });
-    }
-  }, []);
 
   const onAddPrompt = useCallback((model: string) => {
     addPrompt(model);
     setIsOpen(false);
   }, []);
 
-  useEffect(() => {
-    loadModels(modelSearch);
-  }, [loadModels, modelSearch]);
+  const models = useLoadModels(modelSearch, getModels);
 
   return (
     <Menu

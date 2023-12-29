@@ -2,23 +2,26 @@ import PromptActionBar from "./PromptActionBar";
 import PromptInputRenderer from "./prompt_input/PromptInputRenderer";
 import PromptOutputsRenderer from "./prompt_outputs/PromptOutputsRenderer";
 import { ClientPrompt } from "../../shared/types";
-import { getPromptModelName, getPromptSchema } from "../../utils/promptUtils";
-import { Flex, Card, Text, createStyles } from "@mantine/core";
+import { getPromptSchema } from "../../utils/promptUtils";
+import { Flex, Card, createStyles } from "@mantine/core";
 import { PromptInput as AIConfigPromptInput } from "aiconfig";
 import { memo, useCallback } from "react";
 import { ParametersArray } from "../ParametersRenderer";
 import PromptOutputBar from "./PromptOutputBar";
 import PromptName from "./PromptName";
+import ModelSelector from "./ModelSelector";
 
 type Props = {
   index: number;
   prompt: ClientPrompt;
+  getModels: (search: string) => Promise<string[]>;
   onChangePromptInput: (
     promptIndex: number,
     newPromptInput: AIConfigPromptInput
   ) => void;
   onChangePromptName: (promptIndex: number, newName: string) => void;
   onRunPrompt(promptIndex: number): Promise<void>;
+  onUpdateModel: (promptIndex: number, newModel?: string) => void;
   onUpdateModelSettings: (promptIndex: number, newModelSettings: any) => void;
   onUpdateParameters: (promptIndex: number, newParameters: any) => void;
   defaultConfigModelName?: string;
@@ -42,10 +45,12 @@ const useStyles = createStyles((theme) => ({
 export default memo(function PromptContainer({
   prompt,
   index,
+  getModels,
   onChangePromptInput,
   onChangePromptName,
   defaultConfigModelName,
   onRunPrompt,
+  onUpdateModel,
   onUpdateModelSettings,
   onUpdateParameters,
 }: Props) {
@@ -87,6 +92,11 @@ export default memo(function PromptContainer({
     [index, onRunPrompt]
   );
 
+  const updateModel = useCallback(
+    (model?: string) => onUpdateModel(index, model),
+    [index, onUpdateModel]
+  );
+
   // TODO: When adding support for custom PromptContainers, implement a PromptContainerRenderer which
   // will take in the index and callback and render the appropriate PromptContainer with new memoized
   // callback and not having to pass index down to PromptContainer
@@ -102,7 +112,12 @@ export default memo(function PromptContainer({
         <Flex direction="column">
           <Flex justify="space-between" mb="0.5em">
             <PromptName name={prompt.name} onUpdate={onChangeName} />
-            <Text>{getPromptModelName(prompt, defaultConfigModelName)}</Text>
+            <ModelSelector
+              getModels={getModels}
+              prompt={prompt}
+              onSetModel={updateModel}
+              defaultConfigModelName={defaultConfigModelName}
+            />
           </Flex>
           <PromptInputRenderer
             input={prompt.input}
