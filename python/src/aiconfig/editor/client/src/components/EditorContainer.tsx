@@ -1,7 +1,7 @@
 import PromptContainer from "./prompt/PromptContainer";
 import { Container, Group, Button, createStyles, Stack } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { AIConfig, Prompt, PromptInput } from "aiconfig";
+import { AIConfig, ModelMetadata, Prompt, PromptInput } from "aiconfig";
 import { useCallback, useMemo, useReducer, useRef, useState } from "react";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import {
@@ -28,6 +28,10 @@ export type AIConfigCallbacks = {
   getModels: (search: string) => Promise<string[]>;
   runPrompt: (promptName: string) => Promise<void>;
   save: (aiconfig: AIConfig) => Promise<void>;
+  updateModel: (
+    promptName?: string,
+    modelData?: string | ModelMetadata
+  ) => Promise<void /*{ aiconfig: AIConfig }*/>;
   updatePrompt: (
     promptName: string,
     promptData: Prompt
@@ -150,6 +154,16 @@ export default function EditorContainer({
     [dispatch]
   );
 
+  const debouncedUpdateModel = useMemo(
+    () =>
+      debounce(
+        (promptName?: string, modelMetadata?: string | ModelMetadata) =>
+          callbacks.updateModel(promptName, modelMetadata),
+        250
+      ),
+    [callbacks.updateModel]
+  );
+
   const onUpdatePromptModelSettings = useCallback(
     async (promptIndex: number, newModelSettings: any) => {
       dispatch({
@@ -157,9 +171,44 @@ export default function EditorContainer({
         index: promptIndex,
         modelSettings: newModelSettings,
       });
-      // TODO: Call server-side endpoint to update model settings
+      // TODO: Call server-side endpoint to update model
     },
     [dispatch]
+  );
+
+  const onUpdatePromptModel = useCallback(
+    async (promptIndex: number, newModel?: string) => {
+      dispatch({
+        type: "UPDATE_PROMPT_MODEL",
+        index: promptIndex,
+        modelName: newModel,
+      });
+
+      try {
+        const prompt = clientPromptToAIConfigPrompt(
+          aiconfigState.prompts[promptIndex]
+        );
+        const currentModel = prompt.metadata?.model;
+        let modelData: string | ModelMetadata | undefined = newModel;
+        if (newModel && currentModel && typeof currentModel !== "string") {
+          modelData = {
+            ...currentModel,
+            name: newModel,
+          };
+        }
+
+        await debouncedUpdateModel(prompt.name, modelData);
+
+        // TODO: Consolidate
+      } catch (err: any) {
+        showNotification({
+          title: "Error updating prompt model",
+          message: err.message,
+          color: "red",
+        });
+      }
+    },
+    [dispatch, debouncedUpdateModel]
   );
 
   const onUpdatePromptParameters = useCallback(
@@ -241,8 +290,6 @@ export default function EditorContainer({
 
   const { classes } = useStyles();
 
-  // TODO: Implement editor context for callbacks, readonly state, etc.
-
   return (
     <>
       <Container maw="80rem">
@@ -262,9 +309,11 @@ export default function EditorContainer({
               <PromptContainer
                 index={i}
                 prompt={prompt}
+                getModels={callbacks.getModels}
                 onChangePromptInput={onChangePromptInput}
                 onChangePromptName={onChangePromptName}
                 onRunPrompt={onRunPrompt}
+                onUpdateModel={onUpdatePromptModel}
                 onUpdateModelSettings={onUpdatePromptModelSettings}
                 onUpdateParameters={onUpdatePromptParameters}
                 defaultConfigModelName={aiconfigState.metadata.default_model}
