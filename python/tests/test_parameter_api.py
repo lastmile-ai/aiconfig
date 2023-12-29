@@ -49,43 +49,195 @@ def test_delete_nonexistent_parameter(ai_config_runtime: AIConfigRuntime):
         config.delete_parameter(parameter_name_to_delete)
 
 
-def test_set_global_parameter(ai_config: AIConfig):
+def test_set_parameter_for_aiconfig_empty_params(ai_config: AIConfig):
     """
-    Test setting a global parameter.
-    """
-    parameter_name = "global_param"
-    parameter_value = "global_value"
-
-    ai_config.set_parameter(parameter_name, parameter_value, prompt_name=None)
-
-    # Ensure the global parameter is set correctly
-    assert ai_config.metadata.parameters[parameter_name] == parameter_value
-
-
-def test_set_parameter_for_prompt(ai_config: AIConfig):
-    """
-    Test setting a parameter for a specific prompt.
+    Test setting a global parameter when there are no global params set before.
+    We should create a new set of params.
     """
     prompt_name = "prompt1"
-    parameter_name = "prompt_param"
-    parameter_value = "prompt_value"
+    prompt_parameter_name = "prompt_param"
+    prompt_parameter_value = "prompt_value"
+    prompt = Prompt(
+        name=prompt_name,
+        input="This is a prompt",
+        metadata=PromptMetadata(
+            model="fakemodel",
+            parameters= {
+                prompt_parameter_name: prompt_parameter_value,
+            }
+        ),
+    )
+    ai_config.add_prompt(prompt_name, prompt)
 
-    # Create a sample prompt for testing
-    prompt_data = Prompt(
+    assert ai_config.metadata.parameters == {}
+    aiconfig_parameter_name = "aiconfig_param"
+    aiconfig_parameter_value = "aiconfig_value"
+    ai_config.set_parameter(aiconfig_parameter_name, aiconfig_parameter_value)
+
+    # Ensure the global parameter is set correctly
+    assert prompt.metadata is not None
+    assert prompt.metadata.parameters == {
+        prompt_parameter_name: prompt_parameter_value,
+    }
+    assert ai_config.metadata.parameters is not None
+    assert ai_config.metadata.parameters == {
+        aiconfig_parameter_name: aiconfig_parameter_value,
+    }
+
+def test_set_parameter_for_aiconfig_has_parameters(ai_config: AIConfig):
+    """
+    Test setting a global parameter when it already has parameters.
+    It should overwrite the value for key that is the same and keep
+    the others unchanged.
+    """
+    prompt_name = "prompt1"
+    prompt_parameter_name = "prompt_param"
+    prompt_parameter_value = "prompt_value"
+    prompt = Prompt(
+        name=prompt_name,
+        input="This is a prompt",
+        metadata=PromptMetadata(
+            model="fakemodel",
+            parameters= {
+                prompt_parameter_name: prompt_parameter_value,
+            }
+        ),
+    )
+    ai_config.add_prompt(prompt_name, prompt)
+
+    aiconfig_parameter_name = "aiconfig_param"
+    ai_config.metadata = ConfigMetadata(
+        parameters= {
+            "random_key": "keep this parameter",
+            aiconfig_parameter_name: "should update this value",
+        }
+    )
+    aiconfig_parameter_value = "aiconfig_value"
+    ai_config.set_parameter(aiconfig_parameter_name, aiconfig_parameter_value)
+
+    # Ensure the global parameter is set correctly
+    assert prompt.metadata is not None
+    assert prompt.metadata.parameters == {
+        prompt_parameter_name: prompt_parameter_value,
+    }
+    assert ai_config.metadata.parameters is not None
+    assert ai_config.metadata.parameters == {
+        "random_key": "keep this parameter",
+        aiconfig_parameter_name: aiconfig_parameter_value,
+    }
+
+def test_set_parameter_for_prompt_no_metadata(ai_config: AIConfig):
+    """
+    Test setting a prompt parameter when there is no prompt metadata.
+    """
+    prompt_name = "prompt1"
+    prompt = Prompt(
+        name=prompt_name,
+        input="This is a prompt",
+    )
+    ai_config.add_prompt(prompt_name, prompt)
+
+    aiconfig_parameter_name = "aiconfig_param"
+    aiconfig_parameter_value = "aiconfig_value"
+    ai_config.metadata = ConfigMetadata(
+        parameters= {
+            aiconfig_parameter_name: aiconfig_parameter_value,
+        }
+    )
+
+    assert prompt.metadata is None
+    prompt_parameter_name = "prompt_param"
+    prompt_parameter_value = "prompt_value"
+    ai_config.set_parameter(prompt_parameter_name, prompt_parameter_value, prompt_name)
+
+    # Ensure the prompt parameter is set correctly
+    assert prompt.metadata is not None
+    assert prompt.metadata.parameters == {
+        prompt_parameter_name: prompt_parameter_value,
+    }
+    assert ai_config.metadata.parameters is not None
+    assert ai_config.metadata.parameters == {
+        aiconfig_parameter_name: aiconfig_parameter_value,
+    }
+    
+def test_set_parameter_for_prompt_no_parameters(ai_config: AIConfig):
+    """
+    Test setting a prompt parameter when there are no prompt parameters.
+    """
+    prompt_name = "prompt1"
+    prompt = Prompt(
         name=prompt_name,
         input="This is a prompt",
         metadata=PromptMetadata(model="fakemodel"),
     )
-    ai_config.add_prompt(prompt_name, prompt_data)
+    ai_config.add_prompt(prompt_name, prompt)
 
-    ai_config.set_parameter(parameter_name, parameter_value, prompt_name=prompt_name)
-
-    # Ensure the parameter is set for the specific prompt
-    assert (
-        ai_config.prompt_index[prompt_name].metadata.parameters[parameter_name]
-        == parameter_value
+    aiconfig_parameter_name = "aiconfig_param"
+    aiconfig_parameter_value = "aiconfig_value"
+    ai_config.metadata = ConfigMetadata(
+        parameters= {
+            aiconfig_parameter_name: aiconfig_parameter_value,
+        }
     )
-    assert ai_config.prompts[0].metadata.parameters[parameter_name] == parameter_value
+
+    assert prompt.metadata is not None
+    assert prompt.metadata.parameters == {}
+    prompt_parameter_name = "prompt_param"
+    prompt_parameter_value = "prompt_value"
+    ai_config.set_parameter(prompt_parameter_name, prompt_parameter_value, prompt_name)
+
+    # Ensure the prompt parameter is set correctly
+    assert prompt.metadata is not None
+    assert prompt.metadata.parameters == {
+        prompt_parameter_name: prompt_parameter_value,
+    }
+    assert ai_config.metadata.parameters is not None
+    assert ai_config.metadata.parameters == {
+        aiconfig_parameter_name: aiconfig_parameter_value,
+    }
+
+def test_set_parameter_for_prompt_has_parameters(ai_config: AIConfig):
+    """
+    Test setting a prompt parameter when it already has parameters.
+    It should overwrite the value for key that is the same and keep
+    the others unchanged.
+    """
+    prompt_name = "prompt1"
+    prompt_parameter_name = "prompt_param"
+    prompt = Prompt(
+        name=prompt_name,
+        input="This is a prompt",
+        metadata=PromptMetadata(
+            model="fakemodel",
+            parameters= {
+                "random_key": "keep this parameter",
+                prompt_parameter_name: "should update this value",
+            }
+        ),
+    )
+    ai_config.add_prompt(prompt_name, prompt)
+
+    aiconfig_parameter_name = "aiconfig_param"
+    aiconfig_parameter_value = "aiconfig_value"
+    ai_config.metadata = ConfigMetadata(
+        parameters= {
+            aiconfig_parameter_name: aiconfig_parameter_value,
+        }
+    )
+
+    prompt_parameter_value = "prompt_value"
+    ai_config.set_parameter(prompt_parameter_name, prompt_parameter_value, prompt_name)
+
+    # Ensure the prompt parameter is set correctly
+    assert prompt.metadata is not None
+    assert prompt.metadata.parameters == {
+        "random_key": "keep this parameter",
+        prompt_parameter_name: prompt_parameter_value,
+    }
+    assert ai_config.metadata.parameters is not None
+    assert ai_config.metadata.parameters == {
+        aiconfig_parameter_name: aiconfig_parameter_value,
+    }
 
 
 def test_update_existing_parameter(ai_config: AIConfig):
