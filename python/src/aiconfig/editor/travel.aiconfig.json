@@ -21,21 +21,7 @@
   "prompts": [
     {
       "name": "get_activities",
-      "input": "Tell me 10 fun attractions to do in NYC.",
-      "outputs": [
-        {
-          "output_type": "execute_result",
-          "execution_count": 0,
-          "data": "1. Visit Central Park: Exploring this iconic park offers activities like picnicking, boating, visiting the zoo, or simply enjoying the beautiful scenery.\n2. Take a stroll on the High Line: This elevated park built on a historic freight rail line provides stunning views of the city and features art installations and gardens.\n3. Explore Times Square: Known as \"The Crossroads of the World,\" Times Square is a bustling hub with vibrant billboards, shops, restaurants, and street performers.\n4. Take a boat tour to the Statue of Liberty: Enjoy a ferry ride to Liberty Island and have an up-close view of the iconic national monument.\n5. Visit the Museum of Modern Art (MoMA): Discover a vast collection of modern and contemporary art, including works by Picasso, Warhol, Van Gogh, and more.\n6. Explore the Metropolitan Museum of Art (The Met): One of the world's largest art museums, The Met showcases over 5,000 years of art from around the globe.\n7. Watch a Broadway show: New York City's theater district is famous for its world-class Broadway productions, offering a range of musicals, plays, and performances.\n8. Walk across the Brooklyn Bridge: Enjoy panoramic views of the city skyline as you stroll across this iconic bridge, connecting Manhattan and Brooklyn.\n9. Experience the 9/11 Memorial & Museum: Pay tribute to the victims of the September 11 attacks at the memorial pools and explore the museum's exhibitions.\n10. Enjoy the vibrant food scene: Indulge in diverse cuisines at food markets like Chelsea Market or Smorgasburg, or try iconic New York dishes like pizza, bagels, or hot dogs from local shops and delis.",
-          "metadata": {
-            "finish_reason": "stop",
-            "rawResponse": {
-              "content": "1. Visit Central Park: Exploring this iconic park offers activities like picnicking, boating, visiting the zoo, or simply enjoying the beautiful scenery.\n2. Take a stroll on the High Line: This elevated park built on a historic freight rail line provides stunning views of the city and features art installations and gardens.\n3. Explore Times Square: Known as \"The Crossroads of the World,\" Times Square is a bustling hub with vibrant billboards, shops, restaurants, and street performers.\n4. Take a boat tour to the Statue of Liberty: Enjoy a ferry ride to Liberty Island and have an up-close view of the iconic national monument.\n5. Visit the Museum of Modern Art (MoMA): Discover a vast collection of modern and contemporary art, including works by Picasso, Warhol, Van Gogh, and more.\n6. Explore the Metropolitan Museum of Art (The Met): One of the world's largest art museums, The Met showcases over 5,000 years of art from around the globe.\n7. Watch a Broadway show: New York City's theater district is famous for its world-class Broadway productions, offering a range of musicals, plays, and performances.\n8. Walk across the Brooklyn Bridge: Enjoy panoramic views of the city skyline as you stroll across this iconic bridge, connecting Manhattan and Brooklyn.\n9. Experience the 9/11 Memorial & Museum: Pay tribute to the victims of the September 11 attacks at the memorial pools and explore the museum's exhibitions.\n10. Enjoy the vibrant food scene: Indulge in diverse cuisines at food markets like Chelsea Market or Smorgasburg, or try iconic New York dishes like pizza, bagels, or hot dogs from local shops and delis.",
-              "role": "assistant"
-            }
-          }
-        }
-      ]
+      "input": "Tell me 2 fun attractions to do in {{city}}."
     },
     {
       "name": "gen_itinerary",

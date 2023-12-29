@@ -167,26 +167,27 @@ async def run() -> FlaskResponse:
     aiconfig = state.aiconfig
     request_json = request.get_json()
 
-    _op = make_op_run_method(MethodName("run"))
-
-    def _get_op_args():
-        prompt_name = request_json.get("prompt_name", None)
-        stream = request_json.get("stream", True)
-        LOGGER.info(f"Running prompt: {prompt_name}, {stream=}")
-        inference_options = InferenceOptions(stream=stream)
-        return Ok(
-            OpArgs(
-                {
-                    "prompt_name": prompt_name,
-                    #
-                    "options": inference_options,
-                }
-            )
-        )
-
-    op_args = _get_op_args()
-
-    return run_aiconfig_operation_with_op_args(aiconfig, "run", _op, op_args)
+    try:
+        prompt_name = request_json["prompt_name"]
+        params = request_json.get("params", {})
+        stream = request_json.get("stream", False)
+        options = InferenceOptions(stream=stream)
+        kwargs = request_json.get("kwargs", {})
+        run_output = await aiconfig.run(prompt_name, params, options, **kwargs)  # type: ignore
+        LOGGER.debug(f"run_output: {run_output}")
+        return HttpResponseWithAIConfig(
+            #
+            message="Ran prompt",
+            code=200,
+            aiconfig=aiconfig,
+        ).to_flask_format()
+    except Exception as e:
+        return HttpResponseWithAIConfig(
+            #
+            message=f"Failed to run prompt: {type(e)}, {e}",
+            code=400,
+            aiconfig=None,
+        ).to_flask_format()
 
 
 @app.route("/api/add_prompt", methods=["POST"])
