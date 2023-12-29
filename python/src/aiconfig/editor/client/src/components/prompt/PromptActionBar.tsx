@@ -99,7 +99,11 @@ export default memo(function PromptActionBar({
               <IconClearAll />
             </ActionIcon>
           </Flex>
-          <RunPromptButton runPrompt={onRunPrompt} size="compact" />
+          <RunPromptButton
+            runPrompt={onRunPrompt}
+            isRunning={prompt._ui.isRunning}
+            size="compact"
+          />
         </Flex>
       )}
     </Flex>

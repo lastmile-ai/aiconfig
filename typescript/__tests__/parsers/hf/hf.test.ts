@@ -260,7 +260,7 @@ describe("HuggingFaceTextGeneration ModelParser", () => {
       data: "Test text generation",
       execution_count: 0,
       metadata: {
-        rawResponse: {
+        raw_response: {
           generated_text: "Test text generation",
         },
       },

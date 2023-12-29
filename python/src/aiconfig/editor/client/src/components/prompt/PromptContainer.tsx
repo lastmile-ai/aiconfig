@@ -2,25 +2,27 @@ import PromptActionBar from "./PromptActionBar";
 import PromptInputRenderer from "./prompt_input/PromptInputRenderer";
 import PromptOutputsRenderer from "./prompt_outputs/PromptOutputsRenderer";
 import { ClientPrompt } from "../../shared/types";
-import { getPromptModelName, getPromptSchema } from "../../utils/promptUtils";
-import { Flex, Card, Text, createStyles } from "@mantine/core";
+import { getPromptSchema } from "../../utils/promptUtils";
+import { Flex, Card, createStyles } from "@mantine/core";
 import { PromptInput as AIConfigPromptInput } from "aiconfig";
 import { memo, useCallback } from "react";
 import { ParametersArray } from "../ParametersRenderer";
 import PromptOutputBar from "./PromptOutputBar";
 import PromptName from "./PromptName";
+import ModelSelector from "./ModelSelector";
 
 type Props = {
-  index: number;
   prompt: ClientPrompt;
+  getModels: (search: string) => Promise<string[]>;
   onChangePromptInput: (
-    promptIndex: number,
+    promptId: string,
     newPromptInput: AIConfigPromptInput
   ) => void;
-  onChangePromptName: (promptIndex: number, newName: string) => void;
-  onRunPrompt(promptIndex: number): Promise<void>;
-  onUpdateModelSettings: (promptIndex: number, newModelSettings: any) => void;
-  onUpdateParameters: (promptIndex: number, newParameters: any) => void;
+  onChangePromptName: (promptId: string, newName: string) => void;
+  onRunPrompt(promptId: string): Promise<void>;
+  onUpdateModel: (promptId: string, newModel?: string) => void;
+  onUpdateModelSettings: (ppromptId: string, newModelSettings: any) => void;
+  onUpdateParameters: (promptId: string, newParameters: any) => void;
   defaultConfigModelName?: string;
 };
 
@@ -41,27 +43,30 @@ const useStyles = createStyles((theme) => ({
 
 export default memo(function PromptContainer({
   prompt,
-  index,
+  getModels,
   onChangePromptInput,
   onChangePromptName,
   defaultConfigModelName,
   onRunPrompt,
+  onUpdateModel,
   onUpdateModelSettings,
   onUpdateParameters,
 }: Props) {
+  const promptId = prompt._ui.id;
   const onChangeInput = useCallback(
-    (newInput: AIConfigPromptInput) => onChangePromptInput(index, newInput),
-    [index, onChangePromptInput]
+    (newInput: AIConfigPromptInput) => onChangePromptInput(promptId, newInput),
+    [promptId, onChangePromptInput]
   );
 
   const onChangeName = useCallback(
-    (newName: string) => onChangePromptName(index, newName),
-    [index, onChangePromptName]
+    (newName: string) => onChangePromptName(promptId, newName),
+    [promptId, onChangePromptName]
   );
 
   const updateModelSettings = useCallback(
-    (newModelSettings: any) => onUpdateModelSettings(index, newModelSettings),
-    [index, onUpdateModelSettings]
+    (newModelSettings: any) =>
+      onUpdateModelSettings(promptId, newModelSettings),
+    [promptId, onUpdateModelSettings]
   );
 
   const updateParameters = useCallback(
@@ -77,19 +82,24 @@ export default memo(function PromptContainer({
         newParameters[key] = val;
       }
 
-      onUpdateParameters(index, newParameters);
+      onUpdateParameters(promptId, newParameters);
     },
-    [index, onUpdateParameters]
+    [promptId, onUpdateParameters]
   );
 
   const runPrompt = useCallback(
-    async () => await onRunPrompt(index),
-    [index, onRunPrompt]
+    async () => await onRunPrompt(promptId),
+    [promptId, onRunPrompt]
+  );
+
+  const updateModel = useCallback(
+    (model?: string) => onUpdateModel(promptId, model),
+    [promptId, onUpdateModel]
   );
 
   // TODO: When adding support for custom PromptContainers, implement a PromptContainerRenderer which
-  // will take in the index and callback and render the appropriate PromptContainer with new memoized
-  // callback and not having to pass index down to PromptContainer
+  // will take in the promptId and callback and render the appropriate PromptContainer with new memoized
+  // callback and not having to pass promptId down to PromptContainer
 
   const promptSchema = getPromptSchema(prompt, defaultConfigModelName);
   const inputSchema = promptSchema?.input;
@@ -97,12 +107,17 @@ export default memo(function PromptContainer({
   const { classes } = useStyles();
 
   return (
-    <Flex justify="space-between" mt="md">
+    <Flex justify="space-between" w="100%">
       <Card withBorder className={classes.promptInputCard}>
         <Flex direction="column">
           <Flex justify="space-between" mb="0.5em">
             <PromptName name={prompt.name} onUpdate={onChangeName} />
-            <Text>{getPromptModelName(prompt, defaultConfigModelName)}</Text>
+            <ModelSelector
+              getModels={getModels}
+              prompt={prompt}
+              onSetModel={updateModel}
+              defaultConfigModelName={defaultConfigModelName}
+            />
           </Flex>
           <PromptInputRenderer
             input={prompt.input}

@@ -109,14 +109,14 @@ def construct_stream_output(
 
 
 def construct_regular_output(response: TextGenerationResponse, response_includes_details: bool) -> Output:
-    metadata = {"rawResponse": response}
+    metadata = {"raw_response": response}
     if response_includes_details:
         metadata["details"] = response.details
 
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": response.generated_text or '',
+            "data": response.generated_text or "",
             "execution_count": 0,
             "metadata": metadata,
         }
@@ -209,15 +209,13 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(
-                model=model_metadata, parameters=parameters, **kwargs
-            ),
+            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **kwargs),
         )
 
         prompts.append(prompt)
-        
-        await ai_config.callback_manager.run_callbacks(CallbackEvent("on_serialize_complete", __name__, {"result": prompts }))
-        
+
+        await ai_config.callback_manager.run_callbacks(CallbackEvent("on_serialize_complete", __name__, {"result": prompts}))
+
         return prompts
 
     async def deserialize(
@@ -251,9 +249,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
 
         return completion_data
 
-    async def run_inference(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: dict[Any, Any]
-    ) -> List[Output]:
+    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: dict[Any, Any]) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.

@@ -12,6 +12,7 @@ export type EditorFile = {
 export type ClientPrompt = Prompt & {
   _ui: {
     id: string;
+    isRunning?: boolean;
   };
 };
 

@@ -1,16 +1,16 @@
-import asyncio
 import logging
 import signal
+import socket
 import subprocess
 import sys
-import socket
 
 import lastmile_utils.lib.core.api as core_utils
 import result
 from result import Err, Ok, Result
-from aiconfig.editor.server.server import run_backend_server
 
 from aiconfig.editor.server.server_utils import EditServerConfig, ServerMode
+from aiconfig.editor.server.server import run_backend_server as run_backend_server_v1
+from aiconfig.editor.server.server_v2 import run_backend_server as run_backend_server_v2
 
 
 class AIConfigCLIConfig(core_utils.Record):
@@ -21,7 +21,7 @@ logging.basicConfig(format=core_utils.LOGGER_FMT)
 LOGGER = logging.getLogger(__name__)
 
 
-async def main(argv: list[str]) -> int:
+def main(argv: list[str]) -> int:
     final_result = run_subcommand(argv)
     match final_result:
         case Ok(msg):
@@ -65,19 +65,19 @@ def _sigint(procs: list[subprocess.Popen[bytes]]) -> Result[str, str]:
         p.send_signal(signal.SIGINT)
     return Ok("Sent SIGINT to frontend servers.")
 
+
 def is_port_in_use(port: int) -> bool:
-    """ 
+    """
     Checks if a port is in use at localhost.
-    
+
     Creates a temporary connection.
     Context manager will automatically close the connection
     """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('localhost', port)) == 0
+        return s.connect_ex(("localhost", port)) == 0
 
 
 def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]:
-    
     port = edit_config.server_port
 
     while is_port_in_use(port):
@@ -101,6 +101,10 @@ def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]
             return Err(e)
 
     results: list[Result[str, str]] = []
+    run_backend_server = {
+        "v1": run_backend_server_v1,
+        "v2": run_backend_server_v2,
+    }[edit_config.server_version]
     backend_res = run_backend_server(edit_config)
     match backend_res:
         case Ok(_):
@@ -143,5 +147,5 @@ def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], s
 
 
 if __name__ == "__main__":
-    retcode: int = asyncio.run(main(sys.argv))
+    retcode: int = main(sys.argv)
     sys.exit(retcode)
