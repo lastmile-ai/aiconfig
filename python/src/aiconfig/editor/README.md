@@ -58,7 +58,8 @@ e.g. `aiconfig edit --parsers-module-path="/path/to/my_editor_plugin.py"`
 ### Install:
 
 `pip install -e path/to/local/aiconfig/python`
-`alias aiconfig="python -m 'aiconfig.scripts.aiconfig_cli'"``
+
+`alias aiconfig="python -m 'aiconfig.scripts.aiconfig_cli'"`
 
 ### Run backend and frontend servers:
 
