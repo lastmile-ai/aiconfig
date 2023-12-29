@@ -10,6 +10,7 @@ export type MutateAIConfigAction =
   | AddPromptAction
   | UpdatePromptInputAction
   | UpdatePromptNameAction
+  | UpdatePromptModelAction
   | UpdatePromptModelSettingsAction
   | UpdatePromptParametersAction;
 
@@ -35,6 +36,12 @@ export type UpdatePromptNameAction = {
   type: "UPDATE_PROMPT_NAME";
   index: number;
   name: string;
+};
+
+export type UpdatePromptModelAction = {
+  type: "UPDATE_PROMPT_MODEL";
+  index: number;
+  modelName?: string;
 };
 
 export type UpdatePromptModelSettingsAction = {
@@ -132,6 +139,20 @@ export default function aiconfigReducer(
       return reduceReplacePrompt(state, action.index, (prompt) => ({
         ...prompt,
         name: action.name,
+      }));
+    }
+    case "UPDATE_PROMPT_MODEL": {
+      return reduceReplacePrompt(state, action.index, (prompt) => ({
+        ...prompt,
+        metadata: {
+          ...prompt.metadata,
+          model: action.modelName
+            ? {
+                name: action.modelName,
+                // TODO: Consolidate settings based on schema union
+              }
+            : undefined,
+        },
       }));
     }
     case "UPDATE_PROMPT_MODEL_SETTINGS": {
