@@ -1,7 +1,7 @@
 import { createStyles, Container, Accordion, Text } from "@mantine/core";
 import { JSONObject } from "aiconfig";
-import { memo, useCallback, useState } from "react";
-import ParametersRenderer, { ParametersArray } from "./ParametersRenderer";
+import { memo, useState } from "react";
+import ParametersRenderer from "./ParametersRenderer";
 
 type Props = {
   initialValue: JSONObject;
@@ -22,24 +22,6 @@ export default memo(function GlobalParametersContainer({
   onUpdateParameters,
 }: Props) {
   const [isParametersDrawerOpen, setIsParametersDrawerOpen] = useState(false);
-
-  const updateGlobalParameters = useCallback(
-    (data: {
-      promptName?: string | undefined;
-      newParameters: ParametersArray;
-    }) => {
-      const newParameters: Record<string, unknown> = {};
-      for (const paramTuple of data.newParameters ?? []) {
-        const key = paramTuple.parameterName;
-        const val = paramTuple.parameterValue;
-
-        newParameters[key] = val;
-      }
-
-      onUpdateParameters(newParameters);
-    },
-    [onUpdateParameters]
-  );
 
   const { classes } = useStyles();
 
@@ -65,7 +47,7 @@ export default memo(function GlobalParametersContainer({
             {isParametersDrawerOpen && (
               <ParametersRenderer
                 initialValue={initialValue}
-                onUpdateParameters={updateGlobalParameters}
+                onUpdateParameters={onUpdateParameters}
               />
             )}
           </Accordion.Panel>
