@@ -8,8 +8,10 @@ export type AIConfigReducerAction =
 
 export type MutateAIConfigAction =
   | AddPromptAction
+  | DeletePromptAction
   | UpdatePromptInputAction
   | UpdatePromptNameAction
+  | UpdatePromptModelAction
   | UpdatePromptModelSettingsAction
   | UpdatePromptParametersAction;
 
@@ -25,6 +27,12 @@ export type AddPromptAction = {
   prompt: ClientPrompt;
 };
 
+export type DeletePromptAction = {
+  type: "DELETE_PROMPT";
+  id: string;
+};
+
+// TODO: Update index to prompt id for all existing-prompt actions
 export type UpdatePromptInputAction = {
   type: "UPDATE_PROMPT_INPUT";
   index: number;
@@ -35,6 +43,12 @@ export type UpdatePromptNameAction = {
   type: "UPDATE_PROMPT_NAME";
   index: number;
   name: string;
+};
+
+export type UpdatePromptModelAction = {
+  type: "UPDATE_PROMPT_MODEL";
+  index: number;
+  modelName?: string;
 };
 
 export type UpdatePromptModelSettingsAction = {
@@ -125,6 +139,12 @@ export default function aiconfigReducer(
     case "ADD_PROMPT_AT_INDEX": {
       return reduceInsertPromptAtIndex(state, action.index, action.prompt);
     }
+    case "DELETE_PROMPT": {
+      return {
+        ...state,
+        prompts: state.prompts.filter((prompt) => prompt._ui.id !== action.id),
+      };
+    }
     case "UPDATE_PROMPT_INPUT": {
       return reduceReplaceInput(state, action.index, () => action.input);
     }
@@ -132,6 +152,20 @@ export default function aiconfigReducer(
       return reduceReplacePrompt(state, action.index, (prompt) => ({
         ...prompt,
         name: action.name,
+      }));
+    }
+    case "UPDATE_PROMPT_MODEL": {
+      return reduceReplacePrompt(state, action.index, (prompt) => ({
+        ...prompt,
+        metadata: {
+          ...prompt.metadata,
+          model: action.modelName
+            ? {
+                name: action.modelName,
+                // TODO: Consolidate settings based on schema union
+              }
+            : undefined,
+        },
       }));
     }
     case "UPDATE_PROMPT_MODEL_SETTINGS": {

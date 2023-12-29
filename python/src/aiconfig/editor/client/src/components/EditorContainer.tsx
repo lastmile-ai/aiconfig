@@ -1,7 +1,14 @@
 import PromptContainer from "./prompt/PromptContainer";
-import { Container, Group, Button, createStyles, Stack } from "@mantine/core";
+import {
+  Container,
+  Group,
+  Button,
+  createStyles,
+  Stack,
+  Flex,
+} from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { AIConfig, Prompt, PromptInput } from "aiconfig";
+import { AIConfig, ModelMetadata, Prompt, PromptInput } from "aiconfig";
 import { useCallback, useMemo, useReducer, useRef, useState } from "react";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import {
@@ -11,8 +18,12 @@ import {
   clientPromptToAIConfigPrompt,
 } from "../shared/types";
 import AddPromptButton from "./prompt/AddPromptButton";
-import { getDefaultNewPromptName } from "../utils/aiconfigStateUtils";
+import {
+  getDefaultNewPromptName,
+  getPrompt,
+} from "../utils/aiconfigStateUtils";
 import { debounce, uniqueId } from "lodash";
+import PromptMenuButton from "./prompt/PromptMenuButton";
 
 type Props = {
   aiconfig: AIConfig;
@@ -25,9 +36,14 @@ export type AIConfigCallbacks = {
     prompt: Prompt,
     index: number
   ) => Promise<{ aiconfig: AIConfig }>;
+  deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   runPrompt: (promptName: string) => Promise<void>;
   save: (aiconfig: AIConfig) => Promise<void>;
+  updateModel: (
+    promptName?: string,
+    modelData?: string | ModelMetadata
+  ) => Promise<void /*{ aiconfig: AIConfig }*/>;
   updatePrompt: (
     promptName: string,
     promptData: Prompt
@@ -150,6 +166,16 @@ export default function EditorContainer({
     [dispatch]
   );
 
+  const debouncedUpdateModel = useMemo(
+    () =>
+      debounce(
+        (promptName?: string, modelMetadata?: string | ModelMetadata) =>
+          callbacks.updateModel(promptName, modelMetadata),
+        250
+      ),
+    [callbacks.updateModel]
+  );
+
   const onUpdatePromptModelSettings = useCallback(
     async (promptIndex: number, newModelSettings: any) => {
       dispatch({
@@ -157,9 +183,44 @@ export default function EditorContainer({
         index: promptIndex,
         modelSettings: newModelSettings,
       });
-      // TODO: Call server-side endpoint to update model settings
+      // TODO: Call server-side endpoint to update model
     },
     [dispatch]
+  );
+
+  const onUpdatePromptModel = useCallback(
+    async (promptIndex: number, newModel?: string) => {
+      dispatch({
+        type: "UPDATE_PROMPT_MODEL",
+        index: promptIndex,
+        modelName: newModel,
+      });
+
+      try {
+        const prompt = clientPromptToAIConfigPrompt(
+          aiconfigState.prompts[promptIndex]
+        );
+        const currentModel = prompt.metadata?.model;
+        let modelData: string | ModelMetadata | undefined = newModel;
+        if (newModel && currentModel && typeof currentModel !== "string") {
+          modelData = {
+            ...currentModel,
+            name: newModel,
+          };
+        }
+
+        await debouncedUpdateModel(prompt.name, modelData);
+
+        // TODO: Consolidate
+      } catch (err: any) {
+        showNotification({
+          title: "Error updating prompt model",
+          message: err.message,
+          color: "red",
+        });
+      }
+    },
+    [dispatch, debouncedUpdateModel]
   );
 
   const onUpdatePromptParameters = useCallback(
@@ -223,6 +284,27 @@ export default function EditorContainer({
     [callbacks.addPrompt, dispatch]
   );
 
+  const onDeletePrompt = useCallback(
+    async (promptId: string) => {
+      dispatch({
+        type: "DELETE_PROMPT",
+        id: promptId,
+      });
+
+      try {
+        const prompt = getPrompt(stateRef.current, promptId)!;
+        await callbacks.deletePrompt(prompt.name);
+      } catch (err: any) {
+        showNotification({
+          title: "Error deleting prompt",
+          message: err.message,
+          color: "red",
+        });
+      }
+    },
+    [callbacks.deletePrompt, dispatch]
+  );
+
   const onRunPrompt = useCallback(
     async (promptIndex: number) => {
       const promptName = aiconfigState.prompts[promptIndex].name;
@@ -241,8 +323,6 @@ export default function EditorContainer({
 
   const { classes } = useStyles();
 
-  // TODO: Implement editor context for callbacks, readonly state, etc.
-
   return (
     <>
       <Container maw="80rem">
@@ -259,16 +339,24 @@ export default function EditorContainer({
         {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
           return (
             <Stack key={prompt._ui.id}>
-              <PromptContainer
-                index={i}
-                prompt={prompt}
-                onChangePromptInput={onChangePromptInput}
-                onChangePromptName={onChangePromptName}
-                onRunPrompt={onRunPrompt}
-                onUpdateModelSettings={onUpdatePromptModelSettings}
-                onUpdateParameters={onUpdatePromptParameters}
-                defaultConfigModelName={aiconfigState.metadata.default_model}
-              />
+              <Flex mt="md">
+                <PromptMenuButton
+                  promptId={prompt._ui.id}
+                  onDeletePrompt={() => onDeletePrompt(prompt._ui.id)}
+                />
+                <PromptContainer
+                  index={i}
+                  prompt={prompt}
+                  getModels={callbacks.getModels}
+                  onChangePromptInput={onChangePromptInput}
+                  onChangePromptName={onChangePromptName}
+                  onRunPrompt={onRunPrompt}
+                  onUpdateModel={onUpdatePromptModel}
+                  onUpdateModelSettings={onUpdatePromptModelSettings}
+                  onUpdateParameters={onUpdatePromptParameters}
+                  defaultConfigModelName={aiconfigState.metadata.default_model}
+                />
+              </Flex>
               <div className={classes.addPromptRow}>
                 <AddPromptButton
                   getModels={callbacks.getModels}
