@@ -1,6 +1,6 @@
 import { ClientAIConfig, ClientPrompt } from "../shared/types";
 import { getPromptModelName } from "../utils/promptUtils";
-import { AIConfig, JSONObject, Prompt, PromptInput } from "aiconfig";
+import { AIConfig, JSONObject, PromptInput } from "aiconfig";
 
 export type AIConfigReducerAction =
   | MutateAIConfigAction
@@ -123,7 +123,7 @@ function reduceConsolidateAIConfig(
       ...responsePrompt,
       ...statePrompt,
       metadata: {
-        ...responsePrompt!.metadata,
+        ...responsePrompt?.metadata,
         ...statePrompt.metadata,
       },
     } as ClientPrompt;
@@ -143,13 +143,15 @@ function reduceConsolidateAIConfig(
           (resPrompt) => resPrompt.name === prompt.name
         );
 
+        const outputs = responsePrompt?.outputs ?? prompt.outputs;
+
         return {
           ...prompt,
           _ui: {
             ...prompt._ui,
             isRunning: false,
           },
-          outputs: responsePrompt!.outputs,
+          outputs,
         };
       });
     }
@@ -216,10 +218,12 @@ export default function aiconfigReducer(
           model: {
             // TODO: Figure out why 'as' is needed here. Should just be ClientAIConfig and that
             // should properly type metadata
+            // ModelMetadata must have name here
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             name: getPromptModelName(
               prompt,
               (state as unknown as AIConfig).metadata.default_model
-            ),
+            )!,
             settings: action.modelSettings,
           },
         },

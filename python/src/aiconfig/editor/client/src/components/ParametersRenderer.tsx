@@ -161,7 +161,7 @@ export default memo(function ParametersRenderer(props: {
   );
 
   const removeParameter = useCallback(
-    async (key: string, parameterName?: string) => {
+    async (key: string, _parameterName?: string) => {
       setParameters((prev) => {
         const newParameters = prev.filter((item) => item.key !== key);
         onUpdateParameters({ newParameters });

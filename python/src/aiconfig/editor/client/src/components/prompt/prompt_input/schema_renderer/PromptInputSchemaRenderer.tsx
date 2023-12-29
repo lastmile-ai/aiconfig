@@ -5,7 +5,7 @@ import {
 import DataRenderer from "./PromptInputDataSchemaRenderer";
 import AttachmentsRenderer from "./PromptInputAttachmentsSchemaRenderer";
 import { Flex, Textarea } from "@mantine/core";
-import { Attachment, PromptInput } from "aiconfig";
+import { Attachment, JSONValue, PromptInput } from "aiconfig";
 import { memo } from "react";
 
 type Props = {
@@ -32,7 +32,7 @@ function SchemaRenderer({ input, schema, onChangeInput }: SchemaRendererProps) {
 
   const { data, attachments, ..._restData } = input;
 
-  const onChangeData = (value: any) => {
+  const onChangeData = (value: JSONValue) => {
     onChangeInput({ ...input, data: value });
   };
 
@@ -70,7 +70,7 @@ export default memo(function PromptInputSchemaRenderer(props: Props) {
     return (
       <Textarea
         value={props.input as string}
-        onChange={(e: any) => props.onChangeInput(e.target.value)}
+        onChange={(e) => props.onChangeInput(e.target.value)}
       />
     );
   } else {

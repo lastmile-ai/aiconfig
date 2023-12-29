@@ -7,11 +7,11 @@ type Props = {
   schema?: GenericPropertiesSchema;
 };
 
-function ModelMetadataConfigRenderer({ prompt }: Props) {
+function ModelMetadataConfigRenderer(_props: Props) {
   return null; // TODO: Implement
 }
 
-function ModelMetadataSchemaRenderer({ prompt, schema }: Props) {
+function ModelMetadataSchemaRenderer(_props: Props) {
   return null; // TODO: Implement
 }
 

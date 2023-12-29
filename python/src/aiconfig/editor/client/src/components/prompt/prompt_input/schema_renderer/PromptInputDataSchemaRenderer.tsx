@@ -19,7 +19,7 @@ export default memo(function PromptInputDataSchemaRenderer({
       return (
         <Textarea
           value={data ? (data as string) : ""}
-          onChange={(e: any) => onChangeData(e.target.value)}
+          onChange={(e) => onChangeData(e.target.value)}
         />
       );
     default:

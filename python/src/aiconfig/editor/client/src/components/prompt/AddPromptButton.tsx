@@ -43,10 +43,13 @@ export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
   const [modelSearch, setModelSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
-  const onAddPrompt = useCallback((model: string) => {
-    addPrompt(model);
-    setIsOpen(false);
-  }, []);
+  const onAddPrompt = useCallback(
+    (model: string) => {
+      addPrompt(model);
+      setIsOpen(false);
+    },
+    [addPrompt]
+  );
 
   const models = useLoadModels(modelSearch, getModels);
 

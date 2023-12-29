@@ -26,7 +26,10 @@ export default memo(function ModelSelector({
     getPromptModelName(prompt, defaultConfigModelName)
   );
 
-  const models = useLoadModels(showAll ? "" : autocompleteSearch, getModels);
+  const models = useLoadModels(
+    showAll ? "" : autocompleteSearch ?? "",
+    getModels
+  );
 
   const onSelectModel = (model?: string) => {
     setSelectedModel(model);
