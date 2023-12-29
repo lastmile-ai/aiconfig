@@ -8,18 +8,16 @@ import {
 import { ActionIcon, Container, Flex, Tabs } from "@mantine/core";
 import { IconClearAll } from "@tabler/icons-react";
 import { memo, useState } from "react";
-import ParametersRenderer, { ParametersArray } from "../ParametersRenderer";
+import ParametersRenderer from "../ParametersRenderer";
 import RunPromptButton from "./RunPromptButton";
+import { JSONObject } from "aiconfig";
 
 type Props = {
   prompt: ClientPrompt;
   promptSchema?: PromptSchema;
   onRunPrompt: () => Promise<void>;
   onUpdateModelSettings: (settings: Record<string, unknown>) => void;
-  onUpdateParameters: (data: {
-    promptName?: string;
-    newParameters: ParametersArray;
-  }) => void;
+  onUpdateParameters: (parameters: JSONObject) => void;
 };
 
 // Don't default to config-level model settings since that could be confusing
