@@ -334,11 +334,52 @@ class AIConfig(BaseModel):
             return self.prompt_index[prompt_name].metadata
         else:
             return self.metadata
-
-    def set_parameter(self, parameter_name: str, parameter_value, prompt_name: Optional[str] = None):
+    
+    
+    def get_parameters(
+        self,
+        prompt_or_prompt_name: Optional[str | Prompt] = None,
+    ) -> JSONObject:
         """
-        Sets a parameter in the AI configuration metadata. If a prompt_name is specified, it adds the parameter to
-        a specific prompt's metadata in the AI configuration. Otherwise, it adds the parameter to the global metadata.
+        Get the parameters for a prompt, using the global parameters if 
+        needed.
+        
+        Args:
+            prompt_or_prompt_name Optional[str | Prompt]: The name of the 
+                prompt or the prompt object. If not specified, use the 
+                global parameters.
+        """
+        prompt = prompt_or_prompt_name
+        if isinstance(prompt_or_prompt_name, str):
+            if prompt_or_prompt_name not in self.prompt_index:
+                raise IndexError(f"Prompt '{prompt_or_prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}")
+            prompt = self.prompt_index[prompt_or_prompt_name]
+
+        assert prompt is None or isinstance(prompt, Prompt)
+        if prompt is None or not prompt.metadata:
+            return self.get_global_parameters()
+
+        return self.get_prompt_parameters(prompt)
+
+    def get_global_parameters(self) -> JSONObject:
+        """
+        Get the global parameters for the AIConfig.
+        """
+        if self.metadata.parameters is None:
+            return {}
+        return self.metadata.parameters
+
+    def get_prompt_parameters(
+        self,
+        prompt: Prompt,
+    ) -> JSONObject:
+        """
+        Get the prompt's local parameters.
+        """
+        if not prompt.metadata:
+            return {}
+        return prompt.metadata.parameters or {}
+
 
         Args:
             parameter_name (str): The name of the parameter.
@@ -732,14 +773,6 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         Args:
             prompt (str|Prompt): The name of the prompt or the prompt object.
         """
-
-    def get_prompt_parameters(self, prompt: Prompt):
-        """
-        Gets the prompt's local parameters for a prompt.
-        """
-        if not prompt.metadata:
-            return {}
-        return prompt.metadata.parameters
 
     """
     Library Helpers

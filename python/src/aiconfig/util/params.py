@@ -310,7 +310,7 @@ def resolve_prompt_string(
     augmented_params = collect_prompt_references(current_prompt, ai_config)
 
     # augment params with config-level params
-    augmented_params.update(ai_config.metadata.parameters)
+    augmented_params.update(ai_config.get_global_parameters())
 
     # augment params with prompt level params
     augmented_params.update(ai_config.get_prompt_parameters(current_prompt))
