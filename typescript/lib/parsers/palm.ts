@@ -247,7 +247,7 @@ function constructOutputs(
       output_type: "execute_result",
       data: candidate.output ?? "",
       execution_count: i,
-      metadata: { rawResponse: candidate },
+      metadata: { raw_response: candidate },
     };
 
     outputs.push(output);
