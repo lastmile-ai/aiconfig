@@ -107,7 +107,7 @@ export default memo(function PromptContainer({
   const { classes } = useStyles();
 
   return (
-    <Flex justify="space-between" mt="md">
+    <Flex justify="space-between" w="100%">
       <Card withBorder className={classes.promptInputCard}>
         <Flex direction="column">
           <Flex justify="space-between" mb="0.5em">
