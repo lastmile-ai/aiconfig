@@ -9,6 +9,7 @@ export type AIConfigReducerAction =
 export type MutateAIConfigAction =
   | AddPromptAction
   | DeletePromptAction
+  | RunPromptAction
   | UpdatePromptInputAction
   | UpdatePromptNameAction
   | UpdatePromptModelAction
@@ -29,6 +30,11 @@ export type AddPromptAction = {
 
 export type DeletePromptAction = {
   type: "DELETE_PROMPT";
+  id: string;
+};
+
+export type RunPromptAction = {
+  type: "RUN_PROMPT";
   id: string;
 };
 
@@ -131,6 +137,22 @@ function reduceConsolidateAIConfig(
         consolidatePrompt
       );
     }
+    case "RUN_PROMPT": {
+      return reduceReplacePrompt(state, action.id, (prompt) => {
+        const responsePrompt = responseConfig.prompts.find(
+          (resPrompt) => resPrompt.name === prompt.name
+        );
+
+        return {
+          ...prompt,
+          _ui: {
+            ...prompt._ui,
+            isRunning: false,
+          },
+          outputs: responsePrompt!.outputs,
+        };
+      });
+    }
     case "UPDATE_PROMPT_INPUT": {
       return reduceReplacePrompt(state, action.id, consolidatePrompt);
     }
@@ -153,6 +175,15 @@ export default function aiconfigReducer(
         ...state,
         prompts: state.prompts.filter((prompt) => prompt._ui.id !== action.id),
       };
+    }
+    case "RUN_PROMPT": {
+      return reduceReplacePrompt(state, action.id, (prompt) => ({
+        ...prompt,
+        _ui: {
+          ...prompt._ui,
+          isRunning: true,
+        },
+      }));
     }
     case "UPDATE_PROMPT_INPUT": {
       return reduceReplaceInput(state, action.id, () => action.input);
