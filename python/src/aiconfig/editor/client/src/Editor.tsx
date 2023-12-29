@@ -3,48 +3,43 @@ import EditorContainer, {
 } from "./components/EditorContainer";
 import { Flex, Loader, MantineProvider } from "@mantine/core";
 import { AIConfig, ModelMetadata, Prompt } from "aiconfig";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
+import WebviewContext from "./WebviewContext";
 
 export default function Editor() {
-  const [aiconfig, setAiConfig] = useState<AIConfig | undefined>({
-    name: "NYC Trip Planner",
-    description: "Intrepid explorer with ChatGPT and AIConfig",
-    schema_version: "latest",
-    metadata: {
-      models: {
-        "gpt-3.5-turbo": {
-          model: "gpt-3.5-turbo",
-          top_p: 1,
-          temperature: 1,
-        },
-        "gpt-4": {
-          model: "gpt-4",
-          max_tokens: 3000,
-          system_prompt:
-            "You are an expert travel coordinator with exquisite taste.",
-        },
-      },
-      default_model: "gpt-3.5-turbo",
-    },
-    prompts: [
-      {
-        name: "get_activities",
-        input: "Tell me 10 fun attractions to do in NYC.",
-      },
-      {
-        name: "gen_itinerary",
-        input:
-          "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
-        metadata: {
-          model: "gpt-4",
-          parameters: {
-            order_by: "geographic location",
-          },
-        },
-      },
-    ],
+  const [aiconfig, setAIConfig] = useState<AIConfig | undefined>();
+
+  const { vscode } = useContext(WebviewContext);
+
+  const updateContent = useCallback(async (text: string) => {
+    // TODO: saqadri - this won't work for YAML -- the handling of the text needs to include the logic from AIConfig.load
+    const updatedConfig = text != null ? JSON.parse(text) : {};
+    console.log("updatedConfig=", JSON.stringify(updatedConfig));
+    setAIConfig(updatedConfig);
+
+    // Then persist state information.
+    // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
+    vscode?.setState({ text });
+
+    // TODO: saqadri - as soon as content is updated, we have to call /load endpoint for the server to have the latest content as well
+    // However, instead of loading from FS, the /load endpoint should load from the data passed to it here.
+  }, []);
+
+  // Handle messages sent from the extension to the webview
+  window.addEventListener("message", (event) => {
+    console.log("onMessage, event=", JSON.stringify(event));
+    const message = event.data; // The json data that the extension sent
+    switch (message.type) {
+      case "update":
+        console.log("onMessage, message=", JSON.stringify(message));
+        const text = message.text;
+
+        // Update our webview's content
+        updateContent(text);
+        return;
+    }
   });
 
   // const loadConfig = useCallback(async () => {
