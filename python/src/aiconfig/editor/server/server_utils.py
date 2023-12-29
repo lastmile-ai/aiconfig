@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from enum import Enum
 from types import ModuleType
 from typing import Any, Callable, NewType, Optional, Type, TypeVar, cast
+from aiconfig.registry import ModelParserRegistry
+from aiconfig.schema import Prompt, PromptMetadata
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -217,6 +219,10 @@ def init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None,
                 return Err(f"Failed to load AIConfig from {edit_config.aiconfig_path}: {e}")
     else:
         aiconfig_runtime = AIConfigRuntime.create()  # type: ignore
+        model_ids = ModelParserRegistry.parser_ids()
+        if len(model_ids) > 0:
+            aiconfig_runtime.add_prompt("prompt_1", Prompt(name="prompt_1", input="", metadata=PromptMetadata(model=model_ids[0])))
+
         state.aiconfig = aiconfig_runtime
         LOGGER.info("Created new AIConfig")
         return Ok(None)
