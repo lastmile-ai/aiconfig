@@ -1,9 +1,7 @@
 import { Divider, Flex, Text } from "@mantine/core";
 import { memo } from "react";
 
-type Props = {};
-
-export default memo(function PromptOutputBar(_props: Props) {
+export default memo(function PromptOutputBar() {
   return (
     <Flex direction="column" mt="0.5em">
       <Divider size="sm" mt="0.5em" mb="0.5em" />

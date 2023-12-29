@@ -2,7 +2,7 @@ import { Button, Menu, createStyles } from "@mantine/core";
 import { IconDotsVertical, IconTrash } from "@tabler/icons-react";
 import { memo } from "react";
 
-const useStyles = createStyles((theme) => ({
+const useStyles = createStyles(() => ({
   promptMenuButton: {
     marginLeft: -8,
   },

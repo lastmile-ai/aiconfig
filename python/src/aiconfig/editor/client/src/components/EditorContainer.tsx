@@ -8,7 +8,13 @@ import {
   Flex,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { AIConfig, ModelMetadata, Prompt, PromptInput } from "aiconfig";
+import {
+  AIConfig,
+  JSONObject,
+  ModelMetadata,
+  Prompt,
+  PromptInput,
+} from "aiconfig";
 import { useCallback, useMemo, useReducer, useRef, useState } from "react";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import {
@@ -93,29 +99,32 @@ export default function EditorContainer({
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
 
+  const saveCallback = callbacks.save;
   const onSave = useCallback(async () => {
     setIsSaving(true);
     try {
-      await callbacks.save(clientConfigToAIConfig(stateRef.current));
-    } catch (err: any) {
+      await saveCallback(clientConfigToAIConfig(stateRef.current));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : null;
       showNotification({
         title: "Error saving",
-        message: err.message,
+        message,
         color: "red",
       });
     } finally {
       setIsSaving(false);
     }
-  }, [callbacks.save]);
+  }, [saveCallback]);
 
+  const updatePromptCallback = callbacks.updatePrompt;
   const debouncedUpdatePrompt = useMemo(
     () =>
       debounce(
         (promptName: string, newPrompt: Prompt) =>
-          callbacks.updatePrompt(promptName, newPrompt),
+          updatePromptCallback(promptName, newPrompt),
         250
       ),
-    [callbacks.updatePrompt]
+    [updatePromptCallback]
   );
 
   const onChangePromptInput = useCallback(
@@ -129,28 +138,34 @@ export default function EditorContainer({
       dispatch(action);
 
       try {
-        const prompt = clientPromptToAIConfigPrompt(
-          getPrompt(stateRef.current, promptId)!
-        );
+        const statePrompt = getPrompt(stateRef.current, promptId);
+        if (!statePrompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        const prompt = clientPromptToAIConfigPrompt(statePrompt);
+
         const serverConfigRes = await debouncedUpdatePrompt(prompt.name, {
           ...prompt,
           input: newPromptInput,
         });
 
-        dispatch({
-          type: "CONSOLIDATE_AICONFIG",
-          action,
-          config: serverConfigRes!.aiconfig,
-        });
-      } catch (err: any) {
+        if (serverConfigRes) {
+          dispatch({
+            type: "CONSOLIDATE_AICONFIG",
+            action,
+            config: serverConfigRes.aiconfig,
+          });
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : null;
         showNotification({
           title: "Error adding prompt to config",
-          message: err.message,
+          message,
           color: "red",
         });
       }
     },
-    [dispatch, debouncedUpdatePrompt]
+    [debouncedUpdatePrompt, dispatch]
   );
 
   const onChangePromptName = useCallback(
@@ -166,18 +181,19 @@ export default function EditorContainer({
     [dispatch]
   );
 
+  const updateModelCallback = callbacks.updateModel;
   const debouncedUpdateModel = useMemo(
     () =>
       debounce(
         (promptName?: string, modelMetadata?: string | ModelMetadata) =>
-          callbacks.updateModel(promptName, modelMetadata),
+          updateModelCallback(promptName, modelMetadata),
         250
       ),
-    [callbacks.updateModel]
+    [updateModelCallback]
   );
 
   const onUpdatePromptModelSettings = useCallback(
-    async (promptId: string, newModelSettings: any) => {
+    async (promptId: string, newModelSettings: JSONObject) => {
       dispatch({
         type: "UPDATE_PROMPT_MODEL_SETTINGS",
         id: promptId,
@@ -197,9 +213,11 @@ export default function EditorContainer({
       });
 
       try {
-        const prompt = clientPromptToAIConfigPrompt(
-          getPrompt(stateRef.current, promptId)!
-        );
+        const statePrompt = getPrompt(stateRef.current, promptId);
+        if (!statePrompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        const prompt = clientPromptToAIConfigPrompt(statePrompt);
         const currentModel = prompt.metadata?.model;
         let modelData: string | ModelMetadata | undefined = newModel;
         if (newModel && currentModel && typeof currentModel !== "string") {
@@ -212,10 +230,11 @@ export default function EditorContainer({
         await debouncedUpdateModel(prompt.name, modelData);
 
         // TODO: Consolidate
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : null;
         showNotification({
           title: "Error updating prompt model",
-          message: err.message,
+          message,
           color: "red",
         });
       }
@@ -224,7 +243,7 @@ export default function EditorContainer({
   );
 
   const onUpdatePromptParameters = useCallback(
-    async (promptId: string, newParameters: any) => {
+    async (promptId: string, newParameters: JSONObject) => {
       dispatch({
         type: "UPDATE_PROMPT_PARAMETERS",
         id: promptId,
@@ -235,6 +254,7 @@ export default function EditorContainer({
     [dispatch]
   );
 
+  const addPromptCallback = callbacks.addPrompt;
   const onAddPrompt = useCallback(
     async (promptIndex: number, model: string) => {
       const promptName = getDefaultNewPromptName(
@@ -263,7 +283,7 @@ export default function EditorContainer({
       dispatch(action);
 
       try {
-        const serverConfigRes = await callbacks.addPrompt(
+        const serverConfigRes = await addPromptCallback(
           promptName,
           newPrompt,
           promptIndex
@@ -273,17 +293,19 @@ export default function EditorContainer({
           action,
           config: serverConfigRes.aiconfig,
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : null;
         showNotification({
           title: "Error adding prompt to config",
-          message: err.message,
+          message: message,
           color: "red",
         });
       }
     },
-    [callbacks.addPrompt, dispatch]
+    [addPromptCallback, dispatch]
   );
 
+  const deletePromptCallback = callbacks.deletePrompt;
   const onDeletePrompt = useCallback(
     async (promptId: string) => {
       dispatch({
@@ -292,19 +314,24 @@ export default function EditorContainer({
       });
 
       try {
-        const prompt = getPrompt(stateRef.current, promptId)!;
-        await callbacks.deletePrompt(prompt.name);
-      } catch (err: any) {
+        const prompt = getPrompt(stateRef.current, promptId);
+        if (!prompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        await deletePromptCallback(prompt.name);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : null;
         showNotification({
           title: "Error deleting prompt",
-          message: err.message,
+          message,
           color: "red",
         });
       }
     },
-    [callbacks.deletePrompt, dispatch]
+    [deletePromptCallback, dispatch]
   );
 
+  const runPromptCallback = callbacks.runPrompt;
   const onRunPrompt = useCallback(
     async (promptId: string) => {
       const action: AIConfigReducerAction = {
@@ -315,23 +342,28 @@ export default function EditorContainer({
       dispatch(action);
 
       try {
-        const promptName = getPrompt(stateRef.current, promptId)!.name;
-        const serverConfigRes = await callbacks.runPrompt(promptName);
+        const statePrompt = getPrompt(stateRef.current, promptId);
+        if (!statePrompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        const promptName = statePrompt.name;
+        const serverConfigRes = await runPromptCallback(promptName);
 
         dispatch({
           type: "CONSOLIDATE_AICONFIG",
           action,
           config: serverConfigRes.aiconfig,
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : null;
         showNotification({
           title: "Error running prompt",
-          message: err.message,
+          message,
           color: "red",
         });
       }
     },
-    [callbacks.runPrompt]
+    [runPromptCallback]
   );
 
   const { classes } = useStyles();

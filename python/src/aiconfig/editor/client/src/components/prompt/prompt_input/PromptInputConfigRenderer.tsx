@@ -14,7 +14,7 @@ export default memo(function PromptInputConfigRenderer({
   return (
     <Textarea
       value={input as string}
-      onChange={(e: any) => onChangeInput(e.target.value)}
+      onChange={(e) => onChangeInput(e.target.value)}
     />
   );
 });

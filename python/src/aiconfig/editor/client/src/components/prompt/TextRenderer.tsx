@@ -24,10 +24,12 @@ export function TextRenderer({ content }: TextRendererProps) {
     <ReactMarkdown
       remarkPlugins={[[remarkGfm, { singleTilde: false }]]}
       components={{
-        code({ node, inline, className, children, ...props }) {
+        code({ inline, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || "");
           return !inline ? (
             <Prism
+              // Language type from Prism not accessible here so use any
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               language={(match ? match[1] : "") as any}
               {...props}
               style={{ maxWidth: "100%", minWidth: "100%", overflow: "auto" }}

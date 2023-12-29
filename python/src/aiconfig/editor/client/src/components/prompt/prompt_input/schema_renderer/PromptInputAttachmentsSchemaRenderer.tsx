@@ -1,5 +1,5 @@
 import { PromptInputObjectAttachmentsSchema } from "../../../../utils/promptUtils";
-import type { Attachment as InputAttachment } from "aiconfig";
+import type { Attachment as InputAttachment, JSONObject } from "aiconfig";
 import { memo, useState } from "react";
 import AttachmentContainer from "../attachments/AttachmentContainer";
 import AttachmentUploader from "../attachments/AttachmentUploader";
@@ -32,7 +32,7 @@ function EditableAttachmentRenderer({
         <AttachmentContainer
           attachment={attachment}
           schema={schema}
-          onUpdateMetadata={(metadata: { [k: string]: any }) =>
+          onUpdateMetadata={(metadata: JSONObject) =>
             onUpdateAttachment({ ...attachment, metadata })
           }
           onRemoveAttachment={onRemoveAttachment}
