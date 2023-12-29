@@ -414,25 +414,55 @@ class AIConfig(BaseModel):
             return prompt.metadata
         return prompt.metadata.parameters
 
-    def set_parameter(self, parameter_name: str, parameter_value, prompt_name: Optional[str] = None):
+    def set_parameter(
+        self,
+        parameter_name: str,
+        parameter_value : Union[str, JSONObject],
+        prompt_name: Optional[str] = None):
         """
-        Sets a parameter in the AI configuration metadata. If a prompt_name is specified, it adds the parameter to
-        a specific prompt's metadata in the AI configuration. Otherwise, it adds the parameter to the global metadata.
+        Sets a parameter in the AI configuration metadata. If a prompt_name 
+        is specified, it adds the parameter to a specific prompt's metadata 
+        in the AI configuration. Otherwise, it adds the parameter to the 
+        global metadata.
 
         Args:
             parameter_name (str): The name of the parameter.
-            parameter_value: The value of the parameter. It can be more than just a string. It can be a string or a JSON object. For example:
-                {
-                person: {
-                    firstname: "john",
-                    lastname: "smith",
-                    },
-                }
-                Using the parameter in a prompt with handlebars syntax would look like this:
-                "{{person.firstname}} {{person.lastname}}"
-            prompt_name (str, optional): The name of the prompt to add the parameter to. Defaults to None.
+            parameter_value: The value of the parameter. It can be more than
+                just a string. It can be a string or a JSON object. For 
+                example:
+                    {
+                    person: {
+                        firstname: "john",
+                        lastname: "smith",
+                        },
+                    }
+                Using the parameter in a prompt with handlebars syntax would 
+                look like this:
+                    "{{person.firstname}} {{person.lastname}}"
+            prompt_name (str, optional): The name of the prompt to add the 
+                parameter to. Defaults to None.
         """
         target_metadata = self.get_metadata(prompt_name)
+        if not target_metadata:
+            # Technically this check is not needed since the metadata is a 
+            # required field in Config while it is not required in Prompt.
+            # Therefore, if it's not defined, we can infer that it should
+            # be a PromptMetadata type, but this is just good robustness
+            # in case we ever change our schema in the future
+            if prompt_name:
+                prompt = self.get_prompt(prompt_name)
+                # check next line not needed since it's already assumed
+                # we got here because target_metadata is None, just being 
+                # extra safe
+                if not prompt.metadata:
+                    target_metadata = PromptMetadata(parameters={})
+                    prompt.metadata = target_metadata
+            else:
+                target_metadata = ConfigMetadata()
+
+        assert target_metadata is not None
+        if target_metadata.parameters is None:
+            target_metadata.parameters = {}
         target_metadata.parameters[parameter_name] = parameter_value
 
     def update_parameter(
