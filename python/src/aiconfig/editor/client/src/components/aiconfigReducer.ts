@@ -13,7 +13,8 @@ export type MutateAIConfigAction =
   | UpdatePromptNameAction
   | UpdatePromptModelAction
   | UpdatePromptModelSettingsAction
-  | UpdatePromptParametersAction;
+  | UpdatePromptParametersAction
+  | UpdateGlobalParametersAction;
 
 export type ConsolidateAIConfigAction = {
   type: "CONSOLIDATE_AICONFIG";
@@ -57,10 +58,14 @@ export type UpdatePromptModelSettingsAction = {
   modelSettings: JSONObject;
 };
 
-// TODO: saqadri - can likely use this same action for global parameters update
 export type UpdatePromptParametersAction = {
   type: "UPDATE_PROMPT_PARAMETERS";
   index: number;
+  parameters: JSONObject;
+};
+
+export type UpdateGlobalParametersAction = {
+  type: "UPDATE_GLOBAL_PARAMETERS";
   parameters: JSONObject;
 };
 
@@ -193,6 +198,15 @@ export default function aiconfigReducer(
           parameters: action.parameters,
         },
       }));
+    }
+    case "UPDATE_GLOBAL_PARAMETERS": {
+      return {
+        ...state,
+        metadata: {
+          ...state.metadata,
+          parameters: action.parameters,
+        },
+      };
     }
     case "CONSOLIDATE_AICONFIG": {
       return reduceConsolidateAIConfig(state, action.action, action.config);

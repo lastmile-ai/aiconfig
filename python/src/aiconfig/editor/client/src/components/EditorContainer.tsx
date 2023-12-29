@@ -24,6 +24,7 @@ import {
 } from "../utils/aiconfigStateUtils";
 import { debounce, uniqueId } from "lodash";
 import PromptMenuButton from "./prompt/PromptMenuButton";
+import GlobalParametersContainer from "./GlobalParametersContainer";
 
 type Props = {
   aiconfig: AIConfig;
@@ -223,6 +224,17 @@ export default function EditorContainer({
     [dispatch, debouncedUpdateModel]
   );
 
+  const onUpdateGlobalParameters = useCallback(
+    async (newParameters: any) => {
+      dispatch({
+        type: "UPDATE_GLOBAL_PARAMETERS",
+        parameters: newParameters,
+      });
+      // TODO: Call server-side endpoint to update global parameters
+    },
+    [dispatch]
+  );
+
   const onUpdatePromptParameters = useCallback(
     async (promptIndex: number, newParameters: any) => {
       dispatch({
@@ -335,6 +347,10 @@ export default function EditorContainer({
           </Button>
         </Group>
       </Container>
+      <GlobalParametersContainer
+        initialValue={aiconfigState?.metadata?.parameters ?? {}}
+        onUpdateParameters={onUpdateGlobalParameters}
+      />
       <Container maw="80rem" className={classes.promptsContainer}>
         {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
           return (
