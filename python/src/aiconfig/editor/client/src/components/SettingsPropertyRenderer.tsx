@@ -19,15 +19,16 @@ import { IconHelp, IconPlus, IconTrash } from "@tabler/icons-react";
 import UnionPropertyControl, {
   UnionProperty,
 } from "./property_controls/UnionPropertyControl";
+import { JSONObject, JSONValue } from "aiconfig";
 
-type StateSetFromPrevFn = (prev: any) => void;
-export type SetStateFn = (val: StateSetFromPrevFn | any) => void;
+export type StateSetFromPrevFn = (prev: JSONValue) => void;
+export type SetStateFn = (val: StateSetFromPrevFn | JSONValue) => void;
 
 export type PropertyRendererProps = {
   propertyName: string;
-  property: { [key: string]: any };
+  property: JSONObject;
   isRequired?: boolean;
-  initialValue?: any;
+  initialValue?: JSONValue;
   setValue: SetStateFn;
 };
 
@@ -68,12 +69,12 @@ export default function SettingsPropertyRenderer({
   let propertyControl;
 
   const setAndPropagateValue = useCallback(
-    (newValue: ((prev: any) => void) | any) => {
+    (newValue: ((prev: JSONValue) => void) | JSONValue) => {
       const valueToSet =
         typeof newValue === "function" ? newValue(propertyValue) : newValue;
 
       if (propertyName != null && propertyName.trim() !== "") {
-        setValue((prevValue: any) => ({
+        setValue((prevValue: JSONValue) => ({
           ...(prevValue && typeof prevValue === "object" ? prevValue : {}),
           [propertyName]: valueToSet,
         }));
@@ -89,7 +90,7 @@ export default function SettingsPropertyRenderer({
   // Used in the case the property is an array
   // TODO: Should initialize with values from settings if available
   const [itemControls, setItemControls] = useState<JSX.Element[]>([]);
-  const itemValues = useRef(new Map<string, any>());
+  const itemValues = useRef(new Map<string, JSONValue>());
 
   const removeItemFromList = useCallback(
     async (key: string) => {
@@ -347,7 +348,9 @@ export default function SettingsPropertyRenderer({
             property={subproperty}
             propertyName={subpropertyName}
             key={subpropertyName}
-            initialValue={initialValue?.[subpropertyName]}
+            initialValue={
+              (initialValue as JSONObject | undefined)?.[subpropertyName]
+            }
             setValue={setAndPropagateValue}
           />
         );
@@ -387,6 +390,7 @@ export default function SettingsPropertyRenderer({
           ></Select>
         );
       }
+      break;
     }
     case "union": {
       propertyControl = (
@@ -405,6 +409,7 @@ export default function SettingsPropertyRenderer({
           />
         </Stack>
       );
+      break;
     }
     default: {
       console.warn(

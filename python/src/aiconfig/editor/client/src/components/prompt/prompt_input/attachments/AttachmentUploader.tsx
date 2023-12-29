@@ -15,7 +15,7 @@ type Props = {
   onCancel?: () => void;
 };
 
-async function uploadFile(file: File) {
+async function uploadFile(_file: File) {
   // TODO: Implement
   return {
     url: "https://s3.amazonaws.com/files.uploads.lastmileai.com/uploads/cldxsqbel0000qs8owp8mkd0z/2023_12_1_21_23_24/942/Screenshot 2023-11-28 at 11.11.25 AM.png",
@@ -73,7 +73,8 @@ Props) {
       onUploadAttachments(attachments);
     } catch (error) {
       setUploadState("upload_error");
-      const errorMessage = (error as any)?.message ?? "Error uploading file";
+      const errorMessage =
+        error instanceof Error ? error.message : "Error uploading file";
       setUploadError(errorMessage);
     }
   };

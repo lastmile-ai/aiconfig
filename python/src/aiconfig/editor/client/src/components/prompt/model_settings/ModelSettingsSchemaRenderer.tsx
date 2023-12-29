@@ -1,6 +1,8 @@
-import SettingsPropertyRenderer from "../../SettingsPropertyRenderer";
+import SettingsPropertyRenderer, {
+  SetStateFn,
+} from "../../SettingsPropertyRenderer";
 import { GenericPropertiesSchema } from "../../../utils/promptUtils";
-import { JSONObject } from "aiconfig";
+import { JSONObject, JSONValue } from "aiconfig";
 import { memo, useCallback, useMemo } from "react";
 import { debounce } from "lodash";
 
@@ -24,10 +26,13 @@ export default memo(function ModelSettingsSchemaRenderer({
     [onUpdateModelSettings]
   );
 
-  const setValue = useCallback(
-    (newSettings: JSONObject) => debouncedConfigUpdate(newSettings),
-    [debouncedConfigUpdate]
-  );
+  const setValue: SetStateFn = (
+    newValue: ((prev: JSONValue) => void) | JSONValue
+  ) => {
+    const newSettings =
+      typeof newValue === "function" ? newValue(settings) : newValue;
+    debouncedConfigUpdate(newSettings);
+  };
 
   return (
     <SettingsPropertyRenderer

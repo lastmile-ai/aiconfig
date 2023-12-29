@@ -7,7 +7,8 @@
     "build": "react-scripts build",
     "postbuild": "node postbuild.js",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint . --max-warnings=0"
   },
   "browserslist": {
     "production": [
@@ -49,8 +50,11 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
     "eslint": "^8",
     "eslint-config-next": "14.0.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "typescript": "^5"
   }
 }

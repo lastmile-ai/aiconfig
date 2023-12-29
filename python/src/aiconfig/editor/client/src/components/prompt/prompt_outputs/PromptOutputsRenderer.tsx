@@ -39,10 +39,10 @@ const ExecuteResultOutput = memo(function ExecuteResultOutput({
     );
   } else if (
     typeof output.data === "object" &&
-    output.data.hasOwnProperty("kind")
+    !Array.isArray(output.data) &&
+    Object.prototype.hasOwnProperty.call(output.data, "kind")
   ) {
     switch ((output.data as OutputDataWithValue).kind) {
-      case "tool_calls":
       // TODO: Tool calls rendering
       default:
         return (

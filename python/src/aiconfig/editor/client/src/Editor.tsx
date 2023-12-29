@@ -92,7 +92,15 @@ export default function Editor() {
       updateModel,
       updatePrompt,
     }),
-    [save, getModels, addPrompt, runPrompt]
+    [
+      addPrompt,
+      deletePrompt,
+      getModels,
+      runPrompt,
+      save,
+      updateModel,
+      updatePrompt,
+    ]
   );
 
   return (
