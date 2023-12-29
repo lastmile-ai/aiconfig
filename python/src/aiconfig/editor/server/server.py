@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Type
+from typing import Any, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -168,8 +168,19 @@ async def run() -> FlaskResponse:
     request_json = request.get_json()
 
     try:
-        prompt_name = request_json["prompt_name"]
-        params = request_json.get("params", {})
+        prompt_name: Union[str, None] = request_json.get("prompt_name")
+        if prompt_name is None:
+            return HttpResponseWithAIConfig(
+                message="No prompt name provided, cannot execute `run` command",
+                code=400,
+                aiconfig=None,
+            ).to_flask_format()
+
+        # TODO (rossdanlm): Refactor aiconfig.run() to not take in `params`
+        # as a function arg since we can now just call
+        # aiconfig.get_parameters(prompt_name) directly inside of run. See:
+        # https://github.com/lastmile-ai/aiconfig/issues/671
+        params = request_json.get("params", aiconfig.get_parameters(prompt_name)) # type: ignore
         stream = request_json.get("stream", False)
         options = InferenceOptions(stream=stream)
         run_output = await aiconfig.run(prompt_name, params, options)  # type: ignore
