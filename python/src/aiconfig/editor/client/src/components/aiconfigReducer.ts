@@ -14,7 +14,8 @@ export type MutateAIConfigAction =
   | UpdatePromptNameAction
   | UpdatePromptModelAction
   | UpdatePromptModelSettingsAction
-  | UpdatePromptParametersAction;
+  | UpdatePromptParametersAction
+  | UpdateGlobalParametersAction;
 
 export type ConsolidateAIConfigAction = {
   type: "CONSOLIDATE_AICONFIG";
@@ -62,10 +63,14 @@ export type UpdatePromptModelSettingsAction = {
   modelSettings: JSONObject;
 };
 
-// TODO: saqadri - can likely use this same action for global parameters update
 export type UpdatePromptParametersAction = {
   type: "UPDATE_PROMPT_PARAMETERS";
   id: string;
+  parameters: JSONObject;
+};
+
+export type UpdateGlobalParametersAction = {
+  type: "UPDATE_GLOBAL_PARAMETERS";
   parameters: JSONObject;
 };
 
@@ -191,6 +196,16 @@ export default function aiconfigReducer(
       return reduceReplaceInput(state, action.id, () => action.input);
     }
     case "UPDATE_PROMPT_NAME": {
+      // Validate that no prompt has a name that conflicts with this one:
+      const existingPromptNames = state.prompts.map((prompt) => prompt.name);
+
+      if (
+        existingPromptNames.find((existingName) => action.name === existingName)
+      ) {
+        // Don't allow duplicate names
+        console.log(`Duplicate prompt name ${action.name}. Skipping update`);
+        return state;
+      }
       return reduceReplacePrompt(state, action.id, (prompt) => ({
         ...prompt,
         name: action.name,
@@ -237,6 +252,15 @@ export default function aiconfigReducer(
           parameters: action.parameters,
         },
       }));
+    }
+    case "UPDATE_GLOBAL_PARAMETERS": {
+      return {
+        ...state,
+        metadata: {
+          ...state.metadata,
+          parameters: action.parameters,
+        },
+      };
     }
     case "CONSOLIDATE_AICONFIG": {
       return reduceConsolidateAIConfig(state, action.action, action.config);

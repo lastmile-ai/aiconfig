@@ -30,6 +30,8 @@ import {
 } from "../utils/aiconfigStateUtils";
 import { debounce, uniqueId } from "lodash";
 import PromptMenuButton from "./prompt/PromptMenuButton";
+import GlobalParametersContainer from "./GlobalParametersContainer";
+import AIConfigContext from "./AIConfigContext";
 
 type Props = {
   aiconfig: AIConfig;
@@ -242,6 +244,17 @@ export default function EditorContainer({
     [dispatch, debouncedUpdateModel]
   );
 
+  const onUpdateGlobalParameters = useCallback(
+    async (newParameters: JSONObject) => {
+      dispatch({
+        type: "UPDATE_GLOBAL_PARAMETERS",
+        parameters: newParameters,
+      });
+      // TODO: Call server-side endpoint to update global parameters
+    },
+    [dispatch]
+  );
+
   const onUpdatePromptParameters = useCallback(
     async (promptId: string, newParameters: JSONObject) => {
       dispatch({
@@ -368,8 +381,16 @@ export default function EditorContainer({
 
   const { classes } = useStyles();
 
+  const getState = useCallback(() => stateRef.current, []);
+  const contextValue = useMemo(
+    () => ({
+      getState,
+    }),
+    [getState]
+  );
+
   return (
-    <>
+    <AIConfigContext.Provider value={contextValue}>
       <Container maw="80rem">
         <Group grow m="sm">
           {/* <Text sx={{ textOverflow: "ellipsis", overflow: "hidden" }} size={14}>
@@ -380,6 +401,10 @@ export default function EditorContainer({
           </Button>
         </Group>
       </Container>
+      <GlobalParametersContainer
+        initialValue={aiconfigState?.metadata?.parameters ?? {}}
+        onUpdateParameters={onUpdateGlobalParameters}
+      />
       <Container maw="80rem" className={classes.promptsContainer}>
         {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
           return (
@@ -416,6 +441,6 @@ export default function EditorContainer({
           );
         })}
       </Container>
-    </>
+    </AIConfigContext.Provider>
   );
 }
