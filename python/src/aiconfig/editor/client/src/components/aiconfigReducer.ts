@@ -9,6 +9,7 @@ export type AIConfigReducerAction =
 export type MutateAIConfigAction =
   | AddPromptAction
   | UpdatePromptInputAction
+  | UpdatePromptNameAction
   | UpdatePromptModelSettingsAction
   | UpdatePromptParametersAction;
 
@@ -21,13 +22,19 @@ export type ConsolidateAIConfigAction = {
 export type AddPromptAction = {
   type: "ADD_PROMPT_AT_INDEX";
   index: number;
-  prompt: Prompt;
+  prompt: ClientPrompt;
 };
 
 export type UpdatePromptInputAction = {
   type: "UPDATE_PROMPT_INPUT";
   index: number;
   input: PromptInput;
+};
+
+export type UpdatePromptNameAction = {
+  type: "UPDATE_PROMPT_NAME";
+  index: number;
+  name: string;
 };
 
 export type UpdatePromptModelSettingsAction = {
@@ -88,7 +95,8 @@ function reduceConsolidateAIConfig(
   responseConfig: AIConfig
 ): ClientAIConfig {
   switch (action.type) {
-    case "ADD_PROMPT_AT_INDEX": {
+    case "ADD_PROMPT_AT_INDEX":
+    case "UPDATE_PROMPT_INPUT": {
       // Make sure prompt structure is properly updated. Client input and metadata takes precedence
       // since it may have been updated by the user while the request was in flight
       return reduceReplacePrompt(state, action.index, (prompt) => {
@@ -115,14 +123,16 @@ export default function aiconfigReducer(
 ): ClientAIConfig {
   switch (action.type) {
     case "ADD_PROMPT_AT_INDEX": {
-      return reduceInsertPromptAtIndex(
-        state,
-        action.index,
-        action.prompt as ClientPrompt
-      );
+      return reduceInsertPromptAtIndex(state, action.index, action.prompt);
     }
     case "UPDATE_PROMPT_INPUT": {
       return reduceReplaceInput(state, action.index, () => action.input);
+    }
+    case "UPDATE_PROMPT_NAME": {
+      return reduceReplacePrompt(state, action.index, (prompt) => ({
+        ...prompt,
+        name: action.name,
+      }));
     }
     case "UPDATE_PROMPT_MODEL_SETTINGS": {
       return reduceReplacePrompt(state, action.index, (prompt) => ({
@@ -134,7 +144,7 @@ export default function aiconfigReducer(
             // should properly type metadata
             name: getPromptModelName(
               prompt,
-              (state as AIConfig).metadata.default_model
+              (state as unknown as AIConfig).metadata.default_model
             ),
             settings: action.modelSettings,
           },

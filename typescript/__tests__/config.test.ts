@@ -123,7 +123,7 @@ describe("Loading an AIConfig", () => {
       ],
     });
 
-    const serializeResult = await aiConfig.serialize(
+    const prompts: Prompt[] = await aiConfig.serialize(
       "gpt-3.5-turbo",
       completionParams,
       "prompt",
@@ -131,10 +131,6 @@ describe("Loading an AIConfig", () => {
         products: "Thunderbolt",
       }
     );
-
-    expect(Array.isArray(serializeResult)).toBe(true);
-
-    const prompts: Prompt[] = serializeResult as Prompt[];
 
     expect(prompts.length).toBe(2);
 
@@ -177,7 +173,7 @@ describe("Loading an AIConfig", () => {
       ],
     };
 
-    const serializeResult = await aiConfig.serialize(
+    const prompts: Prompt[] = await aiConfig.serialize(
       "gpt-3.5-turbo",
       completionParams,
       "prompt",
@@ -185,10 +181,6 @@ describe("Loading an AIConfig", () => {
         products: "Thunderbolt",
       }
     );
-
-    expect(Array.isArray(serializeResult)).toBe(true);
-
-    const prompts: Prompt[] = serializeResult as Prompt[];
 
     expect(prompts.length).toBe(2);
 

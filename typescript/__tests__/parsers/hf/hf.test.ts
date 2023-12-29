@@ -126,11 +126,11 @@ describe("HuggingFaceTextGeneration ModelParser", () => {
       inputs: "What are 5 interesting things to do in Toronto?",
     };
 
-    const prompts = parser.serialize(
+    const prompts: Prompt[] = parser.serialize(
       "interestingThingsToronto",
       completionParams,
       aiConfig
-    ) as Prompt[];
+    );
 
     expect(prompts).toHaveLength(1);
     const prompt = prompts[0];
@@ -165,11 +165,11 @@ describe("HuggingFaceTextGeneration ModelParser", () => {
     const callbackManager = new CallbackManager([callback]);
     aiConfig.setCallbackManager(callbackManager);
 
-    const prompts = parser.serialize(
+    const prompts: Prompt[] = parser.serialize(
       "interestingThingsToronto",
       completionParams,
       aiConfig
-    ) as Prompt[];
+    );
 
     const onStartEvent = callback.mock.calls[0][0];
     expect(onStartEvent.name).toEqual("on_serialize_start");
@@ -257,9 +257,13 @@ describe("HuggingFaceTextGeneration ModelParser", () => {
 
     const expectedOutput = {
       output_type: "execute_result",
-      data: { generated_text: "Test text generation" },
+      data: "Test text generation",
       execution_count: 0,
-      metadata: {},
+      metadata: {
+        rawResponse: {
+          generated_text: "Test text generation",
+        },
+      },
     };
 
     expect(outputWithConfigParam).toEqual([expectedOutput]);

@@ -13,4 +13,6 @@ export const ROUTE_TABLE = {
   SAVE: urlJoin(API_ENDPOINT, "/save"),
   LOAD: urlJoin(API_ENDPOINT, "/load"),
   LIST_MODELS: urlJoin(API_ENDPOINT, "/list_models"),
+  RUN_PROMPT: urlJoin(API_ENDPOINT, "/run"),
+  UPDATE_PROMPT: urlJoin(API_ENDPOINT, "/update_prompt"),
 };

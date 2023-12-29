@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Type, TypeVar
+from typing import Any, Type
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -24,11 +24,11 @@ from aiconfig.editor.server.server_utils import (
     safe_run_aiconfig_static_method,
 )
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.registry import ModelParserRegistry
 from flask import Flask, request
 from flask_cors import CORS
 from result import Err, Ok, Result
 
-from aiconfig.registry import ModelParserRegistry
 from aiconfig.schema import Prompt
 
 logging.getLogger("werkzeug").disabled = True
@@ -41,8 +41,6 @@ formatter = logging.Formatter(core_utils.LOGGER_FMT)
 log_handler.setFormatter(formatter)
 
 LOGGER.addHandler(log_handler)
-
-T = TypeVar("T")
 
 
 app = Flask(__name__, static_url_path="")
@@ -132,17 +130,23 @@ def save() -> FlaskResponse:
     state = get_server_state(app)
     aiconfig = state.aiconfig
     request_json = request.get_json()
+    path: str | None = request_json.get("path", None)
 
-    _op = make_op_run_method(MethodName("save"))
+    if path is None:
+        if aiconfig is None:
+            return HttpResponseWithAIConfig(message="No AIConfig loaded", code=400, aiconfig=None).to_flask_format()
+        else:
+            path = aiconfig.file_path
 
-    res_path_val: Result[ValidatedPath, str] = _validated_request_path(request_json, allow_create=True)
-    op_args: Result[OpArgs, str] = result.do(
-        Ok(OpArgs({"config_filepath": path_val_ok}))
-        #
-        for path_val_ok in res_path_val
-    )
+    res_path_val = get_validated_path(path, allow_create=True)
+    match res_path_val:
+        case Ok(path_ok):
+            _op = make_op_run_method(MethodName("save"))
+            op_args: Result[OpArgs, str] = result.Ok(OpArgs({"config_filepath": path_ok}))
+            return run_aiconfig_operation_with_op_args(aiconfig, "save", _op, op_args)
 
-    return run_aiconfig_operation_with_op_args(aiconfig, "save", _op, op_args)
+        case Err(e):
+            return HttpResponseWithAIConfig(message=f"Failed to save AIConfig: {e}", code=400, aiconfig=None).to_flask_format()
 
 
 @app.route("/api/create", methods=["POST"])
@@ -163,26 +167,27 @@ async def run() -> FlaskResponse:
     aiconfig = state.aiconfig
     request_json = request.get_json()
 
-    _op = make_op_run_method(MethodName("run"))
-
-    def _get_op_args():
-        prompt_name = request_json.get("prompt_name", None)
-        stream = request_json.get("stream", True)
-        LOGGER.info(f"Running prompt: {prompt_name}, {stream=}")
-        inference_options = InferenceOptions(stream=stream)
-        return Ok(
-            OpArgs(
-                {
-                    "prompt_name": prompt_name,
-                    #
-                    "options": inference_options,
-                }
-            )
-        )
-
-    op_args = _get_op_args()
-
-    return run_aiconfig_operation_with_op_args(aiconfig, "run", _op, op_args)
+    try:
+        prompt_name = request_json["prompt_name"]
+        params = request_json.get("params", {})
+        stream = request_json.get("stream", False)
+        options = InferenceOptions(stream=stream)
+        kwargs = request_json.get("kwargs", {})
+        run_output = await aiconfig.run(prompt_name, params, options, **kwargs)  # type: ignore
+        LOGGER.debug(f"run_output: {run_output}")
+        return HttpResponseWithAIConfig(
+            #
+            message="Ran prompt",
+            code=200,
+            aiconfig=aiconfig,
+        ).to_flask_format()
+    except Exception as e:
+        return HttpResponseWithAIConfig(
+            #
+            message=f"Failed to run prompt: {type(e)}, {e}",
+            code=400,
+            aiconfig=None,
+        ).to_flask_format()
 
 
 @app.route("/api/add_prompt", methods=["POST"])

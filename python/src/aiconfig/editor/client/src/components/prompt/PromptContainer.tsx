@@ -7,13 +7,20 @@ import { Flex, Card, Text, createStyles } from "@mantine/core";
 import { PromptInput as AIConfigPromptInput } from "aiconfig";
 import { memo, useCallback } from "react";
 import { ParametersArray } from "../ParametersRenderer";
+import PromptOutputBar from "./PromptOutputBar";
+import PromptName from "./PromptName";
 
 type Props = {
   index: number;
   prompt: ClientPrompt;
-  onChangePromptInput: (i: number, newPromptInput: AIConfigPromptInput) => void;
-  onUpdateModelSettings: (i: number, newModelSettings: any) => void;
-  onUpdateParameters: (i: number, newParameters: any) => void;
+  onChangePromptInput: (
+    promptIndex: number,
+    newPromptInput: AIConfigPromptInput
+  ) => void;
+  onChangePromptName: (promptIndex: number, newName: string) => void;
+  onRunPrompt(promptIndex: number): Promise<void>;
+  onUpdateModelSettings: (promptIndex: number, newModelSettings: any) => void;
+  onUpdateParameters: (promptIndex: number, newParameters: any) => void;
   defaultConfigModelName?: string;
 };
 
@@ -24,7 +31,9 @@ const useStyles = createStyles((theme) => ({
     borderBottomRightRadius: 0,
     borderTopRightRadius: 0,
   },
-  actionBarCard: {
+  actionBar: {
+    border: `1px solid ${theme.colors.gray[3]}`,
+    borderRadius: "0.25em",
     borderBottomLeftRadius: 0,
     borderTopLeftRadius: 0,
   },
@@ -34,13 +43,20 @@ export default memo(function PromptContainer({
   prompt,
   index,
   onChangePromptInput,
+  onChangePromptName,
   defaultConfigModelName,
+  onRunPrompt,
   onUpdateModelSettings,
   onUpdateParameters,
 }: Props) {
   const onChangeInput = useCallback(
     (newInput: AIConfigPromptInput) => onChangePromptInput(index, newInput),
     [index, onChangePromptInput]
+  );
+
+  const onChangeName = useCallback(
+    (newName: string) => onChangePromptName(index, newName),
+    [index, onChangePromptName]
   );
 
   const updateModelSettings = useCallback(
@@ -66,6 +82,11 @@ export default memo(function PromptContainer({
     [index, onUpdateParameters]
   );
 
+  const runPrompt = useCallback(
+    async () => await onRunPrompt(index),
+    [index, onRunPrompt]
+  );
+
   // TODO: When adding support for custom PromptContainers, implement a PromptContainerRenderer which
   // will take in the index and callback and render the appropriate PromptContainer with new memoized
   // callback and not having to pass index down to PromptContainer
@@ -79,8 +100,8 @@ export default memo(function PromptContainer({
     <Flex justify="space-between" mt="md">
       <Card withBorder className={classes.promptInputCard}>
         <Flex direction="column">
-          <Flex justify="space-between">
-            <Text weight="bold">{`{{${prompt.name}}}}`}</Text>
+          <Flex justify="space-between" mb="0.5em">
+            <PromptName name={prompt.name} onUpdate={onChangeName} />
             <Text>{getPromptModelName(prompt, defaultConfigModelName)}</Text>
           </Flex>
           <PromptInputRenderer
@@ -88,17 +109,19 @@ export default memo(function PromptContainer({
             schema={inputSchema}
             onChangeInput={onChangeInput}
           />
+          <PromptOutputBar />
           {prompt.outputs && <PromptOutputsRenderer outputs={prompt.outputs} />}
         </Flex>
       </Card>
-      <Card withBorder className={classes.actionBarCard}>
+      <div className={classes.actionBar}>
         <PromptActionBar
           prompt={prompt}
           promptSchema={promptSchema}
+          onRunPrompt={runPrompt}
           onUpdateModelSettings={updateModelSettings}
           onUpdateParameters={updateParameters}
         />
-      </Card>
+      </div>
     </Flex>
   );
 });

@@ -1,13 +1,14 @@
-import EditorContainer from "./components/EditorContainer";
-import { ClientAIConfig } from "./shared/types";
-import { Flex, Loader } from "@mantine/core";
+import EditorContainer, {
+  AIConfigCallbacks,
+} from "./components/EditorContainer";
+import { Flex, Loader, MantineProvider } from "@mantine/core";
 import { AIConfig, Prompt } from "aiconfig";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
 
 export default function Editor() {
-  const [aiconfig, setAiConfig] = useState<ClientAIConfig | undefined>();
+  const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
 
   const loadConfig = useCallback(async () => {
     const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
@@ -19,7 +20,7 @@ export default function Editor() {
     loadConfig();
   }, [loadConfig]);
 
-  const onSave = useCallback(async (aiconfig: AIConfig) => {
+  const save = useCallback(async (aiconfig: AIConfig) => {
     const res = await ufetch.post(ROUTE_TABLE.SAVE, {
       // path: file path,
       aiconfig,
@@ -49,20 +50,44 @@ export default function Editor() {
     []
   );
 
+  const runPrompt = useCallback(async (promptName: string) => {
+    return await ufetch.post(ROUTE_TABLE.RUN_PROMPT, {
+      prompt_name: promptName,
+    });
+  }, []);
+
+  const updatePrompt = useCallback(
+    async (promptName: string, promptData: Prompt) => {
+      return await ufetch.post(ROUTE_TABLE.UPDATE_PROMPT, {
+        prompt_name: promptName,
+        prompt_data: promptData,
+      });
+    },
+    []
+  );
+
+  const callbacks: AIConfigCallbacks = useMemo(
+    () => ({
+      addPrompt,
+      getModels,
+      runPrompt,
+      save,
+      updatePrompt,
+    }),
+    [save, getModels, addPrompt, runPrompt]
+  );
+
   return (
     <div>
-      {!aiconfig ? (
-        <Flex justify="center" mt="xl">
-          <Loader size="xl" />
-        </Flex>
-      ) : (
-        <EditorContainer
-          aiconfig={aiconfig}
-          onSave={onSave}
-          getModels={getModels}
-          addPrompt={addPrompt}
-        />
-      )}
+      <MantineProvider withGlobalStyles withNormalizeCSS>
+        {!aiconfig ? (
+          <Flex justify="center" mt="xl">
+            <Loader size="xl" />
+          </Flex>
+        ) : (
+          <EditorContainer aiconfig={aiconfig} callbacks={callbacks} />
+        )}
+      </MantineProvider>
     </div>
   );
 }

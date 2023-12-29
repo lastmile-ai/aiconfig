@@ -2,21 +2,36 @@ import PromptContainer from "./prompt/PromptContainer";
 import { Container, Group, Button, createStyles, Stack } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { AIConfig, Prompt, PromptInput } from "aiconfig";
-import { useCallback, useReducer, useRef, useState } from "react";
+import { useCallback, useMemo, useReducer, useRef, useState } from "react";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
-import { ClientAIConfig, clientConfigToAIConfig } from "../shared/types";
+import {
+  ClientPrompt,
+  aiConfigToClientConfig,
+  clientConfigToAIConfig,
+  clientPromptToAIConfigPrompt,
+} from "../shared/types";
 import AddPromptButton from "./prompt/AddPromptButton";
 import { getDefaultNewPromptName } from "../utils/aiconfigStateUtils";
+import { debounce, uniqueId } from "lodash";
 
 type Props = {
-  aiconfig: ClientAIConfig;
+  aiconfig: AIConfig;
+  callbacks: AIConfigCallbacks;
+};
+
+export type AIConfigCallbacks = {
   addPrompt: (
     promptName: string,
     prompt: Prompt,
     index: number
   ) => Promise<{ aiconfig: AIConfig }>;
-  onSave: (aiconfig: AIConfig) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
+  runPrompt: (promptName: string) => Promise<void>;
+  save: (aiconfig: AIConfig) => Promise<void>;
+  updatePrompt: (
+    promptName: string,
+    promptData: Prompt
+  ) => Promise<{ aiconfig: AIConfig }>;
 };
 
 const useStyles = createStyles((theme) => ({
@@ -51,23 +66,21 @@ const useStyles = createStyles((theme) => ({
 
 export default function EditorContainer({
   aiconfig: initialAIConfig,
-  addPrompt,
-  onSave,
-  getModels,
+  callbacks,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [aiconfigState, dispatch] = useReducer(
     aiconfigReducer,
-    initialAIConfig
+    aiConfigToClientConfig(initialAIConfig)
   );
 
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
 
-  const save = useCallback(async () => {
+  const onSave = useCallback(async () => {
     setIsSaving(true);
     try {
-      await onSave(clientConfigToAIConfig(aiconfigState));
+      await callbacks.save(clientConfigToAIConfig(aiconfigState));
     } catch (err: any) {
       showNotification({
         title: "Error saving",
@@ -77,16 +90,62 @@ export default function EditorContainer({
     } finally {
       setIsSaving(false);
     }
-  }, [aiconfigState, onSave]);
+  }, [aiconfigState, callbacks.save]);
+
+  const debouncedUpdatePrompt = useMemo(
+    () =>
+      debounce(
+        (promptName: string, newPrompt: Prompt) =>
+          callbacks.updatePrompt(promptName, newPrompt),
+        250
+      ),
+    [callbacks.updatePrompt]
+  );
 
   const onChangePromptInput = useCallback(
     async (promptIndex: number, newPromptInput: PromptInput) => {
-      dispatch({
+      const action: AIConfigReducerAction = {
         type: "UPDATE_PROMPT_INPUT",
         index: promptIndex,
         input: newPromptInput,
-      });
-      // TODO: Call server-side endpoint to update prompt input
+      };
+
+      dispatch(action);
+
+      try {
+        const prompt = clientPromptToAIConfigPrompt(
+          aiconfigState.prompts[promptIndex]
+        );
+        const serverConfigRes = await debouncedUpdatePrompt(prompt.name, {
+          ...prompt,
+          input: newPromptInput,
+        });
+
+        dispatch({
+          type: "CONSOLIDATE_AICONFIG",
+          action,
+          config: serverConfigRes!.aiconfig,
+        });
+      } catch (err: any) {
+        showNotification({
+          title: "Error adding prompt to config",
+          message: err.message,
+          color: "red",
+        });
+      }
+    },
+    [dispatch, debouncedUpdatePrompt]
+  );
+
+  const onChangePromptName = useCallback(
+    async (promptIndex: number, newName: string) => {
+      const action: AIConfigReducerAction = {
+        type: "UPDATE_PROMPT_NAME",
+        index: promptIndex,
+        name: newName,
+      };
+
+      dispatch(action);
     },
     [dispatch]
   );
@@ -117,7 +176,10 @@ export default function EditorContainer({
 
   const onAddPrompt = useCallback(
     async (promptIndex: number, model: string) => {
-      const promptName = getDefaultNewPromptName(stateRef.current as AIConfig);
+      const promptName = getDefaultNewPromptName(
+        stateRef.current as unknown as AIConfig
+      );
+
       const newPrompt: Prompt = {
         name: promptName,
         input: "", // TODO: Can we use schema to get input structure, string vs object?
@@ -129,13 +191,18 @@ export default function EditorContainer({
       const action: AIConfigReducerAction = {
         type: "ADD_PROMPT_AT_INDEX",
         index: promptIndex,
-        prompt: newPrompt,
+        prompt: {
+          ...newPrompt,
+          _ui: {
+            id: uniqueId(),
+          },
+        },
       };
 
       dispatch(action);
 
       try {
-        const serverConfigRes = await addPrompt(
+        const serverConfigRes = await callbacks.addPrompt(
           promptName,
           newPrompt,
           promptIndex
@@ -153,7 +220,23 @@ export default function EditorContainer({
         });
       }
     },
-    [addPrompt, dispatch]
+    [callbacks.addPrompt, dispatch]
+  );
+
+  const onRunPrompt = useCallback(
+    async (promptIndex: number) => {
+      const promptName = aiconfigState.prompts[promptIndex].name;
+      try {
+        await callbacks.runPrompt(promptName);
+      } catch (err: any) {
+        showNotification({
+          title: "Error running prompt",
+          message: err.message,
+          color: "red",
+        });
+      }
+    },
+    [callbacks.runPrompt]
   );
 
   const { classes } = useStyles();
@@ -167,26 +250,28 @@ export default function EditorContainer({
           {/* <Text sx={{ textOverflow: "ellipsis", overflow: "hidden" }} size={14}>
             {path || "No path specified"}
           </Text> */}
-          <Button loading={isSaving} ml="lg" onClick={save}>
+          <Button loading={isSaving} ml="lg" onClick={onSave}>
             Save
           </Button>
         </Group>
       </Container>
       <Container maw="80rem" className={classes.promptsContainer}>
-        {aiconfigState.prompts.map((prompt: any, i: number) => {
+        {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
           return (
-            <Stack key={prompt.name}>
+            <Stack key={prompt._ui.id}>
               <PromptContainer
                 index={i}
                 prompt={prompt}
                 onChangePromptInput={onChangePromptInput}
+                onChangePromptName={onChangePromptName}
+                onRunPrompt={onRunPrompt}
                 onUpdateModelSettings={onUpdatePromptModelSettings}
                 onUpdateParameters={onUpdatePromptParameters}
                 defaultConfigModelName={aiconfigState.metadata.default_model}
               />
               <div className={classes.addPromptRow}>
                 <AddPromptButton
-                  getModels={getModels}
+                  getModels={callbacks.getModels}
                   addPrompt={(model: string) =>
                     onAddPrompt(
                       i + 1 /* insert below current prompt index */,

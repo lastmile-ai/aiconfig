@@ -2,9 +2,15 @@ import openai
 import pytest
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.default_parsers.openai import refine_chat_completion_params
+from aiconfig.schema import (
+    ExecuteResult,
+    OutputDataWithValue,
+    Prompt,
+    PromptInput,
+    PromptMetadata,
+)
 from mock import patch
 
-from aiconfig import ExecuteResult, Prompt, PromptMetadata
 
 from ..conftest import mock_openai_chat_completion
 from ..util.file_path_utils import get_absolute_file_path_from_relative
@@ -111,7 +117,7 @@ async def test_serialize(set_temporary_env_vars):
         )
         new_prompt = serialized_prompts[0]
 
-        assert new_prompt == Prompt(
+        expected_prompt = Prompt(
             name="prompt",
             input="Hello!",
             metadata=PromptMetadata(
@@ -135,14 +141,24 @@ async def test_serialize(set_temporary_env_vars):
                 ExecuteResult(
                     output_type="execute_result",
                     execution_count=None,
-                    data={
-                        "role": "assistant",
-                        "content": "Hello! How can I assist you today?",
+                    data='Hello! How can I assist you today?',
+                    metadata={
+                        'rawResponse': {
+                            'role': 'assistant',
+                            'content': 'Hello! How can I assist you today?'
+                        },
+                        'role': 'assistant',
                     },
-                    metadata={},
+                    mime_type=None,
                 )
             ],
         )
+        assert new_prompt.input == expected_prompt.input
+        assert new_prompt.metadata == expected_prompt.metadata
+        assert new_prompt.outputs == expected_prompt.outputs
+        assert new_prompt.name == expected_prompt.name
+        assert new_prompt == expected_prompt
+
 
         # Test completion params with a function call input
 
@@ -269,15 +285,17 @@ async def test_serialize(set_temporary_env_vars):
             ],
         }
 
+
         prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
         new_prompt = prompts[1]
-        assert new_prompt == Prompt(
+        
+        expected_prompt = Prompt(
             name="prompt",
-            input={
-                "content": '{"temperature": "22", "unit": "celsius", "description": "Sunny"}',
-                "name": "get_current_weather",
-                "role": "function",
-            },
+            input=PromptInput(
+                content='{"temperature": "22", "unit": "celsius", "description": "Sunny"}',
+                name="get_current_weather",
+                role="function",
+            ),
             metadata={
                 "model": {
                     "name": "gpt-3.5-turbo",
@@ -316,14 +334,24 @@ async def test_serialize(set_temporary_env_vars):
                 "tags": None,
             },
             outputs=[
-                {
-                    "data": {
-                        "content": "The current weather in Boston is 22 degrees Celsius and sunny.",
-                        "role": "assistant",
+                ExecuteResult(
+                    output_type="execute_result",
+                    execution_count=None,
+                    data="The current weather in Boston is 22 degrees Celsius and sunny.",
+                    metadata={
+                        'rawResponse': {
+                            'role': 'assistant',
+                            'content': 'The current weather in Boston is 22 degrees Celsius and sunny.',
+                        },
+                        'role': 'assistant',
                     },
-                    "execution_count": None,
-                    "metadata": {},
-                    "output_type": "execute_result",
-                }
+                    mime_type=None,
+                )
             ],
         )
+
+        assert new_prompt.input == expected_prompt.input
+        assert new_prompt.metadata == expected_prompt.metadata
+        assert new_prompt.outputs == expected_prompt.outputs
+        assert new_prompt.name == expected_prompt.name
+        assert new_prompt == expected_prompt

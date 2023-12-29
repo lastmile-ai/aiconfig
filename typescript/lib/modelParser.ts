@@ -62,7 +62,7 @@ export abstract class ModelParser<T = JSONObject, R = T> {
     data: T,
     aiConfig: AIConfigRuntime,
     params?: JSONObject
-  ): Prompt | Prompt[];
+  ): Prompt[];
 
   /**
    * Deserialize a Prompt object loaded from an AIConfig into a structure that can be used for model inference.
@@ -89,7 +89,7 @@ export abstract class ModelParser<T = JSONObject, R = T> {
     aiConfig: AIConfigRuntime,
     options?: InferenceOptions,
     params?: JSONObject
-  ): Promise<Output | Output[]>;
+  ): Promise<Output[]>;
 
   /**
    * Get the string representing the output from a prompt.

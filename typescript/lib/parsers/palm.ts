@@ -1,6 +1,12 @@
 import { TextServiceClient, protos } from "@google-ai/generativelanguage";
 import { JSONObject } from "../../common";
-import { Prompt, Output, ModelMetadata, ExecuteResult } from "../../types";
+import {
+  ExecuteResult,
+  ModelMetadata,
+  Output,
+  OutputDataWithValue,
+  Prompt,
+} from "../../types";
 import { AIConfigRuntime } from "../config";
 import { InferenceOptions } from "../modelParser";
 import { ParameterizedModelParser } from "../parameterizedModelParser";
@@ -29,7 +35,7 @@ export class PaLMTextParser extends ParameterizedModelParser {
     data: JSONObject,
     aiConfig: AIConfigRuntime,
     params?: JSONObject | undefined
-  ): Prompt | Prompt[] {
+  ): Prompt[] {
     const startEvent = {
       name: "on_serialize_start",
       file: __filename,
@@ -180,10 +186,17 @@ export class PaLMTextParser extends ParameterizedModelParser {
     }
 
     if (output.output_type === "execute_result") {
-      return output.data as string;
-    } else {
-      return "";
+      if (output.data?.hasOwnProperty("value")) {
+        const outputData = output.data as OutputDataWithValue;
+        if (typeof outputData.value === "string") {
+          return outputData.value;
+        }
+        return JSON.stringify(outputData.value);
+      } else if (typeof output.data === "string") {
+        return output.data;
+      }
     }
+    return "";
   }
 }
 
@@ -232,9 +245,9 @@ function constructOutputs(
     const candidate = response.candidates[i];
     const output: ExecuteResult = {
       output_type: "execute_result",
-      data: candidate.output,
+      data: candidate.output ?? "",
       execution_count: i,
-      metadata: _.omit(candidate, ["output"]),
+      metadata: { rawResponse: candidate },
     };
 
     outputs.push(output);

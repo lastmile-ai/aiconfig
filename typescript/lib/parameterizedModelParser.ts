@@ -63,7 +63,7 @@ export abstract class ParameterizedModelParser<
     aiConfig: AIConfigRuntime,
     options?: InferenceOptions,
     params: JSONObject = {}
-  ) {
+  ): Promise<Output[] | undefined> {
     const dependencyGraph = getDependencyGraph(aiConfig);
 
     return await this.runWithDependenciesInternal(
