@@ -1,6 +1,10 @@
-import { PropertyRendererProps, SetStateFn } from "../SettingsPropertyRenderer";
+import {
+  PropertyRendererProps,
+  SetStateFn,
+  StateSetFromPrevFn,
+} from "../SettingsPropertyRenderer";
 import { Flex, SegmentedControl } from "@mantine/core";
-import { JSONObject } from "aiconfig";
+import { JSONObject, JSONValue } from "aiconfig";
 import { memo, useCallback, useMemo, useState } from "react";
 
 // TODO: Can we type prompt schema / all supported properties exhaustively?
@@ -12,7 +16,7 @@ export type UnionProperty = {
 type Props = {
   property: UnionProperty;
   propertyName: string;
-  initialValue?: any; // TODO: Handle initial value, selecting correct tab to show
+  initialValue?: JSONValue; // TODO: Handle initial value, selecting correct tab to show
   isRequired?: boolean;
   setValue: SetStateFn;
   renderProperty: (props: PropertyRendererProps) => JSX.Element;
@@ -43,7 +47,7 @@ export default memo(function UnionPropertyControl(props: Props) {
   );
 
   const setPropertyValue: SetStateFn = useCallback(
-    (value: any) => {
+    (value: StateSetFromPrevFn | JSONValue) => {
       const newValue =
         typeof value === "function" ? value(controlledData) : value;
       setControlledData((prev) => prev.set(activeTab, newValue));
@@ -60,7 +64,7 @@ export default memo(function UnionPropertyControl(props: Props) {
         onChange={selectTab}
       />
       <div style={{ marginLeft: "1em" }}>
-        {props.renderProperty({
+        {renderProperty({
           ...renderPropertyProps,
           property: property.types[parseInt(activeTab)],
           setValue: setPropertyValue,

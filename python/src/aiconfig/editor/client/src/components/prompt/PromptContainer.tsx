@@ -4,7 +4,7 @@ import PromptOutputsRenderer from "./prompt_outputs/PromptOutputsRenderer";
 import { ClientPrompt } from "../../shared/types";
 import { getPromptSchema } from "../../utils/promptUtils";
 import { Flex, Card, createStyles } from "@mantine/core";
-import { PromptInput as AIConfigPromptInput } from "aiconfig";
+import { PromptInput as AIConfigPromptInput, JSONObject } from "aiconfig";
 import { memo, useCallback } from "react";
 import { ParametersArray } from "../ParametersRenderer";
 import PromptOutputBar from "./PromptOutputBar";
@@ -21,8 +21,14 @@ type Props = {
   onChangePromptName: (promptId: string, newName: string) => void;
   onRunPrompt(promptId: string): Promise<void>;
   onUpdateModel: (promptId: string, newModel?: string) => void;
-  onUpdateModelSettings: (ppromptId: string, newModelSettings: any) => void;
-  onUpdateParameters: (promptId: string, newParameters: any) => void;
+  onUpdateModelSettings: (
+    ppromptId: string,
+    newModelSettings: JSONObject
+  ) => void;
+  onUpdateParameters: (
+    promptId: string,
+    newParameters: Record<string, unknown>
+  ) => void;
   defaultConfigModelName?: string;
 };
 
@@ -64,7 +70,7 @@ export default memo(function PromptContainer({
   );
 
   const updateModelSettings = useCallback(
-    (newModelSettings: any) =>
+    (newModelSettings: JSONObject) =>
       onUpdateModelSettings(promptId, newModelSettings),
     [promptId, onUpdateModelSettings]
   );

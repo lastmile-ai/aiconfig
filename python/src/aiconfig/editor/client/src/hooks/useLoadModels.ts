@@ -12,10 +12,11 @@ export default function useLoadModels(
       try {
         const models = await getModels(modelSearch);
         setModels(models);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : null;
         showNotification({
           title: "Error loading models",
-          message: err?.message,
+          message,
           color: "red",
         });
       }

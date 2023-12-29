@@ -1,5 +1,5 @@
 import { memo } from "react";
-import type { Attachment as InputAttachment } from "aiconfig";
+import type { Attachment as InputAttachment, JSONObject } from "aiconfig";
 import { PromptInputObjectAttachmentsSchema } from "../../../../utils/promptUtils";
 import Attachment from "./Attachment";
 import { ActionIcon, Container, Flex, Tooltip } from "@mantine/core";
@@ -9,7 +9,7 @@ import AttachmentMetadata from "./AttachmentMetadata";
 type Props = {
   schema: PromptInputObjectAttachmentsSchema;
   attachment: InputAttachment;
-  onUpdateMetadata?: (metadata: { [k: string]: any }) => void;
+  onUpdateMetadata?: (metadata: JSONObject) => void;
   onRemoveAttachment?: () => void;
   onEditAttachment?: () => void;
 };
