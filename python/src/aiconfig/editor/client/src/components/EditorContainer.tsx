@@ -96,7 +96,7 @@ export default function EditorContainer({
   const onSave = useCallback(async () => {
     setIsSaving(true);
     try {
-      await callbacks.save(clientConfigToAIConfig(aiconfigState));
+      await callbacks.save(clientConfigToAIConfig(stateRef.current));
     } catch (err: any) {
       showNotification({
         title: "Error saving",
@@ -106,7 +106,7 @@ export default function EditorContainer({
     } finally {
       setIsSaving(false);
     }
-  }, [aiconfigState, callbacks.save]);
+  }, [callbacks.save]);
 
   const debouncedUpdatePrompt = useMemo(
     () =>
@@ -119,10 +119,10 @@ export default function EditorContainer({
   );
 
   const onChangePromptInput = useCallback(
-    async (promptIndex: number, newPromptInput: PromptInput) => {
+    async (promptId: string, newPromptInput: PromptInput) => {
       const action: AIConfigReducerAction = {
         type: "UPDATE_PROMPT_INPUT",
-        index: promptIndex,
+        id: promptId,
         input: newPromptInput,
       };
 
@@ -130,7 +130,7 @@ export default function EditorContainer({
 
       try {
         const prompt = clientPromptToAIConfigPrompt(
-          aiconfigState.prompts[promptIndex]
+          getPrompt(stateRef.current, promptId)!
         );
         const serverConfigRes = await debouncedUpdatePrompt(prompt.name, {
           ...prompt,
@@ -154,10 +154,10 @@ export default function EditorContainer({
   );
 
   const onChangePromptName = useCallback(
-    async (promptIndex: number, newName: string) => {
+    async (promptId: string, newName: string) => {
       const action: AIConfigReducerAction = {
         type: "UPDATE_PROMPT_NAME",
-        index: promptIndex,
+        id: promptId,
         name: newName,
       };
 
@@ -177,10 +177,10 @@ export default function EditorContainer({
   );
 
   const onUpdatePromptModelSettings = useCallback(
-    async (promptIndex: number, newModelSettings: any) => {
+    async (promptId: string, newModelSettings: any) => {
       dispatch({
         type: "UPDATE_PROMPT_MODEL_SETTINGS",
-        index: promptIndex,
+        id: promptId,
         modelSettings: newModelSettings,
       });
       // TODO: Call server-side endpoint to update model
@@ -189,16 +189,16 @@ export default function EditorContainer({
   );
 
   const onUpdatePromptModel = useCallback(
-    async (promptIndex: number, newModel?: string) => {
+    async (promptId: string, newModel?: string) => {
       dispatch({
         type: "UPDATE_PROMPT_MODEL",
-        index: promptIndex,
+        id: promptId,
         modelName: newModel,
       });
 
       try {
         const prompt = clientPromptToAIConfigPrompt(
-          aiconfigState.prompts[promptIndex]
+          getPrompt(stateRef.current, promptId)!
         );
         const currentModel = prompt.metadata?.model;
         let modelData: string | ModelMetadata | undefined = newModel;
@@ -224,10 +224,10 @@ export default function EditorContainer({
   );
 
   const onUpdatePromptParameters = useCallback(
-    async (promptIndex: number, newParameters: any) => {
+    async (promptId: string, newParameters: any) => {
       dispatch({
         type: "UPDATE_PROMPT_PARAMETERS",
-        index: promptIndex,
+        id: promptId,
         parameters: newParameters,
       });
       // TODO: Call server-side endpoint to update prompt parameters
@@ -306,8 +306,8 @@ export default function EditorContainer({
   );
 
   const onRunPrompt = useCallback(
-    async (promptIndex: number) => {
-      const promptName = aiconfigState.prompts[promptIndex].name;
+    async (promptId: string) => {
+      const promptName = getPrompt(stateRef.current, promptId)!.name;
       try {
         await callbacks.runPrompt(promptName);
       } catch (err: any) {
@@ -345,7 +345,6 @@ export default function EditorContainer({
                   onDeletePrompt={() => onDeletePrompt(prompt._ui.id)}
                 />
                 <PromptContainer
-                  index={i}
                   prompt={prompt}
                   getModels={callbacks.getModels}
                   onChangePromptInput={onChangePromptInput}
