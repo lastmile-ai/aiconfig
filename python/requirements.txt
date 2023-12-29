@@ -3,6 +3,7 @@ black
 flake8
 flask-cors
 flask[async]
+fastapi
 google-generativeai
 huggingface_hub
 hypothesis==6.91.0

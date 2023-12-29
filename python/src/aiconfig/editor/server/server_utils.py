@@ -56,8 +56,9 @@ class EditServerConfig(core_utils.Record):
     server_port: int = 8080
     aiconfig_path: Optional[str] = None
     log_level: str | int = "INFO"
-    server_mode: ServerMode
+    server_mode: ServerMode = ServerMode.PROD
     parsers_module_path: str = "aiconfig_model_registry.py"
+    server_version: str = "v1"
 
     @field_validator("server_mode", mode="before")
     def convert_to_mode(cls, value: Any) -> ServerMode:  # pylint: disable=no-self-argument
