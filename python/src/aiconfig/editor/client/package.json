@@ -5,6 +5,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:vscode": "node ./scripts/build-react-no-split.js",
     "postbuild": "node postbuild.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -40,7 +41,6 @@
     "react": "^18",
     "react-dom": "^18",
     "react-markdown": "^8.0.6",
-    "react-scripts": "5.0.1",
     "remark-gfm": "^4.0.0",
     "ufetch": "^1.6.0",
     "url-join": "^5.0.0"
@@ -55,6 +55,8 @@
     "eslint": "^8",
     "eslint-config-next": "14.0.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "react-scripts": "5.0.1",
+    "rewire": "^5.0.0",
     "typescript": "^5"
   }
 }
