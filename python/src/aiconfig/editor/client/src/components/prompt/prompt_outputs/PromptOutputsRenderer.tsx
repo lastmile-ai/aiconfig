@@ -1,28 +1,63 @@
-import { Error, ExecuteResult, Output } from "aiconfig";
+import {
+  Error,
+  ExecuteResult,
+  Output,
+  OutputDataWithToolCallsValue,
+  OutputDataWithValue,
+} from "aiconfig";
 import { memo } from "react";
+import { TextRenderer } from "../TextRenderer";
+import JSONOutput from "./JSONOutput";
+import PromptOutputWrapper from "./PromptOutputWrapper";
 
 type Props = {
   outputs: Output[];
 };
 
-const ErrorOutput = memo(function ErrorOutput({ output }: { output: Error }) {
+function ErrorOutput({ output }: { output: Error }) {
   return <div>{output.evalue}</div>;
-});
+}
 
 const ExecuteResultOutput = memo(function ExecuteResultOutput({
   output,
 }: {
   output: ExecuteResult;
 }) {
-  return null;
-  // switch (output.renderData.type) {
-  //   case "text":
-  //     return <TextRenderer content={output.renderData.text} />;
-  //   // TODO: Handle other types of outputs
-  // }
+  if (output.data == null) {
+    return <JSONOutput content={output} />;
+  }
+
+  if (typeof output.data === "string") {
+    return (
+      <PromptOutputWrapper
+        copyContent={output.data}
+        output={output}
+        withRawJSONToggle
+      >
+        <TextRenderer content={output.data} />
+      </PromptOutputWrapper>
+    );
+  } else if (
+    typeof output.data === "object" &&
+    output.data.hasOwnProperty("kind")
+  ) {
+    switch ((output.data as OutputDataWithValue).kind) {
+      case "tool_calls":
+      // TODO: Tool calls rendering
+      default:
+        return (
+          <JSONOutput
+            content={(output.data as OutputDataWithToolCallsValue).value}
+          />
+        );
+    }
+  }
+
+  return <JSONOutput content={output.data} />;
 });
 
 const OutputRenderer = memo(function Output({ output }: { output: Output }) {
+  // TODO: Add toggle for raw JSON renderer
   switch (output.output_type) {
     case "execute_result":
       return <ExecuteResultOutput output={output} />;
