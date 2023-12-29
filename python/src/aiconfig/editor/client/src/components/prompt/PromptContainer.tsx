@@ -12,18 +12,17 @@ import PromptName from "./PromptName";
 import ModelSelector from "./ModelSelector";
 
 type Props = {
-  index: number;
   prompt: ClientPrompt;
   getModels: (search: string) => Promise<string[]>;
   onChangePromptInput: (
-    promptIndex: number,
+    promptId: string,
     newPromptInput: AIConfigPromptInput
   ) => void;
-  onChangePromptName: (promptIndex: number, newName: string) => void;
-  onRunPrompt(promptIndex: number): Promise<void>;
-  onUpdateModel: (promptIndex: number, newModel?: string) => void;
-  onUpdateModelSettings: (promptIndex: number, newModelSettings: any) => void;
-  onUpdateParameters: (promptIndex: number, newParameters: any) => void;
+  onChangePromptName: (promptId: string, newName: string) => void;
+  onRunPrompt(promptId: string): Promise<void>;
+  onUpdateModel: (promptId: string, newModel?: string) => void;
+  onUpdateModelSettings: (ppromptId: string, newModelSettings: any) => void;
+  onUpdateParameters: (promptId: string, newParameters: any) => void;
   defaultConfigModelName?: string;
 };
 
@@ -44,7 +43,6 @@ const useStyles = createStyles((theme) => ({
 
 export default memo(function PromptContainer({
   prompt,
-  index,
   getModels,
   onChangePromptInput,
   onChangePromptName,
@@ -54,19 +52,21 @@ export default memo(function PromptContainer({
   onUpdateModelSettings,
   onUpdateParameters,
 }: Props) {
+  const promptId = prompt._ui.id;
   const onChangeInput = useCallback(
-    (newInput: AIConfigPromptInput) => onChangePromptInput(index, newInput),
-    [index, onChangePromptInput]
+    (newInput: AIConfigPromptInput) => onChangePromptInput(promptId, newInput),
+    [promptId, onChangePromptInput]
   );
 
   const onChangeName = useCallback(
-    (newName: string) => onChangePromptName(index, newName),
-    [index, onChangePromptName]
+    (newName: string) => onChangePromptName(promptId, newName),
+    [promptId, onChangePromptName]
   );
 
   const updateModelSettings = useCallback(
-    (newModelSettings: any) => onUpdateModelSettings(index, newModelSettings),
-    [index, onUpdateModelSettings]
+    (newModelSettings: any) =>
+      onUpdateModelSettings(promptId, newModelSettings),
+    [promptId, onUpdateModelSettings]
   );
 
   const updateParameters = useCallback(
@@ -82,24 +82,24 @@ export default memo(function PromptContainer({
         newParameters[key] = val;
       }
 
-      onUpdateParameters(index, newParameters);
+      onUpdateParameters(promptId, newParameters);
     },
-    [index, onUpdateParameters]
+    [promptId, onUpdateParameters]
   );
 
   const runPrompt = useCallback(
-    async () => await onRunPrompt(index),
-    [index, onRunPrompt]
+    async () => await onRunPrompt(promptId),
+    [promptId, onRunPrompt]
   );
 
   const updateModel = useCallback(
-    (model?: string) => onUpdateModel(index, model),
-    [index, onUpdateModel]
+    (model?: string) => onUpdateModel(promptId, model),
+    [promptId, onUpdateModel]
   );
 
   // TODO: When adding support for custom PromptContainers, implement a PromptContainerRenderer which
-  // will take in the index and callback and render the appropriate PromptContainer with new memoized
-  // callback and not having to pass index down to PromptContainer
+  // will take in the promptId and callback and render the appropriate PromptContainer with new memoized
+  // callback and not having to pass promptId down to PromptContainer
 
   const promptSchema = getPromptSchema(prompt, defaultConfigModelName);
   const inputSchema = promptSchema?.input;
