@@ -32,57 +32,56 @@ export type DeletePromptAction = {
   id: string;
 };
 
-// TODO: Update index to prompt id for all existing-prompt actions
 export type UpdatePromptInputAction = {
   type: "UPDATE_PROMPT_INPUT";
-  index: number;
+  id: string;
   input: PromptInput;
 };
 
 export type UpdatePromptNameAction = {
   type: "UPDATE_PROMPT_NAME";
-  index: number;
+  id: string;
   name: string;
 };
 
 export type UpdatePromptModelAction = {
   type: "UPDATE_PROMPT_MODEL";
-  index: number;
+  id: string;
   modelName?: string;
 };
 
 export type UpdatePromptModelSettingsAction = {
   type: "UPDATE_PROMPT_MODEL_SETTINGS";
-  index: number;
+  id: string;
   modelSettings: JSONObject;
 };
 
 // TODO: saqadri - can likely use this same action for global parameters update
 export type UpdatePromptParametersAction = {
   type: "UPDATE_PROMPT_PARAMETERS";
-  index: number;
+  id: string;
   parameters: JSONObject;
 };
 
 function reduceReplacePrompt(
   state: ClientAIConfig,
-  index: number,
+  id: string,
   replacerFn: (prompt: ClientPrompt) => ClientPrompt
 ): ClientAIConfig {
   return {
     ...state,
-    prompts: state.prompts.map((prompt, i) =>
-      i === index ? replacerFn(prompt) : prompt
+    prompts: state.prompts.map((prompt) =>
+      prompt._ui.id === id ? replacerFn(prompt) : prompt
     ),
   };
 }
 
 function reduceReplaceInput(
   state: ClientAIConfig,
-  index: number,
+  id: string,
   replacerFn: (input: PromptInput) => PromptInput
 ): ClientAIConfig {
-  return reduceReplacePrompt(state, index, (prompt) => ({
+  return reduceReplacePrompt(state, id, (prompt) => ({
     ...prompt,
     input: replacerFn(prompt.input),
   }));
@@ -108,22 +107,32 @@ function reduceConsolidateAIConfig(
   action: MutateAIConfigAction,
   responseConfig: AIConfig
 ): ClientAIConfig {
+  // Make sure prompt structure is properly updated. Client input and metadata takes precedence
+  // since it may have been updated by the user while the request was in flight
+  const consolidatePrompt = (statePrompt: ClientPrompt) => {
+    const responsePrompt = responseConfig.prompts.find(
+      (resPrompt) => resPrompt.name === statePrompt.name
+    );
+    return {
+      ...responsePrompt,
+      ...statePrompt,
+      metadata: {
+        ...responsePrompt!.metadata,
+        ...statePrompt.metadata,
+      },
+    } as ClientPrompt;
+  };
+
   switch (action.type) {
-    case "ADD_PROMPT_AT_INDEX":
+    case "ADD_PROMPT_AT_INDEX": {
+      return reduceReplacePrompt(
+        state,
+        action.prompt._ui.id,
+        consolidatePrompt
+      );
+    }
     case "UPDATE_PROMPT_INPUT": {
-      // Make sure prompt structure is properly updated. Client input and metadata takes precedence
-      // since it may have been updated by the user while the request was in flight
-      return reduceReplacePrompt(state, action.index, (prompt) => {
-        const responsePrompt = responseConfig.prompts[action.index];
-        return {
-          ...responsePrompt,
-          ...prompt,
-          metadata: {
-            ...responsePrompt.metadata,
-            ...prompt.metadata,
-          },
-        } as ClientPrompt;
-      });
+      return reduceReplacePrompt(state, action.id, consolidatePrompt);
     }
     default: {
       return state;
@@ -146,16 +155,16 @@ export default function aiconfigReducer(
       };
     }
     case "UPDATE_PROMPT_INPUT": {
-      return reduceReplaceInput(state, action.index, () => action.input);
+      return reduceReplaceInput(state, action.id, () => action.input);
     }
     case "UPDATE_PROMPT_NAME": {
-      return reduceReplacePrompt(state, action.index, (prompt) => ({
+      return reduceReplacePrompt(state, action.id, (prompt) => ({
         ...prompt,
         name: action.name,
       }));
     }
     case "UPDATE_PROMPT_MODEL": {
-      return reduceReplacePrompt(state, action.index, (prompt) => ({
+      return reduceReplacePrompt(state, action.id, (prompt) => ({
         ...prompt,
         metadata: {
           ...prompt.metadata,
@@ -169,7 +178,7 @@ export default function aiconfigReducer(
       }));
     }
     case "UPDATE_PROMPT_MODEL_SETTINGS": {
-      return reduceReplacePrompt(state, action.index, (prompt) => ({
+      return reduceReplacePrompt(state, action.id, (prompt) => ({
         ...prompt,
         metadata: {
           ...prompt.metadata,
@@ -186,7 +195,7 @@ export default function aiconfigReducer(
       }));
     }
     case "UPDATE_PROMPT_PARAMETERS": {
-      return reduceReplacePrompt(state, action.index, (prompt) => ({
+      return reduceReplacePrompt(state, action.id, (prompt) => ({
         ...prompt,
         metadata: {
           ...prompt.metadata,
