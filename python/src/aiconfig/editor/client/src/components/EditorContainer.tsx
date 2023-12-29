@@ -38,7 +38,7 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
-  runPrompt: (promptName: string) => Promise<void>;
+  runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
   save: (aiconfig: AIConfig) => Promise<void>;
   updateModel: (
     promptName?: string,
@@ -309,9 +309,22 @@ export default function EditorContainer({
 
   const onRunPrompt = useCallback(
     async (promptId: string) => {
-      const promptName = getPrompt(stateRef.current, promptId)!.name;
+      const action: AIConfigReducerAction = {
+        type: "RUN_PROMPT",
+        id: promptId,
+      };
+
+      dispatch(action);
+
       try {
-        await callbacks.runPrompt(promptName);
+        const promptName = getPrompt(stateRef.current, promptId)!.name;
+        const serverConfigRes = await callbacks.runPrompt(promptName);
+
+        dispatch({
+          type: "CONSOLIDATE_AICONFIG",
+          action,
+          config: serverConfigRes.aiconfig,
+        });
       } catch (err: any) {
         showNotification({
           title: "Error running prompt",
