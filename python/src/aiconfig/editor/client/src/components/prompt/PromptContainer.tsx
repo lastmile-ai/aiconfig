@@ -6,7 +6,6 @@ import { getPromptSchema } from "../../utils/promptUtils";
 import { Flex, Card, createStyles } from "@mantine/core";
 import { PromptInput as AIConfigPromptInput, JSONObject } from "aiconfig";
 import { memo, useCallback } from "react";
-import { ParametersArray } from "../ParametersRenderer";
 import PromptOutputBar from "./PromptOutputBar";
 import PromptName from "./PromptName";
 import ModelSelector from "./ModelSelector";
@@ -76,20 +75,7 @@ export default memo(function PromptContainer({
   );
 
   const updateParameters = useCallback(
-    (data: {
-      promptName?: string | undefined;
-      newParameters: ParametersArray;
-    }) => {
-      const newParameters: Record<string, unknown> = {};
-      for (const paramTuple of data.newParameters ?? []) {
-        const key = paramTuple.parameterName;
-        const val = paramTuple.parameterValue;
-
-        newParameters[key] = val;
-      }
-
-      onUpdateParameters(promptId, newParameters);
-    },
+    (parameters: JSONObject) => onUpdateParameters(promptId, parameters),
     [promptId, onUpdateParameters]
   );
 
