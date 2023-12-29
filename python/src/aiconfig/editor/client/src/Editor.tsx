@@ -50,6 +50,12 @@ export default function Editor() {
     []
   );
 
+  const deletePrompt = useCallback(async (promptName: string) => {
+    return await ufetch.post(ROUTE_TABLE.DELETE_PROMPT, {
+      prompt_name: promptName,
+    });
+  }, []);
+
   const runPrompt = useCallback(async (promptName: string) => {
     return await ufetch.post(ROUTE_TABLE.RUN_PROMPT, {
       prompt_name: promptName,
@@ -79,6 +85,7 @@ export default function Editor() {
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
+      deletePrompt,
       getModels,
       runPrompt,
       save,
