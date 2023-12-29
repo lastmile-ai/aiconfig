@@ -196,6 +196,16 @@ export default function aiconfigReducer(
       return reduceReplaceInput(state, action.id, () => action.input);
     }
     case "UPDATE_PROMPT_NAME": {
+      // Validate that no prompt has a name that conflicts with this one:
+      const existingPromptNames = state.prompts.map((prompt) => prompt.name);
+
+      if (
+        existingPromptNames.find((existingName) => action.name === existingName)
+      ) {
+        // Don't allow duplicate names
+        console.log(`Duplicate prompt name ${action.name}. Skipping update`);
+        return state;
+      }
       return reduceReplacePrompt(state, action.id, (prompt) => ({
         ...prompt,
         name: action.name,
