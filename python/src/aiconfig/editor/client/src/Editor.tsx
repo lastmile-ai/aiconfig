@@ -13,32 +13,36 @@ export default function Editor() {
 
   const { vscode } = useContext(WebviewContext);
 
-  const updateContent = useCallback(async (text: string) => {
-    // TODO: saqadri - this won't work for YAML -- the handling of the text needs to include the logic from AIConfig.load
-    const updatedConfig = text != null ? JSON.parse(text) : {};
-    console.log("updatedConfig=", JSON.stringify(updatedConfig));
-    setAIConfig(updatedConfig);
+  const updateContent = useCallback(
+    async (text: string) => {
+      // TODO: saqadri - this won't work for YAML -- the handling of the text needs to include the logic from AIConfig.load
+      const updatedConfig = text != null ? JSON.parse(text) : {};
+      console.log("updatedConfig=", JSON.stringify(updatedConfig));
+      setAIConfig(updatedConfig);
 
-    // Then persist state information.
-    // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
-    vscode?.setState({ text });
+      // Then persist state information.
+      // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
+      vscode?.setState({ text });
 
-    // TODO: saqadri - as soon as content is updated, we have to call /load endpoint for the server to have the latest content as well
-    // However, instead of loading from FS, the /load endpoint should load from the data passed to it here.
-  }, []);
+      // TODO: saqadri - as soon as content is updated, we have to call /load endpoint for the server to have the latest content as well
+      // However, instead of loading from FS, the /load endpoint should load from the data passed to it here.
+    },
+    [vscode]
+  );
 
   // Handle messages sent from the extension to the webview
   window.addEventListener("message", (event) => {
     console.log("onMessage, event=", JSON.stringify(event));
     const message = event.data; // The json data that the extension sent
     switch (message.type) {
-      case "update":
+      case "update": {
         console.log("onMessage, message=", JSON.stringify(message));
         const text = message.text;
 
         // Update our webview's content
         updateContent(text);
         return;
+      }
     }
   });
 
