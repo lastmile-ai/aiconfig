@@ -103,7 +103,11 @@ export default memo(function PromptContainer({
       <Card withBorder className={classes.promptInputCard}>
         <Flex direction="column">
           <Flex justify="space-between" mb="0.5em">
-            <PromptName name={prompt.name} onUpdate={onChangeName} />
+            <PromptName
+              promptId={promptId}
+              name={prompt.name}
+              onUpdate={onChangeName}
+            />
             <ModelSelector
               getModels={getModels}
               prompt={prompt}
