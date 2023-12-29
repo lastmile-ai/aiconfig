@@ -31,6 +31,7 @@ import {
 import { debounce, uniqueId } from "lodash";
 import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
+import AIConfigContext from "./AIConfigContext";
 
 type Props = {
   aiconfig: AIConfig;
@@ -380,8 +381,16 @@ export default function EditorContainer({
 
   const { classes } = useStyles();
 
+  const getState = useCallback(() => stateRef.current, []);
+  const contextValue = useMemo(
+    () => ({
+      getState,
+    }),
+    [getState]
+  );
+
   return (
-    <>
+    <AIConfigContext.Provider value={contextValue}>
       <Container maw="80rem">
         <Group grow m="sm">
           {/* <Text sx={{ textOverflow: "ellipsis", overflow: "hidden" }} size={14}>
@@ -432,6 +441,6 @@ export default function EditorContainer({
           );
         })}
       </Container>
-    </>
+    </AIConfigContext.Provider>
   );
 }
