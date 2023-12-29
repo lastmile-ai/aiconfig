@@ -12,7 +12,7 @@ import { ModelParserRegistry } from "./modelParserRegistry";
 import axios from "axios";
 import * as fs from "fs";
 import yaml from "js-yaml";
-import _ from "lodash";
+import _, { get } from "lodash";
 import { getAPIKeyFromEnv, isYamlExt } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
@@ -670,6 +670,74 @@ export class AIConfigRuntime implements AIConfig {
     this.metadata.model_parsers[modelName] = modelParserId;
   }
 
+  /**
+   * Get the parameters for a prompt, using the global parameters if needed.
+   * @param promptOrPromptName The name of the prompt or the prompt object.
+   *    If not specified, use the global parameters.
+   */
+  public getParameters(promptOrPromptName?: string | Prompt): JSONObject {
+    let prompt: string | Prompt | undefined = promptOrPromptName;
+    if (typeof promptOrPromptName === "string") {
+      prompt = this.getPrompt(promptOrPromptName);
+      if (!prompt) {
+        const promptNames: string[] = this.prompts.map((p) => p.name);
+        throw new Error(
+          `E1032: Prompt '${promptOrPromptName}' not found in config, available prompts are:\n ${promptNames}`
+        );
+      }
+    }
+
+    prompt = prompt as Prompt | undefined;
+    if (
+      !prompt ||
+      !prompt.metadata?.parameters ||
+      Object.keys(prompt.metadata.parameters).length === 0 // empty dict: {}
+    ) {
+      return this.getGlobalParameters();
+    }
+    return this.getPromptParameters(prompt);
+  }
+
+  /**
+   * Get the global parameters for the AIConfig. If they're not defined,
+   *    return a default value ({} unless overridden)
+   * @param defaultReturnValue Default value to return if
+   *    global parameters are not defined.
+   */
+  public getGlobalParameters(defaultReturnValue: JSONObject = {}): JSONObject {
+    return this.getGlobalParametersExact() ?? defaultReturnValue;
+  }
+
+  /**
+   * Get the global parameters for the AIConfig. This should be the
+   * the explicit value (ie: if parameters is None, return None, not {})
+   */
+  private getGlobalParametersExact(): JSONObject | undefined {
+    return this.metadata.parameters;
+  }
+
+  /**
+   * Get the prompt's local parameters. If they're not defined,
+   * return a default value ({} unless overridden)
+   * @param defaultReturnValue Default value to return if
+   *    global parameters are not defined.
+   */
+  public getPromptParameters(
+    prompt: Prompt,
+    defaultReturnValue: JSONObject = {}
+  ): JSONObject {
+    return this.getPromptParametersExact(prompt) ?? defaultReturnValue;
+  }
+
+  /**
+   * Get the prompt's local parameters. This should be the
+   * the explicit value (ie: if parameters is None, return None, not {})
+   * @param defaultReturnValue Default value to return if
+   *    prompt parameters are not defined.
+   */
+  private getPromptParametersExact(prompt: Prompt): JSONObject | undefined {
+    return prompt.metadata?.parameters;
+  }
   /**
    * Sets a parameter in the AIConfig to the specified JSON-serializable value.
    * @param name Parameter name.
