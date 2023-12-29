@@ -3,7 +3,7 @@ import SettingsPropertyRenderer, {
 } from "../../SettingsPropertyRenderer";
 import { GenericPropertiesSchema } from "../../../utils/promptUtils";
 import { JSONObject, JSONValue } from "aiconfig";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useMemo } from "react";
 import { debounce } from "lodash";
 
 type Props = {
