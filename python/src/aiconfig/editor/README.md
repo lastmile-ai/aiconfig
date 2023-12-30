@@ -67,7 +67,8 @@ alias aiconfig="python -m 'aiconfig.scripts.aiconfig_cli'"
 Replace the `aiconfig_path` variable with the path to your AIConfig file. 
 For example: `cookbooks/Getting-Started/travel.aiconfig.json`
 ```bash
-rm -rf aiconfig/python/src/aiconfig/editor/client/node_modules
+cd python/src/aiconfig/editor/client && rm -rf node_modules
+cd ../../../../..
 aiconfig_path="cookbooks/Getting-Started/travel.aiconfig.json"
 
 # Use debug mode to run the frontend react server
