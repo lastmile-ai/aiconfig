@@ -1,8 +1,13 @@
+import asyncio
+import copy
+import json
 import logging
 from typing import Any, Type
 
 import lastmile_utils.lib.core.api as core_utils
 import result
+import threading
+import time
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.editor.server.server_utils import (
     EditServerConfig,
@@ -23,13 +28,17 @@ from aiconfig.editor.server.server_utils import (
     safe_load_from_disk,
     safe_run_aiconfig_static_method,
 )
+from aiconfig.editor.server.queue_iterator import (
+    QueueIterator,
+    STOP_STREAMING_SIGNAL,
+)
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.registry import ModelParserRegistry
-from flask import Flask, request
+from aiconfig.schema import ExecuteResult, Prompt, Output
+from flask import Flask, Response, request, stream_with_context
 from flask_cors import CORS
 from result import Err, Ok, Result
 
-from aiconfig.schema import Prompt
 
 logging.getLogger("werkzeug").disabled = True
 
@@ -162,24 +171,112 @@ def create() -> FlaskResponse:
 
 
 @app.route("/api/run", methods=["POST"])
-async def run() -> FlaskResponse:
+def run():
+    EXCLUDE_OPTIONS = {
+        "prompt_index": True,
+        "file_path": True,
+        "callback_manager": True,
+    }
     state = get_server_state(app)
     aiconfig = state.aiconfig
     request_json = request.get_json()
+    prompt_name: str = request_json.get("prompt_name", "get_activities") # Hard-coded
+    params = request_json.get("params", {}) #Fixed in https://github.com/lastmile-ai/aiconfig/pull/668
+    stream = request_json.get("stream", True)
+
+    # Define stream callback and queue object for streaming results
+    output_text_queue = QueueIterator()
+    def update_output_queue(data, _accumulated_data, _index) -> None:
+        should_end_stream = data == STOP_STREAMING_SIGNAL
+        output_text_queue.put(data, should_end_stream)
+    inference_options = InferenceOptions(
+        stream=stream,
+        stream_callback=update_output_queue,
+    )
+
+    def generate():
+        # Use multi-threading so that we don't block run command from
+        # displaying the streamed output (if streaming is supported)
+        def run_async_config_in_thread():
+            asyncio.run(aiconfig.run(
+                    prompt_name=prompt_name,
+                    params=params,
+                    run_with_dependencies=False,
+                    options=inference_options,
+                )
+            )
+            output_text_queue.put(STOP_STREAMING_SIGNAL)
+        t = threading.Thread(target=run_async_config_in_thread)
+        t.start()
+
+        # Create a deep copy of the state aiconfig so we can yield an AIConfig
+        # with streaming partial outputs in the meantime. This probably isn't
+        # necessary, but just getting unblocked for now
+        displaying_config = copy.deepcopy(aiconfig)
+
+        # Need to wait until streamer has at least 1 item to display
+        SLEEP_DELAY_SECONDS = 0.1
+        MAX_TIMEOUT_SECONDS = 5.0
+        wait_time_in_seconds = 0.0
+        while output_text_queue.isEmpty():
+            time.sleep(0.1)
+            wait_time_in_seconds += SLEEP_DELAY_SECONDS
+            print(f"Output queue is currently empty. Waiting for {wait_time_in_seconds:.1f}s...")
+
+            # TODO: We should have a better way to check if the model supports
+            # streaming or not and bypass this if they do. I'm thinking we
+            # could add an abstract field that all models need to set T/F
+            # but we'll see. For now this works
+            # And yea I know time.sleep() isn't super accurate, but it's fine,
+            # we can fix later
+            if wait_time_in_seconds >= MAX_TIMEOUT_SECONDS:
+                print(f"Output queue is still empty after {wait_time_in_seconds:.1f}s. Breaking...")
+                break
+
+        yield "["
+        aiconfig_json: str | None = None
+        if not output_text_queue.isEmpty():
+            accumulated_output_text = ""
+            for text in output_text_queue:
+                if isinstance(text, str):
+                    accumulated_output_text += text
+                elif isinstance(text, dict) and "content" in text:
+                    # TODO: Fix streaming output format so that it returns text
+                    accumulated_output_text += text["content"]
+
+                accumulated_output : Output = ExecuteResult(
+                    **{
+                        "output_type": "execute_result",
+                        "data": accumulated_output_text,
+                        # Assume streaming only supports single output
+                        # I think this actually may be wrong for PaLM or OpenAI
+                        # TODO: Need to sync with Ankush but can fix forward
+                        "execution_count": 0, 
+                        "metadata": {},
+                    }
+                )
+
+                displaying_config.add_output(prompt_name, accumulated_output, overwrite=True)
+                aiconfig_json = displaying_config.model_dump(exclude=EXCLUDE_OPTIONS)
+                yield json.dumps({"aiconfig": aiconfig_json})
+
+        # Some models don't support streaming, so we need to wait for run
+        # process to complete and yield the final output
+        t.join()
+        if aiconfig_json is None:
+            aiconfig_json = aiconfig.model_dump(exclude=EXCLUDE_OPTIONS)
+        yield json.dumps({"aiconfig": aiconfig_json})
+        yield "]"
 
     try:
-        prompt_name = request_json["prompt_name"]
-        params = request_json.get("params", {})
-        stream = request_json.get("stream", False)
-        options = InferenceOptions(stream=stream)
-        run_output = await aiconfig.run(prompt_name, params, options)  # type: ignore
-        LOGGER.debug(f"run_output: {run_output}")
-        return HttpResponseWithAIConfig(
-            #
-            message="Ran prompt",
-            code=200,
-            aiconfig=aiconfig,
-        ).to_flask_format()
+        LOGGER.info(f"Running `aiconfig.run()` command with request: {request_json}")
+        # Streaming based on
+        # https://stackoverflow.com/questions/73275517/flask-not-streaming-json-response
+        return Response(
+            stream_with_context(generate()),
+            status=200,
+            content_type="application/json",
+        )
     except Exception as e:
         return HttpResponseWithAIConfig(
             #

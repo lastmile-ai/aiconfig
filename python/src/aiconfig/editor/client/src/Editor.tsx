@@ -6,6 +6,7 @@ import { AIConfig, ModelMetadata, Prompt } from "aiconfig";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
+import { streamingApi } from "./utils/oboeHelpers";
 
 export default function Editor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
@@ -57,9 +58,27 @@ export default function Editor() {
   }, []);
 
   const runPrompt = useCallback(async (promptName: string) => {
-    return await ufetch.post(ROUTE_TABLE.RUN_PROMPT, {
+    const res = await ufetch.post("http://localhost:8080/api/run", {
       prompt_name: promptName,
     });
+    await streamingApi(
+      {
+        url: "http://localhost:8080/api/run",
+        method: "POST",
+        body: {
+          prompt_name: promptName,
+        },
+      },
+      "output_chunk",
+      (data) => {
+        console.log("output_chunk data: ", data);
+      },
+      "aiconfig",
+      (data) => {
+        console.log("aiconfig data: ", data);
+      }
+    );
+    return res;
   }, []);
 
   const updatePrompt = useCallback(
