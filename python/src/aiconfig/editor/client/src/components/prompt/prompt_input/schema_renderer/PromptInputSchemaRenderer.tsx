@@ -71,6 +71,7 @@ export default memo(function PromptInputSchemaRenderer(props: Props) {
       <Textarea
         value={props.input as string}
         onChange={(e) => props.onChangeInput(e.target.value)}
+        placeholder="Type a prompt"
       />
     );
   } else {
