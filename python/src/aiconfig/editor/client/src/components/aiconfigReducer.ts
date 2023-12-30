@@ -10,6 +10,7 @@ export type MutateAIConfigAction =
   | AddPromptAction
   | DeletePromptAction
   | RunPromptAction
+  | SetNameDescriptionAction
   | UpdatePromptInputAction
   | UpdatePromptNameAction
   | UpdatePromptModelAction
@@ -37,6 +38,12 @@ export type DeletePromptAction = {
 export type RunPromptAction = {
   type: "RUN_PROMPT";
   id: string;
+};
+
+export type SetNameDescriptionAction = {
+  type: "SET_NAME_DESCRIPTION";
+  name?: string;
+  description?: string | null;
 };
 
 export type UpdatePromptInputAction = {
@@ -191,6 +198,16 @@ export default function aiconfigReducer(
           isRunning: true,
         },
       }));
+    }
+    case "SET_NAME_DESCRIPTION": {
+      return {
+        ...state,
+        name: action.name ?? state.name, // Don't allow setting name to empty string
+        description:
+          action.description === null
+            ? undefined
+            : action.description ?? state.description,
+      };
     }
     case "UPDATE_PROMPT_INPUT": {
       return reduceReplaceInput(state, action.id, () => action.input);
