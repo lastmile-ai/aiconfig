@@ -12,6 +12,7 @@ export const ROUTE_TABLE = {
   ADD_PROMPT: urlJoin(API_ENDPOINT, "/add_prompt"),
   DELETE_PROMPT: urlJoin(API_ENDPOINT, "/delete_prompt"),
   SAVE: urlJoin(API_ENDPOINT, "/save"),
+  SET_NAME_DESCRIPTION: urlJoin(API_ENDPOINT, "/update_name_description"),
   LOAD: urlJoin(API_ENDPOINT, "/load"),
   LIST_MODELS: urlJoin(API_ENDPOINT, "/list_models"),
   RUN_PROMPT: urlJoin(API_ENDPOINT, "/run"),
