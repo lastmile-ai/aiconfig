@@ -20,6 +20,7 @@ export default memo(function PromptInputDataSchemaRenderer({
         <Textarea
           value={data ? (data as string) : ""}
           onChange={(e) => onChangeData(e.target.value)}
+          placeholder="Type a prompt"
         />
       );
     default:
