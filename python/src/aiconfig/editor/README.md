@@ -57,20 +57,29 @@ e.g. `aiconfig edit --parsers-module-path="/path/to/my_editor_plugin.py"`
 
 ### Install:
 
-`pip install -e path/to/local/aiconfig/python`
-
-`alias aiconfig="python -m 'aiconfig.scripts.aiconfig_cli'"`
+From the top-level `aiconfig` dir:
+```bash
+pip3 install -e aiconfig/python
+alias aiconfig="python -m 'aiconfig.scripts.aiconfig_cli'"
+```
 
 ### Run backend and frontend servers:
+Replace the `aiconfig_path` variable with the path to your AIConfig file. 
+For example: `cookbooks/Getting-Started/travel.aiconfig.json`
+```bash
+cd python/src/aiconfig/editor/client && rm -rf node_modules
+cd ../../../../..
+aiconfig_path="cookbooks/Getting-Started/travel.aiconfig.json"
 
-(debug mode will run the react server)
-`aiconfig edit  --aiconfig-path=/my/path --server-port=8080 --server-mode=debug_servers`
+# Use debug mode to run the frontend react server
+aiconfig edit --aiconfig-path=$aiconfig_path --server-port=8080 --server-mode=debug_servers 
+```
 
 More info:
 `aiconfig --help`
 `aiconfig edit --help`
 
-### Frontent
+### Frontend
 
 Use React server localhost:3000
 
