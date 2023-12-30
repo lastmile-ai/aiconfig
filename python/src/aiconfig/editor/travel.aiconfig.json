@@ -115,6 +115,15 @@
         "parameters": {}
       },
       "outputs": []
+    },
+    {
+      "name": "prompt_5",
+      "input": "",
+      "metadata": {
+        "model": "gpt-4",
+        "parameters": {}
+      },
+      "outputs": []
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
