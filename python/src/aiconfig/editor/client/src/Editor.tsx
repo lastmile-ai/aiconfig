@@ -6,6 +6,7 @@ import { AIConfig, ModelMetadata, Prompt } from "aiconfig";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
+import { streamingApi } from "./utils/oboeHelpers";
 
 export default function Editor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
@@ -60,7 +61,23 @@ export default function Editor() {
     const res = await ufetch.post("http://localhost:8080/api/test_streaming", {
       prompt_name: promptName,
     });
-    console.log("stream res: ", res);
+    await streamingApi(
+      {
+        url: "http://localhost:8080/api/test_streaming",
+        method: "POST",
+        body: {
+          prompt_name: promptName,
+        },
+      },
+      "output_chunk",
+      (data) => {
+        console.log("output_chunk data: ", data);
+      },
+      "aiconfig",
+      (data) => {
+        console.log("aiconfig data: ", data);
+      }
+    );
     return res;
   }, []);
 
