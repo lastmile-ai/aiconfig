@@ -1,5 +1,8 @@
+import asyncio
+import json
 import logging
 from typing import Any, Type
+import threading
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -170,16 +173,31 @@ def test_streaming():
         "callback_manager": True,
     }
     state = get_server_state(app)
+    aiconfig = state.aiconfig
     request_json = request.get_json()
     num_stream_steps: int = request_json.get("num_stream_steps", 10)
     prompt_name: str = request_json.get("prompt_name", "get_activities")
+    params = request_json.get("params", {})
     print(f"{num_stream_steps=}")
     print(f"{type(num_stream_steps)=}")
 
     def generate(num_stream_steps: int):
+        aiconfig_json: str | None = None
         prompt: Prompt = state.aiconfig.get_prompt(prompt_name)
+        def run_async_config_in_thread():
+            asyncio.run(aiconfig.run(
+                    prompt_name=prompt_name,
+                    params=params,
+                    run_with_dependencies=False,
+                    # options=inference_options,
+                )
+            )
+            # output_text_queue.put(STOP_STREAMING_SIGNAL)
+        t = threading.Thread(target=run_async_config_in_thread)
+        t.start()
+        
+        yield "["
         for i in range(num_stream_steps):
-            time.sleep(1)
             output = ExecuteResult(
                 output_type="execute_result",
                 execution_count=0,
@@ -189,18 +207,18 @@ def test_streaming():
             prompt.outputs = [output]
             print(f"Done step {i+1}/{num_stream_steps}...")
 
-            aiconfig_json = state.aiconfig.model_dump(exclude=EXCLUDE_OPTIONS)
-            # print(f"{aiconfig_json=}\n")
-            # yield_output = core_utils.JSONObject({"data": aiconfig_json})
-            # print(f"{yield_output=}")
-            print(f"{str(aiconfig_json)=}\n")
-            yield str(aiconfig_json) + "\n\n"
-            # yield aiconfig_json
+            aiconfig_json = aiconfig.model_dump(exclude=EXCLUDE_OPTIONS)
 
-            # HttpResponseWithAIConfig(
-            #     message=f"Done step {i+1}/{num_stream_steps}...",
-            #     aiconfig=state.aiconfig,
-            # ).to_flask_format()
+        #     print(f"{str(aiconfig_json)=}\n")
+            yield json.dumps({"output_chunk": output.model_dump()}) + ",\n"
+
+        # t.join()
+        # if aiconfig_json is None:
+        #     aiconfig_json = aiconfig.model_dump(exclude=EXCLUDE_OPTIONS)
+        t.join()
+        aiconfig_json = aiconfig.model_dump(exclude=EXCLUDE_OPTIONS)
+        yield json.dumps({"aiconfig": aiconfig_json})
+        yield "]"
 
     try:
         LOGGER.info(f"Testing streaming: {request_json}")
