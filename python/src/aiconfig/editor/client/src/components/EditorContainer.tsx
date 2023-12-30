@@ -1,12 +1,5 @@
 import PromptContainer from "./prompt/PromptContainer";
-import {
-  Container,
-  Group,
-  Button,
-  createStyles,
-  Stack,
-  Flex,
-} from "@mantine/core";
+import { Container, Button, createStyles, Stack, Flex } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import {
   AIConfig,
@@ -32,6 +25,7 @@ import { debounce, uniqueId } from "lodash";
 import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
 import AIConfigContext from "./AIConfigContext";
+import ConfigNameDescription from "./ConfigNameDescription";
 
 type Props = {
   aiconfig: AIConfig;
@@ -48,6 +42,10 @@ export type AIConfigCallbacks = {
   getModels: (search: string) => Promise<string[]>;
   runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
   save: (aiconfig: AIConfig) => Promise<void>;
+  setNameDescription: (val: {
+    name?: string;
+    description?: string | null;
+  }) => Promise<void>;
   updateModel: (
     promptName?: string,
     modelData?: string | ModelMetadata
@@ -379,6 +377,25 @@ export default function EditorContainer({
     [runPromptCallback]
   );
 
+  const setNameDescriptionCallback = callbacks.setNameDescription;
+  const onSetNameDescription = useCallback(
+    async ({
+      name,
+      description,
+    }: {
+      name?: string;
+      description?: string | null;
+    }) => {
+      dispatch({
+        type: "SET_NAME_DESCRIPTION",
+        name,
+        description,
+      });
+      await setNameDescriptionCallback({ name, description });
+    },
+    [setNameDescriptionCallback]
+  );
+
   const { classes } = useStyles();
 
   const getState = useCallback(() => stateRef.current, []);
@@ -392,14 +409,16 @@ export default function EditorContainer({
   return (
     <AIConfigContext.Provider value={contextValue}>
       <Container maw="80rem">
-        <Group grow m="sm">
-          {/* <Text sx={{ textOverflow: "ellipsis", overflow: "hidden" }} size={14}>
-            {path || "No path specified"}
-          </Text> */}
-          <Button loading={isSaving} ml="lg" onClick={onSave}>
+        <Flex justify="flex-end" mt="md">
+          <Button loading={isSaving} onClick={onSave}>
             Save
           </Button>
-        </Group>
+        </Flex>
+        <ConfigNameDescription
+          name={aiconfigState.name}
+          description={aiconfigState.description}
+          setNameDescription={onSetNameDescription}
+        />
       </Container>
       <GlobalParametersContainer
         initialValue={aiconfigState?.metadata?.parameters ?? {}}
