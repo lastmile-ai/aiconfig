@@ -129,12 +129,23 @@ export type ParametersArray = {
   key: string;
 }[];
 
+function parametersArrayToJSONObject(
+  parametersArray: ParametersArray
+): JSONObject {
+  const parameters: JSONObject = {};
+  for (const paramTuple of parametersArray ?? []) {
+    const key = paramTuple.parameterName;
+    const val = paramTuple.parameterValue;
+
+    parameters[key] = val;
+  }
+
+  return parameters;
+}
+
 export default memo(function ParametersRenderer(props: {
   initialValue?: JSONObject;
-  onUpdateParameters: (data: {
-    promptName?: string;
-    newParameters: ParametersArray;
-  }) => void;
+  onUpdateParameters: (parameters: JSONObject) => void;
   customDescription?: React.ReactNode;
   maxHeight?: string | number;
 }) {
@@ -164,7 +175,7 @@ export default memo(function ParametersRenderer(props: {
     async (key: string, _parameterName?: string) => {
       setParameters((prev) => {
         const newParameters = prev.filter((item) => item.key !== key);
-        onUpdateParameters({ newParameters });
+        onUpdateParameters(parametersArrayToJSONObject(newParameters));
         return newParameters;
       });
     },
@@ -181,7 +192,7 @@ export default memo(function ParametersRenderer(props: {
           parameterValue: "",
         },
       ];
-      onUpdateParameters({ newParameters });
+      onUpdateParameters(parametersArrayToJSONObject(newParameters));
       return newParameters;
     });
   }, [onUpdateParameters]);
@@ -215,7 +226,9 @@ export default memo(function ParametersRenderer(props: {
                   currentElement.parameterName = parameterName;
                   currentElement.parameterValue = parameterValue ?? "";
 
-                  onUpdateParameters({ newParameters });
+                  onUpdateParameters(
+                    parametersArrayToJSONObject(newParameters)
+                  );
 
                   return newParameters;
                 });
