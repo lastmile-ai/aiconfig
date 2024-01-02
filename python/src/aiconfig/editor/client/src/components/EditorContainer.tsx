@@ -46,6 +46,7 @@ export type AIConfigCallbacks = {
   save: (aiconfig: AIConfig) => Promise<void>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
+  setParameters: (parameters: JSONObject, promptName?: string) => Promise<void>;
   updateModel: (value: {
     modelName?: string;
     settings?: InferenceSettings;
@@ -262,15 +263,36 @@ export default function EditorContainer({
     [dispatch, debouncedUpdateModel]
   );
 
+  const setParametersCallback = callbacks.setParameters;
+  const debouncedSetParameters = useMemo(
+    () =>
+      debounce(
+        (parameters: JSONObject, promptName?: string) =>
+          setParametersCallback(parameters, promptName),
+        DEBOUNCE_MS
+      ),
+    [setParametersCallback]
+  );
+
   const onUpdateGlobalParameters = useCallback(
     async (newParameters: JSONObject) => {
       dispatch({
         type: "UPDATE_GLOBAL_PARAMETERS",
         parameters: newParameters,
       });
-      // TODO: Call server-side endpoint to update global parameters
+
+      try {
+        await debouncedSetParameters(newParameters);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : null;
+        showNotification({
+          title: "Error setting global parameters",
+          message: message,
+          color: "red",
+        });
+      }
     },
-    [dispatch]
+    [debouncedSetParameters, dispatch]
   );
 
   const onUpdatePromptParameters = useCallback(
@@ -280,9 +302,23 @@ export default function EditorContainer({
         id: promptId,
         parameters: newParameters,
       });
-      // TODO: Call server-side endpoint to update prompt parameters
+
+      try {
+        const statePrompt = getPrompt(stateRef.current, promptId);
+        if (!statePrompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        await debouncedSetParameters(newParameters, statePrompt.name);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : null;
+        showNotification({
+          title: "Error setting prompt parameters",
+          message: message,
+          color: "red",
+        });
+      }
     },
-    [dispatch]
+    [debouncedSetParameters, dispatch]
   );
 
   const addPromptCallback = callbacks.addPrompt;
