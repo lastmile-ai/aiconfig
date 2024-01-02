@@ -612,6 +612,27 @@ def test_add_output_existing_prompt_overwrite(ai_config_runtime: AIConfigRuntime
     ai_config_runtime.add_output("GreetingPrompt", test_result, True)
     assert ai_config_runtime.get_latest_output("GreetingPrompt") == test_result
 
+def test_add_empty_output_to_prompt(ai_config_runtime: AIConfigRuntime):
+    """Test for adding an empty output to an existing prompt with/without overwriting."""
+    prompt1 = Prompt(
+        name="GreetingPrompt",
+        input="Hello, how are you?",
+        metadata=PromptMetadata(model="fakemodel"),
+    )
+    ai_config_runtime.add_prompt(prompt1.name, prompt1)
+    # Case 1: No output, no overwrite
+    with pytest.raises(
+        Exception,
+        match=r"Cannot add output to prompt 'GreetingPrompt'. Output is empty.",
+    ):
+        ai_config_runtime.add_output("GreetingPrompt", None)
+    # Case 2: No output, with overwrite
+    with pytest.raises(
+        Exception,
+        match=r"Cannot add output to prompt 'GreetingPrompt'. Output is empty.",
+    ):
+        ai_config_runtime.add_output("GreetingPrompt", None, True)
+    
 def test_extract_override_settings(ai_config_runtime: AIConfigRuntime):
     initial_settings = {"topP": 0.9}
 
