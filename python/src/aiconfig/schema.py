@@ -10,6 +10,7 @@ JSONObject = Dict[str, Any]
 # InferenceSettings represents settings for model inference as a JSON object
 InferenceSettings = JSONObject
 
+
 class OutputDataWithStringValue(BaseModel):
     """
     This represents the output content that is storied as a string, but we use
@@ -43,7 +44,7 @@ class FunctionCallData(BaseModel):
 
 class ToolCallData(BaseModel):
     """
-    Generic tool call data 
+    Generic tool call data
     """
 
     id: Optional[str]
@@ -335,26 +336,156 @@ class AIConfig(BaseModel):
         else:
             return self.metadata
 
-    def set_parameter(self, parameter_name: str, parameter_value, prompt_name: Optional[str] = None):
+    def get_parameters(
+        self,
+        prompt_or_prompt_name: Optional[str | Prompt] = None,
+    ) -> JSONObject:
         """
-        Sets a parameter in the AI configuration metadata. If a prompt_name is specified, it adds the parameter to
-        a specific prompt's metadata in the AI configuration. Otherwise, it adds the parameter to the global metadata.
+        Get the parameters for a prompt, using the global parameters if
+        needed.
+
+        Args:
+            prompt_or_prompt_name Optional[str | Prompt]: The name of the
+                prompt or the prompt object. If not specified, use the
+                global parameters.
+        """
+        prompt = prompt_or_prompt_name
+        if isinstance(prompt_or_prompt_name, str):
+            if prompt_or_prompt_name not in self.prompt_index:
+                raise IndexError(f"Prompt '{prompt_or_prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}")
+            prompt = self.prompt_index[prompt_or_prompt_name]
+
+        assert prompt is None or isinstance(prompt, Prompt)
+        if prompt is None or not prompt.metadata or not prompt.metadata.parameters:
+            return self.get_global_parameters()
+
+        return self.get_prompt_parameters(prompt)
+
+    # pylint: disable=W0102
+    def get_global_parameters(
+        self,
+        default_return_value: JSONObject = {},
+    ) -> JSONObject:
+        """
+        Get the global parameters for the AIConfig. If they're not defined,
+        return a default value ({} unless overridden)
+
+        Args:
+            default_return_value JSONObject - Default value to return if
+                global parameters are not defined.
+        """
+        return self._get_global_parameters_exact() or default_return_value
+
+    # pylint: enable=W0102
+
+    def _get_global_parameters_exact(self) -> JSONObject | None:
+        """
+        Get the global parameters for the AIConfig. This should be the
+        the explicit value (ie: if parameters is None, return None, not {})
+        """
+        return self.metadata.parameters
+
+    # pylint: disable=W0102
+    def get_prompt_parameters(
+        self,
+        prompt: Prompt,
+        default_return_value: JSONObject = {},
+    ) -> JSONObject:
+        """
+        Get the prompt's local parameters. If they're not defined,
+        return a default value ({} unless overridden)
+
+        Args:
+            default_return_value JSONObject - Default value to return if
+                prompt parameters are not defined.
+        """
+        return self._get_prompt_parameters_exact(prompt) or default_return_value
+
+    # pylint: enable=W0102
+
+    def _get_prompt_parameters_exact(
+        self,
+        prompt: Prompt,
+    ) -> JSONObject | None:
+        """
+        Get the global parameters for the AIConfig. This should be the
+        the explicit value (ie: if parameters is None, return None, not {})
+        """
+        if not prompt.metadata:
+            return prompt.metadata
+        return prompt.metadata.parameters
+
+    def set_parameter(self, parameter_name: str, parameter_value: Union[str, JSONObject], prompt_name: Optional[str] = None):
+        """
+        Sets a parameter in the AI configuration metadata. If a prompt_name
+        is specified, it adds the parameter to a specific prompt's metadata
+        in the AI configuration. Otherwise, it adds the parameter to the
+        global metadata.
 
         Args:
             parameter_name (str): The name of the parameter.
-            parameter_value: The value of the parameter. It can be more than just a string. It can be a string or a JSON object. For example:
-                {
-                person: {
-                    firstname: "john",
-                    lastname: "smith",
-                    },
-                }
-                Using the parameter in a prompt with handlebars syntax would look like this:
-                "{{person.firstname}} {{person.lastname}}"
-            prompt_name (str, optional): The name of the prompt to add the parameter to. Defaults to None.
+            parameter_value: The value of the parameter. It can be more than
+                just a string. It can be a string or a JSON object. For
+                example:
+                    {
+                    person: {
+                        firstname: "john",
+                        lastname: "smith",
+                        },
+                    }
+                Using the parameter in a prompt with handlebars syntax would
+                look like this:
+                    "{{person.firstname}} {{person.lastname}}"
+            prompt_name (str, optional): The name of the prompt to add the
+                parameter to. Defaults to None.
         """
         target_metadata = self.get_metadata(prompt_name)
+        if not target_metadata:
+            # Technically this check is not needed since the metadata is a
+            # required field in Config while it is not required in Prompt.
+            # Therefore, if it's not defined, we can infer that it should
+            # be a PromptMetadata type, but this is just good robustness
+            # in case we ever change our schema in the future
+            if prompt_name:
+                prompt = self.get_prompt(prompt_name)
+                # check next line not needed since it's already assumed
+                # we got here because target_metadata is None, just being
+                # extra safe
+                if not prompt.metadata:
+                    target_metadata = PromptMetadata(parameters={})
+                    prompt.metadata = target_metadata
+            else:
+                if not self.metadata:
+                    target_metadata = ConfigMetadata()
+                    self.metadata = target_metadata
+
+        assert target_metadata is not None
+        if target_metadata.parameters is None:
+            target_metadata.parameters = {}
         target_metadata.parameters[parameter_name] = parameter_value
+
+    def set_parameters(self, parameters: JSONObject, prompt_name: Optional[str] = None) -> None:
+        """
+        Set the entire parameters dict for either a prompt (if specified)
+        or the AIConfig (if prompt is not specified). It overwrites whatever
+        was previously stored as parameters for the prompt or AIConfig.
+
+        Args:
+            parameters (JSONObject): The entire set of parameters. Ex:
+                {
+                    "city": "New York",
+                    "sort_by": "geographical location",
+                }
+                In this example, we call `set_parameter` twice:
+                    1) set_parameter("city", "New York", prompt_name)
+                    2) set_parameter("sort_by", "geographical location", prompt_name)
+
+            prompt_name (str, optional): The name of the prompt to add the
+                parameters dict to. If none is provided, we update the
+                AIConfig-level parameters instead
+        """
+        for parameter_name, parameter_value in parameters.items():
+            self.set_parameter(parameter_name, parameter_value, prompt_name)
 
     def update_parameter(
         self,
@@ -732,14 +863,6 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         Args:
             prompt (str|Prompt): The name of the prompt or the prompt object.
         """
-
-    def get_prompt_parameters(self, prompt: Prompt):
-        """
-        Gets the prompt's local parameters for a prompt.
-        """
-        if not prompt.metadata:
-            return {}
-        return prompt.metadata.parameters
 
     """
     Library Helpers

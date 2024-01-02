@@ -118,6 +118,18 @@ export default function Editor() {
     []
   );
 
+  const setConfigName = useCallback(async (name: string) => {
+    return await ufetch.post(ROUTE_TABLE.SET_NAME, {
+      name,
+    });
+  }, []);
+
+  const setConfigDescription = useCallback(async (description: string) => {
+    return await ufetch.post(ROUTE_TABLE.SET_DESCRIPTION, {
+      description,
+    });
+  }, []);
+
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
@@ -125,6 +137,8 @@ export default function Editor() {
       getModels,
       runPrompt,
       save,
+      setConfigDescription,
+      setConfigName,
       updateModel,
       updatePrompt,
     }),
@@ -134,6 +148,8 @@ export default function Editor() {
       getModels,
       runPrompt,
       save,
+      setConfigDescription,
+      setConfigName,
       updateModel,
       updatePrompt,
     ]

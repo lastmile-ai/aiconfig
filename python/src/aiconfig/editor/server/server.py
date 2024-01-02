@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Type
+from typing import Any, Dict, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -168,8 +168,19 @@ async def run() -> FlaskResponse:
     request_json = request.get_json()
 
     try:
-        prompt_name = request_json["prompt_name"]
-        params = request_json.get("params", {})
+        prompt_name: Union[str, None] = request_json.get("prompt_name")
+        if prompt_name is None:
+            return HttpResponseWithAIConfig(
+                message="No prompt name provided, cannot execute `run` command",
+                code=400,
+                aiconfig=None,
+            ).to_flask_format()
+
+        # TODO (rossdanlm): Refactor aiconfig.run() to not take in `params`
+        # as a function arg since we can now just call
+        # aiconfig.get_parameters(prompt_name) directly inside of run. See:
+        # https://github.com/lastmile-ai/aiconfig/issues/671
+        params = request_json.get("params", aiconfig.get_parameters(prompt_name))  # type: ignore
         stream = request_json.get("stream", False)
         options = InferenceOptions(stream=stream)
         run_output = await aiconfig.run(prompt_name, params, options)  # type: ignore
@@ -226,3 +237,89 @@ def delete_prompt() -> FlaskResponse:
 
     operation = make_op_run_method(method_name)
     return run_aiconfig_operation_with_request_json(aiconfig, request_json, f"method_{method_name}", operation, signature)
+
+
+@app.route("/api/update_model", methods=["POST"])
+def update_model() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    model_name: str | None = request_json.get("model_name")
+    settings: Dict[str, Any] | None = request_json.get("settings")
+    prompt_name: str | None = request_json.get("prompt_name")
+
+    operation = make_op_run_method(MethodName("update_model"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"model_name": model_name, "settings": settings, "prompt_name": prompt_name}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "update_model", operation, operation_args)
+
+
+@app.route("/api/set_parameter", methods=["POST"])
+def set_parameter() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    parameter_name: str | None = request_json.get("parameter_name")
+    parameter_value: Union[str, Dict[str, Any]] | None = request_json.get("parameter_value")
+    prompt_name: str | None = request_json.get("prompt_name")
+
+    operation = make_op_run_method(MethodName("set_parameter"))
+    operation_args: Result[OpArgs, str] = result.Ok(
+        OpArgs({"parameter_name": parameter_name, "parameter_value": parameter_value, "prompt_name": prompt_name})
+    )
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_parameter", operation, operation_args)
+
+
+@app.route("/api/set_parameters", methods=["POST"])
+def set_parameters() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    parameters: Dict[str, Any] = request_json.get("parameters")
+    prompt_name: str | None = request_json.get("prompt_name")
+
+    operation = make_op_run_method(MethodName("set_parameters"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"parameters": parameters, "prompt_name": prompt_name}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_parameters", operation, operation_args)
+
+
+@app.route("/api/delete_parameter", methods=["POST"])
+def delete_parameter() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    parameter_name: str | None = request_json.get("parameter_name")
+    prompt_name: str | None = request_json.get("prompt_name")
+
+    operation = make_op_run_method(MethodName("delete_parameter"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"parameter_name": parameter_name, "prompt_name": prompt_name}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "delete_parameter", operation, operation_args)
+
+
+@app.route("/api/set_name", methods=["POST"])
+def set_name() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    name: str | None = request_json.get("name")
+
+    operation = make_op_run_method(MethodName("set_name"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"name": name}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_name", operation, operation_args)
+
+
+@app.route("/api/set_description", methods=["POST"])
+def set_description() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    description: str | None = request_json.get("description")
+
+    operation = make_op_run_method(MethodName("set_description"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"description": description}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_description", operation, operation_args)
