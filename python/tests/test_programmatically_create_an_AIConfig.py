@@ -587,6 +587,75 @@ def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRunt
 
     assert ai_config_runtime.get_latest_output("GreetingPrompt") == None
 
+def test_add_outputs_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRuntime):
+    """Test adding outputs to an existing prompt without overwriting."""
+    base_result = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0.0,
+        data={"role": "assistant", "content": "base output"},
+        metadata={"finish_reason": "stop"},)
+    prompt1 = Prompt(
+        name="GreetingPrompt",
+        input="Hello, how are you?",
+        metadata=PromptMetadata(model="fakemodel"),
+        outputs=[base_result],
+    )
+    ai_config_runtime.add_prompt(prompt1.name, prompt1)
+    
+    assert ai_config_runtime.get_latest_output("GreetingPrompt") == base_result
+
+    test_result1 = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0.0,
+        data={"role": "assistant", "content": "test output 1"},
+        metadata={"finish_reason": "stop"},
+    )
+
+    test_result2 = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0.0,
+        data={"role": "assistant", "content": "test output 2"},
+        metadata={"finish_reason": "stop"},
+    )
+    ai_config_runtime.add_outputs("GreetingPrompt", [test_result1, test_result2])
+
+    assert ai_config_runtime.get_latest_output("GreetingPrompt") == test_result2
+    assert prompt1.outputs == [base_result, test_result1, test_result2]
+
+def test_add_outputs_existing_prompt_with_overwrite(ai_config_runtime: AIConfigRuntime):
+    """Test adding outputs to an existing prompt with overwriting."""
+    base_result = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0.0,
+        data={"role": "assistant", "content": "base output"},
+        metadata={"finish_reason": "stop"},)
+    prompt1 = Prompt(
+        name="GreetingPrompt",
+        input="Hello, how are you?",
+        metadata=PromptMetadata(model="fakemodel"),
+        outputs=[base_result],
+    )
+    ai_config_runtime.add_prompt(prompt1.name, prompt1)
+    
+    assert ai_config_runtime.get_latest_output("GreetingPrompt") == base_result
+
+    test_result1 = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0.0,
+        data={"role": "assistant", "content": "test output 1"},
+        metadata={"finish_reason": "stop"},
+    )
+
+    test_result2 = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0.0,
+        data={"role": "assistant", "content": "test output 2"},
+        metadata={"finish_reason": "stop"},
+    )
+    ai_config_runtime.add_outputs("GreetingPrompt", [test_result1, test_result2], True)
+
+    assert ai_config_runtime.get_latest_output("GreetingPrompt") == test_result2
+    assert prompt1.outputs == [test_result1, test_result2]
 
 def test_extract_override_settings(ai_config_runtime: AIConfigRuntime):
     initial_settings = {"topP": 0.9}
