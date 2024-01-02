@@ -586,6 +586,8 @@ class AIConfig(BaseModel):
         for i, prompt in enumerate(self.prompts):
             if prompt.name == prompt_name:
                 self.prompts[i] = prompt_data
+                del self.prompt_index[prompt_name]
+                self.prompt_index[prompt_data.name] = prompt_data
                 break
 
     def delete_prompt(self, prompt_name: str):
