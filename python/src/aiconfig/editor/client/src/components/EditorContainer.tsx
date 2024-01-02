@@ -444,6 +444,12 @@ export default function EditorContainer({
         onUpdateParameters={onUpdateGlobalParameters}
       />
       <Container maw="80rem" className={classes.promptsContainer}>
+        <div className={classes.addPromptRow}>
+          <AddPromptButton
+            getModels={callbacks.getModels}
+            addPrompt={(model: string) => onAddPrompt(0, model)}
+          />
+        </div>
         {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
           return (
             <Stack key={prompt._ui.id}>
