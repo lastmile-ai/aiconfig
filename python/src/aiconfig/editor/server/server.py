@@ -259,6 +259,7 @@ def set_parameter() -> FlaskResponse:
     )
     return run_aiconfig_operation_with_op_args(aiconfig, "set_parameter", operation, operation_args)
 
+
 @app.route("/api/delete_parameter", methods=["POST"])
 def delete_parameter() -> FlaskResponse:
     state = get_server_state(app)
@@ -269,7 +270,18 @@ def delete_parameter() -> FlaskResponse:
     prompt_name: str | None = request_json.get("prompt_name")
 
     operation = make_op_run_method(MethodName("delete_parameter"))
-    operation_args: Result[OpArgs, str] = result.Ok(
-        OpArgs({"parameter_name": parameter_name, "prompt_name": prompt_name})
-    )
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"parameter_name": parameter_name, "prompt_name": prompt_name}))
     return run_aiconfig_operation_with_op_args(aiconfig, "delete_parameter", operation, operation_args)
+
+
+@app.route("/api/set_name", methods=["POST"])
+def set_name() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    name: str | None = request_json.get("name")
+
+    operation = make_op_run_method(MethodName("set_name"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"name": name}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_name", operation, operation_args)
