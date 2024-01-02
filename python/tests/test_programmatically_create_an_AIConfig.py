@@ -582,7 +582,8 @@ def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRunt
         data="test output",
         metadata={
             "raw_response": {"role": "assistant", "content": "test output for second time"}
-        }, 
+        },
+    ) 
     
     ai_config_runtime.add_output("GreetingPrompt", test_result2)
     assert ai_config_runtime.get_latest_output("GreetingPrompt") == test_result2
