@@ -12,9 +12,12 @@ from typing import Any, Callable, NewType, Optional, Type, TypeVar, cast
 import lastmile_utils.lib.core.api as core_utils
 import result
 from aiconfig.Config import AIConfigRuntime
+from aiconfig.registry import ModelParserRegistry
 from flask import Flask
 from pydantic import field_validator
 from result import Err, Ok, Result
+
+from aiconfig.schema import Prompt, PromptMetadata
 
 MethodName = NewType("MethodName", str)
 
