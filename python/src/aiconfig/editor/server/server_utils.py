@@ -7,7 +7,7 @@ import typing
 from dataclasses import dataclass
 from enum import Enum
 from types import ModuleType
-from typing import Any, Callable, NewType, Optional, Type, TypeVar, cast
+from typing import Any, Callable, NewType, Type, TypeVar, cast
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -57,7 +57,7 @@ class ServerMode(Enum):
 
 class EditServerConfig(core_utils.Record):
     server_port: int = 8080
-    aiconfig_path: Optional[str] = None
+    aiconfig_path: str = "my_aiconfig.aiconfig.json"
     log_level: str | int = "INFO"
     server_mode: ServerMode
     parsers_module_path: str = "aiconfig_model_registry.py"
@@ -205,11 +205,10 @@ def init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None,
     state = get_server_state(app)
 
     assert state.aiconfig is None
-    if edit_config.aiconfig_path:
+    if os.path.exists(edit_config.aiconfig_path):
         LOGGER.info(f"Loading AIConfig from {edit_config.aiconfig_path}")
         val_path = get_validated_path(edit_config.aiconfig_path)
         aiconfig_runtime = val_path.and_then(safe_load_from_disk)
-        LOGGER.debug(f"{aiconfig_runtime.is_ok()=}")
         match aiconfig_runtime:
             case Ok(aiconfig_runtime_):
                 state.aiconfig = aiconfig_runtime_
@@ -219,6 +218,7 @@ def init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None,
                 LOGGER.error(f"Failed to load AIConfig from {edit_config.aiconfig_path}: {e}")
                 return Err(f"Failed to load AIConfig from {edit_config.aiconfig_path}: {e}")
     else:
+        LOGGER.info(f"Creating new AIConfig at {edit_config.aiconfig_path}")
         aiconfig_runtime = AIConfigRuntime.create()  # type: ignore
         model_ids = ModelParserRegistry.parser_ids()
         if len(model_ids) > 0:
@@ -226,7 +226,14 @@ def init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None,
 
         state.aiconfig = aiconfig_runtime
         LOGGER.info("Created new AIConfig")
-        return Ok(None)
+        try:
+            aiconfig_runtime.save(edit_config.aiconfig_path)
+            LOGGER.info(f"Saved new AIConfig to {edit_config.aiconfig_path}")
+            state.aiconfig = aiconfig_runtime
+            return Ok(None)
+        except Exception as e:
+            LOGGER.error(f"Failed to create new AIConfig at {edit_config.aiconfig_path}: {e}")
+            return core_utils.ErrWithTraceback(e)
 
 
 def _safe_run_aiconfig_method(aiconfig: AIConfigRuntime, method_name: MethodName, method_args: OpArgs) -> Result[None, str]:
