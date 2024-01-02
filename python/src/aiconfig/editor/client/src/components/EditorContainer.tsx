@@ -3,8 +3,8 @@ import { Container, Button, createStyles, Stack, Flex } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import {
   AIConfig,
+  InferenceSettings,
   JSONObject,
-  ModelMetadata,
   Prompt,
   PromptInput,
 } from "aiconfig";
@@ -27,6 +27,7 @@ import GlobalParametersContainer from "./GlobalParametersContainer";
 import AIConfigContext from "./AIConfigContext";
 import ConfigNameDescription from "./ConfigNameDescription";
 import { DEBOUNCE_MS } from "../utils/constants";
+import { getPromptModelName } from "../utils/promptUtils";
 
 type Props = {
   aiconfig: AIConfig;
@@ -45,10 +46,11 @@ export type AIConfigCallbacks = {
   save: (aiconfig: AIConfig) => Promise<void>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
-  updateModel: (
-    promptName?: string,
-    modelData?: string | ModelMetadata
-  ) => Promise<void /*{ aiconfig: AIConfig }*/>;
+  updateModel: (value: {
+    modelName?: string;
+    settings?: InferenceSettings;
+    promptName?: string;
+  }) => Promise<{ aiconfig: AIConfig }>;
   updatePrompt: (
     promptName: string,
     promptData: Prompt
@@ -184,8 +186,11 @@ export default function EditorContainer({
   const debouncedUpdateModel = useMemo(
     () =>
       debounce(
-        (promptName?: string, modelMetadata?: string | ModelMetadata) =>
-          updateModelCallback(promptName, modelMetadata),
+        (value: {
+          modelName?: string;
+          settings?: InferenceSettings;
+          promptName?: string;
+        }) => updateModelCallback(value),
         DEBOUNCE_MS
       ),
     [updateModelCallback]
@@ -198,9 +203,31 @@ export default function EditorContainer({
         id: promptId,
         modelSettings: newModelSettings,
       });
-      // TODO: Call server-side endpoint to update model
+
+      try {
+        const statePrompt = getPrompt(stateRef.current, promptId);
+        if (!statePrompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        const modelName = getPromptModelName(statePrompt);
+        if (!modelName) {
+          throw new Error(`Could not find model name for prompt ${promptId}`);
+        }
+        await debouncedUpdateModel({
+          modelName,
+          settings: newModelSettings as InferenceSettings,
+          promptName: statePrompt.name,
+        });
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : null;
+        showNotification({
+          title: "Error updating prompt model settings",
+          message,
+          color: "red",
+        });
+      }
     },
-    [dispatch]
+    [debouncedUpdateModel, dispatch]
   );
 
   const onUpdatePromptModel = useCallback(
@@ -216,17 +243,11 @@ export default function EditorContainer({
         if (!statePrompt) {
           throw new Error(`Could not find prompt with id ${promptId}`);
         }
-        const prompt = clientPromptToAIConfigPrompt(statePrompt);
-        const currentModel = prompt.metadata?.model;
-        let modelData: string | ModelMetadata | undefined = newModel;
-        if (newModel && currentModel && typeof currentModel !== "string") {
-          modelData = {
-            ...currentModel,
-            name: newModel,
-          };
-        }
 
-        await debouncedUpdateModel(prompt.name, modelData);
+        await debouncedUpdateModel({
+          modelName: newModel,
+          promptName: statePrompt.name,
+        });
 
         // TODO: Consolidate
       } catch (err: unknown) {
