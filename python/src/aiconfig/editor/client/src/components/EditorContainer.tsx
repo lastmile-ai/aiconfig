@@ -122,8 +122,19 @@ export default function EditorContainer({
   const debouncedUpdatePrompt = useMemo(
     () =>
       debounce(
-        (promptName: string, newPrompt: Prompt) =>
-          updatePromptCallback(promptName, newPrompt),
+        async (
+          promptName: string,
+          newPrompt: Prompt,
+          resFn?: (aiconfigRes: AIConfig) => void
+        ) => {
+          const serverConfigRes = await updatePromptCallback(
+            promptName,
+            newPrompt
+          );
+          if (serverConfigRes && resFn) {
+            resFn(serverConfigRes.aiconfig);
+          }
+        },
         DEBOUNCE_MS
       ),
     [updatePromptCallback]
@@ -146,22 +157,23 @@ export default function EditorContainer({
         }
         const prompt = clientPromptToAIConfigPrompt(statePrompt);
 
-        const serverConfigRes = await debouncedUpdatePrompt(prompt.name, {
-          ...prompt,
-          input: newPromptInput,
-        });
-
-        if (serverConfigRes) {
-          dispatch({
-            type: "CONSOLIDATE_AICONFIG",
-            action,
-            config: serverConfigRes.aiconfig,
-          });
-        }
+        await debouncedUpdatePrompt(
+          prompt.name,
+          {
+            ...prompt,
+            input: newPromptInput,
+          },
+          (serverConfigRes) =>
+            dispatch({
+              type: "CONSOLIDATE_AICONFIG",
+              action,
+              config: serverConfigRes.aiconfig,
+            })
+        );
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : null;
         showNotification({
-          title: "Error adding prompt to config",
+          title: "Error updating prompt input",
           message,
           color: "red",
         });
@@ -172,15 +184,39 @@ export default function EditorContainer({
 
   const onChangePromptName = useCallback(
     async (promptId: string, newName: string) => {
-      const action: AIConfigReducerAction = {
-        type: "UPDATE_PROMPT_NAME",
-        id: promptId,
-        name: newName,
-      };
+      try {
+        const statePrompt = getPrompt(stateRef.current, promptId);
+        if (!statePrompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        const prompt = clientPromptToAIConfigPrompt(statePrompt);
 
-      dispatch(action);
+        await debouncedUpdatePrompt(
+          prompt.name,
+          {
+            ...prompt,
+            name: newName,
+          },
+          // PromptName component maintains local state for the name to show in the UI
+          // We cannot update client config state until the name is successfully set server-side
+          // or else we could end up referencing a prompt name that is not set server-side
+          () =>
+            dispatch({
+              type: "UPDATE_PROMPT_NAME",
+              id: promptId,
+              name: newName,
+            })
+        );
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : null;
+        showNotification({
+          title: "Error updating prompt name",
+          message,
+          color: "red",
+        });
+      }
     },
-    [dispatch]
+    [debouncedUpdatePrompt]
   );
 
   const updateModelCallback = callbacks.updateModel;
