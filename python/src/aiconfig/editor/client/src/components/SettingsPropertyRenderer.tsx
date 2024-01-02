@@ -419,5 +419,5 @@ export default function SettingsPropertyRenderer({
   }
 
   // TODO: Support toggling to monaco JSON editor at top level
-  return propertyControl ?? <Text>No settings available</Text>;
+  return propertyControl ?? null;
 }
