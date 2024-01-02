@@ -484,6 +484,17 @@ class AIConfig(BaseModel):
                 parameters dict to. If none is provided, we update the
                 AIConfig-level parameters instead
         """
+        # Clear all existing parameters before setting new ones
+        parameter_names_to_delete = []
+        if prompt_name:
+            prompt = self.get_prompt(prompt_name)
+            parameter_names_to_delete = list(self.get_prompt_parameters(prompt).keys())
+        else:
+            parameter_names_to_delete = list(self.get_global_parameters().keys())
+
+        for parameter_name in parameter_names_to_delete:
+            self.delete_parameter(parameter_name, prompt_name)
+
         for parameter_name, parameter_value in parameters.items():
             self.set_parameter(parameter_name, parameter_value, prompt_name)
 
