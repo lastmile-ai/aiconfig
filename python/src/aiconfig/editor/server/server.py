@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Any, Dict, Type, Union
 
@@ -258,6 +259,20 @@ def set_parameter() -> FlaskResponse:
         OpArgs({"parameter_name": parameter_name, "parameter_value": parameter_value, "prompt_name": prompt_name})
     )
     return run_aiconfig_operation_with_op_args(aiconfig, "set_parameter", operation, operation_args)
+
+
+@app.route("/api/set_parameters", methods=["POST"])
+def set_parameters() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    parameters: Dict[str, Any] = request_json.get("parameters")
+    prompt_name: str | None = request_json.get("prompt_name")
+
+    operation = make_op_run_method(MethodName("set_parameters"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"parameters": parameters, "prompt_name": prompt_name}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_parameters", operation, operation_args)
 
 
 @app.route("/api/delete_parameter", methods=["POST"])
