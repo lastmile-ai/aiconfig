@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Type
+from typing import Any, Dict, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -241,3 +241,20 @@ def update_model() -> FlaskResponse:
     operation = make_op_run_method(MethodName("update_model"))
     operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"model_name": model_name, "settings": settings, "prompt_name": prompt_name}))
     return run_aiconfig_operation_with_op_args(aiconfig, "update_model", operation, operation_args)
+
+
+@app.route("/api/set_parameter", methods=["POST"])
+def set_parameter() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    parameter_name: str | None = request_json.get("parameter_name")
+    parameter_value: Union[str, Dict[str, Any]] | None = request_json.get("parameter_value")
+    prompt_name: str | None = request_json.get("prompt_name")
+
+    operation = make_op_run_method(MethodName("set_parameter"))
+    operation_args: Result[OpArgs, str] = result.Ok(
+        OpArgs({"parameter_name": parameter_name, "parameter_value": parameter_value, "prompt_name": prompt_name})
+    )
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_parameter", operation, operation_args)
