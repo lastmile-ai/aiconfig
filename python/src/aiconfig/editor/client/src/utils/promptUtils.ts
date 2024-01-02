@@ -44,9 +44,46 @@ export function getPromptModelName(
 //   - we can focus on the important 3 params defined above, instead of requiring re-definining the full JSON schema
 // Should we define a JSON schema for PromptSchema type so we can safely serialize/deserialize them?
 export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
-  "gpt-3.5-turbo": OpenAIChatModelParserPromptSchema,
+  // OpenAIChatModelParser
   "gpt-4": OpenAIChatModelParserPromptSchema,
+  "gpt-4-0314": OpenAIChatModelParserPromptSchema,
+  "gpt-4-0613": OpenAIChatModelParserPromptSchema,
+  "gpt-4-32k": OpenAIChatModelParserPromptSchema,
+  "gpt-4-32k-0314": OpenAIChatModelParserPromptSchema,
+  "gpt-4-32k-0613": OpenAIChatModelParserPromptSchema,
+  "gpt-3.5-turbo": OpenAIChatModelParserPromptSchema,
+  "gpt-3.5-turbo-16k": OpenAIChatModelParserPromptSchema,
+  "gpt-3.5-turbo-0301": OpenAIChatModelParserPromptSchema,
+  "gpt-3.5-turbo-0613": OpenAIChatModelParserPromptSchema,
+  "gpt-3.5-turbo-16k-0613": OpenAIChatModelParserPromptSchema,
+
+  // TODO: Add GPT4-V parser in AIConfig
   "gpt-4-vision-preview": OpenAIChatVisionModelParserPromptSchema,
+
+  // OpenAIModelParser
+  // "babbage-002":
+  // "davinci-002":
+  // "gpt-3.5-turbo-instruct":
+  // "text-davinci-003":
+  // "text-davinci-002":
+  // "text-davinci-001":
+  // "code-davinci-002":
+  // "text-curie-001":
+  // "text-babbage-001":
+  // "text-ada-001":
+
+  // DalleImageGenerationParser
+  // "dalle-e-2":
+  // "dall-e-3":
+
+  // HuggingFaceTextGenerationParser
+  // "HuggingFaceTextGenerationParser":
+
+  // PaLMTextParser
+  // "models/text-bison-001":
+
+  // PaLMChatParser
+  // "models/chat-bison-001":
 };
 
 export type PromptInputSchema =
