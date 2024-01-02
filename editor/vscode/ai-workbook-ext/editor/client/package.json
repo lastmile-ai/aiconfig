@@ -1,0 +1,59 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "build:vscode": "node ./scripts/build-react-no-split.js",
+    "postbuild": "node postbuild.js",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@mantine/carousel": "^6.0.7",
+    "@mantine/core": "^6.0.7",
+    "@mantine/dates": "^6.0.16",
+    "@mantine/dropzone": "^6.0.7",
+    "@mantine/form": "^6.0.7",
+    "@mantine/hooks": "^6.0.7",
+    "@mantine/modals": "^6.0.7",
+    "@mantine/notifications": "^6.0.7",
+    "@mantine/prism": "^6.0.7",
+    "@tabler/icons-react": "^2.44.0",
+    "@vscode/webview-ui-toolkit": "^1.4.0",
+    "aiconfig": "../../../../../typescript",
+    "lodash": "^4.17.21",
+    "node-fetch": "^3.3.2",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-markdown": "^8.0.6",
+    "remark-gfm": "^4.0.0",
+    "ufetch": "^1.6.0",
+    "url-join": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.2",
+    "react-scripts": "5.0.1",
+    "rewire": "^5.0.0",
+    "typescript": "^5"
+  }
+}

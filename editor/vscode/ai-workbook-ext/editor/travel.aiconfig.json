@@ -1,0 +1,120 @@
+{
+  "name": "NYC Trip Planner",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {
+      "gpt-3.5-turbo": {
+        "model": "gpt-3.5-turbo",
+        "top_p": 1,
+        "temperature": 1
+      },
+      "gpt-4": {
+        "model": "gpt-4",
+        "max_tokens": 3000,
+        "system_prompt": "You are an expert travel coordinator with exquisite taste."
+      }
+    },
+    "default_model": "gpt-3.5-turbo"
+  },
+  "description": "Intrepid explorer with ChatGPT and AIConfig",
+  "prompts": [
+    {
+      "name": "get_activities",
+      "input": "Tell me 10 fun attractions to do in NYC.",
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": {
+            "content": "1. Visit Central Park: Exploring this iconic park offers activities like picnicking, boating, visiting the zoo, or simply enjoying the beautiful scenery.\n2. Take a stroll on the High Line: This elevated park built on a historic freight rail line provides stunning views of the city and features art installations and gardens.\n3. Explore Times Square: Known as \"The Crossroads of the World,\" Times Square is a bustling hub with vibrant billboards, shops, restaurants, and street performers.\n4. Take a boat tour to the Statue of Liberty: Enjoy a ferry ride to Liberty Island and have an up-close view of the iconic national monument.\n5. Visit the Museum of Modern Art (MoMA): Discover a vast collection of modern and contemporary art, including works by Picasso, Warhol, Van Gogh, and more.\n6. Explore the Metropolitan Museum of Art (The Met): One of the world's largest art museums, The Met showcases over 5,000 years of art from around the globe.\n7. Watch a Broadway show: New York City's theater district is famous for its world-class Broadway productions, offering a range of musicals, plays, and performances.\n8. Walk across the Brooklyn Bridge: Enjoy panoramic views of the city skyline as you stroll across this iconic bridge, connecting Manhattan and Brooklyn.\n9. Experience the 9/11 Memorial & Museum: Pay tribute to the victims of the September 11 attacks at the memorial pools and explore the museum's exhibitions.\n10. Enjoy the vibrant food scene: Indulge in diverse cuisines at food markets like Chelsea Market or Smorgasburg, or try iconic New York dishes like pizza, bagels, or hot dogs from local shops and delis.",
+            "role": "assistant"
+          },
+          "metadata": {
+            "finish_reason": "stop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "gen_itinerary",
+      "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
+      "metadata": {
+        "model": "gpt-4",
+        "parameters": {
+          "order_by": "geographic location"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": {
+            "content": "Here is your itinerary, ordered by duration for your listed activities:\n\n1. Visit Central Park (4-5 hours): Begin your journey by exploring this iconic park. The activities you can enjoy will include picnicking, boating, visiting the zoo, or simply enjoying the beautiful scenery. This could take most of a morning or an afternoon, depending on your pace.\n\n2. Take a stroll on the High Line (2-3 hours): For your activity following Central Park, walk along the High Line. This elevated park built on a historic freight rail line provides stunning views of the city and features art installations and gardens.\n\n3. Explore the Metropolitan Museum of Art (The Met) (3-4 hours): Following your stroll on the High Line, visit The Met. The museum is one of the world's largest art museums and showcases over 5,000 years of art from around the globe. \n\n4. Enjoy the vibrant food scene (2-3 hours): After a morning of sightseeing, indulge in diverse cuisines at food markets like Chelsea Market, or try some iconic New York dishes from local shops or delis to fuel up for your afternoon activities.\n\n5. Explore Times Square (1-2 hours): Known as \"The Crossroads of the World,\" Times Square is a bustling hub with vibrant billboards, shops, restaurants, and street performers, which you can enjoy after your meal.\n\n6. Visit the Museum of Modern Art (MoMA) (2-3 hours): Discover a vast collection of modern and contemporary art, including works by Picasso, Warhol, Van Gogh, and more.\n\n7. Take a boat tour to the Statue of Liberty (2-3 hours): After visiting MoMA, you will enjoy a ferry ride to Liberty Island for an up-close view of the iconic national monument.\n\n8. Experience the 9/11 Memorial & Museum (2 hours): After your boat tour, pay tribute to the victims of the September 11 attacks at the memorial pools and explore the museum's exhibitions.\n\n9. Walk across the Brooklyn Bridge (1 hour): Enjoy panoramic views of the city skyline as you stroll across this iconic bridge, connecting Manhattan and Brooklyn.\n\n10. Watch a Broadway show (3 hours): End your day with a world-class Broadway production in New York City's renowned theater district, offering a range of musicals, plays, and performances.\n\nPlease note that the times listed are approximate and can vary depending on personal pace, crowd sizes, and individual interest in each activity.",
+            "role": "assistant"
+          },
+          "metadata": {
+            "finish_reason": "stop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "gen_packing_list",
+      "input": "What should I bring to {{location}}?",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo",
+          "settings": {
+            "system_prompt": {
+              "role": "system",
+              "content": "You provide a bulleted list of items to pack for a week long trip."
+            }
+          }
+        },
+        "parameters": {
+          "location": "nyc"
+        },
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": {
+            "content": "Here's a list of items to pack for a trip to NYC:\n\n1. Weather-appropriate clothing: Check the weather forecast and pack accordingly. Bring layers, as the weather can change throughout the day. Don't forget a rain jacket and umbrella if needed.\n\n2. Comfortable shoes: NYC is a walking city, so bring comfortable shoes for exploring the streets, parks, and attractions.\n\n3. Backpack or tote bag: A small backpack or tote bag is ideal for carrying essentials, water bottles, and any souvenirs you may collect during your trip.\n\n4. Travel guidebook or smartphone: Have a handy guidebook or smartphone app with information about the attractions, restaurants, and public transportation in NYC.\n\n5. Portable phone charger: NYC can be quite busy, and you'll likely be using your phone for navigation or taking photos. Bring a portable charger to keep your phone powered up throughout the day.\n\n6. Camera: Capture the memories of your NYC trip by bringing a camera or using your smartphone's camera.\n\n7. Travel documents: Carry a photocopy of your passport, identification, and any travel reservations you made. Also, have your hotel information, emergency contact numbers, and a map of the city.\n\n8. Portable water bottle: Staying hydrated is crucial while walking around the city. Bring a refillable water bottle to save money and reduce waste.\n\n9. Snacks or energy bars: Keep some snacks handy for when hunger strikes during your explorations.\n\n10. Any necessary medications: If you require medication, make sure to pack an adequate supply for the duration of your trip.\n\nRemember to pack light and only bring what you'll need to make your trip more comfortable.",
+            "role": "assistant"
+          },
+          "metadata": {
+            "finish_reason": "stop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "image_prompt",
+      "input": {
+        "attachments": [
+          {
+            "data": "https://s3.amazonaws.com/files.uploads.lastmileai.com/uploads/cldxsqbel0000qs8owp8mkd0z/2023_12_1_21_23_24/942/Screenshot 2023-11-28 at 11.11.25 AM.png",
+            "mime_type": "image/png"
+          },
+          {
+            "data": "https://s3.amazonaws.com/files.uploads.lastmileai.com/uploads/cldxsqbel0000qs8owp8mkd0z/2023_12_1_21_23_24/8325/Screenshot 2023-11-28 at 1.51.52 PM.png",
+            "mime_type": "image/png"
+          }
+        ],
+        "data": "What do these images show?"
+      },
+      "metadata": {
+        "model": {
+          "name": "gpt-4-vision-preview",
+          "settings": {}
+        },
+        "parameters": {}
+      },
+      "outputs": []
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}
