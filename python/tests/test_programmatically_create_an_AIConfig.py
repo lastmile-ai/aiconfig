@@ -604,7 +604,7 @@ def test_add_output_existing_prompt_overwrite(ai_config_runtime: AIConfigRuntime
         outputs=[original_output],
     )
     ai_config_runtime.add_prompt(prompt.name, prompt)
-    # check that the base result is there
+    # check that the original_output is there
     assert ai_config_runtime.get_latest_output("GreetingPrompt") == original_output
     expected_output = ExecuteResult(
         output_type="execute_result",
@@ -612,25 +612,25 @@ def test_add_output_existing_prompt_overwrite(ai_config_runtime: AIConfigRuntime
         data={"role": "assistant", "content": "test output"},
         metadata={"finish_reason": "stop"},
     )
-    # overwrite the base result
+    # overwrite the original_output
     ai_config_runtime.add_output("GreetingPrompt", expected_output, True)
     assert ai_config_runtime.get_latest_output("GreetingPrompt") == expected_output
 
 def test_add_undefined_output_to_prompt(ai_config_runtime: AIConfigRuntime):
     """Test for adding an undefined output to a prompt with/without overwriting. Should result in an error."""
-    prompt1 = Prompt(
+    prompt = Prompt(
         name="GreetingPrompt",
         input="Hello, how are you?",
         metadata=PromptMetadata(model="fakemodel"),
     )
-    ai_config_runtime.add_prompt(prompt1.name, prompt1)
+    ai_config_runtime.add_prompt(prompt.name, prompt)
     # Case 1: No output, overwrite param not defined
     with pytest.raises(
         ValueError,
         match=r"Cannot add output to prompt 'GreetingPrompt'. Output is not defined.",
     ):
         ai_config_runtime.add_output("GreetingPrompt", None)
-    # Case 2: No output, woverwrite param set to True
+    # Case 2: No output, overwrite param set to True
     with pytest.raises(
         ValueError,
         match=r"Cannot add output to prompt 'GreetingPrompt'. Output is not defined.",
