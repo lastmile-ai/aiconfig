@@ -566,7 +566,7 @@ def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRunt
     ai_config_runtime.add_prompt(prompt1.name, prompt1)
     test_result = ExecuteResult(
         output_type="execute_result",
-        execution_count=0.0,
+        execution_count=0,
         data={"role": "assistant", "content": "test output"},
         metadata={"finish_reason": "stop"},
     )
@@ -576,7 +576,7 @@ def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRunt
 
     test_result2 = ExecuteResult(
         output_type="execute_result",
-        execution_count=0.0,
+        execution_count=0,
         data={"role": "assistant", "content": "test output for second time"},
         metadata={"finish_reason": "stop"},
     )
@@ -586,31 +586,35 @@ def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRunt
     ai_config_runtime.delete_output("GreetingPrompt")
     assert ai_config_runtime.get_latest_output("GreetingPrompt") == None
 
+
 def test_add_output_existing_prompt_overwrite(ai_config_runtime: AIConfigRuntime):
     """Test adding an output to an existing prompt with overwriting."""
-    base_result = ExecuteResult(
+    original_output = ExecuteResult(
         output_type="execute_result",
-        execution_count=0.0,
-        data={"role": "assistant", "content": "base output"},
-        metadata={"finish_reason": "stop"},)
-    prompt1 = Prompt(
+        execution_count=0,
+        data={"role": "assistant", "content": "original output"},
+        metadata={
+            "rawResponse": {"role": "assistant", "content": "original output"}
+        },
+    )
+    prompt = Prompt(
         name="GreetingPrompt",
         input="Hello, how are you?",
         metadata=PromptMetadata(model="fakemodel"),
-        outputs=[base_result],
+        outputs=[original_output],
     )
-    ai_config_runtime.add_prompt(prompt1.name, prompt1)
+    ai_config_runtime.add_prompt(prompt.name, prompt)
     # check that the base result is there
-    assert ai_config_runtime.get_latest_output("GreetingPrompt") == base_result
-    test_result = ExecuteResult(
+    assert ai_config_runtime.get_latest_output("GreetingPrompt") == original_output
+    expected_output = ExecuteResult(
         output_type="execute_result",
-        execution_count=0.0,
+        execution_count=0,
         data={"role": "assistant", "content": "test output"},
         metadata={"finish_reason": "stop"},
     )
     # overwrite the base result
-    ai_config_runtime.add_output("GreetingPrompt", test_result, True)
-    assert ai_config_runtime.get_latest_output("GreetingPrompt") == test_result
+    ai_config_runtime.add_output("GreetingPrompt", expected_output, True)
+    assert ai_config_runtime.get_latest_output("GreetingPrompt") == expected_output
 
 def test_add_empty_output_to_prompt(ai_config_runtime: AIConfigRuntime):
     """Test for adding an empty output to an existing prompt with/without overwriting."""
