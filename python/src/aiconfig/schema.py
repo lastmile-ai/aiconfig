@@ -692,7 +692,7 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         if not prompt:
             raise IndexError(f"Cannot out output. Prompt '{prompt_name}' not found in config.")
         if not output:
-            raise Exception(f"Cannot add output to prompt '{prompt_name}'. Output is empty")
+            raise Exception(f"Cannot add output to prompt '{prompt_name}'. Output is empty.")
         if overwrite:
             prompt.outputs = [output]
         else:
