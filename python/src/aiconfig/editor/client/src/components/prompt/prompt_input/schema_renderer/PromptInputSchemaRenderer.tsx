@@ -4,9 +4,10 @@ import {
 } from "../../../../utils/promptUtils";
 import DataRenderer from "./PromptInputDataSchemaRenderer";
 import AttachmentsRenderer from "./PromptInputAttachmentsSchemaRenderer";
-import { Flex, Textarea } from "@mantine/core";
+import { Flex, Text, Textarea } from "@mantine/core";
 import { Attachment, JSONValue, PromptInput } from "aiconfig";
 import { memo } from "react";
+import JSONRenderer from "../../../JSONRenderer";
 
 type Props = {
   input: PromptInput;
@@ -61,15 +62,17 @@ function SchemaRenderer({ input, schema, onChangeInput }: SchemaRendererProps) {
 
 export default memo(function PromptInputSchemaRenderer(props: Props) {
   if (props.schema.type === "string") {
-    // TODO: Add ErrorBoundary handling
-    // if (props.input && typeof props.input !== "string") {
-    //   throw new Error(
-    //     `Expected input to be a string, but got ${typeof props.input}`
-    //   );
-    // }
+    if (props.input && typeof props.input !== "string") {
+      return (
+        <>
+          <Text color="red">Expected input type string</Text>
+          <JSONRenderer content={props.input} />
+        </>
+      );
+    }
     return (
       <Textarea
-        value={props.input as string}
+        value={props.input}
         onChange={(e) => props.onChangeInput(e.target.value)}
         placeholder="Type a prompt"
       />

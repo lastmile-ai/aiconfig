@@ -1,8 +1,11 @@
 import { PromptInput } from "aiconfig";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { PromptInputSchema } from "../../../utils/promptUtils";
 import PromptInputSchemaRenderer from "./schema_renderer/PromptInputSchemaRenderer";
 import PromptInputConfigRenderer from "./PromptInputConfigRenderer";
+import { ActionIcon, Flex, Tooltip } from "@mantine/core";
+import { IconBraces, IconBracesOff } from "@tabler/icons-react";
+import PromptInputJSONRenderer from "./PromptInputJSONRenderer";
 
 type Props = {
   input: PromptInput;
@@ -15,13 +18,34 @@ export default memo(function PromptInputRenderer({
   schema,
   onChangeInput,
 }: Props) {
-  return schema ? (
-    <PromptInputSchemaRenderer
-      input={input}
-      schema={schema}
-      onChangeInput={onChangeInput}
-    />
-  ) : (
-    <PromptInputConfigRenderer input={input} onChangeInput={onChangeInput} />
+  const [isRawJSON, setIsRawJSON] = useState(false);
+  return (
+    <>
+      <Flex justify="flex-end">
+        <Tooltip label="Toggle JSON editor" withArrow>
+          <ActionIcon onClick={() => setIsRawJSON((curr) => !curr)}>
+            {isRawJSON ? (
+              <IconBracesOff size="1rem" />
+            ) : (
+              <IconBraces size="1rem" />
+            )}
+          </ActionIcon>
+        </Tooltip>
+      </Flex>
+      {isRawJSON ? (
+        <PromptInputJSONRenderer input={input} onChangeInput={onChangeInput} />
+      ) : schema ? (
+        <PromptInputSchemaRenderer
+          input={input}
+          schema={schema}
+          onChangeInput={onChangeInput}
+        />
+      ) : (
+        <PromptInputConfigRenderer
+          input={input}
+          onChangeInput={onChangeInput}
+        />
+      )}
+    </>
   );
 });

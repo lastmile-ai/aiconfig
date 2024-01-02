@@ -59,7 +59,7 @@ e.g. `aiconfig edit --parsers-module-path="/path/to/my_editor_plugin.py"`
 
 From the top-level `aiconfig` dir:
 ```bash
-pip3 install -e aiconfig/python
+pip3 install -e ./python
 alias aiconfig="python -m 'aiconfig.scripts.aiconfig_cli'"
 ```
 
