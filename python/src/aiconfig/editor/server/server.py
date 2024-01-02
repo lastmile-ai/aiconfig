@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Type
+from typing import Any, Dict, Type
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -226,3 +226,18 @@ def delete_prompt() -> FlaskResponse:
 
     operation = make_op_run_method(method_name)
     return run_aiconfig_operation_with_request_json(aiconfig, request_json, f"method_{method_name}", operation, signature)
+
+
+@app.route("/api/update_model", methods=["POST"])
+def update_model() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    model_name: str | None = request_json.get("model_name")
+    settings: Dict[str, Any] | None = request_json.get("settings")
+    prompt_name: str | None = request_json.get("prompt_name")
+
+    operation = make_op_run_method(MethodName("update_model"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"model_name": model_name, "settings": settings, "prompt_name": prompt_name}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "update_model", operation, operation_args)
