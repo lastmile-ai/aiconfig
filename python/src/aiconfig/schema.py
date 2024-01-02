@@ -696,6 +696,29 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         else:
             prompt.outputs.append(output)
 
+    def add_outputs(self, prompt_name: str, outputs: List[Output], overwrite: bool = False):
+        """
+        Add multiple outputs to the prompt with the given name in the AIConfig
+
+        Args:
+            prompt_name (str): The name of the prompt to add the outputs to.
+            outputs (List[Output]): List of outputs to add.
+            overwrite (bool, optional): Overwrites the existing output if True. Otherwise appends the outputs to the prompt's output list. Defaults to False.
+        """
+        prompt = self.get_prompt(prompt_name)
+        if not prompt:
+            raise IndexError(
+                f"Cannot out output. Prompt '{prompt_name}' not found in config."
+            )
+        if not outputs:
+            raise IndexError(
+                f"Cannot add outputs. No outputs provided for prompt '{prompt_name}'."
+            )
+        if overwrite:
+            prompt.outputs = outputs
+        else:
+            prompt.outputs.extend(outputs)
+
     def delete_output(self, prompt_name: str):
         """
         Deletes the outputs for the prompt with the given prompt_name.
