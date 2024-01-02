@@ -592,9 +592,9 @@ def test_add_output_existing_prompt_overwrite(ai_config_runtime: AIConfigRuntime
     original_output = ExecuteResult(
         output_type="execute_result",
         execution_count=0,
-        data={"role": "assistant", "content": "original output"},
+        data="original output",
         metadata={
-            "rawResponse": {"role": "assistant", "content": "original output"}
+            "raw_response": {"role": "assistant", "content": "original output"}
         },
     )
     prompt = Prompt(
@@ -609,8 +609,10 @@ def test_add_output_existing_prompt_overwrite(ai_config_runtime: AIConfigRuntime
     expected_output = ExecuteResult(
         output_type="execute_result",
         execution_count=0,
-        data={"role": "assistant", "content": "test output"},
-        metadata={"finish_reason": "stop"},
+        data="original output",
+        metadata={
+            "raw_response": {"role": "assistant", "content": "original output"}
+        },
     )
     # overwrite the original_output
     ai_config_runtime.add_output("GreetingPrompt", expected_output, True)
