@@ -285,3 +285,16 @@ def set_name() -> FlaskResponse:
     operation = make_op_run_method(MethodName("set_name"))
     operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"name": name}))
     return run_aiconfig_operation_with_op_args(aiconfig, "set_name", operation, operation_args)
+
+
+@app.route("/api/set_description", methods=["POST"])
+def set_description() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    description: str | None = request_json.get("description")
+
+    operation = make_op_run_method(MethodName("set_description"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"description": description}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_description", operation, operation_args)
