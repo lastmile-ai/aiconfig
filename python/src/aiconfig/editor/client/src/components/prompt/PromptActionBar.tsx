@@ -88,7 +88,11 @@ export default memo(function PromptActionBar({
               )}
             </Tabs>
           </Container>
-          <RunPromptButton runPrompt={onRunPrompt} size="full" />
+          <RunPromptButton
+            isRunning={prompt._ui.isRunning}
+            runPrompt={onRunPrompt}
+            size="full"
+          />
         </>
       ) : (
         <Flex direction="column" justify="space-between" h="100%">
@@ -98,8 +102,8 @@ export default memo(function PromptActionBar({
             </ActionIcon>
           </Flex>
           <RunPromptButton
-            runPrompt={onRunPrompt}
             isRunning={prompt._ui.isRunning}
+            runPrompt={onRunPrompt}
             size="compact"
           />
         </Flex>
