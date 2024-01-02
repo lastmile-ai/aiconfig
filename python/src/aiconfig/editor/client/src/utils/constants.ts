@@ -1,1 +1,1 @@
-export const DEBOUNCE_MS = 250;
+export const DEBOUNCE_MS = 300;
