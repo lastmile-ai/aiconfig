@@ -409,7 +409,16 @@ export default function EditorContainer({
         type: "SET_NAME",
         name,
       });
-      await debouncedSetName(name);
+      try {
+        await debouncedSetName(name);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : null;
+        showNotification({
+          title: "Error setting config name",
+          message,
+          color: "red",
+        });
+      }
     },
     [debouncedSetName]
   );
@@ -430,7 +439,17 @@ export default function EditorContainer({
         type: "SET_DESCRIPTION",
         description,
       });
-      await debouncedSetDescription(description);
+
+      try {
+        await debouncedSetDescription(description);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : null;
+        showNotification({
+          title: "Error setting config description",
+          message,
+          color: "red",
+        });
+      }
     },
     [debouncedSetDescription]
   );
