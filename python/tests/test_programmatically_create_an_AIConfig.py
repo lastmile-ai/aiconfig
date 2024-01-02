@@ -536,12 +536,12 @@ def test_set_and_delete_metadata_ai_config(ai_config_runtime: AIConfigRuntime):
 
 def test_set_and_delete_metadata_ai_config_prompt(ai_config_runtime: AIConfigRuntime):
     """Test deleting a non-existent metadata key at the AIConfig level."""
-    prompt1 = Prompt(
+    prompt = Prompt(
         name="GreetingPrompt",
         input="Hello, how are you?",
         metadata=PromptMetadata(model="fakemodel"),
     )
-    ai_config_runtime.add_prompt(prompt1.name, prompt1)
+    ai_config_runtime.add_prompt(prompt.name, prompt)
     ai_config_runtime.set_metadata("testkey", "testvalue", "GreetingPrompt")
 
     assert (
@@ -558,17 +558,19 @@ def test_set_and_delete_metadata_ai_config_prompt(ai_config_runtime: AIConfigRun
 
 def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRuntime):
     """Test adding an output to an existing prompt without overwriting."""
-    prompt1 = Prompt(
+    prompt = Prompt(
         name="GreetingPrompt",
         input="Hello, how are you?",
         metadata=PromptMetadata(model="fakemodel"),
     )
-    ai_config_runtime.add_prompt(prompt1.name, prompt1)
+    ai_config_runtime.add_prompt(prompt.name, prompt)
     test_result = ExecuteResult(
         output_type="execute_result",
         execution_count=0,
-        data={"role": "assistant", "content": "test output"},
-        metadata={"finish_reason": "stop"},
+        data="test output",
+        metadata={
+            "raw_response": {"role": "assistant", "content": "test output"}
+        },
     )
     ai_config_runtime.add_output("GreetingPrompt", test_result)
 
@@ -577,9 +579,11 @@ def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRunt
     test_result2 = ExecuteResult(
         output_type="execute_result",
         execution_count=0,
-        data={"role": "assistant", "content": "test output for second time"},
-        metadata={"finish_reason": "stop"},
-    )
+        data="test output",
+        metadata={
+            "raw_response": {"role": "assistant", "content": "test output for second time"}
+        }, 
+    
     ai_config_runtime.add_output("GreetingPrompt", test_result2)
     assert ai_config_runtime.get_latest_output("GreetingPrompt") == test_result2
 
