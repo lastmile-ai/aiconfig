@@ -1,12 +1,5 @@
 import PromptContainer from "./prompt/PromptContainer";
-import {
-  Container,
-  Group,
-  Button,
-  createStyles,
-  Stack,
-  Flex,
-} from "@mantine/core";
+import { Container, Button, createStyles, Stack, Flex } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import {
   AIConfig,
@@ -32,6 +25,8 @@ import { debounce, uniqueId } from "lodash";
 import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
 import AIConfigContext from "./AIConfigContext";
+import ConfigNameDescription from "./ConfigNameDescription";
+import { DEBOUNCE_MS } from "../utils/constants";
 
 type Props = {
   aiconfig: AIConfig;
@@ -48,6 +43,8 @@ export type AIConfigCallbacks = {
   getModels: (search: string) => Promise<string[]>;
   runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
   save: (aiconfig: AIConfig) => Promise<void>;
+  setConfigDescription: (description: string) => Promise<void>;
+  setConfigName: (name: string) => Promise<void>;
   updateModel: (
     promptName?: string,
     modelData?: string | ModelMetadata
@@ -124,7 +121,7 @@ export default function EditorContainer({
       debounce(
         (promptName: string, newPrompt: Prompt) =>
           updatePromptCallback(promptName, newPrompt),
-        250
+        DEBOUNCE_MS
       ),
     [updatePromptCallback]
   );
@@ -189,7 +186,7 @@ export default function EditorContainer({
       debounce(
         (promptName?: string, modelMetadata?: string | ModelMetadata) =>
           updateModelCallback(promptName, modelMetadata),
-        250
+        DEBOUNCE_MS
       ),
     [updateModelCallback]
   );
@@ -379,6 +376,44 @@ export default function EditorContainer({
     [runPromptCallback]
   );
 
+  const setNameCallback = callbacks.setConfigName;
+  const debouncedSetName = useMemo(
+    () => debounce((name: string) => setNameCallback(name), DEBOUNCE_MS),
+    [setNameCallback]
+  );
+
+  const onSetName = useCallback(
+    async (name: string) => {
+      dispatch({
+        type: "SET_NAME",
+        name,
+      });
+      await debouncedSetName(name);
+    },
+    [debouncedSetName]
+  );
+
+  const setDescriptionCallback = callbacks.setConfigDescription;
+  const debouncedSetDescription = useMemo(
+    () =>
+      debounce(
+        (description: string) => setDescriptionCallback(description),
+        DEBOUNCE_MS
+      ),
+    [setDescriptionCallback]
+  );
+
+  const onSetDescription = useCallback(
+    async (description: string) => {
+      dispatch({
+        type: "SET_DESCRIPTION",
+        description,
+      });
+      await debouncedSetDescription(description);
+    },
+    [debouncedSetDescription]
+  );
+
   const { classes } = useStyles();
 
   const getState = useCallback(() => stateRef.current, []);
@@ -392,14 +427,17 @@ export default function EditorContainer({
   return (
     <AIConfigContext.Provider value={contextValue}>
       <Container maw="80rem">
-        <Group grow m="sm">
-          {/* <Text sx={{ textOverflow: "ellipsis", overflow: "hidden" }} size={14}>
-            {path || "No path specified"}
-          </Text> */}
-          <Button loading={isSaving} ml="lg" onClick={onSave}>
+        <Flex justify="flex-end" mt="md" mb="xs">
+          <Button loading={isSaving} onClick={onSave}>
             Save
           </Button>
-        </Group>
+        </Flex>
+        <ConfigNameDescription
+          name={aiconfigState.name}
+          description={aiconfigState.description}
+          setDescription={onSetDescription}
+          setName={onSetName}
+        />
       </Container>
       <GlobalParametersContainer
         initialValue={aiconfigState?.metadata?.parameters ?? {}}
