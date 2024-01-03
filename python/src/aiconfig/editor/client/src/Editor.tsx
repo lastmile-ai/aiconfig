@@ -8,17 +8,54 @@ import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
 
 export default function Editor() {
-  const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
+  const [aiconfig, setAiConfig] = useState<AIConfig | undefined>({
+    name: "NYC Trip Planner",
+    description: "Intrepid explorer with ChatGPT and AIConfig",
+    schema_version: "latest",
+    metadata: {
+      models: {
+        "gpt-3.5-turbo": {
+          model: "gpt-3.5-turbo",
+          top_p: 1,
+          temperature: 1,
+        },
+        "gpt-4": {
+          model: "gpt-4",
+          max_tokens: 3000,
+          system_prompt:
+            "You are an expert travel coordinator with exquisite taste.",
+        },
+      },
+      default_model: "gpt-3.5-turbo",
+    },
+    prompts: [
+      {
+        name: "get_activities",
+        input: "Tell me 10 fun attractions to do in NYC.",
+      },
+      {
+        name: "gen_itinerary",
+        input:
+          "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
+        metadata: {
+          model: "gpt-4",
+          parameters: {
+            order_by: "geographic location",
+          },
+        },
+      },
+    ],
+  });
 
-  const loadConfig = useCallback(async () => {
-    const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
+  // const loadConfig = useCallback(async () => {
+  //   const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
 
-    setAiConfig(res.aiconfig);
-  }, []);
+  //   setAiConfig(res.aiconfig);
+  // }, []);
 
-  useEffect(() => {
-    loadConfig();
-  }, [loadConfig]);
+  // useEffect(() => {
+  //   loadConfig();
+  // }, [loadConfig]);
 
   const save = useCallback(async (aiconfig: AIConfig) => {
     const res = await ufetch.post(ROUTE_TABLE.SAVE, {
