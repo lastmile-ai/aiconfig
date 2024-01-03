@@ -2,6 +2,7 @@ import { JSONObject, JSONValue, Prompt } from "aiconfig";
 import { OpenAIChatModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatModelParserPromptSchema";
 import { OpenAIChatVisionModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatVisionModelParserPromptSchema";
 import { DalleImageGenerationParserPromptSchema } from "../shared/prompt_schemas/DalleImageGenerationParserPromptSchema";
+import { PaLMTextParserPromptSchema } from "../shared/prompt_schemas/PaLMTextParserPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -69,7 +70,7 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   // "HuggingFaceTextGenerationParser":
 
   // PaLMTextParser
-  // "models/text-bison-001":
+  "models/text-bison-001": PaLMTextParserPromptSchema,
 
   // PaLMChatParser
   // "models/chat-bison-001":
