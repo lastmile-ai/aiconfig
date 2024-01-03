@@ -644,6 +644,27 @@ export default function EditorContainer({
     return () => clearInterval(saveInterval);
   }, [isDirty, onSave]);
 
+  // Override CMD+s and CTRL+s to save
+  useEffect(() => {
+    const saveHandler = (e: KeyboardEvent) => {
+      // Note platform property to distinguish between CMD and CTRL for
+      // Mac/Windows/Linux is deprecated.
+      // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/platform
+      // Just handle both for now.
+      if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+
+        if (stateRef.current._ui.isDirty) {
+          onSave();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", saveHandler, false);
+
+    return () => window.removeEventListener("keydown", saveHandler);
+  }, [onSave]);
+
   return (
     <AIConfigContext.Provider value={contextValue}>
       <Notifications />
