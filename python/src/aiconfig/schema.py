@@ -825,7 +825,7 @@ AIConfig-level settings. If this is a mistake, please rerun the \
 
     def add_output(self, prompt_name: str, output: Output, overwrite: bool = False):
         """
-        Add an output to the [rompt with the given name in the AIConfig
+        Add an output to the prompt with the given name in the AIConfig
 
         Args:
             prompt_name (str): The name of the prompt to add the output to.
@@ -834,8 +834,10 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         """
         prompt = self.get_prompt(prompt_name)
         if not prompt:
-            raise IndexError(f"Cannot out output. Prompt '{prompt_name}' not found in config.")
-        if overwrite or not output:
+            raise IndexError(f"Cannot add output. Prompt '{prompt_name}' not found in config.")
+        if not output:
+            raise ValueError(f"Cannot add output to prompt '{prompt_name}'. Output is not defined.")
+        if overwrite:
             prompt.outputs = [output]
         else:
             prompt.outputs.append(output)
