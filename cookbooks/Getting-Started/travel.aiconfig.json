@@ -4,35 +4,71 @@
   "schema_version": "latest",
   "metadata": {
     "models": {
-      "gpt-3.5-turbo": {
-        "model": "gpt-3.5-turbo",
-        "top_p": 1,
-        "temperature": 1
-      },
-      "gpt-4": {
-        "model": "gpt-4",
+      "gpt2": {
+        "model": "gpt2",
         "max_tokens": 3000,
-        "system_prompt": "You are an expert travel coordinator with exquisite taste."
+        "system_prompt": "Some random system prompt"
+      },
+      "runwayml/stable-diffusion-v1-5": {
+        "model": "runwayml/stable-diffusion-v1-5"
+      },
+      "stabilityai/stable-diffusion-xl-base-1.0": {
+        "model": "stabilityai/stable-diffusion-xl-base-1.0"
+      },
+      "stevhliu/my_awesome_billsum_model": {
+        "model": "stevhliu/my_awesome_billsum_model"
       }
     },
-    "default_model": "gpt-3.5-turbo"
+    "model_parsers": {
+      "stevhliu/my_awesome_billsum_model": "HuggingFaceTextSummarizationTransformer"
+    },
+    "default_model": "gpt2"
   },
   "prompts": [
     {
-      "name": "get_activities",
-      "input": "Tell me 10 fun attractions to do in NYC."
+      "name": "test_hf_sum",
+      "input": "HMS Duncan was a D-class destroyer leader built for the Royal Navy in the early 1930s. The ship was initially assigned to the Mediterranean Fleet before she was transferred to the China Station in early 1935 where she remained until mid-1939. Duncan returned to the Mediterranean Fleet just after World War II began in September 1939. She was transferred to the Home Fleet in December 1939, although she was badly damaged in a collision the following month, and required repairs that lasted until July 1940. The ship joined Force H at Gibraltar in October, escorting the larger ships and various convoys until March 1941 when she was transferred to West Africa for convoy escort duties for a few months. Duncan rejoined the 13th Destroyer Flotilla at Gibraltar in July and escorted several convoys to Malta during the rest of the year. After a refit, she briefly returned to the 13th Destroyer Flotilla before joining the Eastern Fleet in the Indian Ocean to participate in Operation Ironclad in May 1942. The ship was recalled home to be converted into an escort destroyer in late 1942.\n\nDuncan was assigned to Escort Group B-7 in the North Atlantic after her conversion was complete in May 1943. She escorted a number of convoys before she required a lengthy refit from November to May 1944. She helped to sink two German submarines in October 1943. The ship was assigned to anti-submarine duties in the Western Approaches after her refit was finished in May 1944, and Duncan remained there until April 1945. At that time she was transferred to coastal anti-submarine patrols to counter any last-gasp effort by the Kriegsmarine to interfere with the Allied supply lines to the Continent. Placed in reserve the following month, Duncan was in bad shape and was sold for scrap later that year. The demolition, however, was not completed until 1949.\n\nDesign and construction\nDuncan displaced 1,400 long tons (1,400 t) at standard load. The ship had an overall length of 329 feet (100.3 m), a beam of 33 feet (10.1 m) and a draught of 12 feet 6 inches (3.8 m). She was powered by Parsons geared steam turbines, driving two shafts, which developed a total of 36,000 shaft horsepower (27,000 kW) and gave a maximum speed of 36 knots (67 km/h; 41 mph). Steam for the turbines was provided by three Admiralty 3-drum boilers. Duncan carried a maximum of 390 long tons (400 t) of fuel oil that gave her a range of 5,870 nautical miles (10,870 km; 6,760 mi) at 15 knots (28 km/h; 17 mph). The ship's complement was 175 officers and men.[1]\n\nThe ship mounted four 45-calibre 4.7-inch Mk IX guns in single mounts designated 'A', 'B', 'X' and 'Y' from front to rear. For anti-aircraft (AA) defence, Duncan had a single 12-pounder AA gun between her funnels and two quadruple Mark I mounts for the QF 0.5-inch Vickers Mark III machine guns mounted on the sides of her bridge. She was fitted with two above-water quadruple torpedo tube mounts for 21-inch torpedoes.[1] One depth charge rail and two throwers were fitted; 20 depth charges were originally carried, but this increased to 35 shortly after the war began.[2] In 1936, the 12-pounder was replaced by two QF 2-pounder Mk II AA guns. Sometime after the Dunkirk evacuation, the ship's rear torpedo tube mount was removed and replaced by a 12-pounder AA gun and the quadruple 0.5-inch machine guns were replaced by 20-millimetre (0.79 in) Oerlikon AA guns.[3]\n\nDuncan was ordered under the 1930 Naval Estimates on 2 February 1931 from Portsmouth Dockyard. She was laid down on 25 September 1931, launched on 7 July 1932 and finally commissioned into the Navy on 31 March 1933. Built as a flotilla leader, she displaced 25 long tons more than the rest of her class and carried an extra 30 personnel. These personnel formed the staff of the Captain (D) of the flotilla.[4]\n\nCareer\nThe ship was initially assigned as the leader of the 1st Destroyer Flotilla in the Mediterranean and made a brief deployment to the Persian Gulf and Red Sea in September–November 1933. After refitting at Portsmouth between 3 September and 23 October, Duncan led most of her flotilla to the China Station, arriving at Hong Kong on 3 January 1935. The next few years were spent showing the flag around the Far East, and visiting Japan, the Philippines, the Dutch East Indies, Singapore, Thailand and Malaya. The ship was under repairs between 14 December 1936 and 4 January 1937 from damage sustained when testing refuelling at sea techniques. She was in Shanghai during the Japanese invasion of 1937 and evacuated British civilians to Woosung, together with the sloop HMS Falmouth. On 28 October 1938, Duncan was struck by the Greek steamer Pipina whilst lying at anchor at Foo Chow, China. The ship was repaired and given a refit at Hong Kong between 31 October and 14 January 1939. She was lightly damaged when struck by a high-speed target at Wei Hai Wei, China, in July 1939.[5]\n\nWorld War II\nWith the outbreak of war, Duncan and her sisters Diana, Daring, and Dainty, were transferred to the Mediterranean Fleet, arriving at Alexandria on 30 September. All the ships were in poor condition, and, after repair, they conducted contraband control duties. In December Duncan, along with her sister Duchess, was assigned to escort the battleship Barham back to the UK, and they departed Gibraltar on 6 December. During the morning of 10 December, Barham collided with Duchess off the Mull of Kintyre in heavy fog, sinking the destroyer with the loss of 124 lives. Duncan was assigned to the 3rd Destroyer Flotilla of the Home Fleet on 12 December.[6]\n\nShe was damaged in a collision with a merchant vessel on 17 January whilst escorting Convoy ON18, causing a twenty-foot hole in her side but fortunately she did not sink and was taken under tow.[7] After temporary repairs at Invergordon, she was towed to Grangemouth for repairs that were not completed until 22 July. She carried out post-refit trials and returned to Scapa Flow to rejoin the 3rd Destroyer Flotilla. She transferred to the 13th Destroyer Flotilla based at Gibraltar in October, escorting the aircraft carrier Ark Royal, Barham, the heavy cruiser Berwick, and the light cruisers Glasgow and Sheffield from the Firth of Clyde to Gibraltar. Joining Force H, she escorted Ark Royal during Operation Coat, the carrier Argus when she flew off Hawker Hurricane fighters to Malta during Operation White and escorted Force F to Malta during Collar during November. During the Battle of Cape Spartivento in late November, Duncan was detailed to escort the convoy away from the Italians.[8]\n\nOn 1 January 1941, she led four ships of the 13th Destroyer Flotilla as they intercepted a Vichy French convoy near Mellila and seized all four merchant ships of the convoy.[9] A few days later she took part in Operation Excess, a military convoy taking stores to Piraeus and Alexandria.[5] During Operation Grog in early February, the ship escorted the larger ships of Force H as they bombarded Genoa.[10] She then escorted the battlecruiser Repulse and the carrier Furious from Gibraltar to West Africa in early March and remained there afterwards. Based at Freetown, the ship escorted convoys through West African waters until July when she was recalled to the Mediterranean to escort the Operation Substance convoy from Gibraltar to Malta in July 1941[5] Reassigned to the 13th Destroyer Flotilla, Duncan remained at Gibraltar and was part of the close escort for the Operation Halberd convoy in late September.[11]\n\nIn October she was assigned as part of the escort for Convoy HG 75, from Gibraltar to Liverpool,[12] because she was scheduled for a refit in the Sheerness Dockyard. It began on 16 November and lasted until 23 January 1942, after which Duncan rejoined the 13th Destroyer Flotilla at Gibraltar.[13] In late February and March, the ship escorted the carriers Eagle and Argus as they flew off fighters for Malta.[14] The following month, Duncan was transferred to the 22nd Destroyer Flotilla of the Eastern Fleet to support Operation Ironclad, the invasion of Diego Suarez.[15] After four months of operations in the Indian Ocean, the Admiralty decided to convert her to an escort destroyer, and accordingly she returned to the United Kingdom via the Cape of Good Hope as an escort for the battleship Royal Sovereign. The ship arrived in Greenock on 16 November, but did not begin her conversion at Tilbury until 24 November.[13]\n\nThis involved the replacement of 'A' gun by a Hedgehog anti-submarine spigot mortar, the removal of her director-control tower and rangefinder above the bridge in exchange for a Type 271 target indication radar, exchanging her two 2-pounder AA guns mounted between her funnels for two Oerlikon 20 mm AA guns, the addition of two Oerlikon guns to her searchlight platform, and the removal of her 12-pounder AA gun.[16] 'Y' gun was also removed to allow her depth charge stowage to be increased to 98 depth charges.[17]\n\nIn March 1943, Duncan carried out sea trials and went to Tobermory to work up. In April she joined Escort Group B-7 as the Senior Officer's ship, with Commander Peter Gretton[18] in command at the height of the Battle of the Atlantic. She escorted Convoy ONS 5 in early May, a major convoy battle which saw the destruction of six U-boats for the loss of thirteen ships, although Duncan was forced to withdraw for lack of fuel before the battle was over. Later that month, she escorted Convoy SC 130, in which three U-boats were destroyed for the loss of no ships.[19] Duncan continued on North Atlantic escort duty until October 1943; on 16 October the ship rescued 15 survivors from U-470 which had been sunk earlier by a Consolidated B-24 Liberator bomber of the Royal Air Force.[13] Whilst defending Convoy ON 207 on 23 October, Duncan, together with the destroyer Vidette and a Liberator of No. 224 Squadron RAF, sank U-274.[20] Later the same month, on 29 October, Duncan shared the sinking of U-282 with Vidette and the corvette Sunflower whilst protecting Convoy ON 208.[13]\n\nBy this time the ship was in poor shape and required an extensive refit; the work last from 12 November to 17 May 1944 at the North Woolwich, London shipyard of Harland and Wolff. After working up, she was assigned to the 14th Escort Group for anti-submarine operations in the Western Approaches. Duncan conducted convoy escort and anti-submarine operations with the group through April 1945 when she was assigned to the Greenock Coastal Escort Pool. The ship was placed in reserve on 13 May, transferred to Barrow on 9 June and approved for immediate disposal on 8 July as she was leaking five tons of water a day. Duncan was turned over to BISCO for scrapping immediately afterwards, but demolition was not completed until 1949.[13]",
+      "metadata": {
+        "model": {
+          "name": "stevhliu/my_awesome_billsum_model",
+          "settings": {
+            "min_length": 100,
+            "max_length": 200,
+            "num_beams": 1
+          }
+        }
+      }
     },
     {
-      "name": "gen_itinerary",
-      "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
+      "name": "gen_image",
+      "input": "a cute {{animal}} holding 2 AKs with an explosion behind it",
       "metadata": {
-        "model": "gpt-4",
+        "model": {
+          "name": "runwayml/stable-diffusion-v1-5",
+          "settings": {
+            "num_images_per_prompt": 2
+          }
+        },
         "parameters": {
-          "order_by": "geographic location"
+          "animal": "bunny"
+        }
+      }
+    },
+    {
+      "name": "gen_image_sdxl",
+      "input": "a cute {{animal}} holding 2 AKs with an explosion behind it",
+      "metadata": {
+        "model": {
+          "name": "stabilityai/stable-diffusion-xl-base-1.0",
+          "settings": {
+            "num_images_per_prompt": 2,
+            "num_inference_steps": 50
+          }
+        },
+        "parameters": {
+          "animal": "bunny"
         }
       }
     }
   ]
 }
-
-
