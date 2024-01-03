@@ -1,6 +1,6 @@
 import PromptContainer from "./prompt/PromptContainer";
 import { Container, Button, createStyles, Stack, Flex } from "@mantine/core";
-import { showNotification } from "@mantine/notifications";
+import { Notifications, showNotification } from "@mantine/notifications";
 import {
   AIConfig,
   InferenceSettings,
@@ -460,7 +460,15 @@ export default function EditorContainer({
           config: serverConfigRes.aiconfig,
         });
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as { message?: string }).message ?? null;
+
+        // TODO: Add ErrorOutput component to show error instead of notification
+        dispatch({
+          type: "RUN_PROMPT_ERROR",
+          id: promptId,
+          message: message ?? undefined,
+        });
+
         showNotification({
           title: "Error running prompt",
           message,
@@ -540,6 +548,7 @@ export default function EditorContainer({
 
   return (
     <AIConfigContext.Provider value={contextValue}>
+      <Notifications />
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
           <Button loading={isSaving} onClick={onSave}>
