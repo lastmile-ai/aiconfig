@@ -502,6 +502,109 @@ def test_add_output_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRunt
     ai_config_runtime.delete_output("GreetingPrompt")
     assert ai_config_runtime.get_latest_output("GreetingPrompt") == None
 
+def test_add_outputs_existing_prompt_no_overwrite(ai_config_runtime: AIConfigRuntime):
+    """Test adding outputs to an existing prompt without overwriting."""
+    original_result = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0,
+        data="original result",
+        metadata={
+            "raw_response": {"role": "assistant", "content": "original result"}
+        },
+    )
+    prompt = Prompt(
+        name="GreetingPrompt",
+        input="Hello, how are you?",
+        metadata=PromptMetadata(model="fakemodel"),
+        outputs=[original_result],
+    )
+    ai_config_runtime.add_prompt(prompt.name, prompt)
+    
+    assert ai_config_runtime.get_latest_output("GreetingPrompt") == original_result
+
+    test_result1 = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0,
+        data="test output 1",
+        metadata={
+            "raw_response": {"role": "assistant", "content": "test output 1"}
+        },
+    )
+    test_result2 = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0,
+        data="test output 2",
+        metadata={
+            "raw_response": {"role": "assistant", "content": "test output 2"}
+        },
+    )
+    ai_config_runtime.add_outputs("GreetingPrompt", [test_result1, test_result2])
+
+    assert ai_config_runtime.get_latest_output("GreetingPrompt") == test_result2
+    assert prompt.outputs == [original_result, test_result1, test_result2]
+
+def test_add_outputs_existing_prompt_with_overwrite(ai_config_runtime: AIConfigRuntime):
+    """Test adding outputs to an existing prompt with overwriting."""
+    original_result = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0,
+        data="original result",
+        metadata={
+            "raw_response": {"role": "assistant", "content": "original result"}
+        },
+    )
+    prompt = Prompt(
+        name="GreetingPrompt",
+        input="Hello, how are you?",
+        metadata=PromptMetadata(model="fakemodel"),
+        outputs=[original_result],
+    )
+    ai_config_runtime.add_prompt(prompt.name, prompt)
+    
+    assert ai_config_runtime.get_latest_output("GreetingPrompt") == original_result
+
+    test_result1 = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0,
+        data="test output 1",
+        metadata={
+            "raw_response": {"role": "assistant", "content": "test output 1"}
+        },
+    )
+    test_result2 = ExecuteResult(
+        output_type="execute_result",
+        execution_count=0,
+        data="test output 2",
+        metadata={
+            "raw_response": {"role": "assistant", "content": "test output 2"}
+        },
+    )
+    ai_config_runtime.add_outputs("GreetingPrompt", [test_result1, test_result2], True)
+
+    assert ai_config_runtime.get_latest_output("GreetingPrompt") == test_result2
+    assert prompt.outputs == [test_result1, test_result2]
+
+def test_add_undefined_outputs_to_prompt(ai_config_runtime: AIConfigRuntime):
+    """Test for adding undefined outputs to an existing prompt with/without overwriting. Should result in an error."""
+    prompt = Prompt(
+        name="GreetingPrompt",
+        input="Hello, how are you?",
+        metadata=PromptMetadata(model="fakemodel"),
+    )
+    ai_config_runtime.add_prompt(prompt.name, prompt)
+    assert ai_config_runtime.get_latest_output("GreetingPrompt") == None
+    # Case 1: No outputs, overwrite param not defined
+    with pytest.raises(
+        ValueError,
+        match=r"Cannot add outputs. No outputs provided for prompt 'GreetingPrompt'.",
+    ):
+        ai_config_runtime.add_outputs("GreetingPrompt", [])
+    # Case 2: No outputs, overwrite param set to True
+    with pytest.raises(
+        ValueError,
+        match=r"Cannot add outputs. No outputs provided for prompt 'GreetingPrompt'.",
+    ):
+        ai_config_runtime.add_outputs("GreetingPrompt", [], True)
 
 def test_add_output_existing_prompt_overwrite(ai_config_runtime: AIConfigRuntime):
     """Test adding an output to an existing prompt with overwriting."""
