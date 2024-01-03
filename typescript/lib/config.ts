@@ -31,35 +31,48 @@ export type SaveOptions = {
   serializeOutputs?: boolean;
 };
 
-ModelParserRegistry.registerModelParser(new OpenAIModelParser(), [
-  "babbage-002",
-  "davinci-002",
-  "gpt-3.5-turbo-instruct",
-  "text-davinci-003",
-  "text-davinci-002",
-  "text-davinci-001",
-  "code-davinci-002",
-  "text-curie-001",
-  "text-babbage-001",
-  "text-ada-001",
-]);
+export function registerDefaultModelParsers() {
+  ModelParserRegistry.registerModelParser(new OpenAIModelParser(), [
+    "babbage-002",
+    "davinci-002",
+    "gpt-3.5-turbo-instruct",
+    "text-davinci-003",
+    "text-davinci-002",
+    "text-davinci-001",
+    "code-davinci-002",
+    "text-curie-001",
+    "text-babbage-001",
+    "text-ada-001",
+  ]);
 
-ModelParserRegistry.registerModelParser(new OpenAIChatModelParser(), [
-  "gpt-4",
-  "gpt-4-0314",
-  "gpt-4-0613",
-  "gpt-4-32k",
-  "gpt-4-32k-0314",
-  "gpt-4-32k-0613",
-  "gpt-3.5-turbo",
-  "gpt-3.5-turbo-16k",
-  "gpt-3.5-turbo-0301",
-  "gpt-3.5-turbo-0613",
-  "gpt-3.5-turbo-16k-0613",
-]);
-ModelParserRegistry.registerModelParser(new HuggingFaceTextGenerationParser());
-ModelParserRegistry.registerModelParser(new PaLMTextParser());
+  ModelParserRegistry.registerModelParser(new OpenAIChatModelParser(), [
+    "gpt-4",
+    "gpt-4-0314",
+    "gpt-4-0613",
+    "gpt-4-32k",
+    "gpt-4-32k-0314",
+    "gpt-4-32k-0613",
+    "gpt-3.5-turbo",
+    "gpt-3.5-turbo-16k",
+    "gpt-3.5-turbo-0301",
+    "gpt-3.5-turbo-0613",
+    "gpt-3.5-turbo-16k-0613",
+  ]);
 
+  ModelParserRegistry.registerModelParser(
+    new OpenAIChatModelParser({
+      apiKey:
+        process.env.ANYSCALE_ENDPOINT_API_KEY ?? process.env.OPENAI_API_KEY,
+      baseURL: "https://api.endpoints.anyscale.com/v1",
+    }),
+    ["AnyscaleEndpoint"]
+  );
+
+  ModelParserRegistry.registerModelParser(
+    new HuggingFaceTextGenerationParser()
+  );
+  ModelParserRegistry.registerModelParser(new PaLMTextParser());
+}
 /**
  * Represents an AIConfig. This is the main class for interacting with AIConfig files.
  * Note: the "Runtime" suffix implies that this class stores the outputs of the prompt executions
@@ -88,6 +101,8 @@ export class AIConfigRuntime implements AIConfig {
     this.schema_version = schemaVersion;
     this.metadata = metadata || {};
     this.prompts = prompts || [];
+
+    registerDefaultModelParsers();
   }
 
   //#region Create/Load/Save
