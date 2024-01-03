@@ -542,7 +542,14 @@ export default function EditorContainer({
 
   const setNameCallback = callbacks.setConfigName;
   const debouncedSetName = useMemo(
-    () => debounce((name: string) => setNameCallback(name), DEBOUNCE_MS),
+    () =>
+      debounce(async (name: string, onError: (err: unknown) => void) => {
+        try {
+          await setNameCallback(name);
+        } catch (err: unknown) {
+          onError(err);
+        }
+      }, DEBOUNCE_MS),
     [setNameCallback]
   );
 
@@ -552,16 +559,15 @@ export default function EditorContainer({
         type: "SET_NAME",
         name,
       });
-      try {
-        await debouncedSetName(name);
-      } catch (err: unknown) {
+
+      await debouncedSetName(name, (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting config name",
           message,
           color: "red",
         });
-      }
+      });
     },
     [debouncedSetName]
   );
@@ -569,10 +575,13 @@ export default function EditorContainer({
   const setDescriptionCallback = callbacks.setConfigDescription;
   const debouncedSetDescription = useMemo(
     () =>
-      debounce(
-        (description: string) => setDescriptionCallback(description),
-        DEBOUNCE_MS
-      ),
+      debounce(async (description: string, onError: (err: unknown) => void) => {
+        try {
+          await setDescriptionCallback(description);
+        } catch (err: unknown) {
+          onError(err);
+        }
+      }, DEBOUNCE_MS),
     [setDescriptionCallback]
   );
 
@@ -583,16 +592,14 @@ export default function EditorContainer({
         description,
       });
 
-      try {
-        await debouncedSetDescription(description);
-      } catch (err: unknown) {
+      await debouncedSetDescription(description, (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting config description",
           message,
           color: "red",
         });
-      }
+      });
     },
     [debouncedSetDescription]
   );
