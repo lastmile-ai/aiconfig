@@ -2,20 +2,14 @@ import json
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import google.generativeai as palm
-from google.generativeai.text import Completion
-from google.generativeai.types.discuss_types import MessageDict
 from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import (
-    ExecuteResult,
-    Output,
-    OutputDataWithValue,
-    Prompt,
-    PromptMetadata,
-)
 from aiconfig.util.params import resolve_parameters, resolve_prompt
+from google.generativeai.text import Completion
+from google.generativeai.types.discuss_types import MessageDict
 
+from aiconfig.schema import ExecuteResult, Output, OutputDataWithValue, Prompt, PromptMetadata
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
