@@ -58,6 +58,8 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
 };
 
+type RequestCallbackError = { message?: string };
+
 const useStyles = createStyles((theme) => ({
   addPromptRow: {
     borderRadius: "4px",
@@ -107,7 +109,7 @@ export default function EditorContainer({
     try {
       await saveCallback(clientConfigToAIConfig(stateRef.current));
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : null;
+      const message = (err as RequestCallbackError).message ?? null;
       showNotification({
         title: "Error saving",
         message,
@@ -171,7 +173,7 @@ export default function EditorContainer({
             })
         );
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error updating prompt input",
           message,
@@ -256,7 +258,7 @@ export default function EditorContainer({
           promptName: statePrompt.name,
         });
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error updating prompt model settings",
           message,
@@ -285,10 +287,8 @@ export default function EditorContainer({
           modelName: newModel,
           promptName: statePrompt.name,
         });
-
-        // TODO: Consolidate
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error updating prompt model",
           message,
@@ -320,7 +320,7 @@ export default function EditorContainer({
       try {
         await debouncedSetParameters(newParameters);
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting global parameters",
           message: message,
@@ -346,7 +346,7 @@ export default function EditorContainer({
         }
         await debouncedSetParameters(newParameters, statePrompt.name);
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         const promptIdentifier =
           getPrompt(stateRef.current, promptId)?.name ?? promptId;
         showNotification({
@@ -399,7 +399,7 @@ export default function EditorContainer({
           config: serverConfigRes.aiconfig,
         });
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error adding prompt to config",
           message: message,
@@ -425,7 +425,7 @@ export default function EditorContainer({
         }
         await deletePromptCallback(prompt.name);
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error deleting prompt",
           message,
@@ -460,7 +460,7 @@ export default function EditorContainer({
           config: serverConfigRes.aiconfig,
         });
       } catch (err: unknown) {
-        const message = (err as { message?: string }).message ?? null;
+        const message = (err as RequestCallbackError).message ?? null;
 
         // TODO: Add ErrorOutput component to show error instead of notification
         dispatch({
@@ -494,7 +494,7 @@ export default function EditorContainer({
       try {
         await debouncedSetName(name);
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting config name",
           message,
@@ -525,7 +525,7 @@ export default function EditorContainer({
       try {
         await debouncedSetDescription(description);
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting config description",
           message,
