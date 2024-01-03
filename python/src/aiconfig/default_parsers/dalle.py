@@ -10,7 +10,7 @@ from openai import OpenAI
 # Dall-E API imports
 from openai.types import Image, ImagesResponse
 
-from aiconfig.schema import ExecuteResult, Output, OutputDataWithValue, Prompt, PromptMetadata
+from aiconfig.schema import ExecuteResult, Output, OutputDataWithStringValue, Prompt, PromptMetadata
 
 # ModelParser Utils
 # Type hint imports
@@ -43,9 +43,9 @@ def refine_image_completion_params(model_settings):
 def construct_output(image_data: Image, execution_count: int) -> Output:
     data = None
     if image_data.b64_json is not None:
-        data = OutputDataWithValue(kind="base64", value=str(image_data.b64_json))
+        data = OutputDataWithStringValue(kind="base64", value=str(image_data.b64_json))
     elif image_data.url is not None:
-        data = OutputDataWithValue(kind="file_uri", value=str(image_data.url))
+        data = OutputDataWithStringValue(kind="file_uri", value=str(image_data.url))
     else:
         raise ValueError(f"Did not receive a valid image type from image_data: {image_data}")
     output = ExecuteResult(
