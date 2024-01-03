@@ -368,24 +368,6 @@ class DefaultOpenAIParser(OpenAIInference):
         return self.model_id
 
 
-class GPT4Parser(DefaultOpenAIParser):
-    def __init__(self):
-        model_id = "gpt-4"
-        super().__init__(model_id)
-
-
-class GPT3TurboParser(DefaultOpenAIParser):
-    def __init__(self):
-        model_id = "gpt-3.5-turbo"
-        super().__init__(model_id)
-
-
-class ChatGPTParser(DefaultOpenAIParser):
-    def __init__(self):
-        model_id = "ChatGPT"
-        super().__init__(model_id)
-
-
 def reduce(acc, delta):
     acc = copy.deepcopy(acc)
 
