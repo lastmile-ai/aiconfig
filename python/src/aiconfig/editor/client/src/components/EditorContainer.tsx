@@ -197,7 +197,7 @@ export default function EditorContainer({
   const onChangePromptName = useCallback(
     async (promptId: string, newName: string) => {
       const onError = (err: unknown) => {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error updating prompt name",
           message,
@@ -240,11 +240,20 @@ export default function EditorContainer({
   const debouncedUpdateModel = useMemo(
     () =>
       debounce(
-        (value: {
-          modelName?: string;
-          settings?: InferenceSettings;
-          promptName?: string;
-        }) => updateModelCallback(value),
+        async (
+          value: {
+            modelName?: string;
+            settings?: InferenceSettings;
+            promptName?: string;
+          },
+          onError: (err: unknown) => void
+        ) => {
+          try {
+            await updateModelCallback(value);
+          } catch (err: unknown) {
+            onError(err);
+          }
+        },
         DEBOUNCE_MS
       ),
     [updateModelCallback]
@@ -258,6 +267,15 @@ export default function EditorContainer({
         modelSettings: newModelSettings,
       });
 
+      const onError = (err: unknown) => {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error updating prompt model settings",
+          message,
+          color: "red",
+        });
+      };
+
       try {
         const statePrompt = getPrompt(stateRef.current, promptId);
         if (!statePrompt) {
@@ -267,18 +285,16 @@ export default function EditorContainer({
         if (!modelName) {
           throw new Error(`Could not find model name for prompt ${promptId}`);
         }
-        await debouncedUpdateModel({
-          modelName,
-          settings: newModelSettings as InferenceSettings,
-          promptName: statePrompt.name,
-        });
+        await debouncedUpdateModel(
+          {
+            modelName,
+            settings: newModelSettings as InferenceSettings,
+            promptName: statePrompt.name,
+          },
+          onError
+        );
       } catch (err: unknown) {
-        const message = (err as RequestCallbackError).message ?? null;
-        showNotification({
-          title: "Error updating prompt model settings",
-          message,
-          color: "red",
-        });
+        onError(err);
       }
     },
     [debouncedUpdateModel, dispatch]
@@ -292,23 +308,30 @@ export default function EditorContainer({
         modelName: newModel,
       });
 
+      const onError = (err: unknown) => {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error updating model for prompt",
+          message,
+          color: "red",
+        });
+      };
+
       try {
         const statePrompt = getPrompt(stateRef.current, promptId);
         if (!statePrompt) {
           throw new Error(`Could not find prompt with id ${promptId}`);
         }
 
-        await debouncedUpdateModel({
-          modelName: newModel,
-          promptName: statePrompt.name,
-        });
+        await debouncedUpdateModel(
+          {
+            modelName: newModel,
+            promptName: statePrompt.name,
+          },
+          onError
+        );
       } catch (err: unknown) {
-        const message = (err as RequestCallbackError).message ?? null;
-        showNotification({
-          title: "Error updating prompt model",
-          message,
-          color: "red",
-        });
+        onError(err);
       }
     },
     [dispatch, debouncedUpdateModel]
@@ -318,8 +341,17 @@ export default function EditorContainer({
   const debouncedSetParameters = useMemo(
     () =>
       debounce(
-        (parameters: JSONObject, promptName?: string) =>
-          setParametersCallback(parameters, promptName),
+        async (
+          parameters: JSONObject,
+          promptName?: string,
+          onError?: (err: unknown) => void
+        ) => {
+          try {
+            await setParametersCallback(parameters, promptName);
+          } catch (err: unknown) {
+            onError?.(err);
+          }
+        },
         DEBOUNCE_MS
       ),
     [setParametersCallback]
@@ -332,15 +364,23 @@ export default function EditorContainer({
         parameters: newParameters,
       });
 
-      try {
-        await debouncedSetParameters(newParameters);
-      } catch (err: unknown) {
+      const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting global parameters",
           message: message,
           color: "red",
         });
+      };
+
+      try {
+        await debouncedSetParameters(
+          newParameters,
+          undefined /* promptName */,
+          onError
+        );
+      } catch (err: unknown) {
+        onError(err);
       }
     },
     [debouncedSetParameters, dispatch]
@@ -354,13 +394,7 @@ export default function EditorContainer({
         parameters: newParameters,
       });
 
-      try {
-        const statePrompt = getPrompt(stateRef.current, promptId);
-        if (!statePrompt) {
-          throw new Error(`Could not find prompt with id ${promptId}`);
-        }
-        await debouncedSetParameters(newParameters, statePrompt.name);
-      } catch (err: unknown) {
+      const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         const promptIdentifier =
           getPrompt(stateRef.current, promptId)?.name ?? promptId;
@@ -369,6 +403,16 @@ export default function EditorContainer({
           message: message,
           color: "red",
         });
+      };
+
+      try {
+        const statePrompt = getPrompt(stateRef.current, promptId);
+        if (!statePrompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        await debouncedSetParameters(newParameters, statePrompt.name, onError);
+      } catch (err: unknown) {
+        onError(err);
       }
     },
     [debouncedSetParameters, dispatch]
@@ -498,7 +542,14 @@ export default function EditorContainer({
 
   const setNameCallback = callbacks.setConfigName;
   const debouncedSetName = useMemo(
-    () => debounce((name: string) => setNameCallback(name), DEBOUNCE_MS),
+    () =>
+      debounce(async (name: string, onError: (err: unknown) => void) => {
+        try {
+          await setNameCallback(name);
+        } catch (err: unknown) {
+          onError(err);
+        }
+      }, DEBOUNCE_MS),
     [setNameCallback]
   );
 
@@ -508,16 +559,15 @@ export default function EditorContainer({
         type: "SET_NAME",
         name,
       });
-      try {
-        await debouncedSetName(name);
-      } catch (err: unknown) {
+
+      await debouncedSetName(name, (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting config name",
           message,
           color: "red",
         });
-      }
+      });
     },
     [debouncedSetName]
   );
@@ -525,10 +575,13 @@ export default function EditorContainer({
   const setDescriptionCallback = callbacks.setConfigDescription;
   const debouncedSetDescription = useMemo(
     () =>
-      debounce(
-        (description: string) => setDescriptionCallback(description),
-        DEBOUNCE_MS
-      ),
+      debounce(async (description: string, onError: (err: unknown) => void) => {
+        try {
+          await setDescriptionCallback(description);
+        } catch (err: unknown) {
+          onError(err);
+        }
+      }, DEBOUNCE_MS),
     [setDescriptionCallback]
   );
 
@@ -539,16 +592,14 @@ export default function EditorContainer({
         description,
       });
 
-      try {
-        await debouncedSetDescription(description);
-      } catch (err: unknown) {
+      await debouncedSetDescription(description, (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting config description",
           message,
           color: "red",
         });
-      }
+      });
     },
     [debouncedSetDescription]
   );
