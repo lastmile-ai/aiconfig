@@ -1,6 +1,7 @@
 import copy
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
+import os
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessage
 from aiconfig.callback import CallbackEvent
@@ -49,7 +50,20 @@ class AnyscaleEndpoint(OpenAIInference):
             )
         )
 
-        client = OpenAI(api_key=get_api_key_from_environment("ANYSCALE_ENDPOINT_API_KEY"), base_url="https://api.endpoints.anyscale.com/v1")
+        anyscale_api_key_name = "ANYSCALE_ENDPOINT_API_KEY"
+        openai_api_key_name = "OPENAI_API_KEY"
+
+        if anyscale_api_key_name not in os.environ:
+            if openai_api_key_name not in os.environ:
+                raise Exception(
+                    f"Missing API keys '{anyscale_api_key_name}' and '{openai_api_key_name}' in environment. Expected one of them to be specified"
+                )
+            else:
+                api_key = os.environ[openai_api_key_name]
+        else:
+            api_key = os.environ[anyscale_api_key_name]
+
+        client = OpenAI(api_key=api_key, base_url="https://api.endpoints.anyscale.com/v1")
 
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
