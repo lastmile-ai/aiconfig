@@ -169,7 +169,7 @@ export default function EditorContainer({
             dispatch({
               type: "CONSOLIDATE_AICONFIG",
               action,
-              config: serverConfigRes.aiconfig,
+              config: serverConfigRes,
             })
         );
       } catch (err: unknown) {
