@@ -172,7 +172,7 @@ async def run() -> FlaskResponse:
         if prompt_name is None:
             return HttpResponseWithAIConfig(
                 message="No prompt name provided, cannot execute `run` command",
-                code=400,
+                code=500,
                 aiconfig=None,
             ).to_flask_format()
 
@@ -195,7 +195,7 @@ async def run() -> FlaskResponse:
         return HttpResponseWithAIConfig(
             #
             message=f"Failed to run prompt: {type(e)}, {e}",
-            code=400,
+            code=500,
             aiconfig=None,
         ).to_flask_format()
 

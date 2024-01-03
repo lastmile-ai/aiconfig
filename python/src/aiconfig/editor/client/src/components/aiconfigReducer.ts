@@ -4,7 +4,8 @@ import { AIConfig, JSONObject, PromptInput } from "aiconfig";
 
 export type AIConfigReducerAction =
   | MutateAIConfigAction
-  | ConsolidateAIConfigAction;
+  | ConsolidateAIConfigAction
+  | RunPromptErrorAction;
 
 export type MutateAIConfigAction =
   | AddPromptAction
@@ -39,6 +40,12 @@ export type DeletePromptAction = {
 export type RunPromptAction = {
   type: "RUN_PROMPT";
   id: string;
+};
+
+export type RunPromptErrorAction = {
+  type: "RUN_PROMPT_ERROR";
+  id: string;
+  message?: string;
 };
 
 export type SetDescriptionAction = {
@@ -201,6 +208,15 @@ export default function aiconfigReducer(
         _ui: {
           ...prompt._ui,
           isRunning: true,
+        },
+      }));
+    }
+    case "RUN_PROMPT_ERROR": {
+      return reduceReplacePrompt(state, action.id, (prompt) => ({
+        ...prompt,
+        _ui: {
+          ...prompt._ui,
+          isRunning: false,
         },
       }));
     }
