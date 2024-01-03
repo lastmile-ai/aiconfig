@@ -240,11 +240,20 @@ export default function EditorContainer({
   const debouncedUpdateModel = useMemo(
     () =>
       debounce(
-        (value: {
-          modelName?: string;
-          settings?: InferenceSettings;
-          promptName?: string;
-        }) => updateModelCallback(value),
+        async (
+          value: {
+            modelName?: string;
+            settings?: InferenceSettings;
+            promptName?: string;
+          },
+          onError: (err: unknown) => void
+        ) => {
+          try {
+            await updateModelCallback(value);
+          } catch (err: unknown) {
+            onError(err);
+          }
+        },
         DEBOUNCE_MS
       ),
     [updateModelCallback]
@@ -258,6 +267,15 @@ export default function EditorContainer({
         modelSettings: newModelSettings,
       });
 
+      const onError = (err: unknown) => {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error updating prompt model settings",
+          message,
+          color: "red",
+        });
+      };
+
       try {
         const statePrompt = getPrompt(stateRef.current, promptId);
         if (!statePrompt) {
@@ -267,18 +285,16 @@ export default function EditorContainer({
         if (!modelName) {
           throw new Error(`Could not find model name for prompt ${promptId}`);
         }
-        await debouncedUpdateModel({
-          modelName,
-          settings: newModelSettings as InferenceSettings,
-          promptName: statePrompt.name,
-        });
+        await debouncedUpdateModel(
+          {
+            modelName,
+            settings: newModelSettings as InferenceSettings,
+            promptName: statePrompt.name,
+          },
+          onError
+        );
       } catch (err: unknown) {
-        const message = (err as RequestCallbackError).message ?? null;
-        showNotification({
-          title: "Error updating prompt model settings",
-          message,
-          color: "red",
-        });
+        onError(err);
       }
     },
     [debouncedUpdateModel, dispatch]
@@ -292,23 +308,30 @@ export default function EditorContainer({
         modelName: newModel,
       });
 
+      const onError = (err: unknown) => {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error updating model for prompt",
+          message,
+          color: "red",
+        });
+      };
+
       try {
         const statePrompt = getPrompt(stateRef.current, promptId);
         if (!statePrompt) {
           throw new Error(`Could not find prompt with id ${promptId}`);
         }
 
-        await debouncedUpdateModel({
-          modelName: newModel,
-          promptName: statePrompt.name,
-        });
+        await debouncedUpdateModel(
+          {
+            modelName: newModel,
+            promptName: statePrompt.name,
+          },
+          onError
+        );
       } catch (err: unknown) {
-        const message = (err as RequestCallbackError).message ?? null;
-        showNotification({
-          title: "Error updating prompt model",
-          message,
-          color: "red",
-        });
+        onError(err);
       }
     },
     [dispatch, debouncedUpdateModel]
