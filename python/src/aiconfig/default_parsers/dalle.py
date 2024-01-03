@@ -197,7 +197,7 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         # TODO (rossdanlm): Handle multiple outputs in list
         # https://github.com/lastmile-ai/aiconfig/issues/467
         if output.output_type == "execute_result":
-            if isinstance(output.data, OutputDataWithValue):
+            if isinstance(output.data, OutputDataWithStringValue):
                 return output.data.value
             elif isinstance(output.data, str):
                 return output.data
