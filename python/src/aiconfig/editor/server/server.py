@@ -1,6 +1,6 @@
-import json
 import logging
 from typing import Any, Dict, Type, Union
+import webbrowser
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -52,6 +52,11 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
     LOGGER.setLevel(edit_config.log_level)
     LOGGER.info("Edit config: %s", edit_config.model_dump_json())
     LOGGER.info(f"Starting server on http://localhost:{edit_config.server_port}")
+    try:
+        LOGGER.info(f"Opening browser at http://localhost:{edit_config.server_port}")
+        webbrowser.open(f"http://localhost:{edit_config.server_port}")
+    except Exception as e:
+        LOGGER.warning(f"Failed to open browser: {e}. Please open http://localhost:{port} manually.")
 
     app.server_state = ServerState()  # type: ignore
     res_server_state_init = init_server_state(app, edit_config)
@@ -60,7 +65,8 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
             LOGGER.info("Initialized server state")
             debug = edit_config.server_mode in [ServerMode.DEBUG_BACKEND, ServerMode.DEBUG_SERVERS]
             LOGGER.info(f"Running in {edit_config.server_mode} mode")
-            app.run(port=edit_config.server_port, debug=debug, use_reloader=True)
+            use_reloader = edit_config.server_mode in [ServerMode.DEBUG_BACKEND, ServerMode.DEBUG_SERVERS]
+            app.run(port=edit_config.server_port, debug=debug, use_reloader=use_reloader)
             return Ok("Done")
         case Err(e):
             LOGGER.error(f"Failed to initialize server state: {e}")
@@ -169,8 +175,19 @@ async def run() -> FlaskResponse:
     request_json = request.get_json()
 
     try:
-        prompt_name = request_json["prompt_name"]
-        params = request_json.get("params", {})
+        prompt_name: Union[str, None] = request_json.get("prompt_name")
+        if prompt_name is None:
+            return HttpResponseWithAIConfig(
+                message="No prompt name provided, cannot execute `run` command",
+                code=400,
+                aiconfig=None,
+            ).to_flask_format()
+
+        # TODO (rossdanlm): Refactor aiconfig.run() to not take in `params`
+        # as a function arg since we can now just call
+        # aiconfig.get_parameters(prompt_name) directly inside of run. See:
+        # https://github.com/lastmile-ai/aiconfig/issues/671
+        params = request_json.get("params", aiconfig.get_parameters(prompt_name))  # type: ignore
         stream = request_json.get("stream", False)
         options = InferenceOptions(stream=stream)
         run_output = await aiconfig.run(prompt_name, params, options)  # type: ignore
