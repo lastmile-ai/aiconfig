@@ -1,5 +1,12 @@
 import PromptContainer from "./prompt/PromptContainer";
-import { Container, Button, createStyles, Stack, Flex } from "@mantine/core";
+import {
+  Container,
+  Button,
+  createStyles,
+  Stack,
+  Flex,
+  Tooltip,
+} from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
 import {
   AIConfig,
@@ -28,6 +35,7 @@ import AIConfigContext from "./AIConfigContext";
 import ConfigNameDescription from "./ConfigNameDescription";
 import { DEBOUNCE_MS } from "../utils/constants";
 import { getPromptModelName } from "../utils/promptUtils";
+import { IconDeviceFloppy } from "@tabler/icons-react";
 
 type Props = {
   aiconfig: AIConfig;
@@ -108,6 +116,9 @@ export default function EditorContainer({
     setIsSaving(true);
     try {
       await saveCallback(clientConfigToAIConfig(stateRef.current));
+      dispatch({
+        type: "SAVE_CONFIG_SUCCESS",
+      });
     } catch (err: unknown) {
       const message = (err as RequestCallbackError).message ?? null;
       showNotification({
@@ -614,14 +625,27 @@ export default function EditorContainer({
     [getState]
   );
 
+  const isDirty = aiconfigState._ui.isDirty !== false;
+
   return (
     <AIConfigContext.Provider value={contextValue}>
       <Notifications />
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
-          <Button loading={isSaving} onClick={onSave}>
-            Save
-          </Button>
+          <Tooltip
+            label={isDirty ? "Save changes to config" : "No unsaved changes"}
+          >
+            <div>
+              <Button
+                leftIcon={<IconDeviceFloppy />}
+                loading={isSaving}
+                onClick={onSave}
+                disabled={!isDirty}
+              >
+                Save
+              </Button>
+            </div>
+          </Tooltip>
         </Flex>
         <ConfigNameDescription
           name={aiconfigState.name}
