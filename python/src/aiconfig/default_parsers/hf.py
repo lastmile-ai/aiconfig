@@ -1,27 +1,18 @@
 import copy
 import json
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Union
 
-# HuggingFace API imports
-from huggingface_hub import InferenceClient
-from huggingface_hub.inference._text_generation import (
-    TextGenerationResponse,
-    TextGenerationStreamResponse,
-)
-
-from aiconfig import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import (
-    ExecuteResult,
-    Output,
-    OutputDataWithValue,
-    Prompt,
-    PromptMetadata,
-)
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt
 
+# HuggingFace API imports
+from huggingface_hub import InferenceClient
+from huggingface_hub.inference._text_generation import TextGenerationResponse, TextGenerationStreamResponse
+
+from aiconfig import CallbackEvent
+from aiconfig.schema import ExecuteResult, Output, OutputDataWithValue, Prompt, PromptMetadata
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:

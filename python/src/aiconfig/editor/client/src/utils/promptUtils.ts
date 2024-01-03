@@ -1,6 +1,7 @@
 import { JSONObject, JSONValue, Prompt } from "aiconfig";
 import { OpenAIChatModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatModelParserPromptSchema";
 import { OpenAIChatVisionModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatVisionModelParserPromptSchema";
+import { DalleImageGenerationParserPromptSchema } from "../shared/prompt_schemas/DalleImageGenerationParserPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -60,21 +61,9 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   // TODO: Add GPT4-V parser in AIConfig
   "gpt-4-vision-preview": OpenAIChatVisionModelParserPromptSchema,
 
-  // OpenAIModelParser
-  // "babbage-002":
-  // "davinci-002":
-  // "gpt-3.5-turbo-instruct":
-  // "text-davinci-003":
-  // "text-davinci-002":
-  // "text-davinci-001":
-  // "code-davinci-002":
-  // "text-curie-001":
-  // "text-babbage-001":
-  // "text-ada-001":
-
   // DalleImageGenerationParser
-  // "dalle-e-2":
-  // "dall-e-3":
+  "dall-e-2": DalleImageGenerationParserPromptSchema,
+  "dall-e-3": DalleImageGenerationParserPromptSchema,
 
   // HuggingFaceTextGenerationParser
   // "HuggingFaceTextGenerationParser":

@@ -4,26 +4,23 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import openai
-from openai.types.chat import ChatCompletionMessage
 from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.util.params import resolve_prompt, resolve_prompt_string, resolve_system_prompt
+from openai.types.chat import ChatCompletionMessage
+
 from aiconfig.schema import (
     ExecuteResult,
     FunctionCallData,
     Output,
-    OutputDataWithValue,
     OutputDataWithToolCallsValue,
+    OutputDataWithValue,
     Prompt,
     PromptInput,
     PromptMetadata,
     ToolCallData,
-)
-from aiconfig.util.config_utils import get_api_key_from_environment
-from aiconfig.util.params import (
-    resolve_prompt,
-    resolve_prompt_string,
-    resolve_system_prompt,
 )
 
 if TYPE_CHECKING:
@@ -364,24 +361,6 @@ class DefaultOpenAIParser(OpenAIInference):
 
     def id(self) -> str:
         return self.model_id
-
-
-class GPT4Parser(DefaultOpenAIParser):
-    def __init__(self):
-        model_id = "gpt-4"
-        super().__init__(model_id)
-
-
-class GPT3TurboParser(DefaultOpenAIParser):
-    def __init__(self):
-        model_id = "gpt-3.5-turbo"
-        super().__init__(model_id)
-
-
-class ChatGPTParser(DefaultOpenAIParser):
-    def __init__(self):
-        model_id = "ChatGPT"
-        super().__init__(model_id)
 
 
 def reduce(acc, delta):
