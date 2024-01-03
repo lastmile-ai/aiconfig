@@ -18,6 +18,9 @@ export type ClientPrompt = Prompt & {
 
 export type ClientAIConfig = Omit<AIConfig, "prompts"> & {
   prompts: ClientPrompt[];
+  _ui: {
+    isDirty?: boolean;
+  };
 };
 
 export function clientPromptToAIConfigPrompt(prompt: ClientPrompt): Prompt {
@@ -30,12 +33,17 @@ export function clientPromptToAIConfigPrompt(prompt: ClientPrompt): Prompt {
 }
 
 export function clientConfigToAIConfig(clientConfig: ClientAIConfig): AIConfig {
-  // For some reason, TS thinks ClientAIConfig is missing properties from
-  // AIConfig, so we have to cast it
-  return {
+  const config = {
     ...clientConfig,
     prompts: clientConfig.prompts.map(clientPromptToAIConfigPrompt),
-  } as unknown as AIConfig;
+    _ui: undefined,
+  };
+
+  delete config._ui;
+
+  // For some reason, TS thinks ClientAIConfig is missing properties from
+  // AIConfig, so we have to cast it
+  return config as unknown as AIConfig;
 }
 
 export function aiConfigToClientConfig(aiconfig: AIConfig): ClientAIConfig {
@@ -47,5 +55,8 @@ export function aiConfigToClientConfig(aiconfig: AIConfig): ClientAIConfig {
         id: uniqueId(),
       },
     })),
+    _ui: {
+      isDirty: false,
+    },
   };
 }
