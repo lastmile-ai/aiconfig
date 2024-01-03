@@ -15,7 +15,14 @@ import {
   Prompt,
   PromptInput,
 } from "aiconfig";
-import { useCallback, useMemo, useReducer, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import {
   ClientPrompt,
@@ -33,7 +40,7 @@ import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
 import AIConfigContext from "./AIConfigContext";
 import ConfigNameDescription from "./ConfigNameDescription";
-import { DEBOUNCE_MS } from "../utils/constants";
+import { AUTOSAVE_INTERVAL_MS, DEBOUNCE_MS } from "../utils/constants";
 import { getPromptModelName } from "../utils/promptUtils";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 
@@ -626,6 +633,16 @@ export default function EditorContainer({
   );
 
   const isDirty = aiconfigState._ui.isDirty !== false;
+  useEffect(() => {
+    if (!isDirty) {
+      return;
+    }
+
+    // Save every 15 seconds if there are unsaved changes
+    const saveInterval = setInterval(onSave, AUTOSAVE_INTERVAL_MS);
+
+    return () => clearInterval(saveInterval);
+  }, [isDirty, onSave]);
 
   return (
     <AIConfigContext.Provider value={contextValue}>
