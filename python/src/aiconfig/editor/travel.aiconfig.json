@@ -22,6 +22,9 @@
     {
       "name": "get_activities",
       "input": "Tell me 10 fun attractions to do in NYC.",
+      "metadata": {
+        "parameters": {}
+      },
       "outputs": [
         {
           "output_type": "execute_result",
