@@ -4,26 +4,23 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import openai
-from openai.types.chat import ChatCompletionMessage
 from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.util.params import resolve_prompt, resolve_prompt_string, resolve_system_prompt
+from openai.types.chat import ChatCompletionMessage
+
 from aiconfig.schema import (
     ExecuteResult,
     FunctionCallData,
     Output,
-    OutputDataWithValue,
     OutputDataWithToolCallsValue,
+    OutputDataWithValue,
     Prompt,
     PromptInput,
     PromptMetadata,
     ToolCallData,
-)
-from aiconfig.util.config_utils import get_api_key_from_environment
-from aiconfig.util.params import (
-    resolve_prompt,
-    resolve_prompt_string,
-    resolve_system_prompt,
 )
 
 if TYPE_CHECKING:
