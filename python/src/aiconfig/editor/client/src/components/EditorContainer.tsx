@@ -197,7 +197,7 @@ export default function EditorContainer({
   const onChangePromptName = useCallback(
     async (promptId: string, newName: string) => {
       const onError = (err: unknown) => {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error updating prompt name",
           message,
