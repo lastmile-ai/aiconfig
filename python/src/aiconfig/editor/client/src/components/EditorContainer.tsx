@@ -197,7 +197,7 @@ export default function EditorContainer({
   const onChangePromptName = useCallback(
     async (promptId: string, newName: string) => {
       const onError = (err: unknown) => {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error updating prompt name",
           message,
@@ -341,8 +341,17 @@ export default function EditorContainer({
   const debouncedSetParameters = useMemo(
     () =>
       debounce(
-        (parameters: JSONObject, promptName?: string) =>
-          setParametersCallback(parameters, promptName),
+        async (
+          parameters: JSONObject,
+          promptName?: string,
+          onError?: (err: unknown) => void
+        ) => {
+          try {
+            await setParametersCallback(parameters, promptName);
+          } catch (err: unknown) {
+            onError?.(err);
+          }
+        },
         DEBOUNCE_MS
       ),
     [setParametersCallback]
@@ -355,15 +364,23 @@ export default function EditorContainer({
         parameters: newParameters,
       });
 
-      try {
-        await debouncedSetParameters(newParameters);
-      } catch (err: unknown) {
+      const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting global parameters",
           message: message,
           color: "red",
         });
+      };
+
+      try {
+        await debouncedSetParameters(
+          newParameters,
+          undefined /* promptName */,
+          onError
+        );
+      } catch (err: unknown) {
+        onError(err);
       }
     },
     [debouncedSetParameters, dispatch]
@@ -377,13 +394,7 @@ export default function EditorContainer({
         parameters: newParameters,
       });
 
-      try {
-        const statePrompt = getPrompt(stateRef.current, promptId);
-        if (!statePrompt) {
-          throw new Error(`Could not find prompt with id ${promptId}`);
-        }
-        await debouncedSetParameters(newParameters, statePrompt.name);
-      } catch (err: unknown) {
+      const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         const promptIdentifier =
           getPrompt(stateRef.current, promptId)?.name ?? promptId;
@@ -392,6 +403,16 @@ export default function EditorContainer({
           message: message,
           color: "red",
         });
+      };
+
+      try {
+        const statePrompt = getPrompt(stateRef.current, promptId);
+        if (!statePrompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        await debouncedSetParameters(newParameters, statePrompt.name, onError);
+      } catch (err: unknown) {
+        onError(err);
       }
     },
     [debouncedSetParameters, dispatch]
