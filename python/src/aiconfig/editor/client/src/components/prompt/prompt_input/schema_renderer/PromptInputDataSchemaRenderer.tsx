@@ -1,6 +1,6 @@
 import { PromptInputObjectDataSchema } from "../../../../utils/promptUtils";
 import { Textarea } from "@mantine/core";
-import { JSONValue } from "aiconfig/dist/common";
+import { JSONValue } from "aiconfig";
 import { memo } from "react";
 
 type Props = {
@@ -19,7 +19,8 @@ export default memo(function PromptInputDataSchemaRenderer({
       return (
         <Textarea
           value={data ? (data as string) : ""}
-          onChange={(e: any) => onChangeData(e.target.value)}
+          onChange={(e) => onChangeData(e.target.value)}
+          placeholder="Type a prompt"
         />
       );
     default:

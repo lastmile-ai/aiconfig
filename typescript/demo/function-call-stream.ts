@@ -10,7 +10,12 @@ import {
 } from "openai/resources/chat";
 import * as path from "path";
 import { AIConfigRuntime } from "../lib/config";
-import { Prompt } from "../types";
+import {
+  FunctionData,
+  Prompt,
+  OutputDataWithValue,
+  OutputDataWithToolCallsValue,
+} from "../types";
 import { uniqueId } from "lodash";
 
 // This example is taken from https://github.com/openai/openai-node/blob/v4/examples/function-call-stream.ts
@@ -217,18 +222,29 @@ async function functionCallingWithAIConfig() {
       return;
     }
 
-    const message = output.data as ChatCompletionMessageParam;
+    let functionCall: FunctionData | null = null;
+    if (output.data?.hasOwnProperty("value")) {
+      const outputData = output.data as OutputDataWithValue;
+      if (outputData.kind === "tool_calls") {
+        outputData as OutputDataWithToolCallsValue;
+        // Typescript schema does not support array of function calls yet,
+        // but Python does, so extracting from an array is for
+        // forwards compatibility
+        functionCall = outputData.value[outputData.value.length - 1].function;
+      }
+    }
+    console.log("functionCall=", functionCall);
 
     // If there is no function call, we're done and can exit this loop
-    if (!message.function_call) {
+    if (functionCall == null) {
       return;
     }
 
     // If there is a function call, we generate a new message with the role 'function'.
-    const result = await callFunction(message.function_call);
+    const result = await callFunction(functionCall);
     const newMessage = {
       role: "function" as const,
-      name: message.function_call.name!,
+      name: functionCall.name!,
       content: JSON.stringify(result),
     };
 
@@ -273,14 +289,14 @@ async function createAIConfig() {
     "function-call-demo",
     "this is a demo AIConfig to show function calling using OpenAI"
   );
-  const result = await aiConfig.serialize(model, data, "functionCallResult");
+  const prompts: Prompt[] = await aiConfig.serialize(
+    model,
+    data,
+    "functionCallResult"
+  );
 
-  if (Array.isArray(result)) {
-    for (const prompt of result) {
-      aiConfig.addPrompt(prompt);
-    }
-  } else {
-    aiConfig.addPrompt(result);
+  for (const prompt of prompts) {
+    aiConfig.addPrompt(prompt);
   }
 
   aiConfig.save("demo/function-call.aiconfig.json", {

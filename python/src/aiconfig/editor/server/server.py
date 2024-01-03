@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Type, TypeVar
+from typing import Any, Dict, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -24,11 +24,11 @@ from aiconfig.editor.server.server_utils import (
     safe_run_aiconfig_static_method,
 )
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.registry import ModelParserRegistry
 from flask import Flask, request
 from flask_cors import CORS
 from result import Err, Ok, Result
 
-from aiconfig.registry import ModelParserRegistry
 from aiconfig.schema import Prompt
 
 logging.getLogger("werkzeug").disabled = True
@@ -41,8 +41,6 @@ formatter = logging.Formatter(core_utils.LOGGER_FMT)
 log_handler.setFormatter(formatter)
 
 LOGGER.addHandler(log_handler)
-
-T = TypeVar("T")
 
 
 app = Flask(__name__, static_url_path="")
@@ -69,8 +67,10 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
 
 
 def _validated_request_path(request_json: core_utils.JSONObject, allow_create: bool = False) -> Result[ValidatedPath, str]:
-    path = str(request_json.get("path", None))
-    return get_validated_path(path, allow_create=allow_create)
+    if "path" not in request_json or not isinstance(request_json["path"], str):
+        return Err("Request JSON must contain a 'path' field with a string value.")
+    else:
+        return get_validated_path(request_json["path"], allow_create=allow_create)
 
 
 @app.route("/")
@@ -102,6 +102,10 @@ def load_model_parser_module() -> FlaskResponse:
 def load() -> FlaskResponse:
     state = get_server_state(app)
     request_json = request.get_json()
+    if not request_json.keys() <= {"path"}:
+        return HttpResponseWithAIConfig(
+            message="Request JSON must contain a 'path' field with a string value, or no arguments.", code=400, aiconfig=None
+        ).to_flask_format()
     path: str | None = request_json.get("path", None)
     if path is None:
         aiconfig = state.aiconfig
@@ -126,17 +130,23 @@ def save() -> FlaskResponse:
     state = get_server_state(app)
     aiconfig = state.aiconfig
     request_json = request.get_json()
+    path: str | None = request_json.get("path", None)
 
-    _op = make_op_run_method(MethodName("save"))
+    if path is None:
+        if aiconfig is None:
+            return HttpResponseWithAIConfig(message="No AIConfig loaded", code=400, aiconfig=None).to_flask_format()
+        else:
+            path = aiconfig.file_path
 
-    path_val = _validated_request_path(request_json, allow_create=True)
-    op_args: Result[OpArgs, str] = result.do(
-        Ok(OpArgs({"path": path_val_ok}))
-        #
-        for path_val_ok in path_val
-    )
+    res_path_val = get_validated_path(path, allow_create=True)
+    match res_path_val:
+        case Ok(path_ok):
+            _op = make_op_run_method(MethodName("save"))
+            op_args: Result[OpArgs, str] = result.Ok(OpArgs({"config_filepath": path_ok}))
+            return run_aiconfig_operation_with_op_args(aiconfig, "save", _op, op_args)
 
-    return run_aiconfig_operation_with_op_args(aiconfig, "save", _op, op_args)
+        case Err(e):
+            return HttpResponseWithAIConfig(message=f"Failed to save AIConfig: {e}", code=400, aiconfig=None).to_flask_format()
 
 
 @app.route("/api/create", methods=["POST"])
@@ -157,32 +167,43 @@ async def run() -> FlaskResponse:
     aiconfig = state.aiconfig
     request_json = request.get_json()
 
-    _op = make_op_run_method(MethodName("run"))
+    try:
+        prompt_name: Union[str, None] = request_json.get("prompt_name")
+        if prompt_name is None:
+            return HttpResponseWithAIConfig(
+                message="No prompt name provided, cannot execute `run` command",
+                code=400,
+                aiconfig=None,
+            ).to_flask_format()
 
-    def _get_op_args():
-        prompt_name = request_json.get("prompt_name", None)
-        stream = request_json.get("stream", True)
-        LOGGER.info(f"Running prompt: {prompt_name}, {stream=}")
-        inference_options = InferenceOptions(stream=stream)
-        return Ok(
-            OpArgs(
-                {
-                    "prompt_name": prompt_name,
-                    #
-                    "options": inference_options,
-                }
-            )
-        )
-
-    op_args = _get_op_args()
-
-    return run_aiconfig_operation_with_op_args(aiconfig, "run", _op, op_args)
+        # TODO (rossdanlm): Refactor aiconfig.run() to not take in `params`
+        # as a function arg since we can now just call
+        # aiconfig.get_parameters(prompt_name) directly inside of run. See:
+        # https://github.com/lastmile-ai/aiconfig/issues/671
+        params = request_json.get("params", aiconfig.get_parameters(prompt_name))  # type: ignore
+        stream = request_json.get("stream", False)
+        options = InferenceOptions(stream=stream)
+        run_output = await aiconfig.run(prompt_name, params, options)  # type: ignore
+        LOGGER.debug(f"run_output: {run_output}")
+        return HttpResponseWithAIConfig(
+            #
+            message="Ran prompt",
+            code=200,
+            aiconfig=aiconfig,
+        ).to_flask_format()
+    except Exception as e:
+        return HttpResponseWithAIConfig(
+            #
+            message=f"Failed to run prompt: {type(e)}, {e}",
+            code=400,
+            aiconfig=None,
+        ).to_flask_format()
 
 
 @app.route("/api/add_prompt", methods=["POST"])
 def add_prompt() -> FlaskResponse:
     method_name = MethodName("add_prompt")
-    signature: dict[str, Type[Any]] = {"prompt_name": str, "prompt_data": Prompt}
+    signature: dict[str, Type[Any]] = {"prompt_name": str, "prompt_data": Prompt, "index": int}
 
     state = get_server_state(app)
     aiconfig = state.aiconfig
@@ -216,3 +237,89 @@ def delete_prompt() -> FlaskResponse:
 
     operation = make_op_run_method(method_name)
     return run_aiconfig_operation_with_request_json(aiconfig, request_json, f"method_{method_name}", operation, signature)
+
+
+@app.route("/api/update_model", methods=["POST"])
+def update_model() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    model_name: str | None = request_json.get("model_name")
+    settings: Dict[str, Any] | None = request_json.get("settings")
+    prompt_name: str | None = request_json.get("prompt_name")
+
+    operation = make_op_run_method(MethodName("update_model"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"model_name": model_name, "settings": settings, "prompt_name": prompt_name}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "update_model", operation, operation_args)
+
+
+@app.route("/api/set_parameter", methods=["POST"])
+def set_parameter() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    parameter_name: str | None = request_json.get("parameter_name")
+    parameter_value: Union[str, Dict[str, Any]] | None = request_json.get("parameter_value")
+    prompt_name: str | None = request_json.get("prompt_name")
+
+    operation = make_op_run_method(MethodName("set_parameter"))
+    operation_args: Result[OpArgs, str] = result.Ok(
+        OpArgs({"parameter_name": parameter_name, "parameter_value": parameter_value, "prompt_name": prompt_name})
+    )
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_parameter", operation, operation_args)
+
+
+@app.route("/api/set_parameters", methods=["POST"])
+def set_parameters() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    parameters: Dict[str, Any] = request_json.get("parameters")
+    prompt_name: str | None = request_json.get("prompt_name")
+
+    operation = make_op_run_method(MethodName("set_parameters"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"parameters": parameters, "prompt_name": prompt_name}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_parameters", operation, operation_args)
+
+
+@app.route("/api/delete_parameter", methods=["POST"])
+def delete_parameter() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    parameter_name: str | None = request_json.get("parameter_name")
+    prompt_name: str | None = request_json.get("prompt_name")
+
+    operation = make_op_run_method(MethodName("delete_parameter"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"parameter_name": parameter_name, "prompt_name": prompt_name}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "delete_parameter", operation, operation_args)
+
+
+@app.route("/api/set_name", methods=["POST"])
+def set_name() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    name: str | None = request_json.get("name")
+
+    operation = make_op_run_method(MethodName("set_name"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"name": name}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_name", operation, operation_args)
+
+
+@app.route("/api/set_description", methods=["POST"])
+def set_description() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    description: str | None = request_json.get("description")
+
+    operation = make_op_run_method(MethodName("set_description"))
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"description": description}))
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_description", operation, operation_args)

@@ -1,6 +1,7 @@
-import { Prompt } from "aiconfig";
+import { JSONObject, JSONValue, Prompt } from "aiconfig";
 import { OpenAIChatModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatModelParserPromptSchema";
 import { OpenAIChatVisionModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatVisionModelParserPromptSchema";
+import { DalleImageGenerationParserPromptSchema } from "../shared/prompt_schemas/DalleImageGenerationParserPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -12,7 +13,7 @@ import { OpenAIChatVisionModelParserPromptSchema } from "../shared/prompt_schema
 export function getPromptModelName(
   prompt: Prompt,
   defaultConfigModelName?: string
-): string {
+): string | undefined {
   const promptMetadataModel = prompt.metadata?.model;
   if (promptMetadataModel) {
     if (typeof promptMetadataModel === "string") {
@@ -23,7 +24,7 @@ export function getPromptModelName(
   }
 
   // Model must be specified as default if not specified for the Prompt
-  return defaultConfigModelName!;
+  return defaultConfigModelName;
 }
 
 // TODO: Schemas should be statically defined with the model parsers and loaded alongside config, keyed on registered model names
@@ -44,9 +45,34 @@ export function getPromptModelName(
 //   - we can focus on the important 3 params defined above, instead of requiring re-definining the full JSON schema
 // Should we define a JSON schema for PromptSchema type so we can safely serialize/deserialize them?
 export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
-  "gpt-3.5-turbo": OpenAIChatModelParserPromptSchema,
+  // OpenAIChatModelParser
   "gpt-4": OpenAIChatModelParserPromptSchema,
+  "gpt-4-0314": OpenAIChatModelParserPromptSchema,
+  "gpt-4-0613": OpenAIChatModelParserPromptSchema,
+  "gpt-4-32k": OpenAIChatModelParserPromptSchema,
+  "gpt-4-32k-0314": OpenAIChatModelParserPromptSchema,
+  "gpt-4-32k-0613": OpenAIChatModelParserPromptSchema,
+  "gpt-3.5-turbo": OpenAIChatModelParserPromptSchema,
+  "gpt-3.5-turbo-16k": OpenAIChatModelParserPromptSchema,
+  "gpt-3.5-turbo-0301": OpenAIChatModelParserPromptSchema,
+  "gpt-3.5-turbo-0613": OpenAIChatModelParserPromptSchema,
+  "gpt-3.5-turbo-16k-0613": OpenAIChatModelParserPromptSchema,
+
+  // TODO: Add GPT4-V parser in AIConfig
   "gpt-4-vision-preview": OpenAIChatVisionModelParserPromptSchema,
+
+  // DalleImageGenerationParser
+  "dall-e-2": DalleImageGenerationParserPromptSchema,
+  "dall-e-3": DalleImageGenerationParserPromptSchema,
+
+  // HuggingFaceTextGenerationParser
+  // "HuggingFaceTextGenerationParser":
+
+  // PaLMTextParser
+  // "models/text-bison-001":
+
+  // PaLMChatParser
+  // "models/chat-bison-001":
 };
 
 export type PromptInputSchema =
@@ -84,7 +110,7 @@ export type PromptInputObjectSchema = {
   properties: {
     data: PromptInputObjectDataSchema;
     attachments?: PromptInputObjectAttachmentsSchema;
-  } & Record<string, { [key: string]: any }>;
+  } & Record<string, JSONObject>;
   required?: string[] | undefined;
 };
 
@@ -93,7 +119,7 @@ export type GenericPropertiesSchema = {
   properties: Record<
     string,
     {
-      [key: string]: any;
+      [key: string]: JSONValue;
     }
   >;
   required?: string[] | undefined;
@@ -110,6 +136,9 @@ export function getPromptSchema(
   defaultConfigModelName?: string
 ): PromptSchema | undefined {
   const modelName = getPromptModelName(prompt, defaultConfigModelName);
+  if (!modelName) {
+    return undefined;
+  }
   return PROMPT_SCHEMAS[modelName];
 }
 

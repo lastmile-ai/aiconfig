@@ -1,7 +1,7 @@
 import ModelSettingsConfigRenderer from "./ModelSettingsConfigRenderer";
 import ModelSettingsSchemaRenderer from "./ModelSettingsSchemaRenderer";
 import { GenericPropertiesSchema } from "../../../utils/promptUtils";
-import { Flex, Text } from "@mantine/core";
+import { Flex, createStyles } from "@mantine/core";
 import { JSONObject } from "aiconfig";
 import { memo } from "react";
 
@@ -11,11 +11,22 @@ type Props = {
   onUpdateModelSettings: (settings: Record<string, unknown>) => void;
 };
 
+const useStyles = createStyles(() => ({
+  settingsContainer: {
+    // TODO: Fix max height to be full height if input/output is larger than settings
+    // otherwise bound to some reasonable height
+    overflow: "auto",
+    paddingTop: "0.5em",
+    width: "100%",
+  },
+}));
+
 export default memo(function ModelSettingsRenderer({
   settings,
   schema,
   onUpdateModelSettings,
 }: Props) {
+  const { classes } = useStyles();
   let settingsComponent;
 
   if (schema) {
@@ -31,8 +42,7 @@ export default memo(function ModelSettingsRenderer({
   }
 
   return (
-    <Flex direction="column">
-      <Text>Model Settings</Text>
+    <Flex direction="column" className={classes.settingsContainer}>
       {settingsComponent}
     </Flex>
   );

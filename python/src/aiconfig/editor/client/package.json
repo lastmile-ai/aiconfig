@@ -7,7 +7,8 @@
     "build": "react-scripts build",
     "postbuild": "node postbuild.js",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint . --max-warnings=0"
   },
   "browserslist": {
     "production": [
@@ -32,8 +33,9 @@
     "@mantine/modals": "^6.0.7",
     "@mantine/notifications": "^6.0.7",
     "@mantine/prism": "^6.0.7",
+    "@monaco-editor/react": "^4.6.0",
     "@tabler/icons-react": "^2.44.0",
-    "aiconfig": "^1.1.0",
+    "aiconfig": "../../../../../typescript",
     "lodash": "^4.17.21",
     "node-fetch": "^3.3.2",
     "react": "^18",
@@ -49,8 +51,11 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
     "eslint": "^8",
     "eslint-config-next": "14.0.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "typescript": "^5"
   }
 }

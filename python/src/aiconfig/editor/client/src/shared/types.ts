@@ -1,4 +1,5 @@
-import { AIConfig, Prompt, Error, ExecuteResult } from "aiconfig";
+import { AIConfig, Prompt } from "aiconfig";
+import { uniqueId } from "lodash";
 
 export type EditorFile = {
   name: string;
@@ -8,36 +9,43 @@ export type EditorFile = {
   disabled?: boolean;
 };
 
-export type TextExecuteResultOutput = {
-  type: "text";
-  text: string;
-};
-
-export type ClientExecuteResultOutput = TextExecuteResultOutput; // TODO: Add non-text types
-
-export type ClientExecuteResult = ExecuteResult & {
-  renderData: ClientExecuteResultOutput;
-};
-
-export type ClientPromptOutput = ClientExecuteResult | Error;
-
-export type ClientPrompt = Omit<Prompt, "outputs"> & {
-  outputs?: ClientPromptOutput[];
+export type ClientPrompt = Prompt & {
+  _ui: {
+    id: string;
+    isRunning?: boolean;
+  };
 };
 
 export type ClientAIConfig = Omit<AIConfig, "prompts"> & {
   prompts: ClientPrompt[];
 };
 
-export function clientConfigToAIConfig(config: ClientAIConfig): AIConfig {
+export function clientPromptToAIConfigPrompt(prompt: ClientPrompt): Prompt {
+  const configPrompt = {
+    ...prompt,
+    _ui: undefined,
+  };
+  delete configPrompt._ui;
+  return configPrompt;
+}
+
+export function clientConfigToAIConfig(clientConfig: ClientAIConfig): AIConfig {
+  // For some reason, TS thinks ClientAIConfig is missing properties from
+  // AIConfig, so we have to cast it
   return {
-    ...config,
-    prompts: config.prompts.map((prompt) => ({
+    ...clientConfig,
+    prompts: clientConfig.prompts.map(clientPromptToAIConfigPrompt),
+  } as unknown as AIConfig;
+}
+
+export function aiConfigToClientConfig(aiconfig: AIConfig): ClientAIConfig {
+  return {
+    ...aiconfig,
+    prompts: aiconfig.prompts.map((prompt) => ({
       ...prompt,
-      outputs: prompt.outputs?.map((output) => ({
-        ...output,
-        client: undefined,
-      })),
+      _ui: {
+        id: uniqueId(),
+      },
     })),
-  } as AIConfig;
+  };
 }

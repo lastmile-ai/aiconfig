@@ -35,7 +35,7 @@ async def main(argv: list[str]) -> int:
 def run_subcommand(argv: list[str]) -> Result[str, str]:
     LOGGER.info("Running subcommand")
     subparser_record_types = {"edit": EditServerConfig}
-    main_parser = core_utils.argparsify(AIConfigCLIConfig, subparser_rs=subparser_record_types)
+    main_parser = core_utils.argparsify(AIConfigCLIConfig, subparser_record_types=subparser_record_types)
 
     res_cli_config = core_utils.parse_args(main_parser, argv[1:], AIConfigCLIConfig)
     res_cli_config.and_then(_process_cli_config)

@@ -1,4 +1,4 @@
-import { JSONObject } from "aiconfig/dist/common";
+import { JSONObject } from "aiconfig";
 import { memo } from "react";
 
 type Props = {
