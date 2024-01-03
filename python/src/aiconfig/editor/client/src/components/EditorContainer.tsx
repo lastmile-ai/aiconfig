@@ -127,14 +127,19 @@ export default function EditorContainer({
         async (
           promptName: string,
           newPrompt: Prompt,
-          onSuccess?: (aiconfigRes: AIConfig) => void
+          onSuccess: (aiconfigRes: AIConfig) => void,
+          onError: (err: unknown) => void
         ) => {
-          const serverConfigRes = await updatePromptCallback(
-            promptName,
-            newPrompt
-          );
-          if (serverConfigRes && onSuccess) {
-            onSuccess(serverConfigRes.aiconfig);
+          try {
+            const serverConfigRes = await updatePromptCallback(
+              promptName,
+              newPrompt
+            );
+            if (serverConfigRes?.aiconfig) {
+              onSuccess(serverConfigRes.aiconfig);
+            }
+          } catch (err: unknown) {
+            onError(err);
           }
         },
         DEBOUNCE_MS
@@ -152,6 +157,15 @@ export default function EditorContainer({
 
       dispatch(action);
 
+      const onError = (err: unknown) => {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error updating prompt input",
+          message,
+          color: "red",
+        });
+      };
+
       try {
         const statePrompt = getPrompt(stateRef.current, promptId);
         if (!statePrompt) {
@@ -165,20 +179,16 @@ export default function EditorContainer({
             ...prompt,
             input: newPromptInput,
           },
-          (serverConfigRes) =>
+          (config) =>
             dispatch({
               type: "CONSOLIDATE_AICONFIG",
               action,
-              config: serverConfigRes,
-            })
+              config,
+            }),
+          onError
         );
       } catch (err: unknown) {
-        const message = (err as RequestCallbackError).message ?? null;
-        showNotification({
-          title: "Error updating prompt input",
-          message,
-          color: "red",
-        });
+        onError(err);
       }
     },
     [debouncedUpdatePrompt, dispatch]
@@ -186,6 +196,15 @@ export default function EditorContainer({
 
   const onChangePromptName = useCallback(
     async (promptId: string, newName: string) => {
+      const onError = (err: unknown) => {
+        const message = err instanceof Error ? err.message : null;
+        showNotification({
+          title: "Error updating prompt name",
+          message,
+          color: "red",
+        });
+      };
+
       try {
         const statePrompt = getPrompt(stateRef.current, promptId);
         if (!statePrompt) {
@@ -207,15 +226,11 @@ export default function EditorContainer({
               type: "UPDATE_PROMPT_NAME",
               id: promptId,
               name: newName,
-            })
+            }),
+          onError
         );
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : null;
-        showNotification({
-          title: "Error updating prompt name",
-          message,
-          color: "red",
-        });
+        onError(err);
       }
     },
     [debouncedUpdatePrompt]
