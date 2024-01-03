@@ -21,7 +21,7 @@ logging.basicConfig(format=core_utils.LOGGER_FMT)
 LOGGER = logging.getLogger(__name__)
 
 
-async def main(argv: list[str]) -> int:
+async def main_with_args(argv: list[str]) -> int:
     final_result = run_subcommand(argv)
     match final_result:
         case Ok(msg):
@@ -33,7 +33,7 @@ async def main(argv: list[str]) -> int:
 
 
 def run_subcommand(argv: list[str]) -> Result[str, str]:
-    LOGGER.info("Running subcommand")
+    print("Running subcommand")
     subparser_record_types = {"edit": EditServerConfig}
     main_parser = core_utils.argparsify(AIConfigCLIConfig, subparser_record_types=subparser_record_types)
 
@@ -41,7 +41,7 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
     res_cli_config.and_then(_process_cli_config)
 
     subparser_name = core_utils.get_subparser_name(main_parser, argv[1:])
-    LOGGER.info(f"Running subcommand: {subparser_name}")
+    print(f"Running subcommand: {subparser_name}")
 
     if subparser_name == "edit":
         LOGGER.debug("Running edit subcommand")
@@ -65,19 +65,19 @@ def _sigint(procs: list[subprocess.Popen[bytes]]) -> Result[str, str]:
         p.send_signal(signal.SIGINT)
     return Ok("Sent SIGINT to frontend servers.")
 
+
 def is_port_in_use(port: int) -> bool:
-    """ 
+    """
     Checks if a port is in use at localhost.
-    
+
     Creates a temporary connection.
     Context manager will automatically close the connection
     """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('localhost', port)) == 0
+        return s.connect_ex(("localhost", port)) == 0
 
 
 def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]:
-    
     port = edit_config.server_port
 
     while is_port_in_use(port):
@@ -142,6 +142,12 @@ def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], s
     return Ok([p1, p2])
 
 
+def main() -> int:
+    print("Running main")
+    argv = sys.argv
+    return asyncio.run(main_with_args(argv))
+
+
 if __name__ == "__main__":
-    retcode: int = asyncio.run(main(sys.argv))
+    retcode: int = main()
     sys.exit(retcode)
