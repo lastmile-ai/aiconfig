@@ -10,6 +10,7 @@ We cover:
 
 - Inference using Anyscale Endpoints
 - Prompt chains with multiple models
+- Function calling with Anyscale Endpoints & AIConfig
 
 Read more about [AIConfig for prompt and model management](https://github.com/lastmile-ai/aiconfig).
 
