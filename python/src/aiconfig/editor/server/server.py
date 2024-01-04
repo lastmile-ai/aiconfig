@@ -84,6 +84,11 @@ def home():
     return app.send_static_file("index.html")
 
 
+@app.route("/api/server_status", methods=["GET"])
+def server_status() -> FlaskResponse:
+    return FlaskResponse(({"status": "OK"}, 200))
+
+
 @app.route("/api/list_models", methods=["GET"])
 def list_models() -> FlaskResponse:
     out: list[str] = ModelParserRegistry.parser_ids()  # type: ignore
