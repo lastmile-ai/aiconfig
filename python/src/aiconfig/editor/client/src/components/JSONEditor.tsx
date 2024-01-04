@@ -72,7 +72,11 @@ export default memo(function JSONEditor({
         minimap: { enabled: false },
         wordWrap: "on",
       }}
-      onMount={(editor, monaco) => configureEditor(editor, monaco, schema)}
+      onMount={(editor, monaco) => {
+        if (schema) {
+          configureEditor(editor, monaco, schema);
+        }
+      }}
     />
   );
 });
