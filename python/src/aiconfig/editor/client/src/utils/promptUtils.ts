@@ -3,6 +3,7 @@ import { OpenAIChatModelParserPromptSchema } from "../shared/prompt_schemas/Open
 import { OpenAIChatVisionModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatVisionModelParserPromptSchema";
 import { DalleImageGenerationParserPromptSchema } from "../shared/prompt_schemas/DalleImageGenerationParserPromptSchema";
 import { PaLMTextParserPromptSchema } from "../shared/prompt_schemas/PaLMTextParserPromptSchema";
+import { PaLMChatParserPromptSchema } from "../shared/prompt_schemas/PaLMChatParserPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -73,7 +74,7 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "models/text-bison-001": PaLMTextParserPromptSchema,
 
   // PaLMChatParser
-  // "models/chat-bison-001":
+  "models/chat-bison-001": PaLMChatParserPromptSchema,
 };
 
 export type PromptInputSchema =
