@@ -55,6 +55,23 @@ e.g. `aiconfig edit --parsers-module-path="/path/to/my_editor_plugin.py"`
 
 ## Dev
 
+### Environment setup
+It is recommended to use (mini)conda. This sets up an environment for you in terminal
+which ensures you have the proper Python packages and dependencies installed.
+Ex: you won't have to worry about issues between `python` vs. `python3`
+
+If you already have conda installed, you can skip this step
+```bash
+brew install --cask miniconda
+conda init my_environment_name
+conda config --set auto_activate_base false
+```
+
+Now go onto another terminal and type:
+```bash
+conda activate my_environment_name
+```
+
 ### Install:
 
 From the top-level `aiconfig` dir:
