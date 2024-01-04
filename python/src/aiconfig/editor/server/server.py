@@ -1,5 +1,6 @@
 import logging
 from typing import Any, Dict, Type, Union
+import webbrowser
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -51,6 +52,11 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
     LOGGER.setLevel(edit_config.log_level)
     LOGGER.info("Edit config: %s", edit_config.model_dump_json())
     LOGGER.info(f"Starting server on http://localhost:{edit_config.server_port}")
+    try:
+        LOGGER.info(f"Opening browser at http://localhost:{edit_config.server_port}")
+        webbrowser.open(f"http://localhost:{edit_config.server_port}")
+    except Exception as e:
+        LOGGER.warning(f"Failed to open browser: {e}. Please open http://localhost:{port} manually.")
 
     app.server_state = ServerState()  # type: ignore
     res_server_state_init = init_server_state(app, edit_config)
@@ -59,7 +65,7 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
             LOGGER.info("Initialized server state")
             debug = edit_config.server_mode in [ServerMode.DEBUG_BACKEND, ServerMode.DEBUG_SERVERS]
             LOGGER.info(f"Running in {edit_config.server_mode} mode")
-            app.run(port=edit_config.server_port, debug=debug, use_reloader=True)
+            app.run(port=edit_config.server_port, debug=debug, use_reloader=debug)
             return Ok("Done")
         case Err(e):
             LOGGER.error(f"Failed to initialize server state: {e}")

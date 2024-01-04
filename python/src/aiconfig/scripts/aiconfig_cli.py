@@ -21,7 +21,7 @@ logging.basicConfig(format=core_utils.LOGGER_FMT)
 LOGGER = logging.getLogger(__name__)
 
 
-async def main(argv: list[str]) -> int:
+async def main_with_args(argv: list[str]) -> int:
     final_result = run_subcommand(argv)
     match final_result:
         case Ok(msg):
@@ -142,6 +142,12 @@ def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], s
     return Ok([p1, p2])
 
 
+def main() -> int:
+    print("Running main")
+    argv = sys.argv
+    return asyncio.run(main_with_args(argv))
+
+
 if __name__ == "__main__":
-    retcode: int = asyncio.run(main(sys.argv))
+    retcode: int = main()
     sys.exit(retcode)
