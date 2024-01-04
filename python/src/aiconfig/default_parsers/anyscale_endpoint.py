@@ -108,6 +108,7 @@ class AnyscaleEndpoint(OpenAIInference):
             for chunk in response:
                 # OpenAI>1.0.0 uses pydantic models. Chunk is of type ChatCompletionChunk; type is not directly importable from openai Library, will require some diffing
                 chunk = chunk.model_dump(exclude_none=True)
+                chunk_without_choices = {key: copy.deepcopy(value) for key, value in chunk.items() if key != "choices"}
                 # streaming only returns one chunk, one choice at a time (before 1.0.0). The order in which the choices are returned is not guaranteed.
                 messages = multi_choice_message_reducer(messages, chunk)
 
@@ -124,11 +125,23 @@ class AnyscaleEndpoint(OpenAIInference):
                             "output_type": "execute_result",
                             "data": accumulated_message_for_choice,
                             "execution_count": index,
-                            "metadata": {"finish_reason": choice.get("finish_reason")},
+                            "metadata": chunk_without_choices,
                         }
                     )
                     outputs[index] = output
             outputs = [outputs[i] for i in sorted(list(outputs.keys()))]
+
+            # Now that we have the complete outputs, we can parse it into our object model properly
+            for output in outputs:
+                output_message = output.data
+                output_data = build_output_data(output.data)
+
+                metadata = {"raw_response": output_message}
+                if output_message.get("role", None) is not None:
+                    metadata["role"] = output_message.get("role")
+
+                output.data = output_data
+                output.metadata = {**output.metadata, **metadata}
 
         # rewrite or extend list of outputs?
         prompt.outputs = outputs
@@ -240,7 +253,7 @@ def build_output_data(
         return None
 
     output_data: Union[OutputDataWithValue, str, None] = None
-    if message.get("content") is not None:
+    if message.get("content") is not None and message.get("content") != "":
         output_data = message.get("content")  # string
     elif message.get("tool_calls") is not None:
         tool_calls = []
