@@ -1,6 +1,5 @@
 from .local_inference.text_2_image import HuggingFaceText2ImageDiffusor
 from .local_inference.text_generation import HuggingFaceTextGenerationTransformer
-from .remote_inference_client.text_generation import HuggingFaceTextGenerationClient
 from .local_inference.text_summarization import HuggingFaceTextSummarizationTransformer
 
 # from .remote_inference_client.text_generation import HuggingFaceTextGenerationClient
