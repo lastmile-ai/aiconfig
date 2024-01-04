@@ -1,0 +1,116 @@
+{
+  "name": "NYC Trip Planner",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {
+      "meta-llama/Llama-2-7b-chat-hf": {
+        "model": "meta-llama/Llama-2-7b-chat-hf",
+        "top_p": 1,
+        "temperature": 1
+      },
+      "meta-llama/Llama-2-70b-chat-hf": {
+        "model": "meta-llama/Llama-2-70b-chat-hf",
+        "max_tokens": 3000,
+        "system_prompt": "You are an expert travel coordinator with exquisite taste."
+      }
+    },
+    "default_model": "meta-llama/Llama-2-7b-chat-hf",
+    "model_parsers": {
+      "meta-llama/Llama-2-7b-chat-hf": "AnyscaleEndpoint",
+      "meta-llama/Llama-2-13b-chat-hf": "AnyscaleEndpoint",
+      "Meta-Llama/Llama-Guard-7b": "AnyscaleEndpoint",
+      "meta-llama/Llama-2-70b-chat-hf": "AnyscaleEndpoint",
+      "Open-Orca/Mistral-7B-OpenOrca": "AnyscaleEndpoint",
+      "codellama/CodeLlama-34b-Instruct-hf": "AnyscaleEndpoint",
+      "HuggingFaceH4/zephyr-7b-beta": "AnyscaleEndpoint",
+      "mistralai/Mistral-7B-Instruct-v0.1": "AnyscaleEndpoint",
+      "mistralai/Mixtral-8x7B-Instruct-v0.1": "AnyscaleEndpoint",
+      "thenlper/gte-large": "AnyscaleEndpoint"
+    }
+  },
+  "description": "Intrepid explorer with ChatGPT and AIConfig",
+  "prompts": [
+    {
+      "name": "get_activities",
+      "input": "Tell me 10 fun attractions to do in NYC.",
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": {
+            "role": "assistant",
+            "content": "  Sure! Here are 10 fun attractions to do in New York City:\n\n1. Visit the Statue of Liberty and Ellis Island: Take a ferry to Liberty Island to see the iconic Statue of Liberty up close and learn about its history at the nearby Ellis Island Immigration Museum.\n2. Explore the Metropolitan Museum of Art: With over 2 million works of art spanning 5,000 years of history, the Met is one of the world's largest and most comprehensive art museums.\n3. Walk across the Brooklyn Bridge: Take a stroll across this iconic bridge for spectacular views of the Manhattan skyline, the East River, and Brooklyn.\n4. See a Broadway show: New York City is home to dozens of world-class theaters and performances, including Tony-award winning shows like Hamilton, Wicked, and The Lion King.\n5. Visit Central Park: This 843-acre green oasis in the middle of Manhattan offers a peaceful escape from the hustle and bustle of the city, with plenty of walking paths, lakes, and monuments to explore.\n6. Go shopping on Fifth Avenue: From high-end designer boutiques to exclusive department stores, Fifth Avenue is the ultimate shopping destination in NYC.\n7. Visit the 9/11 Memorial & Museum: A poignant tribute to the victims of the 9/11 attacks, the memorial features two reflecting pools surrounded by the names of those who were killed, as well as a museum with artifacts and stories from that fateful day.\n8. Take a food tour: New York City is a food lover's paradise, with a diverse array of cuisines and dining options. Take a guided tour to sample some of the city's best foods, from classic pizza to artisanal doughnuts.\n9. Visit the Museum of Modern Art (MoMA): With a collection of over 200,000 works of art, MoMA is one of the world's premier modern art museums, featuring pieces by artists like Picasso, Warhol, and Pollock.\n10. Take a helicopter tour of NYC: For a unique perspective on the city, take a helicopter tour of New York City's iconic skyline and landmarks. You'll soar over the Hudson River and get a bird's-eye view of Manhattan's towering skyscrapers, bridges, and parks.\n\nThese are just a few of the many fun attractions to explore in New York City. Depending on your interests, there are countless other activities and experiences to enjoy in the city that never sleeps!"
+          },
+          "metadata": {
+            "finish_reason": "stop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "gen_itinerary",
+      "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
+      "metadata": {
+        "model": {
+          "name": "AnyscaleEndpoint",
+          "settings": {
+            "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+            "max_tokens": 3000,
+            "system_prompt": "You are an expert travel coordinator with exquisite taste."
+          }
+        },
+        "parameters": {
+          "order_by": "geographic location"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": {
+            "role": "assistant",
+            "content": " 1. Private guided tour of the Louvre Museum (2-3 hours)\nBegin your journey with a private guided tour of the Louvre Museum, the world's largest art museum and a historic monument in Paris. This tour will allow you to explore the museum's most famous works, including the Mona Lisa, the Winged Victory of Samothrace, and the Venus de Milo, with a knowledgeable guide who can provide context and insight into the artwork.\n\n2. Champagne tasting at a prestigious champagne house in Reims (2 hours)\nNext, head to Reims, a city in the Champagne region of France, for a private champagne tasting at a prestigious champagne house such as Taittinger, Veuve Clicquot, or Ruinart. You'll learn about the history and production methods of champagne, as well as have the opportunity to taste a selection of their finest bubbly.\n\n3. Lunch at a Michelin-starred restaurant in Reims (1.5-2 hours)\nTreat yourself to lunch at one of Reims' Michelin-starred restaurants, such as Le Foch, where you can sample local specialties such as Jambon de Reims, or Reims ham, and indulge in expertly prepared dishes made with fresh, seasonal ingredients.\n\n4. Private guided tour of the Palace of Versailles (3-4 hours)\nNo trip to France would be complete without a visit to the Palace of Versailles, the opulent palace and gardens of the French monarchy. A private guided tour will allow you to explore the palace's grand halls, ornate apartments, and incomparable art collections, as well as stroll through the meticulously manicured gardens and fountains.\n\n5. Seine River dinner cruise (2-3 hours)\nEnd your day with a romantic Seine River dinner cruise, where you'll float past some of Paris' most iconic landmarks, including the Eiffel Tower, Notre-Dame Cathedral, and the Louvre Museum, all while enjoying a delicious meal and live music.\n\n6. Private guided tour of Montmartre and Sacr\u00e9-Coeur Basilica (2-3 hours)\nBegin your second day with a private guided tour of Montmartre, the historic and artistic neighborhood atop a hill in Paris. This tour will take you through the charming streets of Montmartre, past the Moulin Rouge and the Place du Tertre, to the iconic white-domed Basilica of Sacr\u00e9-Coeur.\n\n7. Cooking class at a professional cooking school in Paris (3-4 hours)\nNext, immerse yourself in French culinary traditions with a private cooking class at a professional cooking school. You'll learn how to prepare classic French dishes such as coq au vin, ratatouille, or tarte tatin, and have the opportunity to enjoy the fruits of your labor for lunch.\n\n8. Private guided tour of the Mus\u00e9e d'Orsay (2-3 hours)\nEnd your trip with a private guided tour of the Mus\u00e9e d'Orsay, a museum located in a former railway station, which houses a vast collection of Impressionist and Post-Impressionist art. This tour will allow you to see works by artists such as Monet, Renoir, Degas, and Van Gogh, and gain a deeper understanding of the artistic movements that defined this period."
+          },
+          "metadata": {
+            "finish_reason": "stop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "gen_packing_list",
+      "input": "What should I bring to {{location}}?",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo",
+          "settings": {
+            "model": "gpt-3.5-turbo",
+            "system_prompt": {
+              "role": "system",
+              "content": "You provide a bulleted list of items to pack for a week long trip."
+            }
+          }
+        },
+        "parameters": {
+          "location": "nyc"
+        },
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": {
+            "content": "- Clothes for a week, including underwear, socks, and sleepwear\n- Outerwear appropriate for the weather (jacket, coat, or sweater)\n- Comfortable shoes for walking\n- Toiletries (toothbrush, toothpaste, shampoo, conditioner, soap, etc.)\n- Medications, if needed\n- Phone charger and other electronic accessories\n- Personal identification and travel documents (ID, passport, visa, etc.)\n- Wallet with cash and/or credit cards\n- Travel-sized umbrella or raincoat, depending on the weather forecast\n- Snacks and water bottle for the journey\n- Any necessary electronics or gadgets (camera, laptop, etc.)\n- Entertainment options (books, magazines, headphones, etc.)\n- Travel adapter, if necessary\n- Maps or guidebook of NYC\n- Sunscreen and sunglasses, if visiting during summer or sunny weather\n- Light backpack or day bag for touring around the city\n- Any special items specific to your needs or interests (art supplies, workout gear, etc.)",
+            "role": "assistant"
+          },
+          "metadata": {
+            "finish_reason": "stop"
+          }
+        }
+      ]
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}
