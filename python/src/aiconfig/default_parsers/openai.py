@@ -345,8 +345,7 @@ class OpenAIInference(ParameterizedModelParser):
                 if isinstance(output_data.value, str):
                     return output_data.value
                 # If we get here that means it must be of kind tool_calls
-                return json.dumps(output_data.value, indent=2)
-
+                return output_data.model_dump_json(exclude_none=True, indent=2)
             # Doing this to be backwards-compatible with old output format
             # where we used to save the ChatCompletionMessage in output.data
             if isinstance(output_data, ChatCompletionMessage):
@@ -435,6 +434,8 @@ def refine_chat_completion_params(model_settings):
         "stop",
         "stream",
         "temperature",
+        "tools",
+        "tool_choice",
         "top_p",
         "user",
     }
@@ -539,21 +540,25 @@ def build_output_data(
     if message.get("content") is not None:
         output_data = message.get("content")  # string
     elif message.get("tool_calls") is not None:
-        tool_calls = [
-            ToolCallData(
-                id=item.id,
-                function=FunctionCallData(
-                    arguments=item.function.arguments,
-                    name=item.function.name,
-                ),
-                type="function",
+        tool_calls = []
+        for item in message.get("tool_calls"):
+            function = item.get("function")
+            if function is None:
+                # It's possible that ChatCompletionMessageToolCall may
+                # support more than just function calls in the future
+                # so filter out other types of tool calls for now
+                continue
+
+            tool_calls.append(
+                ToolCallData(
+                    id=item.get("id"),
+                    function=FunctionCallData(
+                        arguments=function.get("arguments"),
+                        name=function.get("name"),
+                    ),
+                    type=item.get("type") if not None else "function",
+                )
             )
-            for item in message.get("tool_calls")
-            # It's possible that ChatCompletionMessageToolCall may
-            # support more than just function calls in the future
-            # so filter out other types
-            if item.type == "function"
-        ]
         output_data = OutputDataWithToolCallsValue(
             kind="tool_calls",
             value=tool_calls,
