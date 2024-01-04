@@ -1,3 +1,4 @@
+from asyncio import Task, create_task
 import importlib
 import importlib.util
 import logging
@@ -75,6 +76,7 @@ class EditServerConfig(core_utils.Record):
 @dataclass
 class ServerState:
     aiconfig: AIConfigRuntime | None = None
+    tasks: dict[str, Task[Any]] = {}
 
 
 FlaskResponse = NewType("FlaskResponse", tuple[core_utils.JSONObject, int])
