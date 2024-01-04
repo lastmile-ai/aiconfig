@@ -1,6 +1,7 @@
 import { PromptSchema } from "../../utils/promptUtils";
 
 export const OpenAIChatModelParserPromptSchema: PromptSchema = {
+  // https://platform.openai.com/docs/api-reference/chat/create
   input: {
     type: "string",
   },
