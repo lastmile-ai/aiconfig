@@ -15,7 +15,6 @@ from aiconfig.schema import (
     Prompt,
     ToolCallData,
 )
-from aiconfig.util.config_utils import get_api_key_from_environment
 
 from .openai import OpenAIInference
 
@@ -244,21 +243,23 @@ def build_output_data(
     if message.get("content") is not None:
         output_data = message.get("content")  # string
     elif message.get("tool_calls") is not None:
-        tool_calls = [
-            ToolCallData(
-                id=item.id,
-                function=FunctionCallData(
-                    arguments=item.function.arguments,
-                    name=item.function.name,
-                ),
-                type="function",
+        tool_calls = []
+        for item in message.get("tool_calls"):
+            function = item.get("function")
+            if function is None:
+                continue
+
+            tool_calls.append(
+                ToolCallData(
+                    id=item.get("id"),
+                    function=FunctionCallData(
+                        arguments=function.get("arguments"),
+                        name=function.get("name"),
+                    ),
+                    type=item.get("type") if not None else "function",
+                )
             )
-            for item in message.get("tool_calls")
-            # It's possible that ChatCompletionMessageToolCall may
-            # support more than just function calls in the future
-            # so filter out other types
-            if item.type == "function"
-        ]
+
         output_data = OutputDataWithToolCallsValue(
             kind="tool_calls",
             value=tool_calls,

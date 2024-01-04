@@ -853,13 +853,9 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         """
         prompt = self.get_prompt(prompt_name)
         if not prompt:
-            raise IndexError(
-                f"Cannot add outputs. Prompt '{prompt_name}' not found in config."
-            )
+            raise IndexError(f"Cannot add outputs. Prompt '{prompt_name}' not found in config.")
         if not outputs:
-            raise ValueError(
-                f"Cannot add outputs. No outputs provided for prompt '{prompt_name}'."
-            )
+            raise ValueError(f"Cannot add outputs. No outputs provided for prompt '{prompt_name}'.")
         if overwrite:
             prompt.outputs = outputs
         else:
