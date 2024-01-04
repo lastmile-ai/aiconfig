@@ -5,7 +5,9 @@ import {
   createStyles,
   Stack,
   Flex,
+  Text,
   Tooltip,
+  Alert,
 } from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
 import {
@@ -57,6 +59,7 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
+  getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
   save: (aiconfig: AIConfig) => Promise<void>;
   setConfigDescription: (description: string) => Promise<void>;
@@ -110,6 +113,7 @@ export default function EditorContainer({
   callbacks,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
+  const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
   const [aiconfigState, dispatch] = useReducer(
     aiconfigReducer,
     aiConfigToClientConfig(initialAIConfig)
@@ -665,9 +669,45 @@ export default function EditorContainer({
     return () => window.removeEventListener("keydown", saveHandler);
   }, [onSave]);
 
+  // Server heartbeat, check every 3s to show error if server is down
+  const getServerStatusCallback = callbacks.getServerStatus;
+  useEffect(() => {
+    if (!getServerStatusCallback) {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await getServerStatusCallback();
+        setServerStatus(res.status);
+      } catch (err: unknown) {
+        setServerStatus("ERROR");
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [getServerStatusCallback]);
+
   return (
     <AIConfigContext.Provider value={contextValue}>
       <Notifications />
+      {serverStatus !== "OK" && (
+        <>
+          {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
+          <div style={{ height: "100px" }} />
+          <Alert
+            color="red"
+            title="Server Connection Error"
+            w="100%"
+            style={{ position: "fixed", top: 0, zIndex: 999 }}
+          >
+            <Text>
+              There is a problem with the editor server connection. Please copy
+              important changes somewhere safe and try restarting the editor.
+            </Text>
+          </Alert>
+        </>
+      )}
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
           <Tooltip
