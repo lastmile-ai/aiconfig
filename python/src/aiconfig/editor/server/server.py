@@ -1,4 +1,5 @@
 import logging
+import traceback
 from typing import Any, Dict, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
@@ -192,6 +193,8 @@ async def run() -> FlaskResponse:
             aiconfig=aiconfig,
         ).to_flask_format()
     except Exception as e:
+        traceback_str = "".join(traceback.format_tb(e.__traceback__))
+        LOGGER.error(f"Failed to run prompt: {type(e)}, {e}, {traceback_str}")
         return HttpResponseWithAIConfig(
             #
             message=f"Failed to run prompt: {type(e)}, {e}",
