@@ -1,0 +1,91 @@
+{
+  "name": "Book Finder",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {},
+    "model_parsers": {
+      "mistralai/Mistral-7B-Instruct-v0.1": "AnyscaleEndpoint",
+      "mistralai/Mixtral-8x7B-Instruct-v0.1": "AnyscaleEndpoint"
+    }
+  },
+  "description": "Use OpenAI function calling to help recommend books",
+  "prompts": [
+    {
+      "name": "recommend_book",
+      "input": "I really enjoyed reading {{book}}, could you recommend me a book that is similar and tell me why?",
+      "metadata": {
+        "model": {
+          "name": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+          "settings": {
+            "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "list",
+                  "description": "list queries books by genre, and returns a list of names of books",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "genre": {
+                        "type": "string",
+                        "enum": [
+                          "mystery",
+                          "nonfiction",
+                          "memoir",
+                          "romance",
+                          "historical"
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "search",
+                  "description": "search queries books by their name and returns a list of book names and their ids",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "get",
+                  "description": "get returns a book's detailed information based on the id of the book. Note that this does not accept names, and only IDs, which you can get by using search.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "system_prompt": {
+              "role": "system",
+              "content": "Please use our book database, which you can access using functions to answer the following questions."
+            }
+          }
+        },
+        "parameters": {
+          "book": "To Kill a Mockingbird"
+        },
+        "remember_chat_context": true
+      },
+      "outputs": []
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}
