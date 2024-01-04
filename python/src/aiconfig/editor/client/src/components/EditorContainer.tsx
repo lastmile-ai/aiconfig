@@ -299,7 +299,10 @@ export default function EditorContainer({
         if (!statePrompt) {
           throw new Error(`Could not find prompt with id ${promptId}`);
         }
-        const modelName = getPromptModelName(statePrompt);
+        const modelName = getPromptModelName(
+          statePrompt,
+          stateRef.current.metadata.default_model
+        );
         if (!modelName) {
           throw new Error(`Could not find model name for prompt ${promptId}`);
         }
