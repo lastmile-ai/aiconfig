@@ -1,9 +1,11 @@
 import ModelSettingsConfigRenderer from "./ModelSettingsConfigRenderer";
 import ModelSettingsSchemaRenderer from "./ModelSettingsSchemaRenderer";
 import { GenericPropertiesSchema } from "../../../utils/promptUtils";
-import { Flex, createStyles } from "@mantine/core";
+import { ActionIcon, Flex, Tooltip, createStyles } from "@mantine/core";
 import { JSONObject } from "aiconfig";
-import { memo } from "react";
+import { memo, useState } from "react";
+import { IconBraces, IconBracesOff } from "@tabler/icons-react";
+import JSONRenderer from "../../JSONRenderer";
 
 type Props = {
   settings?: JSONObject;
@@ -27,6 +29,8 @@ export default memo(function ModelSettingsRenderer({
   onUpdateModelSettings,
 }: Props) {
   const { classes } = useStyles();
+  const [isRawJSON, setIsRawJSON] = useState(false);
+
   let settingsComponent;
 
   if (schema) {
@@ -43,7 +47,29 @@ export default memo(function ModelSettingsRenderer({
 
   return (
     <Flex direction="column" className={classes.settingsContainer}>
-      {settingsComponent}
+      {/* // TODO: Refactor this out to a generic wrapper for toggling JSONRenderer or children component */}
+      <Flex justify="flex-end">
+        <Tooltip label="Toggle JSON editor" withArrow>
+          <ActionIcon onClick={() => setIsRawJSON((curr) => !curr)}>
+            {isRawJSON ? (
+              <IconBracesOff size="1rem" />
+            ) : (
+              <IconBraces size="1rem" />
+            )}
+          </ActionIcon>
+        </Tooltip>
+      </Flex>
+      {isRawJSON ? (
+        <JSONRenderer
+          content={settings}
+          onChange={(val) =>
+            onUpdateModelSettings(val as Record<string, unknown>)
+          }
+          // schema={schema} TODO: Add schema after fixing z-index issue
+        />
+      ) : (
+        settingsComponent
+      )}
     </Flex>
   );
 });
