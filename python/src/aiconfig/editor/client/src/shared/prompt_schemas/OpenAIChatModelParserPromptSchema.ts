@@ -38,7 +38,7 @@ export const OpenAIChatModelParserPromptSchema: PromptSchema = {
         items: {
           type: "object",
           required: ["name", "parameters"],
-          parameters: {
+          properties: {
             name: {
               type: "string",
             },
