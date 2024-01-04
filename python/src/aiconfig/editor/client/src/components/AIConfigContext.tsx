@@ -8,7 +8,7 @@ import { ClientAIConfig } from "../shared/types";
 const AIConfigContext = createContext<{
   getState: () => ClientAIConfig;
 }>({
-  getState: () => ({ prompts: [] }),
+  getState: () => ({ prompts: [], _ui: { isDirty: false } }),
 });
 
 export default AIConfigContext;

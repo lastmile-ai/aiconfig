@@ -1,3 +1,4 @@
+from asyncio import Task, create_task
 import importlib
 import importlib.util
 import logging
@@ -59,7 +60,7 @@ class EditServerConfig(core_utils.Record):
     server_port: int = 8080
     aiconfig_path: str = "my_aiconfig.aiconfig.json"
     log_level: str | int = "INFO"
-    server_mode: ServerMode
+    server_mode: ServerMode = ServerMode.PROD
     parsers_module_path: str = "aiconfig_model_registry.py"
 
     @field_validator("server_mode", mode="before")
@@ -75,6 +76,7 @@ class EditServerConfig(core_utils.Record):
 @dataclass
 class ServerState:
     aiconfig: AIConfigRuntime | None = None
+    tasks: dict[str, Task[Any]] = {}
 
 
 FlaskResponse = NewType("FlaskResponse", tuple[core_utils.JSONObject, int])

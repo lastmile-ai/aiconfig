@@ -1,5 +1,12 @@
 import PromptContainer from "./prompt/PromptContainer";
-import { Container, Button, createStyles, Stack, Flex } from "@mantine/core";
+import {
+  Container,
+  Button,
+  createStyles,
+  Stack,
+  Flex,
+  Tooltip,
+} from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
 import {
   AIConfig,
@@ -8,7 +15,14 @@ import {
   Prompt,
   PromptInput,
 } from "aiconfig";
-import { useCallback, useMemo, useReducer, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import {
   ClientPrompt,
@@ -26,8 +40,9 @@ import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
 import AIConfigContext from "./AIConfigContext";
 import ConfigNameDescription from "./ConfigNameDescription";
-import { DEBOUNCE_MS } from "../utils/constants";
+import { AUTOSAVE_INTERVAL_MS, DEBOUNCE_MS } from "../utils/constants";
 import { getPromptModelName } from "../utils/promptUtils";
+import { IconDeviceFloppy } from "@tabler/icons-react";
 
 type Props = {
   aiconfig: AIConfig;
@@ -108,6 +123,9 @@ export default function EditorContainer({
     setIsSaving(true);
     try {
       await saveCallback(clientConfigToAIConfig(stateRef.current));
+      dispatch({
+        type: "SAVE_CONFIG_SUCCESS",
+      });
     } catch (err: unknown) {
       const message = (err as RequestCallbackError).message ?? null;
       showNotification({
@@ -197,7 +215,7 @@ export default function EditorContainer({
   const onChangePromptName = useCallback(
     async (promptId: string, newName: string) => {
       const onError = (err: unknown) => {
-        const message = err instanceof Error ? err.message : null;
+        const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error updating prompt name",
           message,
@@ -240,11 +258,20 @@ export default function EditorContainer({
   const debouncedUpdateModel = useMemo(
     () =>
       debounce(
-        (value: {
-          modelName?: string;
-          settings?: InferenceSettings;
-          promptName?: string;
-        }) => updateModelCallback(value),
+        async (
+          value: {
+            modelName?: string;
+            settings?: InferenceSettings;
+            promptName?: string;
+          },
+          onError: (err: unknown) => void
+        ) => {
+          try {
+            await updateModelCallback(value);
+          } catch (err: unknown) {
+            onError(err);
+          }
+        },
         DEBOUNCE_MS
       ),
     [updateModelCallback]
@@ -258,6 +285,15 @@ export default function EditorContainer({
         modelSettings: newModelSettings,
       });
 
+      const onError = (err: unknown) => {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error updating prompt model settings",
+          message,
+          color: "red",
+        });
+      };
+
       try {
         const statePrompt = getPrompt(stateRef.current, promptId);
         if (!statePrompt) {
@@ -267,18 +303,16 @@ export default function EditorContainer({
         if (!modelName) {
           throw new Error(`Could not find model name for prompt ${promptId}`);
         }
-        await debouncedUpdateModel({
-          modelName,
-          settings: newModelSettings as InferenceSettings,
-          promptName: statePrompt.name,
-        });
+        await debouncedUpdateModel(
+          {
+            modelName,
+            settings: newModelSettings as InferenceSettings,
+            promptName: statePrompt.name,
+          },
+          onError
+        );
       } catch (err: unknown) {
-        const message = (err as RequestCallbackError).message ?? null;
-        showNotification({
-          title: "Error updating prompt model settings",
-          message,
-          color: "red",
-        });
+        onError(err);
       }
     },
     [debouncedUpdateModel, dispatch]
@@ -292,23 +326,30 @@ export default function EditorContainer({
         modelName: newModel,
       });
 
+      const onError = (err: unknown) => {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error updating model for prompt",
+          message,
+          color: "red",
+        });
+      };
+
       try {
         const statePrompt = getPrompt(stateRef.current, promptId);
         if (!statePrompt) {
           throw new Error(`Could not find prompt with id ${promptId}`);
         }
 
-        await debouncedUpdateModel({
-          modelName: newModel,
-          promptName: statePrompt.name,
-        });
+        await debouncedUpdateModel(
+          {
+            modelName: newModel,
+            promptName: statePrompt.name,
+          },
+          onError
+        );
       } catch (err: unknown) {
-        const message = (err as RequestCallbackError).message ?? null;
-        showNotification({
-          title: "Error updating prompt model",
-          message,
-          color: "red",
-        });
+        onError(err);
       }
     },
     [dispatch, debouncedUpdateModel]
@@ -318,8 +359,17 @@ export default function EditorContainer({
   const debouncedSetParameters = useMemo(
     () =>
       debounce(
-        (parameters: JSONObject, promptName?: string) =>
-          setParametersCallback(parameters, promptName),
+        async (
+          parameters: JSONObject,
+          promptName?: string,
+          onError?: (err: unknown) => void
+        ) => {
+          try {
+            await setParametersCallback(parameters, promptName);
+          } catch (err: unknown) {
+            onError?.(err);
+          }
+        },
         DEBOUNCE_MS
       ),
     [setParametersCallback]
@@ -332,15 +382,23 @@ export default function EditorContainer({
         parameters: newParameters,
       });
 
-      try {
-        await debouncedSetParameters(newParameters);
-      } catch (err: unknown) {
+      const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting global parameters",
           message: message,
           color: "red",
         });
+      };
+
+      try {
+        await debouncedSetParameters(
+          newParameters,
+          undefined /* promptName */,
+          onError
+        );
+      } catch (err: unknown) {
+        onError(err);
       }
     },
     [debouncedSetParameters, dispatch]
@@ -354,13 +412,7 @@ export default function EditorContainer({
         parameters: newParameters,
       });
 
-      try {
-        const statePrompt = getPrompt(stateRef.current, promptId);
-        if (!statePrompt) {
-          throw new Error(`Could not find prompt with id ${promptId}`);
-        }
-        await debouncedSetParameters(newParameters, statePrompt.name);
-      } catch (err: unknown) {
+      const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         const promptIdentifier =
           getPrompt(stateRef.current, promptId)?.name ?? promptId;
@@ -369,6 +421,16 @@ export default function EditorContainer({
           message: message,
           color: "red",
         });
+      };
+
+      try {
+        const statePrompt = getPrompt(stateRef.current, promptId);
+        if (!statePrompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        await debouncedSetParameters(newParameters, statePrompt.name, onError);
+      } catch (err: unknown) {
+        onError(err);
       }
     },
     [debouncedSetParameters, dispatch]
@@ -498,7 +560,14 @@ export default function EditorContainer({
 
   const setNameCallback = callbacks.setConfigName;
   const debouncedSetName = useMemo(
-    () => debounce((name: string) => setNameCallback(name), DEBOUNCE_MS),
+    () =>
+      debounce(async (name: string, onError: (err: unknown) => void) => {
+        try {
+          await setNameCallback(name);
+        } catch (err: unknown) {
+          onError(err);
+        }
+      }, DEBOUNCE_MS),
     [setNameCallback]
   );
 
@@ -508,16 +577,15 @@ export default function EditorContainer({
         type: "SET_NAME",
         name,
       });
-      try {
-        await debouncedSetName(name);
-      } catch (err: unknown) {
+
+      await debouncedSetName(name, (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting config name",
           message,
           color: "red",
         });
-      }
+      });
     },
     [debouncedSetName]
   );
@@ -525,10 +593,13 @@ export default function EditorContainer({
   const setDescriptionCallback = callbacks.setConfigDescription;
   const debouncedSetDescription = useMemo(
     () =>
-      debounce(
-        (description: string) => setDescriptionCallback(description),
-        DEBOUNCE_MS
-      ),
+      debounce(async (description: string, onError: (err: unknown) => void) => {
+        try {
+          await setDescriptionCallback(description);
+        } catch (err: unknown) {
+          onError(err);
+        }
+      }, DEBOUNCE_MS),
     [setDescriptionCallback]
   );
 
@@ -539,16 +610,14 @@ export default function EditorContainer({
         description,
       });
 
-      try {
-        await debouncedSetDescription(description);
-      } catch (err: unknown) {
+      await debouncedSetDescription(description, (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting config description",
           message,
           color: "red",
         });
-      }
+      });
     },
     [debouncedSetDescription]
   );
@@ -563,14 +632,58 @@ export default function EditorContainer({
     [getState]
   );
 
+  const isDirty = aiconfigState._ui.isDirty !== false;
+  useEffect(() => {
+    if (!isDirty) {
+      return;
+    }
+
+    // Save every 15 seconds if there are unsaved changes
+    const saveInterval = setInterval(onSave, AUTOSAVE_INTERVAL_MS);
+
+    return () => clearInterval(saveInterval);
+  }, [isDirty, onSave]);
+
+  // Override CMD+s and CTRL+s to save
+  useEffect(() => {
+    const saveHandler = (e: KeyboardEvent) => {
+      // Note platform property to distinguish between CMD and CTRL for
+      // Mac/Windows/Linux is deprecated.
+      // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/platform
+      // Just handle both for now.
+      if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+
+        if (stateRef.current._ui.isDirty) {
+          onSave();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", saveHandler, false);
+
+    return () => window.removeEventListener("keydown", saveHandler);
+  }, [onSave]);
+
   return (
     <AIConfigContext.Provider value={contextValue}>
       <Notifications />
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
-          <Button loading={isSaving} onClick={onSave}>
-            Save
-          </Button>
+          <Tooltip
+            label={isDirty ? "Save changes to config" : "No unsaved changes"}
+          >
+            <div>
+              <Button
+                leftIcon={<IconDeviceFloppy />}
+                loading={isSaving}
+                onClick={onSave}
+                disabled={!isDirty}
+              >
+                Save
+              </Button>
+            </div>
+          </Tooltip>
         </Flex>
         <ConfigNameDescription
           name={aiconfigState.name}
