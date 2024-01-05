@@ -10,7 +10,7 @@ from google.protobuf.json_format import MessageToDict
 from aiconfig import (
     AIConfigRuntime,
     CallbackEvent,
-    get_api_key_from_environment,
+    maybe_get_api_key_from_environment,
 )
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
@@ -326,7 +326,7 @@ class GeminiModelParser(ParameterizedModelParser):
         )
 
         # Auth check. don't need to explicitly set the key as long as this is set as an env var. genai.configure() will pick it up
-        get_api_key_from_environment("GOOGLE_API_KEY")
+        maybe_get_api_key_from_environment("GOOGLE_API_KEY")
         genai.configure()
 
         # TODO: check and handle api key here

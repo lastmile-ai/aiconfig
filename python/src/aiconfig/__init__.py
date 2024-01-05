@@ -26,5 +26,5 @@ from .schema import (
     PromptMetadata,
     SchemaVersion,
 )
-from .util.config_utils import get_api_key_from_environment
+from .util.config_utils import maybe_get_api_key_from_environment
 from .util.params import resolve_prompt

@@ -6,7 +6,7 @@ import openai
 from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
-from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.util.config_utils import maybe_get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt, resolve_prompt_string, resolve_system_prompt
 from openai.types.chat import ChatCompletionMessage
 
@@ -235,7 +235,7 @@ class OpenAIInference(ParameterizedModelParser):
         )
 
         if not openai.api_key:
-            openai.api_key = get_api_key_from_environment("OPENAI_API_KEY")
+            openai.api_key = maybe_get_api_key_from_environment("OPENAI_API_KEY")
 
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
