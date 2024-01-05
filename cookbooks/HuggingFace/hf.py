@@ -128,7 +128,7 @@ class HuggingFaceTextParser(ParameterizedModelParser):
     A model parser for HuggingFace text generation models.
     """
 
-    def __init__(self, model_id: str = None, use_api_token=False):
+    def __init__(self, model_id: str = None, use_api_token=True):
         """
         Args:
             model_id (str): The model ID of the model to use.
