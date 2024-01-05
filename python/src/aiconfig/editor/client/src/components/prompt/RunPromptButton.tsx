@@ -1,4 +1,4 @@
-import { Button, createStyles, Loader, Text } from "@mantine/core";
+import { Button, Loader, Text } from "@mantine/core";
 import { IconPlayerPlayFilled, IconPlayerStop } from "@tabler/icons-react";
 import { memo } from "react";
 
@@ -8,20 +8,11 @@ type Props = {
   size: "compact" | "full";
 };
 
-const useStyles = createStyles(() => ({
-  executeButton: {
-    borderBottomLeftRadius: 0,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-  },
-}));
-
 export default memo(function RunPromptButton({
   runPrompt,
   size,
   isRunning = false,
 }: Props) {
-  const { classes } = useStyles();
   return (
     <Button
       onClick={runPrompt}
@@ -29,7 +20,7 @@ export default memo(function RunPromptButton({
       p="xs"
       size="xs"
       fullWidth={size === "full"}
-      className={classes.executeButton}
+      className="primaryPinkButton"
     >
       {isRunning ? (
         <div>
