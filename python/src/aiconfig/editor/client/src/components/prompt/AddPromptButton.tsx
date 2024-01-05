@@ -4,6 +4,7 @@ import {
   ScrollArea,
   TextInput,
   Tooltip,
+  createStyles,
 } from "@mantine/core";
 import { IconPlus, IconSearch, IconTextCaption } from "@tabler/icons-react";
 import { memo, useCallback, useState } from "react";
@@ -69,7 +70,7 @@ export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
     >
       <Menu.Target>
         <Tooltip label="Add prompt">
-          <ActionIcon>
+          <ActionIcon className="add-prompt-button">
             <IconPlus size={20} />
           </ActionIcon>
         </Tooltip>

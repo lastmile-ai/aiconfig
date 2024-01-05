@@ -142,7 +142,38 @@ export default function Editor() {
 
   return (
     <div>
-      <MantineProvider withGlobalStyles withNormalizeCSS>
+      <MantineProvider
+        withGlobalStyles
+        withNormalizeCSS
+        theme={{
+          globalStyles: (theme) => ({
+            ".add-prompt-button": {
+              backgroundColor: "red",
+            },
+            ".add-prompt-row": {
+              borderRadius: "4px",
+              display: "inline-block",
+              bottom: -24,
+              left: -40,
+              "&:hover": {
+                backgroundColor:
+                  theme.colorScheme === "light"
+                    ? theme.colors.gray[1]
+                    : "rgba(255, 255, 255, 0.1)",
+              },
+              [theme.fn.smallerThan("sm")]: {
+                marginLeft: "0",
+                display: "block",
+                position: "static",
+                bottom: -10,
+                left: 0,
+                height: 28,
+                margin: "10px 0",
+              },
+            },
+          }),
+        }}
+      >
         {!aiconfig ? (
           <Flex justify="center" mt="xl">
             <Loader size="xl" />
