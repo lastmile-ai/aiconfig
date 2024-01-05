@@ -162,7 +162,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         """
         Returns an identifier for the Model Parser
         """
-        return "HuggingFaceTextGenerationClient"
+        return "HuggingFaceTextGenerationParser"
 
     async def serialize(
         self,
