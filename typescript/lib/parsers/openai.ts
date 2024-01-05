@@ -289,8 +289,8 @@ export class OpenAIModelParser extends ParameterizedModelParser<CompletionCreate
 }
 
 export class OpenAIChatModelParser extends ParameterizedModelParser<Chat.ChatCompletionCreateParams> {
-  private openai: OpenAI | null = null;
-  private openaiOptions: ClientOptions | undefined;
+  protected openai: OpenAI | null = null;
+  protected openaiOptions: ClientOptions | undefined;
 
   public constructor(options?: ClientOptions) {
     super();

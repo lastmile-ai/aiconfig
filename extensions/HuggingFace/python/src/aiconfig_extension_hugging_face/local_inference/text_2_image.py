@@ -16,7 +16,7 @@ from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import (
     ExecuteResult,
     Output,
-    OutputDataWithValue,
+    OutputDataWithStringValue,
     Prompt,
     PromptMetadata,
 )
@@ -141,7 +141,7 @@ def construct_output(
         img.save(buffered, format="PNG")
         return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
-    data = OutputDataWithValue(
+    data = OutputDataWithStringValue(
         kind="base64",
         value=pillow_image_to_base64_string(image),
     )
@@ -346,7 +346,7 @@ If that doesn't work, you can also try less computationally intensive models.
         # TODO (rossdanlm): Handle multiple outputs in list
         # https://github.com/lastmile-ai/aiconfig/issues/467
         if output.output_type == "execute_result":
-            if isinstance(output.data, OutputDataWithValue):
+            if isinstance(output.data, OutputDataWithStringValue):
                 return output.data.value
             elif isinstance(output.data, str):
                 return output.data

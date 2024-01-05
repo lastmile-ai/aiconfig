@@ -34,7 +34,11 @@ export default function Editor() {
     const res = await ufetch.get(ROUTE_TABLE.LIST_MODELS);
     const models = res.data;
     if (search && search.length > 0) {
-      return models.filter((model: string) => model.indexOf(search) >= 0);
+      const lowerCaseSearch = search.toLowerCase();
+      return models.filter(
+        (model: string) =>
+          model.toLocaleLowerCase().indexOf(lowerCaseSearch) >= 0
+      );
     }
     return models;
   }, []);

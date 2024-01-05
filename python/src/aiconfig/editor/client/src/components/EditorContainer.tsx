@@ -1,5 +1,12 @@
 import PromptContainer from "./prompt/PromptContainer";
-import { Container, Button, createStyles, Stack, Flex } from "@mantine/core";
+import {
+  Container,
+  Button,
+  createStyles,
+  Stack,
+  Flex,
+  Tooltip,
+} from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
 import {
   AIConfig,
@@ -8,7 +15,14 @@ import {
   Prompt,
   PromptInput,
 } from "aiconfig";
-import { useCallback, useMemo, useReducer, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import {
   ClientPrompt,
@@ -26,8 +40,9 @@ import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
 import AIConfigContext from "./AIConfigContext";
 import ConfigNameDescription from "./ConfigNameDescription";
-import { DEBOUNCE_MS } from "../utils/constants";
+import { AUTOSAVE_INTERVAL_MS, DEBOUNCE_MS } from "../utils/constants";
 import { getPromptModelName } from "../utils/promptUtils";
+import { IconDeviceFloppy } from "@tabler/icons-react";
 
 type Props = {
   aiconfig: AIConfig;
@@ -108,6 +123,9 @@ export default function EditorContainer({
     setIsSaving(true);
     try {
       await saveCallback(clientConfigToAIConfig(stateRef.current));
+      dispatch({
+        type: "SAVE_CONFIG_SUCCESS",
+      });
     } catch (err: unknown) {
       const message = (err as RequestCallbackError).message ?? null;
       showNotification({
@@ -614,14 +632,58 @@ export default function EditorContainer({
     [getState]
   );
 
+  const isDirty = aiconfigState._ui.isDirty !== false;
+  useEffect(() => {
+    if (!isDirty) {
+      return;
+    }
+
+    // Save every 15 seconds if there are unsaved changes
+    const saveInterval = setInterval(onSave, AUTOSAVE_INTERVAL_MS);
+
+    return () => clearInterval(saveInterval);
+  }, [isDirty, onSave]);
+
+  // Override CMD+s and CTRL+s to save
+  useEffect(() => {
+    const saveHandler = (e: KeyboardEvent) => {
+      // Note platform property to distinguish between CMD and CTRL for
+      // Mac/Windows/Linux is deprecated.
+      // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/platform
+      // Just handle both for now.
+      if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+
+        if (stateRef.current._ui.isDirty) {
+          onSave();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", saveHandler, false);
+
+    return () => window.removeEventListener("keydown", saveHandler);
+  }, [onSave]);
+
   return (
     <AIConfigContext.Provider value={contextValue}>
       <Notifications />
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
-          <Button loading={isSaving} onClick={onSave}>
-            Save
-          </Button>
+          <Tooltip
+            label={isDirty ? "Save changes to config" : "No unsaved changes"}
+          >
+            <div>
+              <Button
+                leftIcon={<IconDeviceFloppy />}
+                loading={isSaving}
+                onClick={onSave}
+                disabled={!isDirty}
+              >
+                Save
+              </Button>
+            </div>
+          </Tooltip>
         </Flex>
         <ConfigNameDescription
           name={aiconfigState.name}
