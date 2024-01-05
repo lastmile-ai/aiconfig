@@ -1,40 +1,12 @@
 import PromptContainer from "./prompt/PromptContainer";
-import {
-  Container,
-  Button,
-  createStyles,
-  Stack,
-  Flex,
-  Tooltip,
-} from "@mantine/core";
+import { Container, Button, createStyles, Stack, Flex, Tooltip } from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
-import {
-  AIConfig,
-  InferenceSettings,
-  JSONObject,
-  Prompt,
-  PromptInput,
-} from "aiconfig";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from "react";
+import { AIConfig, InferenceSettings, JSONObject, Prompt, PromptInput } from "aiconfig";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
-import {
-  ClientPrompt,
-  aiConfigToClientConfig,
-  clientConfigToAIConfig,
-  clientPromptToAIConfigPrompt,
-} from "../shared/types";
+import { ClientPrompt, aiConfigToClientConfig, clientConfigToAIConfig, clientPromptToAIConfigPrompt } from "../shared/types";
 import AddPromptButton from "./prompt/AddPromptButton";
-import {
-  getDefaultNewPromptName,
-  getPrompt,
-} from "../utils/aiconfigStateUtils";
+import { getDefaultNewPromptName, getPrompt } from "../utils/aiconfigStateUtils";
 import { debounce, uniqueId } from "lodash";
 import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
@@ -50,11 +22,8 @@ type Props = {
 };
 
 export type AIConfigCallbacks = {
-  addPrompt: (
-    promptName: string,
-    prompt: Prompt,
-    index: number
-  ) => Promise<{ aiconfig: AIConfig }>;
+  addPrompt: (promptName: string, prompt: Prompt, index: number) => Promise<{ aiconfig: AIConfig }>;
+  clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
@@ -62,15 +31,8 @@ export type AIConfigCallbacks = {
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
   setParameters: (parameters: JSONObject, promptName?: string) => Promise<void>;
-  updateModel: (value: {
-    modelName?: string;
-    settings?: InferenceSettings;
-    promptName?: string;
-  }) => Promise<{ aiconfig: AIConfig }>;
-  updatePrompt: (
-    promptName: string,
-    promptData: Prompt
-  ) => Promise<{ aiconfig: AIConfig }>;
+  updateModel: (value: { modelName?: string; settings?: InferenceSettings; promptName?: string }) => Promise<{ aiconfig: AIConfig }>;
+  updatePrompt: (promptName: string, promptData: Prompt) => Promise<{ aiconfig: AIConfig }>;
 };
 
 type RequestCallbackError = { message?: string };
@@ -82,10 +44,7 @@ const useStyles = createStyles((theme) => ({
     bottom: -24,
     left: -40,
     "&:hover": {
-      backgroundColor:
-        theme.colorScheme === "light"
-          ? theme.colors.gray[1]
-          : "rgba(255, 255, 255, 0.1)",
+      backgroundColor: theme.colorScheme === "light" ? theme.colors.gray[1] : "rgba(255, 255, 255, 0.1)",
     },
     [theme.fn.smallerThan("sm")]: {
       marginLeft: "0",
@@ -105,15 +64,9 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
-export default function EditorContainer({
-  aiconfig: initialAIConfig,
-  callbacks,
-}: Props) {
+export default function EditorContainer({ aiconfig: initialAIConfig, callbacks }: Props) {
   const [isSaving, setIsSaving] = useState(false);
-  const [aiconfigState, dispatch] = useReducer(
-    aiconfigReducer,
-    aiConfigToClientConfig(initialAIConfig)
-  );
+  const [aiconfigState, dispatch] = useReducer(aiconfigReducer, aiConfigToClientConfig(initialAIConfig));
 
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
@@ -141,27 +94,16 @@ export default function EditorContainer({
   const updatePromptCallback = callbacks.updatePrompt;
   const debouncedUpdatePrompt = useMemo(
     () =>
-      debounce(
-        async (
-          promptName: string,
-          newPrompt: Prompt,
-          onSuccess: (aiconfigRes: AIConfig) => void,
-          onError: (err: unknown) => void
-        ) => {
-          try {
-            const serverConfigRes = await updatePromptCallback(
-              promptName,
-              newPrompt
-            );
-            if (serverConfigRes?.aiconfig) {
-              onSuccess(serverConfigRes.aiconfig);
-            }
-          } catch (err: unknown) {
-            onError(err);
+      debounce(async (promptName: string, newPrompt: Prompt, onSuccess: (aiconfigRes: AIConfig) => void, onError: (err: unknown) => void) => {
+        try {
+          const serverConfigRes = await updatePromptCallback(promptName, newPrompt);
+          if (serverConfigRes?.aiconfig) {
+            onSuccess(serverConfigRes.aiconfig);
           }
-        },
-        DEBOUNCE_MS
-      ),
+        } catch (err: unknown) {
+          onError(err);
+        }
+      }, DEBOUNCE_MS),
     [updatePromptCallback]
   );
 
@@ -299,10 +241,7 @@ export default function EditorContainer({
         if (!statePrompt) {
           throw new Error(`Could not find prompt with id ${promptId}`);
         }
-        const modelName = getPromptModelName(
-          statePrompt,
-          stateRef.current.metadata.default_model
-        );
+        const modelName = getPromptModelName(statePrompt, stateRef.current.metadata.default_model);
         if (!modelName) {
           throw new Error(`Could not find model name for prompt ${promptId}`);
         }
@@ -361,20 +300,13 @@ export default function EditorContainer({
   const setParametersCallback = callbacks.setParameters;
   const debouncedSetParameters = useMemo(
     () =>
-      debounce(
-        async (
-          parameters: JSONObject,
-          promptName?: string,
-          onError?: (err: unknown) => void
-        ) => {
-          try {
-            await setParametersCallback(parameters, promptName);
-          } catch (err: unknown) {
-            onError?.(err);
-          }
-        },
-        DEBOUNCE_MS
-      ),
+      debounce(async (parameters: JSONObject, promptName?: string, onError?: (err: unknown) => void) => {
+        try {
+          await setParametersCallback(parameters, promptName);
+        } catch (err: unknown) {
+          onError?.(err);
+        }
+      }, DEBOUNCE_MS),
     [setParametersCallback]
   );
 
@@ -395,11 +327,7 @@ export default function EditorContainer({
       };
 
       try {
-        await debouncedSetParameters(
-          newParameters,
-          undefined /* promptName */,
-          onError
-        );
+        await debouncedSetParameters(newParameters, undefined /* promptName */, onError);
       } catch (err: unknown) {
         onError(err);
       }
@@ -417,8 +345,7 @@ export default function EditorContainer({
 
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
-        const promptIdentifier =
-          getPrompt(stateRef.current, promptId)?.name ?? promptId;
+        const promptIdentifier = getPrompt(stateRef.current, promptId)?.name ?? promptId;
         showNotification({
           title: `Error setting parameters for prompt ${promptIdentifier}`,
           message: message,
@@ -442,9 +369,7 @@ export default function EditorContainer({
   const addPromptCallback = callbacks.addPrompt;
   const onAddPrompt = useCallback(
     async (promptIndex: number, model: string) => {
-      const promptName = getDefaultNewPromptName(
-        stateRef.current as unknown as AIConfig
-      );
+      const promptName = getDefaultNewPromptName(stateRef.current as unknown as AIConfig);
 
       const newPrompt: Prompt = {
         name: promptName,
@@ -468,11 +393,7 @@ export default function EditorContainer({
       dispatch(action);
 
       try {
-        const serverConfigRes = await addPromptCallback(
-          promptName,
-          newPrompt,
-          promptIndex
-        );
+        const serverConfigRes = await addPromptCallback(promptName, newPrompt, promptIndex);
         dispatch({
           type: "CONSOLIDATE_AICONFIG",
           action,
@@ -514,6 +435,26 @@ export default function EditorContainer({
       }
     },
     [deletePromptCallback, dispatch]
+  );
+
+  const clearOutputsCallback = callbacks.clearOutputs;
+  const onClearOutputs = useCallback(
+    async () => {
+      try {
+        dispatch({
+          type: "SAVE_CONFIG_SUCCESS",
+        });
+        await clearOutputsCallback();
+      } catch (err: unknown) {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error clearing outputs",
+          message,
+          color: "red",
+        });
+      }
+    },
+    [clearOutputsCallback, dispatch]
   );
 
   const runPromptCallback = callbacks.runPrompt;
@@ -673,16 +614,14 @@ export default function EditorContainer({
       <Notifications />
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
-          <Tooltip
-            label={isDirty ? "Save changes to config" : "No unsaved changes"}
-          >
+          <div>
+            <Button loading={undefined} onClick={onClearOutputs}>
+              Clear Outputs
+            </Button>
+          </div>
+          <Tooltip label={isDirty ? "Save changes to config" : "No unsaved changes"}>
             <div>
-              <Button
-                leftIcon={<IconDeviceFloppy />}
-                loading={isSaving}
-                onClick={onSave}
-                disabled={!isDirty}
-              >
+              <Button leftIcon={<IconDeviceFloppy />} loading={isSaving} onClick={onSave} disabled={!isDirty}>
                 Save
               </Button>
             </div>
@@ -695,25 +634,16 @@ export default function EditorContainer({
           setName={onSetName}
         />
       </Container>
-      <GlobalParametersContainer
-        initialValue={aiconfigState?.metadata?.parameters ?? {}}
-        onUpdateParameters={onUpdateGlobalParameters}
-      />
+      <GlobalParametersContainer initialValue={aiconfigState?.metadata?.parameters ?? {}} onUpdateParameters={onUpdateGlobalParameters} />
       <Container maw="80rem" className={classes.promptsContainer}>
         <div className={classes.addPromptRow}>
-          <AddPromptButton
-            getModels={callbacks.getModels}
-            addPrompt={(model: string) => onAddPrompt(0, model)}
-          />
+          <AddPromptButton getModels={callbacks.getModels} addPrompt={(model: string) => onAddPrompt(0, model)} />
         </div>
         {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
           return (
             <Stack key={prompt._ui.id}>
               <Flex mt="md">
-                <PromptMenuButton
-                  promptId={prompt._ui.id}
-                  onDeletePrompt={() => onDeletePrompt(prompt._ui.id)}
-                />
+                <PromptMenuButton promptId={prompt._ui.id} onDeletePrompt={() => onDeletePrompt(prompt._ui.id)} />
                 <PromptContainer
                   prompt={prompt}
                   getModels={callbacks.getModels}
@@ -729,12 +659,7 @@ export default function EditorContainer({
               <div className={classes.addPromptRow}>
                 <AddPromptButton
                   getModels={callbacks.getModels}
-                  addPrompt={(model: string) =>
-                    onAddPrompt(
-                      i + 1 /* insert below current prompt index */,
-                      model
-                    )
-                  }
+                  addPrompt={(model: string) => onAddPrompt(i + 1 /* insert below current prompt index */, model)}
                 />
               </div>
             </Stack>
