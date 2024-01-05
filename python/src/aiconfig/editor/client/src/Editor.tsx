@@ -113,11 +113,16 @@ export default function Editor() {
     []
   );
 
+  const getServerStatus = useCallback(async () => {
+    return await ufetch.get(ROUTE_TABLE.SERVER_STATUS);
+  }, []);
+
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
       deletePrompt,
       getModels,
+      getServerStatus,
       runPrompt,
       save,
       setConfigDescription,
@@ -130,6 +135,7 @@ export default function Editor() {
       addPrompt,
       deletePrompt,
       getModels,
+      getServerStatus,
       runPrompt,
       save,
       setConfigDescription,

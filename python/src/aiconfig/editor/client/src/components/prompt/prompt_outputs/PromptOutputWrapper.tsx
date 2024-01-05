@@ -1,13 +1,9 @@
-import { ActionIcon, CopyButton, Flex, Tooltip } from "@mantine/core";
-import {
-  IconBraces,
-  IconBracesOff,
-  IconCheck,
-  IconCopy,
-} from "@tabler/icons-react";
+import { ActionIcon, Flex, Tooltip } from "@mantine/core";
+import { IconBraces, IconBracesOff } from "@tabler/icons-react";
 import { Output } from "aiconfig";
 import { memo, useState } from "react";
 import JSONRenderer from "../../JSONRenderer";
+import CopyButton from "../../CopyButton";
 
 type Props = {
   children: React.ReactNode;
@@ -26,21 +22,7 @@ export default memo(function PromptOutputWrapper({
   return (
     <>
       <Flex justify="flex-end">
-        {copyContent && (
-          <CopyButton value={copyContent} timeout={2000}>
-            {({ copied, copy }) => (
-              <Tooltip label={copied ? "Copied" : "Copy"} withArrow>
-                <ActionIcon color={copied ? "teal" : "gray"} onClick={copy}>
-                  {copied ? (
-                    <IconCheck size="1rem" />
-                  ) : (
-                    <IconCopy size="1rem" />
-                  )}
-                </ActionIcon>
-              </Tooltip>
-            )}
-          </CopyButton>
-        )}
+        {copyContent && <CopyButton value={copyContent} />}
         {withRawJSONToggle && (
           <Tooltip label="Toggle raw JSON" withArrow>
             <ActionIcon onClick={() => setIsRawJSON((curr) => !curr)}>
