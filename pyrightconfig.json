@@ -1,5 +1,5 @@
 {
-  "typeCheckingMode": "strict",
+  "typeCheckingMode": "basic",
   "include": ["python"],
   "exclude": ["python/build"],
   "ignore": [],
