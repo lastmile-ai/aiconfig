@@ -20,6 +20,7 @@ import { PaLMTextParser } from "./parsers/palm";
 import { extractOverrideSettings } from "./utils";
 import { HuggingFaceTextGenerationParser } from "./parsers/hf";
 import { CallbackEvent, CallbackManager } from "./callback";
+import { AnyscaleEndpointModelParser } from "./parsers/anyscale";
 
 /**
  * Options for saving an AIConfig to a file.
@@ -57,6 +58,11 @@ ModelParserRegistry.registerModelParser(new OpenAIChatModelParser(), [
   "gpt-3.5-turbo-0613",
   "gpt-3.5-turbo-16k-0613",
 ]);
+
+ModelParserRegistry.registerModelParser(new AnyscaleEndpointModelParser(), [
+  "AnyscaleEndpoint",
+]);
+
 ModelParserRegistry.registerModelParser(new HuggingFaceTextGenerationParser());
 ModelParserRegistry.registerModelParser(new PaLMTextParser());
 

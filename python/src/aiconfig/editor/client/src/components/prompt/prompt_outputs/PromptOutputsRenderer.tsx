@@ -7,9 +7,9 @@ import {
 } from "aiconfig";
 import { memo } from "react";
 import { TextRenderer } from "../TextRenderer";
-import JSONOutput from "./JSONOutput";
 import PromptOutputWrapper from "./PromptOutputWrapper";
 import MimeTypeRenderer from "../../MimeTypeRenderer";
+import JSONRenderer from "../../JSONRenderer";
 
 type Props = {
   outputs: Output[];
@@ -25,7 +25,7 @@ const ExecuteResultOutput = memo(function ExecuteResultOutput({
   output: ExecuteResult;
 }) {
   if (output.data == null) {
-    return <JSONOutput content={output} />;
+    return <JSONRenderer content={output} />;
   }
 
   if (typeof output.data === "string") {
@@ -75,14 +75,14 @@ const ExecuteResultOutput = memo(function ExecuteResultOutput({
       // TODO: Tool calls rendering
       default:
         return (
-          <JSONOutput
+          <JSONRenderer
             content={(output.data as OutputDataWithToolCallsValue).value}
           />
         );
     }
   }
 
-  return <JSONOutput content={output.data} />;
+  return <JSONRenderer content={output.data} />;
 });
 
 const OutputRenderer = memo(function Output({ output }: { output: Output }) {

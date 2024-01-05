@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import requests
 from aiconfig.callback import CallbackEvent, CallbackManager
+from aiconfig.default_parsers.anyscale_endpoint import DefaultAnyscaleEndpointParser
 from aiconfig.default_parsers.openai import DefaultOpenAIParser
 from aiconfig.default_parsers.palm import PaLMChatParser, PaLMTextParser
 from aiconfig.model_parser import InferenceOptions, ModelParser
@@ -21,7 +22,6 @@ from .util.config_utils import is_yaml_ext
 
 gpt_models = [
     "gpt-4",
-    "GPT-4",
     "gpt-4-0314",
     "gpt-4-0613",
     "gpt-4-32k",
@@ -35,6 +35,7 @@ gpt_models = [
 ]
 for model in gpt_models:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
+ModelParserRegistry.register_model_parser(DefaultAnyscaleEndpointParser("AnyscaleEndpoint"))
 ModelParserRegistry.register_model_parser(PaLMChatParser())
 ModelParserRegistry.register_model_parser(PaLMTextParser())
 ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())

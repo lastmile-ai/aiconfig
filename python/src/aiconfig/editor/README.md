@@ -30,7 +30,7 @@ Go to url in browser to use app.
 ### Loading model parsers
 
 To use a model parser that doesn't ship with aiconfig: 0. Make sure your model parser package is installed, e.g.
-`pip install python-aiconfig-llama`, or
+`pip install aiconfig-extension-gemini`, or
 `pip install -e path/to/my/local/parser/package`
 
 1. Make a Python file e.g. my_editor_plugin.py. It must define a () -> None called `register_model_parsers.
@@ -55,12 +55,29 @@ e.g. `aiconfig edit --parsers-module-path="/path/to/my_editor_plugin.py"`
 
 ## Dev
 
+### Environment Setup
+It is recommended to use (mini)conda. This sets up an environment for you in terminal
+which ensures you have the proper Python packages and dependencies installed.
+Ex: you won't have to worry about issues between `python` vs. `python3`
+
+If you already have conda installed, you can skip these next 3 commands:
+```bash
+brew install --cask miniconda
+conda init my_environment_name
+conda config --set auto_activate_base false
+```
+
+Now go onto another terminal and type:
+```bash
+conda activate my_environment_name
+```
+
 ### Install:
 
 From the top-level `aiconfig` dir:
 ```bash
 pip3 install -e ./python
-alias aiconfig="python -m 'aiconfig.scripts.aiconfig_cli'"
+alias aiconfig="python3 -m 'aiconfig.scripts.aiconfig_cli'"
 ```
 
 ### Run backend and frontend servers:
@@ -68,7 +85,7 @@ Replace the `aiconfig_path` variable with the path to your AIConfig file.
 For example: `cookbooks/Getting-Started/travel.aiconfig.json`
 ```bash
 cd python/src/aiconfig/editor/client && rm -rf node_modules
-cd ../../../../..
+cd - # go back to aiconfig dir
 aiconfig_path="cookbooks/Getting-Started/travel.aiconfig.json"
 
 # Use debug mode to run the frontend react server
