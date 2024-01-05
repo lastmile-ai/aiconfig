@@ -33,6 +33,10 @@ export type AddPromptAction = {
   prompt: ClientPrompt;
 };
 
+export type ClearOutputsSuccessAction = {
+  type: "CLEAR_OUTPUTS_SUCCESS";
+};
+
 export type DeletePromptAction = {
   type: "DELETE_PROMPT";
   id: string;

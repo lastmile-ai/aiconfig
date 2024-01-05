@@ -2,6 +2,10 @@
   "name": "Chain-of-Verification (CoVe)  Template",
   "schema_version": "latest",
   "metadata": {
+    "parameters": {
+      "baseline_prompt": "Name 25 politicians who were born in New York City, New York. ",
+      "verification_question": "Where was {{entity}} born? "
+    },
     "models": {
       "gpt-4": {
         "model": "gpt-4",
@@ -10,12 +14,9 @@
         "presence_penalty": 0,
         "frequency_penalty": 0
       }
-    },
-    "parameters": {
-      "baseline_prompt": "Name 25 politicians who were born in New York City, New York. ",
-      "verification_question": "Where was {{entity}} born? "
     }
   },
+  "description": "",
   "prompts": [
     {
       "name": "baseline_response_gen",
@@ -29,7 +30,31 @@
         },
         "parameters": {},
         "remember_chat_context": false
-      }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "1. Theodore Roosevelt - 26th President of the United States\n2. Franklin D. Roosevelt - 32nd President of the United States\n3. Donald Trump - 45th President of the United States\n4. Alexander Hamilton - Founding Father of the United States\n5. Robert F. Kennedy - U.S. Senator from New York\n6. Michael Bloomberg - Former Mayor of New York City\n7. Rudy Giuliani - Former Mayor of New York City\n8. Eliot Spitzer - Former Governor of New York\n9. Andrew Cuomo - Former Governor of New York\n10. Bill de Blasio - Former Mayor of New York City\n11. Chuck Schumer - U.S. Senator from New York\n12. Kirsten Gillibrand - U.S. Senator from New York\n13. Eric Schneiderman - Former Attorney General of New York\n14. Letitia James - Attorney General of New York\n15. Alexandria Ocasio-Cortez - U.S. Representative from New York\n16. Jerrold Nadler - U.S. Representative from New York\n17. Carolyn Maloney - U.S. Representative from New York\n18. Hakeem Jeffries - U.S. Representative from New York\n19. Yvette Clarke - U.S. Representative from New York\n20. Nydia Vel\u00e1zquez - U.S. Representative from New York\n21. Grace Meng - U.S. Representative from New York\n22. Adriano Espaillat - U.S. Representative from New York\n23. Ritchie Torres - U.S. Representative from New York\n24. Jamaal Bowman - U.S. Representative from New York\n25. Mondaire Jones - U.S. Representative from New York",
+          "metadata": {
+            "raw_response": {
+              "content": "1. Theodore Roosevelt - 26th President of the United States\n2. Franklin D. Roosevelt - 32nd President of the United States\n3. Donald Trump - 45th President of the United States\n4. Alexander Hamilton - Founding Father of the United States\n5. Robert F. Kennedy - U.S. Senator from New York\n6. Michael Bloomberg - Former Mayor of New York City\n7. Rudy Giuliani - Former Mayor of New York City\n8. Eliot Spitzer - Former Governor of New York\n9. Andrew Cuomo - Former Governor of New York\n10. Bill de Blasio - Former Mayor of New York City\n11. Chuck Schumer - U.S. Senator from New York\n12. Kirsten Gillibrand - U.S. Senator from New York\n13. Eric Schneiderman - Former Attorney General of New York\n14. Letitia James - Attorney General of New York\n15. Alexandria Ocasio-Cortez - U.S. Representative from New York\n16. Jerrold Nadler - U.S. Representative from New York\n17. Carolyn Maloney - U.S. Representative from New York\n18. Hakeem Jeffries - U.S. Representative from New York\n19. Yvette Clarke - U.S. Representative from New York\n20. Nydia Vel\u00e1zquez - U.S. Representative from New York\n21. Grace Meng - U.S. Representative from New York\n22. Adriano Espaillat - U.S. Representative from New York\n23. Ritchie Torres - U.S. Representative from New York\n24. Jamaal Bowman - U.S. Representative from New York\n25. Mondaire Jones - U.S. Representative from New York",
+              "role": "assistant"
+            },
+            "id": "chatcmpl-8dmS8pytXhw89OjcrFwYrVECbVLtH",
+            "created": 1704491736,
+            "model": "gpt-4-0613",
+            "object": "chat.completion",
+            "usage": {
+              "completion_tokens": 352,
+              "prompt_tokens": 27,
+              "total_tokens": 379
+            },
+            "finish_reason": "stop",
+            "role": "assistant"
+          }
+        }
+      ]
     },
     {
       "name": "verification",
@@ -45,7 +70,8 @@
           "entity": "George Pataki"
         },
         "remember_chat_context": false
-      }
+      },
+      "outputs": []
     },
     {
       "name": "final_response_gen",
@@ -61,7 +87,9 @@
           "verification_results": "Theodore Roosevelt was born in New York City, New York on October 27, 1858. Franklin D. Roosevelt was born in Hyde Park, New York on January 30, 1882. Alexander Hamilton was born in Charlestown, Nevis on January 11, 1755. John Jay was born in New York City, New York on December 12, 1745. DeWitt Clinton was born in Little Britain, New York on March 2, 1769. William H. Seward was born in Florida, New York on May 16, 1801. Charles Evans Hughes was born in Glens Falls, New York on April 11, 1862. Nelson Rockefeller was born in Bar Harbor, Maine on July 8, 1908. Robert F. Wagner Jr. was born in Manhattan, New York on April 20, 1910. Bella Abzug was born in New York City, New York on July 24, 1920. Shirley Chisholm was born in Brooklyn, New York on November 30, 1924. Geraldine Ferraro was born in Newburgh, New York on August 26, 1935. Eliot Spitzer was born in The Bronx, New York on June 10, 1959. Michael Bloomberg was born in Boston, Massachusetts on February 14, 1942. Andrew Cuomo was born in New York City, New York on December 6, 1957. Bill de Blasio was born in Manhattan, New York on May 8, 1961. Charles Rangel was born in Harlem, New York City on June 11, 1930. Daniel Patrick Moynihan was born in Tulsa, Oklahoma on March 16, 1927. Jacob Javits was born in New York City, New York on May 18, 1904. Al Smith was born in New York City, New York on December 30, 1873. Rudy Giuliani was born in Brooklyn, New York on May 28, 1944. George Pataki was born in Peekskill, New York on June 24, 1945. Kirsten Gillibrand was born in Albany, New York on December 9, 1966. Chuck Schumer was born in Brooklyn, New York on November 23, 1950. Alexandria Ocasio-Cortez was born in The Bronx, New York City, New York on October 13, 1989."
         },
         "remember_chat_context": false
-      }
+      },
+      "outputs": []
     }
-  ]
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
 }
