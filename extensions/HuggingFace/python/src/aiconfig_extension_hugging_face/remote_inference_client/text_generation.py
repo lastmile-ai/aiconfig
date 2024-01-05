@@ -19,7 +19,7 @@ from aiconfig.schema import (
     Prompt,
     PromptMetadata,
 )
-from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.util.config_utils import maybe_get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt
 
 
@@ -154,7 +154,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         token = None
 
         if use_api_token:
-            token = get_api_key_from_environment("HUGGING_FACE_API_TOKEN")
+            token = maybe_get_api_key_from_environment("HUGGING_FACE_API_TOKEN")
 
         self.client = InferenceClient(model_id, token=token)
 

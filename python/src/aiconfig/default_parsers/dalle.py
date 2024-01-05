@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import openai
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.util.config_utils import maybe_get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt
 from openai import OpenAI
 
@@ -163,7 +163,7 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         """
         # If needed, certify the API key and initialize the OpenAI client
         if not openai.api_key:
-            openai.api_key = get_api_key_from_environment("OPENAI_API_KEY")
+            openai.api_key = maybe_get_api_key_from_environment("OPENAI_API_KEY")
         if not self.client:
             self.client = OpenAI(api_key=openai.api_key)
 
