@@ -1,10 +1,8 @@
 # Define a Model Parser for LLama-Guard
 from typing import TYPE_CHECKING, Dict, List, Optional, Any
 import copy
-import json
 
 import google.generativeai as genai
-from google.generativeai.types import content_types
 from google.protobuf.json_format import MessageToDict
 
 from aiconfig import (
@@ -108,6 +106,12 @@ class GeminiModelParser(ParameterizedModelParser):
     def __init__(self, id: str = "gemini-pro"):
         super().__init__()
         self.model = genai.GenerativeModel(id)
+
+        # Note: we don't need to explicitly set the key as long as this is set
+        # as an env var genai.configure() will pick up the env var
+        # `GOOGLE_API_KEY`, it's just that we prefer not to call
+        # `get_api_key_from_environment` multiple times if we don't need to
+        self.api_key = get_api_key_from_environment("GOOGLE_API_KEY", required=False)
 
     def id(self) -> str:
         """
@@ -325,9 +329,9 @@ class GeminiModelParser(ParameterizedModelParser):
             )
         )
 
-        # Auth check. don't need to explicitly set the key as long as this is set as an env var. genai.configure() will pick it up
-        get_api_key_from_environment("GOOGLE_API_KEY")
-        genai.configure()
+        if not self.api_key:
+            self.api_key = get_api_key_from_environment("GOOGLE_API_KEY", required=True)
+        genai.configure(api_key=self.api_key)
 
         # TODO: check and handle api key here
         completion_data = await self.deserialize(prompt, aiconfig, parameters)

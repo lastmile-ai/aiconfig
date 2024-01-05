@@ -20,7 +20,6 @@ from .util.config_utils import is_yaml_ext
 
 gpt_models = [
     "gpt-4",
-    "GPT-4",
     "gpt-4-0314",
     "gpt-4-0613",
     "gpt-4-32k",

@@ -5,7 +5,9 @@ import {
   createStyles,
   Stack,
   Flex,
+  Text,
   Tooltip,
+  Alert,
 } from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
 import {
@@ -40,9 +42,14 @@ import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
 import AIConfigContext from "./AIConfigContext";
 import ConfigNameDescription from "./ConfigNameDescription";
-import { AUTOSAVE_INTERVAL_MS, DEBOUNCE_MS } from "../utils/constants";
+import {
+  AUTOSAVE_INTERVAL_MS,
+  DEBOUNCE_MS,
+  SERVER_HEARTBEAT_INTERVAL_MS,
+} from "../utils/constants";
 import { getPromptModelName } from "../utils/promptUtils";
 import { IconDeviceFloppy } from "@tabler/icons-react";
+import CopyButton from "./CopyButton";
 
 type Props = {
   aiconfig: AIConfig;
@@ -57,6 +64,7 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
+  getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
   save: (aiconfig: AIConfig) => Promise<void>;
   setConfigDescription: (description: string) => Promise<void>;
@@ -110,6 +118,7 @@ export default function EditorContainer({
   callbacks,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
+  const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
   const [aiconfigState, dispatch] = useReducer(
     aiconfigReducer,
     aiConfigToClientConfig(initialAIConfig)
@@ -299,7 +308,10 @@ export default function EditorContainer({
         if (!statePrompt) {
           throw new Error(`Could not find prompt with id ${promptId}`);
         }
-        const modelName = getPromptModelName(statePrompt);
+        const modelName = getPromptModelName(
+          statePrompt,
+          stateRef.current.metadata.default_model
+        );
         if (!modelName) {
           throw new Error(`Could not find model name for prompt ${promptId}`);
         }
@@ -665,24 +677,73 @@ export default function EditorContainer({
     return () => window.removeEventListener("keydown", saveHandler);
   }, [onSave]);
 
+  // Server heartbeat, check every 3s to show error if server is down
+  // Don't poll if server status is in an error state since it won't automatically recover
+  const getServerStatusCallback = callbacks.getServerStatus;
+  useEffect(() => {
+    if (!getServerStatusCallback || serverStatus !== "OK") {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await getServerStatusCallback();
+        setServerStatus(res.status);
+      } catch (err: unknown) {
+        setServerStatus("ERROR");
+      }
+    }, SERVER_HEARTBEAT_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [getServerStatusCallback, serverStatus]);
+
   return (
     <AIConfigContext.Provider value={contextValue}>
       <Notifications />
+      {serverStatus !== "OK" && (
+        <>
+          {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
+          <div style={{ height: "100px" }} />
+          <Alert
+            color="red"
+            title="Server Connection Error"
+            w="100%"
+            style={{ position: "fixed", top: 0, zIndex: 999 }}
+          >
+            <Text>
+              There is a problem with the editor server connection. Please copy
+              important changes somewhere safe and then try reloading the page
+              or restarting the editor.
+            </Text>
+            <Flex align="center">
+              <CopyButton
+                value={JSON.stringify(
+                  clientConfigToAIConfig(aiconfigState),
+                  null,
+                  2
+                )}
+                contentLabel="AIConfig JSON"
+              />
+              <Text color="dimmed">Click to copy current AIConfig JSON</Text>
+            </Flex>
+          </Alert>
+        </>
+      )}
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
           <Tooltip
             label={isDirty ? "Save changes to config" : "No unsaved changes"}
           >
-            <div>
-              <Button
-                leftIcon={<IconDeviceFloppy />}
-                loading={isSaving}
-                onClick={onSave}
-                disabled={!isDirty}
-              >
-                Save
-              </Button>
-            </div>
+            <Button
+              leftIcon={<IconDeviceFloppy />}
+              loading={isSaving}
+              onClick={onSave}
+              disabled={!isDirty}
+              size="xs"
+              variant="gradient"
+            >
+              Save
+            </Button>
           </Tooltip>
         </Flex>
         <ConfigNameDescription
