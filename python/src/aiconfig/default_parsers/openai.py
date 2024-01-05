@@ -1,5 +1,4 @@
 import copy
-import json
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
@@ -534,13 +533,14 @@ def build_output_data(
     elif message.get("tool_calls") is not None:
         tool_calls = []
         for item in message.get("tool_calls"):
-            function = item.get("function")
-            if function is None:
+            tool_call_type = item.get("type")
+            if tool_call_type != "function":
                 # It's possible that ChatCompletionMessageToolCall may
                 # support more than just function calls in the future
                 # so filter out other types of tool calls for now
                 continue
 
+            function = item.get("function")
             tool_calls.append(
                 ToolCallData(
                     id=item.get("id"),
@@ -548,7 +548,7 @@ def build_output_data(
                         arguments=function.get("arguments"),
                         name=function.get("name"),
                     ),
-                    type=item.get("type") if not None else "function",
+                    type=type,
                 )
             )
         output_data = OutputDataWithToolCallsValue(
