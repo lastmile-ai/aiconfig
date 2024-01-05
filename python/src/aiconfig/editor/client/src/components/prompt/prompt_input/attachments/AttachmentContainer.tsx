@@ -1,10 +1,10 @@
 import { memo } from "react";
 import type { Attachment as InputAttachment, JSONObject } from "aiconfig";
 import { PromptInputObjectAttachmentsSchema } from "../../../../utils/promptUtils";
-import Attachment from "./Attachment";
 import { ActionIcon, Container, Flex, Tooltip } from "@mantine/core";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import AttachmentMetadata from "./AttachmentMetadata";
+import MimeTypeRenderer from "../../../MimeTypeRenderer";
 
 type Props = {
   schema: PromptInputObjectAttachmentsSchema;
@@ -39,7 +39,10 @@ export default memo(function AttachmentContainer({
           </ActionIcon>
         )}
       </Flex>
-      <Attachment attachment={attachment} />
+      <MimeTypeRenderer
+        mimeType={attachment.mime_type}
+        content={attachment.data as string}
+      />
       {schema.items.properties?.metadata && (
         <AttachmentMetadata
           schema={schema.items.properties.metadata}

@@ -484,6 +484,17 @@ class AIConfig(BaseModel):
                 parameters dict to. If none is provided, we update the
                 AIConfig-level parameters instead
         """
+        # Clear all existing parameters before setting new ones
+        parameter_names_to_delete = []
+        if prompt_name:
+            prompt = self.get_prompt(prompt_name)
+            parameter_names_to_delete = list(self.get_prompt_parameters(prompt).keys())
+        else:
+            parameter_names_to_delete = list(self.get_global_parameters().keys())
+
+        for parameter_name in parameter_names_to_delete:
+            self.delete_parameter(parameter_name, prompt_name)
+
         for parameter_name, parameter_value in parameters.items():
             self.set_parameter(parameter_name, parameter_value, prompt_name)
 
@@ -575,6 +586,8 @@ class AIConfig(BaseModel):
         for i, prompt in enumerate(self.prompts):
             if prompt.name == prompt_name:
                 self.prompts[i] = prompt_data
+                del self.prompt_index[prompt_name]
+                self.prompt_index[prompt_data.name] = prompt_data
                 break
 
     def delete_prompt(self, prompt_name: str):
@@ -812,7 +825,7 @@ AIConfig-level settings. If this is a mistake, please rerun the \
 
     def add_output(self, prompt_name: str, output: Output, overwrite: bool = False):
         """
-        Add an output to the [rompt with the given name in the AIConfig
+        Add an output to the prompt with the given name in the AIConfig
 
         Args:
             prompt_name (str): The name of the prompt to add the output to.
@@ -821,11 +834,32 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         """
         prompt = self.get_prompt(prompt_name)
         if not prompt:
-            raise IndexError(f"Cannot out output. Prompt '{prompt_name}' not found in config.")
-        if overwrite or not output:
+            raise IndexError(f"Cannot add output. Prompt '{prompt_name}' not found in config.")
+        if not output:
+            raise ValueError(f"Cannot add output to prompt '{prompt_name}'. Output is not defined.")
+        if overwrite:
             prompt.outputs = [output]
         else:
             prompt.outputs.append(output)
+
+    def add_outputs(self, prompt_name: str, outputs: List[Output], overwrite: bool = False):
+        """
+        Add multiple outputs to the prompt with the given name in the AIConfig
+
+        Args:
+            prompt_name (str): The name of the prompt to add the outputs to.
+            outputs (List[Output]): List of outputs to add.
+            overwrite (bool, optional): Overwrites the existing output if True. Otherwise appends the outputs to the prompt's output list. Defaults to False.
+        """
+        prompt = self.get_prompt(prompt_name)
+        if not prompt:
+            raise IndexError(f"Cannot add outputs. Prompt '{prompt_name}' not found in config.")
+        if not outputs:
+            raise ValueError(f"Cannot add outputs. No outputs provided for prompt '{prompt_name}'.")
+        if overwrite:
+            prompt.outputs = outputs
+        else:
+            prompt.outputs.extend(outputs)
 
     def delete_output(self, prompt_name: str):
         """

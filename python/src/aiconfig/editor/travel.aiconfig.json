@@ -22,6 +22,9 @@
     {
       "name": "get_activities",
       "input": "Tell me 10 fun attractions to do in NYC.",
+      "metadata": {
+        "parameters": {}
+      },
       "outputs": [
         {
           "output_type": "execute_result",
@@ -91,30 +94,6 @@
           }
         }
       ]
-    },
-    {
-      "name": "image_prompt",
-      "input": {
-        "attachments": [
-          {
-            "data": "https://s3.amazonaws.com/files.uploads.lastmileai.com/uploads/cldxsqbel0000qs8owp8mkd0z/2023_12_1_21_23_24/942/Screenshot 2023-11-28 at 11.11.25 AM.png",
-            "mime_type": "image/png"
-          },
-          {
-            "data": "https://s3.amazonaws.com/files.uploads.lastmileai.com/uploads/cldxsqbel0000qs8owp8mkd0z/2023_12_1_21_23_24/8325/Screenshot 2023-11-28 at 1.51.52 PM.png",
-            "mime_type": "image/png"
-          }
-        ],
-        "data": "What do these images show?"
-      },
-      "metadata": {
-        "model": {
-          "name": "gpt-4-vision-preview",
-          "settings": {}
-        },
-        "parameters": {}
-      },
-      "outputs": []
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"

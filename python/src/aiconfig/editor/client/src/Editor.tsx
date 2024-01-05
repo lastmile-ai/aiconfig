@@ -2,7 +2,7 @@ import EditorContainer, {
   AIConfigCallbacks,
 } from "./components/EditorContainer";
 import { Flex, Loader, MantineProvider } from "@mantine/core";
-import { AIConfig, InferenceSettings, Prompt } from "aiconfig";
+import { AIConfig, InferenceSettings, JSONObject, Prompt } from "aiconfig";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
@@ -34,7 +34,11 @@ export default function Editor() {
     const res = await ufetch.get(ROUTE_TABLE.LIST_MODELS);
     const models = res.data;
     if (search && search.length > 0) {
-      return models.filter((model: string) => model.indexOf(search) >= 0);
+      const lowerCaseSearch = search.toLowerCase();
+      return models.filter(
+        (model: string) =>
+          model.toLocaleLowerCase().indexOf(lowerCaseSearch) >= 0
+      );
     }
     return models;
   }, []);
@@ -99,6 +103,16 @@ export default function Editor() {
     });
   }, []);
 
+  const setParameters = useCallback(
+    async (parameters: JSONObject, promptName?: string) => {
+      return await ufetch.post(ROUTE_TABLE.SET_PARAMETERS, {
+        parameters,
+        prompt_name: promptName,
+      });
+    },
+    []
+  );
+
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
@@ -108,6 +122,7 @@ export default function Editor() {
       save,
       setConfigDescription,
       setConfigName,
+      setParameters,
       updateModel,
       updatePrompt,
     }),
@@ -119,6 +134,7 @@ export default function Editor() {
       save,
       setConfigDescription,
       setConfigName,
+      setParameters,
       updateModel,
       updatePrompt,
     ]

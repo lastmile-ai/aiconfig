@@ -9,6 +9,7 @@ import { memo } from "react";
 import { TextRenderer } from "../TextRenderer";
 import JSONOutput from "./JSONOutput";
 import PromptOutputWrapper from "./PromptOutputWrapper";
+import MimeTypeRenderer from "../../MimeTypeRenderer";
 
 type Props = {
   outputs: Output[];
@@ -43,6 +44,34 @@ const ExecuteResultOutput = memo(function ExecuteResultOutput({
     Object.prototype.hasOwnProperty.call(output.data, "kind")
   ) {
     switch ((output.data as OutputDataWithValue).kind) {
+      case "file_uri":
+        return (
+          <PromptOutputWrapper
+            copyContent={(output.data as OutputDataWithValue).value as string}
+            output={output}
+            withRawJSONToggle
+          >
+            <MimeTypeRenderer
+              mimeType={output.mime_type}
+              content={(output.data as OutputDataWithValue).value as string}
+            />
+          </PromptOutputWrapper>
+        );
+      case "base64":
+        return (
+          <PromptOutputWrapper
+            copyContent={(output.data as OutputDataWithValue).value as string}
+            output={output}
+            withRawJSONToggle
+          >
+            <MimeTypeRenderer
+              mimeType={output.mime_type}
+              content={`data:${output.mime_type};base64, ${
+                (output.data as OutputDataWithValue).value as string
+              }`}
+            />
+          </PromptOutputWrapper>
+        );
       // TODO: Tool calls rendering
       default:
         return (

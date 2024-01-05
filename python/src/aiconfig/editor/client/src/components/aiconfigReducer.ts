@@ -4,7 +4,9 @@ import { AIConfig, JSONObject, PromptInput } from "aiconfig";
 
 export type AIConfigReducerAction =
   | MutateAIConfigAction
-  | ConsolidateAIConfigAction;
+  | ConsolidateAIConfigAction
+  | RunPromptErrorAction
+  | SaveConfigSuccessAction;
 
 export type MutateAIConfigAction =
   | AddPromptAction
@@ -39,6 +41,16 @@ export type DeletePromptAction = {
 export type RunPromptAction = {
   type: "RUN_PROMPT";
   id: string;
+};
+
+export type RunPromptErrorAction = {
+  type: "RUN_PROMPT_ERROR";
+  id: string;
+  message?: string;
+};
+
+export type SaveConfigSuccessAction = {
+  type: "SAVE_CONFIG_SUCCESS";
 };
 
 export type SetDescriptionAction = {
@@ -185,18 +197,27 @@ export default function aiconfigReducer(
   state: ClientAIConfig,
   action: AIConfigReducerAction
 ): ClientAIConfig {
+  const dirtyState = {
+    ...state,
+    _ui: {
+      ...state._ui,
+      isDirty: true,
+    },
+  };
   switch (action.type) {
     case "ADD_PROMPT_AT_INDEX": {
-      return reduceInsertPromptAtIndex(state, action.index, action.prompt);
+      return reduceInsertPromptAtIndex(dirtyState, action.index, action.prompt);
     }
     case "DELETE_PROMPT": {
       return {
-        ...state,
-        prompts: state.prompts.filter((prompt) => prompt._ui.id !== action.id),
+        ...dirtyState,
+        prompts: dirtyState.prompts.filter(
+          (prompt) => prompt._ui.id !== action.id
+        ),
       };
     }
     case "RUN_PROMPT": {
-      return reduceReplacePrompt(state, action.id, (prompt) => ({
+      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
         ...prompt,
         _ui: {
           ...prompt._ui,
@@ -204,24 +225,44 @@ export default function aiconfigReducer(
         },
       }));
     }
-    case "SET_DESCRIPTION": {
+    case "RUN_PROMPT_ERROR": {
+      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
+        ...prompt,
+        _ui: {
+          ...prompt._ui,
+          isRunning: false,
+        },
+      }));
+    }
+    case "SAVE_CONFIG_SUCCESS": {
       return {
         ...state,
+        _ui: {
+          ...state._ui,
+          isDirty: false,
+        },
+      };
+    }
+    case "SET_DESCRIPTION": {
+      return {
+        ...dirtyState,
         description: action.description,
       };
     }
     case "SET_NAME": {
       return {
-        ...state,
+        ...dirtyState,
         name: action.name,
       };
     }
     case "UPDATE_PROMPT_INPUT": {
-      return reduceReplaceInput(state, action.id, () => action.input);
+      return reduceReplaceInput(dirtyState, action.id, () => action.input);
     }
     case "UPDATE_PROMPT_NAME": {
       // Validate that no prompt has a name that conflicts with this one:
-      const existingPromptNames = state.prompts.map((prompt) => prompt.name);
+      const existingPromptNames = dirtyState.prompts.map(
+        (prompt) => prompt.name
+      );
 
       if (
         existingPromptNames.find((existingName) => action.name === existingName)
@@ -229,13 +270,13 @@ export default function aiconfigReducer(
         // Don't allow duplicate names
         return state;
       }
-      return reduceReplacePrompt(state, action.id, (prompt) => ({
+      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
         ...prompt,
         name: action.name,
       }));
     }
     case "UPDATE_PROMPT_MODEL": {
-      return reduceReplacePrompt(state, action.id, (prompt) => ({
+      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
         ...prompt,
         metadata: {
           ...prompt.metadata,
@@ -249,7 +290,7 @@ export default function aiconfigReducer(
       }));
     }
     case "UPDATE_PROMPT_MODEL_SETTINGS": {
-      return reduceReplacePrompt(state, action.id, (prompt) => ({
+      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
         ...prompt,
         metadata: {
           ...prompt.metadata,
@@ -268,7 +309,7 @@ export default function aiconfigReducer(
       }));
     }
     case "UPDATE_PROMPT_PARAMETERS": {
-      return reduceReplacePrompt(state, action.id, (prompt) => ({
+      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
         ...prompt,
         metadata: {
           ...prompt.metadata,
@@ -278,7 +319,7 @@ export default function aiconfigReducer(
     }
     case "UPDATE_GLOBAL_PARAMETERS": {
       return {
-        ...state,
+        ...dirtyState,
         metadata: {
           ...state.metadata,
           parameters: action.parameters,
@@ -286,7 +327,11 @@ export default function aiconfigReducer(
       };
     }
     case "CONSOLIDATE_AICONFIG": {
-      return reduceConsolidateAIConfig(state, action.action, action.config);
+      return reduceConsolidateAIConfig(
+        dirtyState,
+        action.action,
+        action.config
+      );
     }
   }
 }

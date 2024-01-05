@@ -1,0 +1,53 @@
+description: Intrepid explorer with ChatGPT and AIConfig
+metadata:
+  default_model: meta-llama/Llama-2-7b-chat-hf
+  model_parsers:
+    HuggingFaceH4/zephyr-7b-beta: AnyscaleEndpoint
+    Meta-Llama/Llama-Guard-7b: AnyscaleEndpoint
+    Open-Orca/Mistral-7B-OpenOrca: AnyscaleEndpoint
+    codellama/CodeLlama-34b-Instruct-hf: AnyscaleEndpoint
+    meta-llama/Llama-2-13b-chat-hf: AnyscaleEndpoint
+    meta-llama/Llama-2-70b-chat-hf: AnyscaleEndpoint
+    meta-llama/Llama-2-7b-chat-hf: AnyscaleEndpoint
+    mistralai/Mistral-7B-Instruct-v0.1: AnyscaleEndpoint
+    mistralai/Mixtral-8x7B-Instruct-v0.1: AnyscaleEndpoint
+    thenlper/gte-large: AnyscaleEndpoint
+  models:
+    meta-llama/Llama-2-70b-chat-hf:
+      max_tokens: 3000
+      model: meta-llama/Llama-2-70b-chat-hf
+      system_prompt: You are an expert travel coordinator with exquisite taste.
+    meta-llama/Llama-2-7b-chat-hf:
+      model: meta-llama/Llama-2-7b-chat-hf
+      temperature: 1
+      top_p: 1
+  parameters: {}
+name: NYC Trip Planner
+prompts:
+- input: Tell me 10 fun attractions to do in NYC.
+  name: get_activities
+- input: 'Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.'
+  metadata:
+    model:
+      name: AnyscaleEndpoint
+      settings:
+        max_tokens: 3000
+        model: mistralai/Mixtral-8x7B-Instruct-v0.1
+        system_prompt: You are an expert travel coordinator with exquisite taste.
+    parameters:
+      order_by: geographic location
+  name: gen_itinerary
+- input: What should I bring to {{location}}?
+  metadata:
+    model:
+      name: gpt-3.5-turbo
+      settings:
+        model: gpt-3.5-turbo
+        system_prompt:
+          content: You provide a bulleted list of items to pack for a week long trip.
+          role: system
+    parameters:
+      location: nyc
+    remember_chat_context: true
+  name: gen_packing_list
+schema_version: latest

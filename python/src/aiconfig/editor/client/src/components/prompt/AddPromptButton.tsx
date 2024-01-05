@@ -79,8 +79,9 @@ export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
           collapseLimit={5}
           onSelectModel={onAddPrompt}
         />
+        {/* TODO: Add back once we have custom model parsers fully supported
         <Menu.Divider />
-        <Menu.Item icon={<IconPlus size="16" />}>Add New Model</Menu.Item>
+        <Menu.Item icon={<IconPlus size="16" />}>Add New Model</Menu.Item> */}
       </Menu.Dropdown>
     </Menu>
   );

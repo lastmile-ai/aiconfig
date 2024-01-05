@@ -4,26 +4,23 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import openai
-from openai.types.chat import ChatCompletionMessage
 from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.util.params import resolve_prompt, resolve_prompt_string, resolve_system_prompt
+from openai.types.chat import ChatCompletionMessage
+
 from aiconfig.schema import (
     ExecuteResult,
     FunctionCallData,
     Output,
-    OutputDataWithValue,
     OutputDataWithToolCallsValue,
+    OutputDataWithValue,
     Prompt,
     PromptInput,
     PromptMetadata,
     ToolCallData,
-)
-from aiconfig.util.config_utils import get_api_key_from_environment
-from aiconfig.util.params import (
-    resolve_prompt,
-    resolve_prompt_string,
-    resolve_system_prompt,
 )
 
 if TYPE_CHECKING:
@@ -292,6 +289,7 @@ class OpenAIInference(ParameterizedModelParser):
             for chunk in response:
                 # OpenAI>1.0.0 uses pydantic models. Chunk is of type ChatCompletionChunk; type is not directly importable from openai Library, will require some diffing
                 chunk = chunk.model_dump(exclude_none=True)
+                chunk_without_choices = {key: copy.deepcopy(value) for key, value in chunk.items() if key != "choices"}
                 # streaming only returns one chunk, one choice at a time (before 1.0.0). The order in which the choices are returned is not guaranteed.
                 messages = multi_choice_message_reducer(messages, chunk)
 
@@ -308,11 +306,23 @@ class OpenAIInference(ParameterizedModelParser):
                             "output_type": "execute_result",
                             "data": accumulated_message_for_choice,
                             "execution_count": index,
-                            "metadata": {"finish_reason": choice.get("finish_reason")},
+                            "metadata": chunk_without_choices,
                         }
                     )
                     outputs[index] = output
             outputs = [outputs[i] for i in sorted(list(outputs.keys()))]
+
+            # Now that we have the complete outputs, we can parse it into our object model properly
+            for output in outputs:
+                output_message = output.data
+                output_data = build_output_data(output.data)
+
+                metadata = {"raw_response": output_message}
+                if output_message.get("role", None) is not None:
+                    metadata["role"] = output_message.get("role")
+
+                output.data = output_data
+                output.metadata = {**output.metadata, **metadata}
 
         # rewrite or extend list of outputs?
         prompt.outputs = outputs
@@ -352,8 +362,7 @@ class OpenAIInference(ParameterizedModelParser):
                 if isinstance(output_data.value, str):
                     return output_data.value
                 # If we get here that means it must be of kind tool_calls
-                return json.dumps(output_data.value, indent=2)
-
+                return output_data.model_dump_json(exclude_none=True, indent=2)
             # Doing this to be backwards-compatible with old output format
             # where we used to save the ChatCompletionMessage in output.data
             if isinstance(output_data, ChatCompletionMessage):
@@ -371,24 +380,6 @@ class DefaultOpenAIParser(OpenAIInference):
 
     def id(self) -> str:
         return self.model_id
-
-
-class GPT4Parser(DefaultOpenAIParser):
-    def __init__(self):
-        model_id = "gpt-4"
-        super().__init__(model_id)
-
-
-class GPT3TurboParser(DefaultOpenAIParser):
-    def __init__(self):
-        model_id = "gpt-3.5-turbo"
-        super().__init__(model_id)
-
-
-class ChatGPTParser(DefaultOpenAIParser):
-    def __init__(self):
-        model_id = "ChatGPT"
-        super().__init__(model_id)
 
 
 def reduce(acc, delta):
@@ -442,6 +433,8 @@ def refine_chat_completion_params(model_settings):
         "stop",
         "stream",
         "temperature",
+        "tools",
+        "tool_choice",
         "top_p",
         "user",
     }
@@ -543,24 +536,28 @@ def build_output_data(
         return None
 
     output_data: Union[OutputDataWithValue, str, None] = None
-    if message.get("content") is not None:
+    if message.get("content") is not None and message.get("content") != "":
         output_data = message.get("content")  # string
     elif message.get("tool_calls") is not None:
-        tool_calls = [
-            ToolCallData(
-                id=item.id,
-                function=FunctionCallData(
-                    arguments=item.function.arguments,
-                    name=item.function.name,
-                ),
-                type="function",
+        tool_calls = []
+        for item in message.get("tool_calls"):
+            function = item.get("function")
+            if function is None:
+                # It's possible that ChatCompletionMessageToolCall may
+                # support more than just function calls in the future
+                # so filter out other types of tool calls for now
+                continue
+
+            tool_calls.append(
+                ToolCallData(
+                    id=item.get("id"),
+                    function=FunctionCallData(
+                        arguments=function.get("arguments"),
+                        name=function.get("name"),
+                    ),
+                    type=item.get("type") if not None else "function",
+                )
             )
-            for item in message.get("tool_calls")
-            # It's possible that ChatCompletionMessageToolCall may
-            # support more than just function calls in the future
-            # so filter out other types
-            if item.type == "function"
-        ]
         output_data = OutputDataWithToolCallsValue(
             kind="tool_calls",
             value=tool_calls,
