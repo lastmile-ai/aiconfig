@@ -18,3 +18,4 @@ transformers # Used for text generation
 
 #Other
 asyncio
+scipy
