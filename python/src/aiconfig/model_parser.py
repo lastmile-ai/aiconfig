@@ -174,11 +174,13 @@ class ModelParser(ABC):
         else:
             # Merge config and prompt settings with prompt settings taking precedent
             model_settings = {}
-            global_settings = aiconfig.get_global_settings(model_metadata.name)
-            prompt_setings = prompt.metadata.model.settings if prompt.metadata.model.settings is not None else {}
+            prompt_settings = prompt.metadata.model.settings if prompt.metadata.model.settings is not None else {}
+
+            model_name = prompt_settings.get("model", model_metadata.name)
+            global_settings = aiconfig.get_global_settings(model_name)
 
             model_settings.update(global_settings)
-            model_settings.update(prompt_setings)
+            model_settings.update(prompt_settings)
 
             return model_settings
 

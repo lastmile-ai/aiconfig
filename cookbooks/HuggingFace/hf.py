@@ -207,7 +207,7 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         Returns:
             dict: Model-specific completion parameters.
         """
-        resolved_prompt = resolve_prompt(prompt, params, aiconfig)
+        resolved_prompt = resolve_prompt(prompt, params if params is not None else {}, aiconfig)
 
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
