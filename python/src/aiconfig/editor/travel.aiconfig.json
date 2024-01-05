@@ -94,6 +94,43 @@
           }
         }
       ]
+    },
+    {
+      "name": "prompt_4",
+      "input": "test",
+      "metadata": {
+        "model": {
+          "name": "AnyscaleEndpoint",
+          "settings": {
+            "model": "meta-llama/Llama-2-7b-chat-hf"
+          }
+        },
+        "parameters": {}
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "  Sure! Here are 5 questions to test your understanding of the conversation:\n\n1. What is the main topic of the conversation?\n2. What is the purpose of the meeting according to the speaker?\n3. What is the speaker's opinion on the proposed meeting time?\n4. How does the speaker feel about the potential attendees of the meeting?\n5. What is the speaker's recommended solution for the meeting time conflict?",
+          "metadata": {
+            "raw_response": {
+              "content": "  Sure! Here are 5 questions to test your understanding of the conversation:\n\n1. What is the main topic of the conversation?\n2. What is the purpose of the meeting according to the speaker?\n3. What is the speaker's opinion on the proposed meeting time?\n4. How does the speaker feel about the potential attendees of the meeting?\n5. What is the speaker's recommended solution for the meeting time conflict?",
+              "role": "assistant"
+            },
+            "id": "meta-llama/Llama-2-7b-chat-hf-JknFQzgthe2aABGHrYeW86GhXnUVx7fH9Z7JldFLe2g",
+            "created": 1704484147,
+            "model": "meta-llama/Llama-2-7b-chat-hf",
+            "object": "text_completion",
+            "usage": {
+              "completion_tokens": 97,
+              "prompt_tokens": 9,
+              "total_tokens": 106
+            },
+            "finish_reason": "stop",
+            "role": "assistant"
+          }
+        }
+      ]
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"

@@ -5,6 +5,7 @@ import { DalleImageGenerationParserPromptSchema } from "../shared/prompt_schemas
 import { PaLMTextParserPromptSchema } from "../shared/prompt_schemas/PaLMTextParserPromptSchema";
 import { PaLMChatParserPromptSchema } from "../shared/prompt_schemas/PaLMChatParserPromptSchema";
 import { HuggingFaceTextGenerationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationParserPromptSchema";
+import { AnyscaleEndpointPromptSchema } from "../shared/prompt_schemas/AnyscaleEndpointPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -76,6 +77,9 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
 
   // PaLMChatParser
   "models/chat-bison-001": PaLMChatParserPromptSchema,
+
+  // AnyscaleEndpoint
+  AnyscaleEndpoint: AnyscaleEndpointPromptSchema,
 };
 
 export type PromptInputSchema =
