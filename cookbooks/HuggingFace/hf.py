@@ -153,7 +153,9 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         token = None
 
         if use_api_token:
-            token = get_api_key_from_environment("HUGGING_FACE_API_TOKEN")
+            # You are allowed to use Hugging Face for a bit before you get
+            # rate limited, in which case you will receive a clear error
+            token = get_api_key_from_environment("HUGGING_FACE_API_TOKEN", required=False).unwrap()
 
         self.client = InferenceClient(model_id, token=token)
 
