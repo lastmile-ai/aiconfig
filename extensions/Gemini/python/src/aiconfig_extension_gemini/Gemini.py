@@ -1,10 +1,8 @@
 # Define a Model Parser for LLama-Guard
 from typing import TYPE_CHECKING, Dict, List, Optional, Any
 import copy
-import json
 
 import google.generativeai as genai
-from google.generativeai.types import content_types
 from google.protobuf.json_format import MessageToDict
 
 from aiconfig import (
@@ -108,6 +106,9 @@ class GeminiModelParser(ParameterizedModelParser):
     def __init__(self, id: str = "gemini-pro"):
         super().__init__()
         self.model = genai.GenerativeModel(id)
+        # TODO: Define API key here so we only call get_api_key_from_environment once
+        # Pass it in explicit to genai.configure(api_key=self.api_key), similar to 
+        # https://github.com/zhayujie/chatgpt-on-wechat/blob/eb809055d49efcc2036f7d89088aea7b50097162/bot/gemini/google_gemini_bot.py#L37
 
     def id(self) -> str:
         """
