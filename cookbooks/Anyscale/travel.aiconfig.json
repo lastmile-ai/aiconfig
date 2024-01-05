@@ -1,0 +1,55 @@
+{
+  "name": "NYC Trip Planner",
+  "description": "Intrepid explorer with ChatGPT and AIConfig",
+  "schema_version": "latest",
+  "metadata": {
+    "model_parsers": {
+      "meta-llama/Llama-2-7b-chat-hf": "AnyscaleEndpoint",
+      "meta-llama/Llama-2-13b-chat-hf": "AnyscaleEndpoint",
+      "Meta-Llama/Llama-Guard-7b": "AnyscaleEndpoint",
+      "meta-llama/Llama-2-70b-chat-hf": "AnyscaleEndpoint",
+      "Open-Orca/Mistral-7B-OpenOrca": "AnyscaleEndpoint",
+      "codellama/CodeLlama-34b-Instruct-hf": "AnyscaleEndpoint",
+      "HuggingFaceH4/zephyr-7b-beta": "AnyscaleEndpoint",
+      "mistralai/Mistral-7B-Instruct-v0.1": "AnyscaleEndpoint",
+      "mistralai/Mixtral-8x7B-Instruct-v0.1": "AnyscaleEndpoint",
+      "thenlper/gte-large": "AnyscaleEndpoint"
+    },
+    "models": {
+      "meta-llama/Llama-2-7b-chat-hf": {
+        "model": "meta-llama/Llama-2-7b-chat-hf",
+        "top_p": 1,
+        "temperature": 1
+      },
+      "meta-llama/Llama-2-70b-chat-hf": {
+        "model": "meta-llama/Llama-2-70b-chat-hf",
+        "max_tokens": 3000,
+        "system_prompt": "You are an expert travel coordinator with exquisite taste."
+      }
+    },
+    "default_model": "meta-llama/Llama-2-7b-chat-hf"
+  },
+  "prompts": [
+    {
+      "name": "get_activities",
+      "input": "Tell me 10 fun attractions to do in NYC."
+    },
+    {
+      "name": "gen_itinerary",
+      "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
+      "metadata": {
+        "model": {
+          "name": "AnyscaleEndpoint",
+          "settings": {
+            "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+            "max_tokens": 3000,
+            "system_prompt": "You are an expert travel coordinator with exquisite taste."
+          }
+        },
+        "parameters": {
+          "order_by": "geographic location"
+        }
+      }
+    }
+  ]
+}
