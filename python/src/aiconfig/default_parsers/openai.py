@@ -162,6 +162,7 @@ class OpenAIInference(ParameterizedModelParser):
         model_settings = self.get_model_settings(prompt, aiconfig)
 
         completion_params = refine_chat_completion_params(model_settings)
+        add_model_name_to_completion_params_if_not_present(completion_params, prompt, aiconfig)
 
         # In the case thhat the messages array weren't saves as part of the model settings, build it here. Messages array is used for conversation history.
         if not completion_params.get("messages"):
@@ -574,3 +575,12 @@ def build_output_data(
             value=tool_calls,
         )
     return output_data
+
+def add_model_name_to_completion_params_if_not_present(completion_params: dict, prompt: Prompt, aiconfig: "AIConfigRuntime"):
+    """
+    If the completion params do not have a model name, then add it. The model name being used is the one specified in the prompt's metadata.
+    
+    """
+    if completion_params.get("model") is None:
+        model_name = aiconfig.get_model_name(prompt)
+        completion_params["model"] = model_name
