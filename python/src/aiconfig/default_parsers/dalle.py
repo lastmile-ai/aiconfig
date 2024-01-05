@@ -163,7 +163,7 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         """
         # If needed, certify the API key and initialize the OpenAI client
         if not openai.api_key:
-            openai.api_key = get_api_key_from_environment("OPENAI_API_KEY")
+            openai.api_key = get_api_key_from_environment("OPENAI_API_KEY").unwrap()
         if not self.client:
             self.client = OpenAI(api_key=openai.api_key)
 

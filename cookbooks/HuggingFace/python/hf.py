@@ -128,7 +128,7 @@ class HuggingFaceTextParser(ParameterizedModelParser):
     A model parser for HuggingFace text generation models.
     """
 
-    def __init__(self, model_id: str = None, use_api_token=False):
+    def __init__(self, model_id: str = None, use_api_token=True):
         """
         Args:
             model_id (str): The model ID of the model to use.
@@ -153,7 +153,9 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         token = None
 
         if use_api_token:
-            token = get_api_key_from_environment("HUGGING_FACE_API_TOKEN")
+            # You are allowed to use Hugging Face for a bit before you get
+            # rate limited, in which case you will receive a clear error
+            token = get_api_key_from_environment("HUGGING_FACE_API_TOKEN", required=False).unwrap()
 
         self.client = InferenceClient(model_id, token=token)
 

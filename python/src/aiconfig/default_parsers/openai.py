@@ -235,7 +235,7 @@ class OpenAIInference(ParameterizedModelParser):
         )
 
         if not openai.api_key:
-            openai.api_key = get_api_key_from_environment("OPENAI_API_KEY")
+            openai.api_key = get_api_key_from_environment("OPENAI_API_KEY").unwrap()
 
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
