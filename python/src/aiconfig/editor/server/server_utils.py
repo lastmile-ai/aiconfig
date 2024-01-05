@@ -219,10 +219,9 @@ def init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None,
                 return Err(f"Failed to load AIConfig from {edit_config.aiconfig_path}: {e}")
     else:
         LOGGER.info(f"Creating new AIConfig at {edit_config.aiconfig_path}")
-        aiconfig_runtime = AIConfigRuntime.create()  # type: ignore
+        aiconfig_runtime = _create_new_aiconfig()
         model_ids = ModelParserRegistry.parser_ids()
-        if len(model_ids) > 0:
-            aiconfig_runtime.add_prompt("prompt_1", Prompt(name="prompt_1", input="", metadata=PromptMetadata(model=model_ids[0])))
+        aiconfig_runtime.add_prompt("prompt_1", Prompt(name="prompt_1", input="", metadata=PromptMetadata(model=model_ids[0])))
 
         state.aiconfig = aiconfig_runtime
         LOGGER.info("Created new AIConfig")
@@ -234,6 +233,20 @@ def init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None,
         except Exception as e:
             LOGGER.error(f"Failed to create new AIConfig at {edit_config.aiconfig_path}: {e}")
             return core_utils.ErrWithTraceback(e)
+
+
+def _create_new_aiconfig() -> AIConfigRuntime:
+    aiconfig_runtime = AIConfigRuntime.create()  # type: ignore
+    model_ids = ModelParserRegistry.parser_ids()
+    if len(model_ids) > 0:
+        LOGGER.info(f"{model_ids=}")
+        for model_id in model_ids:
+            if aiconfig_runtime.metadata.models is None:
+                aiconfig_runtime.metadata.models = {}
+            if model_id not in aiconfig_runtime.metadata.models:
+                aiconfig_runtime.add_model(model_id, {"model": model_id})
+
+    return aiconfig_runtime
 
 
 def _safe_run_aiconfig_method(aiconfig: AIConfigRuntime, method_name: MethodName, method_args: OpArgs) -> Result[None, str]:
