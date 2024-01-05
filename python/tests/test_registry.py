@@ -42,10 +42,7 @@ class TestModelParserRegistry:
         mock_model_parser = MockModelParser()
         ModelParserRegistry.register_model_parser(mock_model_parser)
 
-        assert (
-            ModelParserRegistry.get_model_parser(mock_model_parser.id())
-            == mock_model_parser
-        )
+        assert ModelParserRegistry.get_model_parser(mock_model_parser.id()) == mock_model_parser
 
     def test_register_multiple_model_parsers_with_different_ids(self):
         # Create model parsers
@@ -96,16 +93,12 @@ class TestModelParserRegistry:
         ai_config_runtime.add_prompt(prompt.name, prompt)
 
         # Retrieve the model parser for the Prompt
-        retrieved_parser = ModelParserRegistry.get_model_parser_for_prompt(
-            prompt, ai_config_runtime
-        )
+        retrieved_parser = ModelParserRegistry.get_model_parser_for_prompt(prompt, ai_config_runtime)
 
         # Assert that the retrieved model parser is the same as the registered one
         assert retrieved_parser == model_parser
 
-    def test_retrieve_model_parser_for_prompt_with_nonexistent_model(
-        self, ai_config_runtime: AIConfigRuntime
-    ):
+    def test_retrieve_model_parser_for_prompt_with_nonexistent_model(self, ai_config_runtime: AIConfigRuntime):
         # Create a Prompt object with a model name that is not registered
         prompt = Prompt(
             **{
@@ -118,9 +111,7 @@ class TestModelParserRegistry:
 
         # Attempt to retrieve a model parser for the Prompt
         with pytest.raises(KeyError):
-            ModelParserRegistry.get_model_parser_for_prompt(
-                prompt, ai_config_runtime
-            ).id()
+            ModelParserRegistry.get_model_parser_for_prompt(prompt, ai_config_runtime).id()
 
     def test_remove_model_parser(self):
         # Create a model parser

@@ -2,12 +2,10 @@ import asyncio
 import logging
 import sys
 
-from result import Ok, Result
-
-
+import lastmile_utils.lib.core.api as core_utils
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.eval.lib import run_aiconfig_helper
-import lastmile_utils.lib.core.api as core_utils
+from result import Ok, Result
 
 logging.basicConfig(format=core_utils.LOGGER_FMT)
 LOGGER = logging.getLogger(__name__)
@@ -35,9 +33,7 @@ async def main():
     settings = res_settings.unwrap()
     res_aiconfig = _load_aiconfig(settings)
     aiconfig = res_aiconfig.unwrap()
-    final_value = await run_aiconfig_helper(
-        runtime=aiconfig, prompt_name=settings.prompt_name, question=question
-    )
+    final_value = await run_aiconfig_helper(runtime=aiconfig, prompt_name=settings.prompt_name, question=question)
 
     print(final_value.unwrap_or_else(str))
 

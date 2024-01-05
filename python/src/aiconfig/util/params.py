@@ -123,9 +123,7 @@ def resolve_parametrized_prompt(raw_prompt, params):
     return resolved_prompt
 
 
-def find_dependencies_in_prompt(
-    prompt_template: str, current_prompt_name: str, prompt_list: List[Prompt]
-) -> Set[str]:
+def find_dependencies_in_prompt(prompt_template: str, current_prompt_name: str, prompt_list: List[Prompt]) -> Set[str]:
     """
     Finds and returns a set of prompt IDs that are dependencies of the given prompt.
 
@@ -158,9 +156,7 @@ def find_dependencies_in_prompt(
     return dependencies
 
 
-def get_dependency_graph(
-    root_prompt: Prompt, all_prompts: List[Prompt], prompt_dict: Dict[str, Prompt]
-) -> dict[str, List[str]]:
+def get_dependency_graph(root_prompt: Prompt, all_prompts: List[Prompt], prompt_dict: Dict[str, Prompt]) -> dict[str, List[str]]:
     """
     Generates an upstream dependency graph of prompts in the configuration, with each entry representing only its direct dependencies.
     Traversal is required to identify all upstream dependencies. The specified prompt serves as the root.
@@ -184,9 +180,7 @@ def get_dependency_graph(
         visited.add(current_prompt_name)
 
         prompt_template = prompt_dict[current_prompt_name].get_raw_prompt_from_config()
-        prompt_dependencies = find_dependencies_in_prompt(
-            prompt_template, current_prompt_name, all_prompts
-        )
+        prompt_dependencies = find_dependencies_in_prompt(prompt_template, current_prompt_name, all_prompts)
 
         for prompt_dependency in prompt_dependencies:
             dependency_graph[current_prompt_name].append(prompt_dependency)
@@ -236,9 +230,7 @@ def get_prompt_template(prompt: Prompt, aiconfig: "AIConfigRuntime"):
     elif isinstance(prompt.input.data, str):
         return prompt.input.data
     else:
-        raise Exception(
-            f"Cannot get prompt template string from prompt: {prompt.input}"
-        )
+        raise Exception(f"Cannot get prompt template string from prompt: {prompt.input}")
 
 
 def collect_prompt_references(current_prompt: Prompt, ai_config: "AIConfigRuntime"):
@@ -251,13 +243,7 @@ def collect_prompt_references(current_prompt: Prompt, ai_config: "AIConfigRuntim
             break
 
         prompt_input = get_prompt_template(previous_prompt, ai_config)
-        prompt_output = (
-            ai_config.get_output_text(
-                previous_prompt, ai_config.get_latest_output(previous_prompt)
-            )
-            if previous_prompt.outputs
-            else None
-        )
+        prompt_output = ai_config.get_output_text(previous_prompt, ai_config.get_latest_output(previous_prompt)) if previous_prompt.outputs else None
         prompt_references[previous_prompt.name] = {
             "input": prompt_input,
             "output": prompt_output,
@@ -265,9 +251,7 @@ def collect_prompt_references(current_prompt: Prompt, ai_config: "AIConfigRuntim
     return prompt_references
 
 
-def resolve_prompt(
-    current_prompt: Prompt, input_params: Dict, ai_config: "AIConfigRuntime"
-) -> str:
+def resolve_prompt(current_prompt: Prompt, input_params: Dict, ai_config: "AIConfigRuntime") -> str:
     """
     Parameterizes a prompt using provided parameters, references to other prompts, and parameters stored in config..
     """

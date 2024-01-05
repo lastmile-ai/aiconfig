@@ -1,14 +1,14 @@
 import asyncio
 import os
 
+# Create ~/.env file with this line: export OPENAI_API_KEY=<your key here>
+# You can get your key from https://platform.openai.com/api-keys
+import dotenv
 import openai
 import streamlit as st
 
 from aiconfig import AIConfigRuntime
 
-# Create ~/.env file with this line: export OPENAI_API_KEY=<your key here>
-# You can get your key from https://platform.openai.com/api-keys 
-import dotenv
 dotenv.load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -32,12 +32,8 @@ async def assistant_response(prompt):
 
 # Streamlit Setup
 st.title("AI Teaching Assistant")
-st.markdown(
-    "Ask a math, physics, or general question. Based on your question, an AI math prof, physics prof, or general assistant will respond."
-)
-st.markdown(
-    "**This is a simple demo of prompt routing - based on your question, an LLM decides which AI teacher responds.**"
-)
+st.markdown("Ask a math, physics, or general question. Based on your question, an AI math prof, physics prof, or general assistant will respond.")
+st.markdown("**This is a simple demo of prompt routing - based on your question, an LLM decides which AI teacher responds.**")
 
 # Chat setup
 if "messages" not in st.session_state:
