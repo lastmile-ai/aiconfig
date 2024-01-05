@@ -1,21 +1,14 @@
 import pytest
 from aiconfig.Config import AIConfigRuntime
-from aiconfig.util.config_utils import extract_override_settings
 
-from aiconfig.schema import (
-    AIConfig,
-    ConfigMetadata,
-    ExecuteResult,
-    ModelMetadata,
-    Prompt,
-    PromptMetadata,
-)
+from aiconfig.schema import AIConfig, ConfigMetadata, Prompt, PromptMetadata
 
 
 @pytest.fixture
 def ai_config_runtime():
     runtime = AIConfigRuntime.create("Untitled AIConfig")
     return runtime
+
 
 @pytest.fixture
 def ai_config():
@@ -26,6 +19,7 @@ def ai_config():
         prompts=[],
     )
     return config
+
 
 def test_delete_nonexistent_parameter(ai_config_runtime: AIConfigRuntime):
     """
@@ -43,9 +37,7 @@ def test_delete_nonexistent_parameter(ai_config_runtime: AIConfigRuntime):
     )
 
     # Ensure deleting a nonexistent parameter raises a KeyError
-    with pytest.raises(
-        KeyError, match=f"Parameter '{parameter_name_to_delete}' does not exist."
-    ):
+    with pytest.raises(KeyError, match=f"Parameter '{parameter_name_to_delete}' does not exist."):
         config.delete_parameter(parameter_name_to_delete)
 
 
@@ -62,9 +54,9 @@ def test_set_parameter_for_aiconfig_empty_params(ai_config: AIConfig):
         input="This is a prompt",
         metadata=PromptMetadata(
             model="fakemodel",
-            parameters= {
+            parameters={
                 prompt_parameter_name: prompt_parameter_value,
-            }
+            },
         ),
     )
     ai_config.add_prompt(prompt_name, prompt)
@@ -84,6 +76,7 @@ def test_set_parameter_for_aiconfig_empty_params(ai_config: AIConfig):
         aiconfig_parameter_name: aiconfig_parameter_value,
     }
 
+
 def test_set_parameter_for_aiconfig_has_parameters(ai_config: AIConfig):
     """
     Test setting a global parameter when it already has parameters.
@@ -98,16 +91,16 @@ def test_set_parameter_for_aiconfig_has_parameters(ai_config: AIConfig):
         input="This is a prompt",
         metadata=PromptMetadata(
             model="fakemodel",
-            parameters= {
+            parameters={
                 prompt_parameter_name: prompt_parameter_value,
-            }
+            },
         ),
     )
     ai_config.add_prompt(prompt_name, prompt)
 
     aiconfig_parameter_name = "aiconfig_param"
     ai_config.metadata = ConfigMetadata(
-        parameters= {
+        parameters={
             "random_key": "keep this parameter",
             aiconfig_parameter_name: "should update this value",
         }
@@ -126,6 +119,7 @@ def test_set_parameter_for_aiconfig_has_parameters(ai_config: AIConfig):
         aiconfig_parameter_name: aiconfig_parameter_value,
     }
 
+
 def test_set_parameter_for_prompt_no_metadata(ai_config: AIConfig):
     """
     Test setting a prompt parameter when there is no prompt metadata.
@@ -140,7 +134,7 @@ def test_set_parameter_for_prompt_no_metadata(ai_config: AIConfig):
     aiconfig_parameter_name = "aiconfig_param"
     aiconfig_parameter_value = "aiconfig_value"
     ai_config.metadata = ConfigMetadata(
-        parameters= {
+        parameters={
             aiconfig_parameter_name: aiconfig_parameter_value,
         }
     )
@@ -159,7 +153,8 @@ def test_set_parameter_for_prompt_no_metadata(ai_config: AIConfig):
     assert ai_config.metadata.parameters == {
         aiconfig_parameter_name: aiconfig_parameter_value,
     }
-    
+
+
 def test_set_parameter_for_prompt_no_parameters(ai_config: AIConfig):
     """
     Test setting a prompt parameter when there are no prompt parameters.
@@ -175,7 +170,7 @@ def test_set_parameter_for_prompt_no_parameters(ai_config: AIConfig):
     aiconfig_parameter_name = "aiconfig_param"
     aiconfig_parameter_value = "aiconfig_value"
     ai_config.metadata = ConfigMetadata(
-        parameters= {
+        parameters={
             aiconfig_parameter_name: aiconfig_parameter_value,
         }
     )
@@ -196,6 +191,7 @@ def test_set_parameter_for_prompt_no_parameters(ai_config: AIConfig):
         aiconfig_parameter_name: aiconfig_parameter_value,
     }
 
+
 def test_set_parameter_for_prompt_has_parameters(ai_config: AIConfig):
     """
     Test setting a prompt parameter when it already has parameters.
@@ -209,10 +205,10 @@ def test_set_parameter_for_prompt_has_parameters(ai_config: AIConfig):
         input="This is a prompt",
         metadata=PromptMetadata(
             model="fakemodel",
-            parameters= {
+            parameters={
                 "random_key": "keep this parameter",
                 prompt_parameter_name: "should update this value",
-            }
+            },
         ),
     )
     ai_config.add_prompt(prompt_name, prompt)
@@ -220,7 +216,7 @@ def test_set_parameter_for_prompt_has_parameters(ai_config: AIConfig):
     aiconfig_parameter_name = "aiconfig_param"
     aiconfig_parameter_value = "aiconfig_value"
     ai_config.metadata = ConfigMetadata(
-        parameters= {
+        parameters={
             aiconfig_parameter_name: aiconfig_parameter_value,
         }
     )
@@ -269,7 +265,7 @@ def test_delete_existing_parameter(ai_config: AIConfig):
     assert parameter_name_to_delete not in ai_config.metadata.parameters
 
 
-# | With both local and global (should use local override) 
+# | With both local and global (should use local override)
 # | Without AIConfig but local is `{}` |
 def test_get_parameter_prompt_has_parameters(ai_config: AIConfig):
     """
@@ -328,9 +324,7 @@ def test_get_parameter_prompt_has_no_metadata(
     assert parameters == ai_config.metadata.parameters
 
 
-def test_get_parameter_prompt_has_metadata_no_parameters(
-    ai_config: AIConfig
-):
+def test_get_parameter_prompt_has_metadata_no_parameters(ai_config: AIConfig):
     """
     Test getting a parameter when only aiconfig param is set.
     Prompt has metadata but no parameters.
@@ -355,9 +349,7 @@ def test_get_parameter_prompt_has_metadata_no_parameters(
     assert parameters == ai_config.metadata.parameters
 
 
-def test_get_parameter_prompt_has_empty_parameters(
-    ai_config: AIConfig
-):
+def test_get_parameter_prompt_has_empty_parameters(ai_config: AIConfig):
     """
     Test getting a parameter when only aiconfig param is set.
     Prompt has empty parameters.
@@ -382,9 +374,7 @@ def test_get_parameter_prompt_has_empty_parameters(
     assert parameters == ai_config.metadata.parameters
 
 
-def test_get_parameter_prompt_has_empty_parameters(
-    ai_config: AIConfig
-):
+def test_get_parameter_prompt_has_empty_parameters(ai_config: AIConfig):
     """
     Test getting a parameter when only aiconfig param is set.
     Prompt has empty parameters.
@@ -407,6 +397,7 @@ def test_get_parameter_prompt_has_empty_parameters(
 
     parameters = ai_config.get_parameters(prompt_name)
     assert parameters == ai_config.metadata.parameters
+
 
 def test_get_parameter_aiconfig_has_parameters(ai_config: AIConfig):
     """

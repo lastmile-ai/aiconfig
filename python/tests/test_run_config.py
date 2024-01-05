@@ -13,13 +13,9 @@ async def test_load_parametrized_data_config(set_temporary_env_vars):
 
     Config has 2 prompts. Prompt2 uses prompt1.output in its input.
     """
-    with patch.object(
-        openai.chat.completions, "create", side_effect=mock_openai_chat_completion
-    ):
+    with patch.object(openai.chat.completions, "create", side_effect=mock_openai_chat_completion):
         config_relative_path = "aiconfigs/parametrized_data_config.json"
-        config_absolute_path = get_absolute_file_path_from_relative(
-            __file__, config_relative_path
-        )
+        config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
         config = AIConfigRuntime.load(config_absolute_path)
 
         prompt1_params = {

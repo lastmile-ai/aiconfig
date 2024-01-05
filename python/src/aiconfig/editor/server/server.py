@@ -1,6 +1,6 @@
 import logging
-from typing import Any, Dict, Type, Union
 import webbrowser
+from typing import Any, Dict, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
 import result
