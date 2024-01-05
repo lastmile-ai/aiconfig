@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 # Step 1: define Helpers
 
 
-def refine_chat_completion_params(model_settings):
+def refine_chat_completion_params(model_settings, aiconfig, prompt):
     """
     Refines the completion params for the HF text generation api. Removes any unsupported params.
     The supported keys were found by looking at the HF text generation api. `huggingface_hub.InferenceClient.text_generation()`
@@ -59,6 +59,11 @@ def refine_chat_completion_params(model_settings):
     for key in model_settings:
         if key.lower() in supported_keys:
             completion_data[key.lower()] = model_settings[key]
+
+    # Explicitly set the model to use if not already specified
+    if completion_data.get("model") is None:
+        model_name = aiconfig.get_model_name(prompt)
+        completion_data["model"] = model_name
 
     return completion_data
 
@@ -166,14 +171,7 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         """
         return "HuggingFaceTextParser"
 
-    def serialize(
-        self,
-        prompt_name: str,
-        data: Any,
-        ai_config: "AIConfigRuntime",
-        parameters: Optional[Dict] = None,
-        **kwargs
-    ) -> List[Prompt]:
+    def serialize(self, prompt_name: str, data: Any, ai_config: "AIConfigRuntime", parameters: Optional[Dict] = None, **kwargs) -> List[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
@@ -196,9 +194,7 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(
-                model=model_metadata, parameters=parameters, **kwargs
-            ),
+            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **kwargs),
         )
         return [prompt]
 
@@ -219,20 +215,18 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         Returns:
             dict: Model-specific completion parameters.
         """
-        resolved_prompt = resolve_prompt(prompt, params, aiconfig)
+        resolved_prompt = resolve_prompt(prompt, params if params is not None else {}, aiconfig)
 
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
 
-        completion_data = refine_chat_completion_params(model_settings)
+        completion_data = refine_chat_completion_params(model_settings, aiconfig, prompt)
 
         completion_data["prompt"] = resolved_prompt
 
         return completion_data
 
-    async def run_inference(
-        self, prompt: Prompt, aiconfig, options, parameters
-    ) -> List[Output]:
+    async def run_inference(self, prompt: Prompt, aiconfig, options, parameters) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -247,9 +241,7 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
-        stream = (options.stream if options else False) and (
-            not "stream" in completion_data or completion_data.get("stream") != False
-        )
+        stream = (options.stream if options else False) and (not "stream" in completion_data or completion_data.get("stream") != False)
 
         response = self.client.text_generation(**completion_data)
         response_is_detailed = completion_data.get("details", False)
