@@ -158,7 +158,9 @@ class OpenAIInference(ParameterizedModelParser):
         """
         await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params}))
         # Build Completion params
+        print(f"[165]{aiconfig=}")
         model_settings = self.get_model_settings(prompt, aiconfig)
+        print(f"[166]{model_settings=}")
 
         completion_params = refine_chat_completion_params(model_settings)
 
@@ -237,6 +239,10 @@ class OpenAIInference(ParameterizedModelParser):
         if not openai.api_key:
             openai.api_key = get_api_key_from_environment("OPENAI_API_KEY")
 
+        print("Before deserialize")
+        print(f"Running prompt: {prompt.name}")
+        print(f"AIConfig: {aiconfig}")
+        print(f"{parameters=}")
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         # const stream = options?.stream ?? completionParams.stream ?? true;
@@ -249,6 +255,7 @@ class OpenAIInference(ParameterizedModelParser):
 
         completion_data["stream"] = stream
 
+        print("completion_data=", completion_data)
         response = openai.chat.completions.create(**completion_data)
         outputs = []
         if not stream:
