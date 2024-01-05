@@ -106,9 +106,12 @@ class GeminiModelParser(ParameterizedModelParser):
     def __init__(self, id: str = "gemini-pro"):
         super().__init__()
         self.model = genai.GenerativeModel(id)
-        # TODO: Define API key here so we only call get_api_key_from_environment once
-        # Pass it in explicit to genai.configure(api_key=self.api_key), similar to 
-        # https://github.com/zhayujie/chatgpt-on-wechat/blob/eb809055d49efcc2036f7d89088aea7b50097162/bot/gemini/google_gemini_bot.py#L37
+
+        # Note: we don't need to explicitly set the key as long as this is set
+        # as an env var genai.configure() will pick up the env var
+        # `GOOGLE_API_KEY`, it's just that we prefer not to call
+        # `get_api_key_from_environment` multiple times if we don't need to
+        self.api_key = get_api_key_from_environment("GOOGLE_API_KEY", required=False)
 
     def id(self) -> str:
         """
@@ -326,9 +329,9 @@ class GeminiModelParser(ParameterizedModelParser):
             )
         )
 
-        # Auth check. don't need to explicitly set the key as long as this is set as an env var. genai.configure() will pick it up
-        get_api_key_from_environment("GOOGLE_API_KEY")
-        genai.configure()
+        if not self.api_key:
+            self.api_key = get_api_key_from_environment("GOOGLE_API_KEY", required=True)
+        genai.configure(api_key=self.api_key)
 
         # TODO: check and handle api key here
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
