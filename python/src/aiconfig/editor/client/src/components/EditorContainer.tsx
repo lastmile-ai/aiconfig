@@ -2,6 +2,7 @@ import PromptContainer from "./prompt/PromptContainer";
 import {
   Container,
   Button,
+  Image,
   createStyles,
   Stack,
   Flex,
@@ -102,6 +103,14 @@ const useStyles = createStyles((theme) => ({
       padding: "0 0 200px 0",
     },
     paddingBottom: 400,
+  },
+
+  toolbar: {
+    width: "100%",
+    margin: "0 0 0 16px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 }));
 
@@ -673,12 +682,20 @@ export default function EditorContainer({
           <Tooltip
             label={isDirty ? "Save changes to config" : "No unsaved changes"}
           >
-            <div>
+            <div className={classes.toolbar}>
+              <Image
+                withPlaceholder
+                maw={140}
+                src="images/aiconfigLogo.png"
+                alt="AiConfig Logo"
+              />
               <Button
                 leftIcon={<IconDeviceFloppy />}
                 loading={isSaving}
                 onClick={onSave}
                 disabled={!isDirty}
+                size="xs"
+                variant="gradient"
               >
                 Save
               </Button>

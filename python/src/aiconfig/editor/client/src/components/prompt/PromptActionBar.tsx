@@ -66,7 +66,7 @@ export default memo(function PromptActionBar({
                 )}
               </Tabs.List>
 
-              <Tabs.Panel value="settings">
+              <Tabs.Panel value="settings" className="actionTabsPanel">
                 <ModelSettingsRenderer
                   settings={getModelSettings(prompt)}
                   schema={modelSettingsSchema}
@@ -79,7 +79,7 @@ export default memo(function PromptActionBar({
               </Tabs.Panel>
 
               {checkParametersSupported(prompt) && (
-                <Tabs.Panel value="parameters">
+                <Tabs.Panel value="parameters" className="actionTabsPanel">
                   <ParametersRenderer
                     initialValue={getPromptParameters(prompt)}
                     onUpdateParameters={onUpdateParameters}

@@ -40,12 +40,15 @@ export default memo(function ModelSelector({
     <Autocomplete
       placeholder="Select model"
       limit={100}
+      className="ghost"
+      variant="unstyled"
       maxDropdownHeight={200}
       rightSection={
         selectedModel ? (
           <Button
             size="xs"
             variant="subtle"
+            className="ghost"
             mr={10}
             onClick={() => {
               onSelectModel(undefined);

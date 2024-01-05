@@ -21,17 +21,6 @@ export default memo(function PromptInputRenderer({
   const [isRawJSON, setIsRawJSON] = useState(false);
   return (
     <>
-      <Flex justify="flex-end">
-        <Tooltip label="Toggle JSON editor" withArrow>
-          <ActionIcon onClick={() => setIsRawJSON((curr) => !curr)}>
-            {isRawJSON ? (
-              <IconBracesOff size="1rem" />
-            ) : (
-              <IconBraces size="1rem" />
-            )}
-          </ActionIcon>
-        </Tooltip>
-      </Flex>
       {isRawJSON ? (
         <PromptInputJSONRenderer input={input} onChangeInput={onChangeInput} />
       ) : schema ? (
@@ -46,6 +35,17 @@ export default memo(function PromptInputRenderer({
           onChangeInput={onChangeInput}
         />
       )}
+      <Flex justify="flex-end">
+        <Tooltip label="Toggle JSON editor" withArrow>
+          <ActionIcon onClick={() => setIsRawJSON((curr) => !curr)}>
+            {isRawJSON ? (
+              <IconBracesOff size="1rem" />
+            ) : (
+              <IconBraces size="1rem" />
+            )}
+          </ActionIcon>
+        </Tooltip>
+      </Flex>
     </>
   );
 });

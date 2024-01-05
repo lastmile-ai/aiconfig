@@ -137,8 +137,115 @@ export default function Editor() {
   );
 
   return (
-    <div>
-      <MantineProvider withGlobalStyles withNormalizeCSS>
+    <div className="editorBackground">
+      <MantineProvider
+        withGlobalStyles
+        withNormalizeCSS
+        theme={{
+          colorScheme: "dark",
+
+          colors: {
+            // Add your color
+            deepBlue: ["#E9EDFC", "#C1CCF6", "#99ABF0" /* ... */],
+            // or replace default theme color
+            // gray: ["#E9EDFC", "#C1CCF6", "#99ABF0" /* ... */],
+            blue: ["#E9EDFC", "#C1CCF6", "#99ABF0" /* ... */],
+          },
+
+          shadows: {
+            md: "1px 1px 3px rgba(0, 0, 0, .25)",
+            xl: "5px 5px 3px rgba(0, 0, 0, .25)",
+          },
+
+          headings: {
+            fontFamily:
+              "system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Arial, sans-serif",
+            sizes: {
+              h1: { fontSize: "2rem" },
+            },
+          },
+
+          defaultGradient: {
+            from: "pink",
+            to: "pink",
+            deg: 45,
+          },
+
+          globalStyles: (theme) => ({
+            ".editorBackground": {
+              background:
+                "radial-gradient(ellipse at top,#08122d,#030712),radial-gradient(ellipse at bottom,#030712,#030712)",
+              margin: "0 auto",
+              minHeight: "100vh",
+            },
+            ".monoFont": {
+              fontFamily:
+                "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+            },
+            ".ghost": {
+              border: "none",
+              borderRadius: "4px",
+              padding: "4px",
+              margin: "0px",
+              backgroundColor: "transparent",
+              ":hover": {
+                backgroundColor: "rgba(226,232,255,.1)",
+              },
+              input: {
+                maxHeight: "16px",
+                fontFamily:
+                  "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+              },
+            },
+            ".cellStyle": {
+              border: "1px solid rgba(226,232,255,.1) !important",
+              background: "rgb(12 21 57 / 10%)",
+              flex: 1,
+              borderTopRightRadius: "0px",
+              borderBottomRightRadius: "0px",
+              ":hover": {
+                background: "rgba(255, 255, 255, 0.03) !important",
+              },
+              textarea: {
+                border: "1px solid rgba(226,232,255,.1)",
+                backgroundColor: "#060c21",
+                ":focus": {
+                  outline: "solid 1px #ff1cf7 !important",
+                  outlineOffset: "-1px",
+                },
+              },
+            },
+            ".sidePanel": {
+              border: "1px solid rgba(226,232,255,.1)",
+              borderLeft: "none",
+              borderTopRightRadius: "4px",
+              borderBottomRightRadius: "4px",
+              input: {
+                border: "1px solid rgba(226,232,255,.1)",
+                backgroundColor: "#060c21",
+                ":focus": {
+                  outline: "solid 1px #ff1cf7 !important",
+                  outlineOffset: "-1px",
+                },
+              },
+            },
+            ".divider": {
+              borderTopWidth: "1px",
+              borderTopColor: "rgba(226,232,255,.1)",
+              marginBottom: "0.5em",
+            },
+            ".primaryPinkButton": {
+              background: "#ff1cf7",
+              color: "white",
+              borderRadius: "0",
+              height: "auto",
+            },
+            ".actionTabsPanel": {
+              width: "400px",
+            },
+          }),
+        }}
+      >
         {!aiconfig ? (
           <Flex justify="center" mt="xl">
             <Loader size="xl" />
