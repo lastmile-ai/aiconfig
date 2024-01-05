@@ -1,4 +1,5 @@
 import copy
+import dotenv
 import os
 from typing import TYPE_CHECKING
 
@@ -10,8 +11,9 @@ if TYPE_CHECKING:
     from ..schema import AIConfig
 
 
-def get_api_key_from_environment(api_key_name: str):
-    if api_key_name not in os.environ:
+def get_api_key_from_environment(api_key_name: str, required: bool = True):
+    dotenv.load_dotenv()
+    if api_key_name not in os.environ and required:
         raise Exception("Missing API key '{}' in environment".format(api_key_name))
 
     return os.environ[api_key_name]
