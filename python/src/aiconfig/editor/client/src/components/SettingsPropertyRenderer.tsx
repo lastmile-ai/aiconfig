@@ -41,7 +41,7 @@ export function PropertyLabel(props: {
     <Group spacing="xs">
       <Text size="md">{propertyName}</Text>
 
-      <Tooltip label={propertyDescription} multiline>
+      <Tooltip label={propertyDescription} multiline maw={400}>
         <ActionIcon>
           <IconHelp size={16} />
         </ActionIcon>
