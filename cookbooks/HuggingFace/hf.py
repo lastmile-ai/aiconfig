@@ -14,7 +14,7 @@ from aiconfig import (
     ParameterizedModelParser,
     Prompt,
     PromptMetadata,
-    get_api_key_from_environment,
+    maybe_get_api_key_from_environment,
     resolve_prompt,
 )
 
@@ -153,7 +153,7 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         token = None
 
         if use_api_token:
-            token = get_api_key_from_environment("HUGGING_FACE_API_TOKEN")
+            token = maybe_get_api_key_from_environment("HUGGING_FACE_API_TOKEN")
 
         self.client = InferenceClient(model_id, token=token)
 
