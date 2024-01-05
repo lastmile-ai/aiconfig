@@ -1,16 +1,15 @@
 import asyncio
 import logging
 import signal
+import socket
 import subprocess
 import sys
-import socket
 
 import lastmile_utils.lib.core.api as core_utils
 import result
-from result import Err, Ok, Result
 from aiconfig.editor.server.server import run_backend_server
-
 from aiconfig.editor.server.server_utils import EditServerConfig, ServerMode
+from result import Err, Ok, Result
 
 
 class AIConfigCLIConfig(core_utils.Record):
@@ -65,19 +64,19 @@ def _sigint(procs: list[subprocess.Popen[bytes]]) -> Result[str, str]:
         p.send_signal(signal.SIGINT)
     return Ok("Sent SIGINT to frontend servers.")
 
+
 def is_port_in_use(port: int) -> bool:
-    """ 
+    """
     Checks if a port is in use at localhost.
-    
+
     Creates a temporary connection.
     Context manager will automatically close the connection
     """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('localhost', port)) == 0
+        return s.connect_ex(("localhost", port)) == 0
 
 
 def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]:
-    
     port = edit_config.server_port
 
     while is_port_in_use(port):

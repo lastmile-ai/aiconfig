@@ -29,10 +29,7 @@ def validate_and_add_prompts_to_config(prompts: List[Prompt], aiconfig) -> None:
         in_config = False
         for config_prompt in aiconfig.prompts:
             # check for duplicates (same input and settings.)
-            if (
-                config_prompt.input == new_prompt.input
-                and new_prompt.metadata == config_prompt.metadata
-            ):
+            if config_prompt.input == new_prompt.input and new_prompt.metadata == config_prompt.metadata:
                 in_config = True
                 # update outputs if different
                 if config_prompt.outputs != new_prompt.outputs:
@@ -58,9 +55,7 @@ def extract_outputs_from_response(response) -> List[Output]:
 
     response = response.model_dump(exclude_none=True)
 
-    response_without_choices = {
-        key: copy.deepcopy(value) for key, value in response.items() if key != "choices"
-    }
+    response_without_choices = {key: copy.deepcopy(value) for key, value in response.items() if key != "choices"}
     for i, choice in enumerate(response.get("choices")):
         response_without_choices.update({"finish_reason": choice.get("finish_reason")})
         output = ExecuteResult(
@@ -77,7 +72,7 @@ def extract_outputs_from_response(response) -> List[Output]:
 
 
 def async_run_serialize_helper(
-    aiconfig: AIConfigRuntime, 
+    aiconfig: AIConfigRuntime,
     request_kwargs: Dict,
 ) -> List[Prompt]:
     """
@@ -88,9 +83,7 @@ def async_run_serialize_helper(
     serialized_prompts = None
 
     async def run_and_await_serialize():
-        result = await aiconfig.serialize(
-            request_kwargs.get("model"), request_kwargs, "prompt"
-        )
+        result = await aiconfig.serialize(request_kwargs.get("model"), request_kwargs, "prompt")
         return result
 
     # serialize prompts from ChatCompletion kwargs
@@ -125,17 +118,9 @@ def create_and_save_to_config(
         except IOError:
             return AIConfigRuntime.create(**(aiconfig_settings or {}))
 
-    output_aiconfig = (
-        output_aiconfig_ref
-        if isinstance(output_aiconfig_ref, AIConfigRuntime)
-        else _get_aiconfig_runtime(output_aiconfig_ref)
-    )
+    output_aiconfig = output_aiconfig_ref if isinstance(output_aiconfig_ref, AIConfigRuntime) else _get_aiconfig_runtime(output_aiconfig_ref)
 
-    output_config_file_path = (
-        output_aiconfig_ref
-        if isinstance(output_aiconfig_ref, str)
-        else output_aiconfig_ref.file_path
-    )
+    output_config_file_path = output_aiconfig_ref if isinstance(output_aiconfig_ref, str) else output_aiconfig_ref.file_path
 
     # TODO: openai makes it hard to statically annotate.
     def _create_chat_completion_with_config_saving(*args, **kwargs) -> Any:  # type: ignore
@@ -147,9 +132,7 @@ def create_and_save_to_config(
         outputs = []
 
         # Check if response is a stream
-        stream = kwargs.get("stream", False) is True and isinstance(
-            response, openai.Stream
-        )
+        stream = kwargs.get("stream", False) is True and isinstance(response, openai.Stream)
 
         # Convert Response to output for last prompt
         if not stream:
@@ -189,9 +172,7 @@ def create_and_save_to_config(
                         )
                         stream_outputs[index] = output
                     yield chunk
-                stream_outputs = [
-                    stream_outputs[i] for i in sorted(list(stream_outputs.keys()))
-                ]
+                stream_outputs = [stream_outputs[i] for i in sorted(list(stream_outputs.keys()))]
 
                 # Add outputs to last prompt
                 serialized_prompts[-1].outputs = stream_outputs

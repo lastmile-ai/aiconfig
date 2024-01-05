@@ -1,9 +1,5 @@
 import pytest
-from aiconfig.util.params import (
-    find_dependencies_in_prompt,
-    get_dependency_graph,
-    get_parameters_in_template,
-)
+from aiconfig.util.params import find_dependencies_in_prompt, get_dependency_graph, get_parameters_in_template
 
 from aiconfig.schema import Prompt, PromptMetadata
 
@@ -30,9 +26,7 @@ def test_template_with_no_parameters():
 
 
 def test_template_with_empty_params():
-    result = get_parameters_in_template(
-        "This is a plain text template with a fake param {{}}."
-    )
+    result = get_parameters_in_template("This is a plain text template with a fake param {{}}.")
     assert result == {}
 
 
@@ -81,9 +75,7 @@ def test_find_dependencies_in_prompt(prompt_list_with_5_prompts):
     prompt_template = "I am referring to {{prompt1.input}} and this {{prompt4.output}}"  # only allowed to reference upstream prompts
     current_prompt_name = "prompt2"
 
-    result = find_dependencies_in_prompt(
-        prompt_template, current_prompt_name, prompt_list_with_5_prompts
-    )
+    result = find_dependencies_in_prompt(prompt_template, current_prompt_name, prompt_list_with_5_prompts)
 
     assert result == {"prompt1"}
 
@@ -93,9 +85,7 @@ def test_find_dependencies_in_prompt_with_no_dependencies(prompt_list_with_5_pro
     prompt_template = "I am referring to {{}}"
     current_prompt_name = "prompt2"
 
-    result = find_dependencies_in_prompt(
-        prompt_template, current_prompt_name, prompt_list_with_5_prompts
-    )
+    result = find_dependencies_in_prompt(prompt_template, current_prompt_name, prompt_list_with_5_prompts)
 
     assert not result
 
@@ -105,9 +95,7 @@ def test_find_dependencies_in_prompt_with_two_dependencies(prompt_list_with_5_pr
     prompt_template = "I am referring to {{prompt2.output}} and {{prompt1.output}}"  #
     current_prompt_name = "prompt4"
 
-    result = find_dependencies_in_prompt(
-        prompt_template, current_prompt_name, prompt_list_with_5_prompts
-    )
+    result = find_dependencies_in_prompt(prompt_template, current_prompt_name, prompt_list_with_5_prompts)
 
     assert result == {"prompt1", "prompt2"}
 
@@ -119,9 +107,7 @@ def test_find_dependencies_in_prompt_with_no_prompt_reference(
     prompt_template = "I am referring to {{fakeprompt.output}} and {{fakeprompt.output}}"  # should return none, no prompt references here
     current_prompt_name = "prompt4"
 
-    result = find_dependencies_in_prompt(
-        prompt_template, current_prompt_name, prompt_list_with_5_prompts
-    )
+    result = find_dependencies_in_prompt(prompt_template, current_prompt_name, prompt_list_with_5_prompts)
 
     assert not result
 
