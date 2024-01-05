@@ -1,4 +1,3 @@
-import ModelSettingsConfigRenderer from "./ModelSettingsConfigRenderer";
 import ModelSettingsSchemaRenderer from "./ModelSettingsSchemaRenderer";
 import { GenericPropertiesSchema } from "../../../utils/promptUtils";
 import { ActionIcon, Flex, Tooltip, createStyles } from "@mantine/core";
