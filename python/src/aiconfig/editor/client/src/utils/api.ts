@@ -10,6 +10,7 @@ const API_ENDPOINT = `${HOST_ENDPOINT}/api`;
 
 export const ROUTE_TABLE = {
   ADD_PROMPT: urlJoin(API_ENDPOINT, "/add_prompt"),
+  CLEAR_OUTPUTS: urlJoin(API_ENDPOINT, "/clear_outputs"),
   DELETE_PROMPT: urlJoin(API_ENDPOINT, "/delete_prompt"),
   SAVE: urlJoin(API_ENDPOINT, "/save"),
   SET_DESCRIPTION: urlJoin(API_ENDPOINT, "/set_description"),

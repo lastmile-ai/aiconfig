@@ -23,6 +23,7 @@ type Props = {
 
 export type AIConfigCallbacks = {
   addPrompt: (promptName: string, prompt: Prompt, index: number) => Promise<{ aiconfig: AIConfig }>;
+  clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
@@ -436,6 +437,28 @@ export default function EditorContainer({ aiconfig: initialAIConfig, callbacks }
     [deletePromptCallback, dispatch]
   );
 
+  const clearOutputsCallback = callbacks.clearOutputs;
+  const onClearOutputs = useCallback(
+    async () => {
+      try {
+        console.log("got here 1")
+        dispatch({
+          type: "CLEAR_OUTPUTS",
+        });
+        console.log("got here 2")
+        await clearOutputsCallback();
+      } catch (err: unknown) {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error clearing outputs",
+          message,
+          color: "red",
+        });
+      }
+    },
+    [clearOutputsCallback, dispatch]
+  );
+
   const runPromptCallback = callbacks.runPrompt;
   const onRunPrompt = useCallback(
     async (promptId: string) => {
@@ -593,6 +616,11 @@ export default function EditorContainer({ aiconfig: initialAIConfig, callbacks }
       <Notifications />
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
+          <div>
+            <Button loading={undefined} onClick={onClearOutputs}>
+              Clear Outputs
+            </Button>
+          </div>
           <Tooltip label={isDirty ? "Save changes to config" : "No unsaved changes"}>
             <div>
               <Button leftIcon={<IconDeviceFloppy />} loading={isSaving} onClick={onSave} disabled={!isDirty}>

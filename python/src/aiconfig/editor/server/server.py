@@ -350,6 +350,7 @@ def clear_outputs() -> FlaskResponse:
         prompt_name = prompt.name
         # fn name `delete_output`` is misleading. TODO: Rename to `delete_outputs`` in AIConfig API
         aiconfig.delete_output(prompt_name)
+    print(aiconfig)
 
 
     return HttpResponseWithAIConfig(

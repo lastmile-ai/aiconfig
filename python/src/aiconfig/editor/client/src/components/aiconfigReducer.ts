@@ -10,6 +10,7 @@ export type AIConfigReducerAction =
 
 export type MutateAIConfigAction =
   | AddPromptAction
+  | ClearOutputsAction
   | DeletePromptAction
   | RunPromptAction
   | SetDescriptionAction
@@ -31,6 +32,10 @@ export type AddPromptAction = {
   type: "ADD_PROMPT_AT_INDEX";
   index: number;
   prompt: ClientPrompt;
+};
+
+export type ClearOutputsAction = {
+  type: "CLEAR_OUTPUTS";
 };
 
 export type DeletePromptAction = {
@@ -207,6 +212,12 @@ export default function aiconfigReducer(
   switch (action.type) {
     case "ADD_PROMPT_AT_INDEX": {
       return reduceInsertPromptAtIndex(dirtyState, action.index, action.prompt);
+    }
+    case "CLEAR_OUTPUTS": {
+      return {
+        ...dirtyState,
+        prompts: dirtyState.prompts,
+      };
     }
     case "DELETE_PROMPT": {
       return {
