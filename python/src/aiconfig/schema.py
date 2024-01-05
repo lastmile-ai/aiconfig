@@ -289,7 +289,8 @@ class AIConfig(BaseModel):
             return prompt.metadata.model
         else:
             # Expect a ModelMetadata object
-            return prompt.metadata.model.name
+            prompt_settings = prompt.metadata.model.settings if prompt.metadata.model.settings is not None else {}
+            return prompt_settings.get("model", prompt.metadata.model.name)
 
     def set_default_model(self, model_name: Union[str, None]):
         """
