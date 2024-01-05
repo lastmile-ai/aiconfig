@@ -1,4 +1,3 @@
-
 from typing import Any
 
 from aiconfig.Config import AIConfigRuntime
@@ -27,4 +26,3 @@ class MockAIConfigRuntime(AIConfigRuntime):
         assert params_.keys() == {"the_query"}, 'For eval, AIConfig params must have just the key "the_query".'
         the_query = params_["the_query"]
         return f"output_for_{prompt_name}_the_query_{the_query}"
-

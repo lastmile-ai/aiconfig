@@ -123,7 +123,7 @@ async def test_prompt_params_only():
     config = config3
     ai_config = AIConfigRuntime(**config)
     params = {"name": "Tanya User"}
-    resolved_params = await ai_config.resolve("prompt1", params) 
+    resolved_params = await ai_config.resolve("prompt1", params)
 
     prompt_from_resolved_params = resolved_params["messages"][0]["content"]
     assert prompt_from_resolved_params == "Hello, Tanya User"
