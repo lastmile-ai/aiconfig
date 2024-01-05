@@ -75,6 +75,7 @@ export default memo(function PromptInputSchemaRenderer(props: Props) {
         value={props.input}
         onChange={(e) => props.onChangeInput(e.target.value)}
         placeholder="Type a prompt"
+        autosize
       />
     );
   } else {
