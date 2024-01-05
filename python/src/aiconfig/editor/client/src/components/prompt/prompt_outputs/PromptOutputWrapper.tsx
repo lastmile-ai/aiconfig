@@ -7,7 +7,7 @@ import {
 } from "@tabler/icons-react";
 import { Output } from "aiconfig";
 import { memo, useState } from "react";
-import JSONOutput from "./JSONOutput";
+import JSONRenderer from "../../JSONRenderer";
 
 type Props = {
   children: React.ReactNode;
@@ -53,7 +53,7 @@ export default memo(function PromptOutputWrapper({
           </Tooltip>
         )}
       </Flex>
-      {isRawJSON ? <JSONOutput content={output} /> : <>{children}</>}
+      {isRawJSON ? <JSONRenderer content={output} /> : <>{children}</>}
     </>
   );
 });
