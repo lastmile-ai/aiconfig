@@ -99,7 +99,7 @@ def construct_stream_output(
     return output
 
 
-def construct_regular_output(response: TextGenerationResponse, response_includes_details: bool) -> Output:
+def construct_regular_output(response: str, response_includes_details: bool) -> Output:
     metadata = {"raw_response": response}
     if response_includes_details:
         metadata["details"] = response.details
@@ -107,7 +107,7 @@ def construct_regular_output(response: TextGenerationResponse, response_includes
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": response.generated_text or "",
+            "data": response,
             "execution_count": 0,
             "metadata": metadata,
         }
@@ -120,7 +120,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
     A model parser for HuggingFace text generation models.
     """
 
-    def __init__(self, model_id: str = None, use_api_token=False):
+    def __init__(self, model_id: str = None, use_api_token=True):
         """
         Args:
             model_id (str): The model ID of the model to use.
@@ -145,7 +145,9 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         token = None
 
         if use_api_token:
-            token = maybe_get_api_key_from_environment("HUGGING_FACE_API_TOKEN")
+            # You are allowed to use Hugging Face for a bit before you get
+            # rate limited, in which case you will receive a clear error
+            token = maybe_get_api_key_from_environment("HUGGING_FACE_API_TOKEN", required=False)
 
         self.client = InferenceClient(model_id, token=token)
 
