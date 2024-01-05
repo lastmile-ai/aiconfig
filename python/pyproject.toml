@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "python-aiconfig"
-version = "1.1.6"
+version = "1.1.8"
 authors = [
   { name="Sarmad Qadri", email="sarmad@lastmileai.dev" },
 ]
@@ -22,6 +22,9 @@ dependencies = {file = ["requirements.txt"]}
 [project.urls]
 "Homepage" = "https://github.com/lastmile-ai/aiconfig"
 "Bug Tracker" = "https://github.com/lastmile-ai/aiconfig/issues"
+
+[project.scripts]
+aiconfig = "aiconfig.scripts.aiconfig_cli:main"
 
 # Black formatting
 [tool.black]

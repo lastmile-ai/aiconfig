@@ -11,16 +11,15 @@ import { InferenceOptions, ModelParser } from "./modelParser";
 import { ModelParserRegistry } from "./modelParserRegistry";
 import axios from "axios";
 import * as fs from "fs";
+import yaml from "js-yaml";
 import _ from "lodash";
-import { getAPIKeyFromEnv } from "./utils";
+import { getAPIKeyFromEnv, isYamlExt } from "./utils";
 import { ParameterizedModelParser } from "./parameterizedModelParser";
 import { OpenAIChatModelParser, OpenAIModelParser } from "./parsers/openai";
 import { PaLMTextParser } from "./parsers/palm";
 import { extractOverrideSettings } from "./utils";
 import { HuggingFaceTextGenerationParser } from "./parsers/hf";
 import { CallbackEvent, CallbackManager } from "./callback";
-
-export type PromptWithOutputs = Prompt & { outputs?: Output[] };
 
 /**
  * Options for saving an AIConfig to a file.
@@ -72,7 +71,7 @@ export class AIConfigRuntime implements AIConfig {
   description?: string | undefined;
   schema_version: SchemaVersion;
   metadata: AIConfig["metadata"];
-  prompts: PromptWithOutputs[];
+  prompts: Prompt[];
 
   filePath?: string;
   callbackManager: CallbackManager = CallbackManager.createManagerWithLogging();
@@ -82,7 +81,7 @@ export class AIConfigRuntime implements AIConfig {
     description?: string,
     schemaVersion: SchemaVersion = "latest",
     metadata?: AIConfig["metadata"],
-    prompts?: PromptWithOutputs[]
+    prompts?: Prompt[]
   ) {
     this.name = name;
     this.description = description;
@@ -99,7 +98,9 @@ export class AIConfigRuntime implements AIConfig {
    */
   public static load(aiConfigFilePath: string) {
     const aiConfigString = fs.readFileSync(aiConfigFilePath, "utf8");
-    const aiConfigObj = JSON.parse(aiConfigString);
+    const aiConfigObj = isYamlExt(aiConfigFilePath)
+      ? yaml.load(aiConfigString)
+      : JSON.parse(aiConfigString);
 
     const config = this.loadJSON(aiConfigObj);
     config.filePath = aiConfigFilePath;
@@ -197,7 +198,7 @@ export class AIConfigRuntime implements AIConfig {
     description?: string,
     schemaVersion: SchemaVersion = "latest",
     metadata?: AIConfig["metadata"],
-    prompts?: PromptWithOutputs[]
+    prompts?: Prompt[]
   ) {
     return new AIConfigRuntime(
       name,
@@ -213,7 +214,11 @@ export class AIConfigRuntime implements AIConfig {
    * @param filePath The path to the file to save to.
    * @param saveOptions Options that determine how to save the AIConfig to the file.
    */
-  public save(filePath?: string, saveOptions?: SaveOptions) {
+  public save(
+    filePath?: string,
+    saveOptions?: SaveOptions,
+    mode?: "json" | "yaml"
+  ) {
     const keysToOmit = ["filePath", "callbackManager"] as const;
 
     try {
@@ -229,11 +234,29 @@ export class AIConfigRuntime implements AIConfig {
         aiConfigObj.prompts = prompts;
       }
 
-      // TODO: saqadri - make sure that the object satisfies the AIConfig schema
-      const aiConfigString = JSON.stringify(aiConfigObj, null, 2);
-
+      const defaultFilePath =
+        mode === "yaml" ? "aiconfig.yaml" : "aiconfig.json";
       if (!filePath) {
-        filePath = this.filePath ?? "aiconfig.json";
+        filePath = this.filePath ?? defaultFilePath;
+      }
+
+      if (mode == null) {
+        if (isYamlExt(filePath)) {
+          mode = "yaml";
+        } else {
+          // Default to JSON
+          mode = "json";
+        }
+      }
+
+      // TODO: saqadri - make sure that the object satisfies the AIConfig schema
+      let aiConfigString;
+      if (mode === "yaml") {
+        aiConfigString = yaml.dump(aiConfigObj, { indent: 2 });
+      } else {
+        // Add the $schema property to the JSON object before saving it. In the future this can respect the version specified in the AIConfig.
+        aiConfigObj["$schema"] = "https://json.schemastore.org/aiconfig-1.0";
+        aiConfigString = JSON.stringify(aiConfigObj, null, 2);
       }
 
       fs.writeFileSync(filePath, aiConfigString);
@@ -337,7 +360,7 @@ export class AIConfigRuntime implements AIConfig {
     data: JSONObject,
     promptName: string,
     params?: JSONObject
-  ): Promise<Prompt | Prompt[]> {
+  ): Promise<Prompt[]> {
     const startEvent = {
       name: "on_serialize_start",
       file: __filename,
@@ -353,7 +376,12 @@ export class AIConfigRuntime implements AIConfig {
       );
     }
 
-    const prompts = modelParser.serialize(promptName, data, this, params);
+    const prompts: Prompt[] = modelParser.serialize(
+      promptName,
+      data,
+      this,
+      params
+    );
     const endEvent = {
       name: "on_serialize_end",
       file: __filename,
@@ -375,7 +403,7 @@ export class AIConfigRuntime implements AIConfig {
     promptName: string,
     params: JSONObject = {},
     options?: InferenceOptions
-  ) {
+  ): Promise<Output[]> {
     const startEvent = {
       name: "on_run_start",
       file: __filename,
@@ -397,6 +425,8 @@ export class AIConfigRuntime implements AIConfig {
       );
     }
 
+    // Clear previous run outputs if they exist
+    this.deleteOutput(promptName);
     const result = await modelParser.run(prompt, this, options, params);
 
     // Update the prompt's outputs
@@ -427,7 +457,7 @@ export class AIConfigRuntime implements AIConfig {
     promptName: string,
     params: JSONObject = {},
     options?: InferenceOptions
-  ) {
+  ): Promise<Output[] | undefined> {
     const prompt = this.getPrompt(promptName);
     if (!prompt) {
       throw new Error(

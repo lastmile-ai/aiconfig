@@ -1,5 +1,5 @@
 import copy
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
@@ -173,7 +173,7 @@ class HuggingFaceTextParser(ParameterizedModelParser):
         ai_config: "AIConfigRuntime",
         parameters: Optional[Dict] = None,
         **kwargs
-    ) -> Prompt:
+    ) -> List[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
@@ -232,7 +232,7 @@ class HuggingFaceTextParser(ParameterizedModelParser):
 
     async def run_inference(
         self, prompt: Prompt, aiconfig, options, parameters
-    ) -> Output:
+    ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.

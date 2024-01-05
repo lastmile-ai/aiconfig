@@ -1,4 +1,4 @@
-import { AIConfigRuntime, ExecuteResult } from "aiconfig";
+import { AIConfigRuntime, ExecuteResult, Prompt } from "aiconfig";
 import { Chat } from "openai/resources";
 
 const BOOKS_DB = [
@@ -131,11 +131,15 @@ async function main() {
   };
 
   // Add the prompt
-  let newPrompts = await config.serialize(model, data, "recommend_book", {
-    book: "To Kill a Mockingbird",
-  });
-  let newPrompt = Array.isArray(newPrompts) ? newPrompts[0] : newPrompts;
-  config.addPrompt(newPrompt);
+  let newPrompts: Prompt[] = await config.serialize(
+    model,
+    data,
+    "recommend_book",
+    {
+      book: "To Kill a Mockingbird",
+    }
+  );
+  config.addPrompt(newPrompts[0]);
 
   const params = { book: "Where the Crawdads Sing" };
   const inferenceOptions = {
@@ -194,8 +198,7 @@ async function main() {
   };
 
   newPrompts = await config.serialize(model, promptData, "gen_summary");
-  newPrompt = Array.isArray(newPrompts) ? newPrompts[0] : newPrompts;
-  config.addPrompt(newPrompt);
+  config.addPrompt(newPrompts[0]);
 
   await config.run("gen_summary", { book_info: value }, inferenceOptions);
 }

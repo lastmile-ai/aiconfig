@@ -105,7 +105,7 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
     data: LlamaCompletionParams,
     aiConfig: AIConfigRuntime,
     params?: JSONObject | undefined
-  ): Prompt | Prompt[] {
+  ): Prompt[] {
     const startEvent = {
       name: "on_serialize_start",
       file: __filename,
@@ -126,7 +126,7 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
       completionParams.model
     );
 
-    let prompts: Prompt[] = [];
+    const prompts: Prompt[] = [];
 
     if (conversationHistory && conversationHistory.length > 0) {
       let i = 0;
@@ -153,7 +153,7 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
       }
     }
 
-    const prompt: Prompt = {
+    const newPrompt: Prompt = {
       name: promptName,
       input,
       metadata: {
@@ -162,23 +162,16 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
         remember_chat_context: (conversationHistory?.length ?? 0) > 0,
       },
     };
-
-    let result: Prompt | Prompt[] = prompt;
-    if (prompts.length > 0) {
-      prompts.push(prompt);
-      result = prompts;
-    }
+    prompts.push(newPrompt);
 
     const endEvent = {
       name: "on_serialize_end",
       file: __filename,
-      data: {
-        result,
-      },
+      data: { prompts },
     };
     aiConfig.callbackManager.runCallbacks(endEvent);
 
-    return result;
+    return prompts;
   }
 
   public refineCompletionParams(
@@ -351,7 +344,7 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
     aiConfig: AIConfigRuntime,
     options?: InferenceOptions | undefined,
     params?: JSONObject | undefined
-  ): Promise<Output | Output[]> {
+  ): Promise<Output[]> {
     const startEvent = {
       name: "on_run_start",
       file: __filename,

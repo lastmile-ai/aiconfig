@@ -2,9 +2,15 @@ import openai
 import pytest
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.default_parsers.openai import refine_chat_completion_params
+from aiconfig.schema import (
+    ExecuteResult,
+    OutputDataWithValue,
+    Prompt,
+    PromptInput,
+    PromptMetadata,
+)
 from mock import patch
 
-from aiconfig import ExecuteResult, Prompt, PromptMetadata
 
 from ..conftest import mock_openai_chat_completion
 from ..util.file_path_utils import get_absolute_file_path_from_relative
@@ -17,9 +23,7 @@ def test_refine_chat_completion_params():
         "system_prompt": "system_prompt",
         "random_attribute": "value_doesn't_matter",
     }
-    refined_params = refine_chat_completion_params(
-        model_settings_with_stream_and_system_prompt
-    )
+    refined_params = refine_chat_completion_params(model_settings_with_stream_and_system_prompt)
 
     assert "system_prompt" not in refined_params
     assert "stream" in refined_params
@@ -29,13 +33,9 @@ def test_refine_chat_completion_params():
 
 @pytest.mark.asyncio
 async def test_get_output_text(set_temporary_env_vars):
-    with patch.object(
-        openai.chat.completions, "create", side_effect=mock_openai_chat_completion
-    ):
+    with patch.object(openai.chat.completions, "create", side_effect=mock_openai_chat_completion):
         config_relative_path = "../aiconfigs/basic_chatgpt_query_config.json"
-        config_absolute_path = get_absolute_file_path_from_relative(
-            __file__, config_relative_path
-        )
+        config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
         aiconfig = AIConfigRuntime.load(config_absolute_path)
 
         await aiconfig.run("prompt1", {})
@@ -50,9 +50,7 @@ async def test_get_output_text(set_temporary_env_vars):
 
 @pytest.mark.asyncio
 async def test_serialize(set_temporary_env_vars):
-    with patch.object(
-        openai.chat.completions, "create", side_effect=mock_openai_chat_completion
-    ):
+    with patch.object(openai.chat.completions, "create", side_effect=mock_openai_chat_completion):
         # Test with one input prompt and system. No output
         completion_params = {
             "model": "gpt-3.5-turbo",
@@ -65,9 +63,7 @@ async def test_serialize(set_temporary_env_vars):
         }
 
         aiconfig = AIConfigRuntime.create()
-        serialized_prompts = await aiconfig.serialize(
-            "gpt-3.5-turbo", completion_params, prompt_name="the prompt"
-        )
+        serialized_prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, prompt_name="the prompt")
         new_prompt = serialized_prompts[0]
 
         # assert prompt serialized correctly into config
@@ -106,12 +102,10 @@ async def test_serialize(set_temporary_env_vars):
             ],
         }
 
-        serialized_prompts = await aiconfig.serialize(
-            "gpt-3.5-turbo", completion_params, "prompt"
-        )
+        serialized_prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
         new_prompt = serialized_prompts[0]
 
-        assert new_prompt == Prompt(
+        expected_prompt = Prompt(
             name="prompt",
             input="Hello!",
             metadata=PromptMetadata(
@@ -135,14 +129,20 @@ async def test_serialize(set_temporary_env_vars):
                 ExecuteResult(
                     output_type="execute_result",
                     execution_count=None,
-                    data={
+                    data="Hello! How can I assist you today?",
+                    metadata={
+                        "raw_response": {"role": "assistant", "content": "Hello! How can I assist you today?"},
                         "role": "assistant",
-                        "content": "Hello! How can I assist you today?",
                     },
-                    metadata={},
+                    mime_type=None,
                 )
             ],
         )
+        assert new_prompt.input == expected_prompt.input
+        assert new_prompt.metadata == expected_prompt.metadata
+        assert new_prompt.outputs == expected_prompt.outputs
+        assert new_prompt.name == expected_prompt.name
+        assert new_prompt == expected_prompt
 
         # Test completion params with a function call input
 
@@ -176,9 +176,7 @@ async def test_serialize(set_temporary_env_vars):
             ],
         }
 
-        serialized_prompts = await aiconfig.serialize(
-            "gpt-3.5-turbo", completion_params, "prompt"
-        )
+        serialized_prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
         new_prompt = serialized_prompts[0]
         assert new_prompt == Prompt(
             name="prompt",
@@ -271,13 +269,14 @@ async def test_serialize(set_temporary_env_vars):
 
         prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
         new_prompt = prompts[1]
-        assert new_prompt == Prompt(
+
+        expected_prompt = Prompt(
             name="prompt",
-            input={
-                "content": '{"temperature": "22", "unit": "celsius", "description": "Sunny"}',
-                "name": "get_current_weather",
-                "role": "function",
-            },
+            input=PromptInput(
+                content='{"temperature": "22", "unit": "celsius", "description": "Sunny"}',
+                name="get_current_weather",
+                role="function",
+            ),
             metadata={
                 "model": {
                     "name": "gpt-3.5-turbo",
@@ -316,14 +315,24 @@ async def test_serialize(set_temporary_env_vars):
                 "tags": None,
             },
             outputs=[
-                {
-                    "data": {
-                        "content": "The current weather in Boston is 22 degrees Celsius and sunny.",
+                ExecuteResult(
+                    output_type="execute_result",
+                    execution_count=None,
+                    data="The current weather in Boston is 22 degrees Celsius and sunny.",
+                    metadata={
+                        "raw_response": {
+                            "role": "assistant",
+                            "content": "The current weather in Boston is 22 degrees Celsius and sunny.",
+                        },
                         "role": "assistant",
                     },
-                    "execution_count": None,
-                    "metadata": {},
-                    "output_type": "execute_result",
-                }
+                    mime_type=None,
+                )
             ],
         )
+
+        assert new_prompt.input == expected_prompt.input
+        assert new_prompt.metadata == expected_prompt.metadata
+        assert new_prompt.outputs == expected_prompt.outputs
+        assert new_prompt.name == expected_prompt.name
+        assert new_prompt == expected_prompt

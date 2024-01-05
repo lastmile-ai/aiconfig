@@ -8,7 +8,9 @@ import { getAPIKeyFromEnv } from "../../../lib/utils";
 
 const PALM_CONFIG_PATH = path.join(__dirname, "palm-text.aiconfig.json");
 
-const mockGetApiKeyFromEnv = getAPIKeyFromEnv as jest.MockedFunction<typeof getAPIKeyFromEnv>;
+const mockGetApiKeyFromEnv = getAPIKeyFromEnv as jest.MockedFunction<
+  typeof getAPIKeyFromEnv
+>;
 
 // This could probably be abstracted out into a test util
 jest.mock("../../../lib/utils", () => {
@@ -26,22 +28,29 @@ describe("PaLM Text ModelParser", () => {
     // no need to instantiate model parser. Load will instantiate it for us since its a default parser
     const aiConfig = AIConfigRuntime.load(PALM_CONFIG_PATH);
 
-    const completionParams: protos.google.ai.generativelanguage.v1beta2.IGenerateTextRequest = {
-      model: "models/text-bison-001",
-      // Note: top_p matches global config settings for the model and temperature is different
-      topP: 0.9,
-      temperature: 0.8,
-      prompt: { text: "What are 5 interesting things to do in Toronto?" },
-    };
+    const completionParams: protos.google.ai.generativelanguage.v1beta2.IGenerateTextRequest =
+      {
+        model: "models/text-bison-001",
+        // Note: top_p matches global config settings for the model and temperature is different
+        topP: 0.9,
+        temperature: 0.8,
+        prompt: { text: "What are 5 interesting things to do in Toronto?" },
+      };
 
     // Casting as JSONObject since the type of completionParams is protos.google.ai.generativelanguage.v1beta2.IGenerateTextRequest doesn't confrom to shape even though it looks like it does
-    const prompts = (await aiConfig.serialize("models/text-bison-001", completionParams as JSONObject, "interestingThingsToronto")) as Prompt[];
+    const prompts: Prompt[] = await aiConfig.serialize(
+      "models/text-bison-001",
+      completionParams as JSONObject,
+      "interestingThingsToronto"
+    );
 
     expect(prompts).toHaveLength(1);
     const prompt = prompts[0];
 
     expect(prompt.name).toEqual("interestingThingsToronto");
-    expect(prompt.input).toEqual("What are 5 interesting things to do in Toronto?");
+    expect(prompt.input).toEqual(
+      "What are 5 interesting things to do in Toronto?"
+    );
     expect(prompt.metadata?.model).toEqual({
       name: "models/text-bison-001",
       settings: {

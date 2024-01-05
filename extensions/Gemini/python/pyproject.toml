@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "aiconfig_extension_gemini"
+version = "0.0.5"
+authors = [
+  { name="LastMile AI" },
+  { name="Ankush Pala", email="ankush@lastmileai.dev" },
+]
+description = "An extension for using Gemini with aiconfig"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.urls]
+Homepage = "https://github.com/lastmile-ai/aiconfig/"
+Issues = "https://github.com/lastmile-ai/aiconfig/issues"
+
+# Black formatting
+[tool.black]
+line-length = 99
+include = '\.pyi?$'
+exclude = '''
+/(
+      .eggs         # exclude a few common directories in the
+    | .git          # root of the project
+    | .hg
+    | .mypy_cache
+    | .tox
+    | venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+'''

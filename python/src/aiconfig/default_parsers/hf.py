@@ -1,23 +1,18 @@
 import copy
-from typing import TYPE_CHECKING, Any, Dict, Optional
+import json
+from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Union
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.util.params import resolve_prompt
 
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
-from huggingface_hub.inference._text_generation import (
-    TextGenerationResponse,
-    TextGenerationStreamResponse,
-)
+from huggingface_hub.inference._text_generation import TextGenerationResponse, TextGenerationStreamResponse
 
-from aiconfig.schema import ExecuteResult, Output, Prompt
-
-from aiconfig.util.params import resolve_prompt
-
-# ModelParser Utils
-# Type hint imports
+from aiconfig import CallbackEvent
+from aiconfig.schema import ExecuteResult, Output, OutputDataWithValue, Prompt, PromptMetadata
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -27,7 +22,7 @@ if TYPE_CHECKING:
 # Step 1: define Helpers
 
 
-def refine_chat_completion_params(model_settings):
+def refine_chat_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
     """
     Refines the completion params for the HF text generation api. Removes any unsupported params.
     The supported keys were found by looking at the HF text generation api. `huggingface_hub.InferenceClient.text_generation()`
@@ -62,7 +57,7 @@ def refine_chat_completion_params(model_settings):
 
 
 def construct_stream_output(
-    response: TextGenerationStreamResponse,
+    response: Union[Iterable[TextGenerationStreamResponse], Iterable[str]],
     response_includes_details: bool,
     options: InferenceOptions,
 ) -> Output:
@@ -78,26 +73,24 @@ def construct_stream_output(
     accumulated_message = ""
     for iteration in response:
         metadata = {}
-        data = iteration
+        # If response_includes_details is false, `iteration` will be a string,
+        # otherwise, `iteration` is a TextGenerationStreamResponse
+        new_text = iteration
         if response_includes_details:
             iteration: TextGenerationStreamResponse
-            data = iteration.token.text
+            new_text = iteration.token.text
             metadata = {"token": iteration.token, "details": iteration.details}
-        else:
-            data: str
 
         # Reduce
-        accumulated_message += data
+        accumulated_message += new_text
 
         index = 0  # HF Text Generation api doesn't support multiple outputs
-        delta = data
         if options and options.stream_callback:
-            options.stream_callback(delta, accumulated_message, index)
-
+            options.stream_callback(new_text, accumulated_message, index)
         output = ExecuteResult(
             **{
                 "output_type": "execute_result",
-                "data": copy.deepcopy(accumulated_message),
+                "data": accumulated_message,
                 "execution_count": index,
                 "metadata": metadata,
             }
@@ -106,18 +99,15 @@ def construct_stream_output(
     return output
 
 
-def construct_regular_output(response, response_includes_details: bool) -> Output:
-    metadata = {}
-    data = response
+def construct_regular_output(response: TextGenerationResponse, response_includes_details: bool) -> Output:
+    metadata = {"raw_response": response}
     if response_includes_details:
-        response: TextGenerationResponse  # Expect response to be of type TextGenerationResponse
-        data = response.generated_text
-        metadata = {"details": response.details}
+        metadata["details"] = response.details
 
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": data,
+            "data": response.generated_text or "",
             "execution_count": 0,
             "metadata": metadata,
         }
@@ -170,9 +160,9 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         prompt_name: str,
         data: Any,
         ai_config: "AIConfigRuntime",
-        parameters: Optional[Dict] = None,
+        parameters: Optional[dict[Any, Any]] = None,
         **kwargs,
-    ) -> Prompt:
+    ) -> List[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
@@ -183,6 +173,19 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         Returns:
             str: Serialized representation of the prompt and inference settings.
         """
+        await ai_config.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_serialize_start",
+                __name__,
+                {
+                    "prompt_name": prompt_name,
+                    "data": data,
+                    "parameters": parameters,
+                    "kwargs": kwargs,
+                },
+            )
+        )
+
         data = copy.deepcopy(data)
 
         # assume data is completion params for HF text generation
@@ -191,23 +194,27 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         # Prompt is handled, remove from data
         data.pop("prompt", None)
 
+        prompts = []
+
         model_metadata = ai_config.get_model_metadata(data, self.id())
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(
-                model=model_metadata, parameters=parameters, **kwargs
-            ),
+            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **kwargs),
         )
-        return [prompt]
+
+        prompts.append(prompt)
+
+        await ai_config.callback_manager.run_callbacks(CallbackEvent("on_serialize_complete", __name__, {"result": prompts}))
+
+        return prompts
 
     async def deserialize(
         self,
         prompt: Prompt,
         aiconfig: "AIConfigRuntime",
-        options,
-        params: Optional[Dict] = {},
-    ) -> Dict:
+        params: Optional[dict[Any, Any]] = {},
+    ) -> dict[Any, Any]:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
         and constructs the completion params for that model.
@@ -218,6 +225,8 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         Returns:
             dict: Model-specific completion parameters.
         """
+        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params}))
+
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
 
         # Build Completion data
@@ -227,11 +236,11 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
 
         completion_data["prompt"] = resolved_prompt
 
+        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data}))
+
         return completion_data
 
-    async def run_inference(
-        self, prompt: Prompt, aiconfig, options, parameters
-    ) -> Output:
+    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: dict[Any, Any]) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -243,7 +252,15 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         Returns:
             InferenceResponse: The response from the model.
         """
-        completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_run_start",
+                __name__,
+                {"prompt": prompt, "options": options, "parameters": parameters},
+            )
+        )
+
+        completion_data = await self.deserialize(prompt, aiconfig, parameters)
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         stream = True  # Default value
@@ -269,7 +286,10 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             outputs.append(output)
 
         prompt.outputs = outputs
-        return prompt.outputs
+
+        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_run_complete", __name__, {"result": outputs}))
+
+        return outputs
 
     def get_output_text(
         self,
@@ -284,7 +304,19 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             return ""
 
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
-                return output.data
-        else:
-            return ""
+            output_data = output.data
+            if isinstance(output_data, str):
+                return output_data
+            if isinstance(output_data, OutputDataWithValue):
+                if isinstance(output_data.value, str):
+                    return output_data.value
+                # HuggingFace Text generation does not support function
+                # calls so shouldn't get here, but just being safe
+                return json.dumps(output_data.value, indent=2)
+
+            # Doing this to be backwards-compatible with old output format
+            # where we used to save the TextGenerationResponse or
+            # TextGenerationStreamResponse in output.data
+            if hasattr(output_data, "generated_text"):
+                return output_data.generated_text
+        return ""

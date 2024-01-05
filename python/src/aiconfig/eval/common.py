@@ -1,75 +1,73 @@
-from dataclasses import dataclass
 import json
-from typing import Any, Generic
-from abc import abstractmethod
-from typing import Any, Generic, Protocol, TypeVar
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Any, Generic, NewType, Protocol, Type, TypeVar
 
-import lastmile_utils.lib.core.api as cu
-from pydantic import root_validator
-
+import lastmile_utils.lib.core.api as core_utils
+import result
+from aiconfig.eval import common
+from pydantic import BaseModel
+from result import Result
 
 T_InputDatum = TypeVar("T_InputDatum", contravariant=True)
 T_OutputDatum = TypeVar("T_OutputDatum", contravariant=True)
 
+T_Evaluable = TypeVar("T_Evaluable", contravariant=True)
 
-class SampleEvaluationFunction(Protocol, Generic[T_OutputDatum]):
+T_BaseModel = TypeVar("T_BaseModel", bound=BaseModel)
+
+SerializedJSON = NewType("SerializedJSON", str)
+
+
+@dataclass(frozen=True)
+class CustomMetricValue(ABC):
+    """
+    Subclass this if you want your metric to return a type not listed below
+    (See the definition of T_MetricValue).
+    See `metrics.py:TextSentimentScores` and `metrics.py:nltk_sentiment_scores_vader for an example.
+
+    A subclass (an implementation of CustomMetricValue) can either be ordered or unordered.
+    If ordered, it must implement the comparison operators <, <=, >, and >=.
+    See TextOverallPositiveSentiment for example.
+    See EvaluationMetricMetadata for more information about ordered metrics.
+    """
+
+
+T_MetricValue = TypeVar("T_MetricValue", int, float, str, bool, CustomMetricValue, covariant=True)
+
+
+class CompletionTextToSerializedJSON(Protocol):
     @abstractmethod
-    def __call__(self, output_datum: T_OutputDatum) -> float:
+    def __call__(self, output_datum: str) -> Result[common.SerializedJSON, str]:
         pass
 
 
-class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
+@dataclass(frozen=True)
+class CustomMetricPydanticObject(CustomMetricValue, Generic[T_BaseModel]):
+    data: T_BaseModel
+
+
+class EvaluationFunction(Protocol, Generic[T_Evaluable, T_MetricValue]):
+    @abstractmethod
+    async def __call__(self, datum: T_Evaluable) -> T_MetricValue:
+        pass
+
+
+class EvaluationMetricMetadata(core_utils.Record, Generic[T_Evaluable, T_MetricValue]):
+
     """A record to tie together metadata about an evaluation metric
     to ensure that numbers are interpreted as intended.
 
-    IMPORTANT NOTE:
-        **This property is part of the contract of implementing a metric**:
-
-        `id` must uniquely identify the metric to disambiguate different
-          conceptual quantities in case they happen to share a name.
-
-          If you write a metric, to write an automated test for this property,
-          see `test_metric_library_id_properties()`.
-
-          Illustration of the property:
-            ```
-                # Helper function
-                def extract_id(matcher, matcher_input):
-                    return matcher(matcher_input).interpretation.id
-
-                # These two metrics share everything but the substring.
-                matcher1 = substring_match("hello")
-                matcher2 = substring_match("world")
-
-                # Run both on the same input.
-                the_input = "hello world"
-
-                # They have distinct IDs because of the two different substrings.
-                assert extract_id(matcher1, the_input) != extract_id(matcher2, the_input)
-             ```
-
-
-        `id` must however be a _constant_ with respect to the metric input.
-            Illustration of the property:
-
-            ```
-                the_matcher = substring_match("hello")
-                input1 = "hello world"
-                input2 = "the quick brown fox"
-
-                assert extract_id(the_matcher, input1) == extract_id(the_matcher, input2)
-            ```
-
-          See `metrics.substring_match()` for an example of how to set an id.
-
-
 
     Assumptions:
-    * Metric type is float
-        (bools and ints have to be represented as floats; tensors are not supported)
-    * Range is a single interval with one endpoint being the best possible value
-      and the opposite endpoint the worst possible value.
-    * The metric either gets better or worse along the entire range.
+    * If the best and worst values are not None, then the metric is assumed to be ordered.
+      In this case (if the metric is ordered) then the comparison operators <, <=, >, and >=
+      must be implemented (see CustomMetricValue).
+      If a metric is ordered, the domain is assumed to be a single closed interval or fully-ordered discrete set
+      with one endpoint being the best possible value and
+      the opposite endpoint the worst possible value.
+    * Furthermore, if a metric is ordered, it is implicitly associated with a monotonic function of "goodness".
+      That is, the metric either gets better along the entire domain, or worse along the entire domain.
       There are two cases: higher-is-better and lower-is-better.
     Examples:
         - Accuracy (higher-is-better): range = 0 -> 1. Worst score is 0, best is 1.
@@ -82,10 +80,8 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
 
     @property
     def id(self) -> str:
-        return cu.hash_id(
-            f"{self.name}{self.description}{self.best_value}{self.worst_value}params={self._serialize_extra_metadata()}".encode(
-                "utf-8"
-            )
+        return core_utils.hash_id(
+            f"{self.name}{self.description}{self.best_value}{self.worst_value}params={self._serialize_extra_metadata()}".encode("utf-8")
         )
 
     def _serialize_extra_metadata(self) -> str:
@@ -93,55 +89,63 @@ class EvaluationMetricMetadata(cu.Record, Generic[T_OutputDatum]):
 
     name: str
     description: str
-    best_value: float
-    worst_value: float
+    best_value: T_MetricValue | None = None
+    worst_value: T_MetricValue | None = None
     # e.g. {"substring": "hello", "case_sensitive": False}
     extra_metadata: dict[str, Any] = {}
 
+    def __repr__(self) -> str:
+        fields = self.__dict__
+        fields["id"] = self.id
+        s_json = json.dumps(fields, indent=2)
+        return f"EvaluationMetricMetadata({s_json})"
+
 
 @dataclass(frozen=True)
-class Metric(Generic[T_OutputDatum]):
-    calculate: SampleEvaluationFunction[T_OutputDatum]
-    interpretation: EvaluationMetricMetadata[T_OutputDatum]
+class SampleMetricValue(Generic[T_Evaluable, T_MetricValue]):
+    # `None` is used to signal that there was an error during calculation.
+    # In this case, error information is written to stderr (see lib.py:_evaluate_for_sample()).
+    value: T_MetricValue | None
+    metric_metadata: EvaluationMetricMetadata[T_Evaluable, T_MetricValue]
 
-
-    def __call__(self, output_datum: T_OutputDatum) -> Any:
-        """
-        For convenience, make a Metric callable.
-        Similar to torch Module `forward()`.
-        """
-        return self.calculate(output_datum)
-
-
-class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
-    value: float
-    interpretation: EvaluationMetricMetadata[T_OutputDatum]
-
-    @root_validator(pre=True)
-    def check_value_range(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def __post_init__(self) -> None:
+        metric_metadata = self.metric_metadata
         worst_value, best_value = (
-            values["interpretation"].worst_value,
-            values["interpretation"].best_value,
+            metric_metadata.worst_value,
+            metric_metadata.best_value,
         )
-        value = values["value"]
-        if worst_value == best_value:
+        value = self.value
+        if worst_value is None and best_value is None:
+            # fine
+            return
+        elif worst_value is None or best_value is None:
+            raise ValueError(
+                f"""
+                    [{metric_metadata.name}]
+                    {metric_metadata.description}
+
+                    You must define both worst_value and best_value, or neither.
+                    You defined worst_value = {worst_value} and best_value = {best_value}.
+                """
+            )
+        elif worst_value == best_value:
             raise ValueError("best_value and worst_value cannot be equal")
-        if worst_value < best_value and not worst_value <= value <= best_value:
+        elif value is not None and worst_value < best_value and not worst_value <= value <= best_value:  # type: ignore[fixme]
             raise ValueError(
                 f"""
-                    [{values["interpretation"].name}]
-                    {values["interpretation"].description}
+                    [{metric_metadata.name}]
+                    {metric_metadata.description}
 
                     Value {value} is not in range [{worst_value}, {best_value}]. 
                     You defined worst_value = {worst_value} and best_value = {best_value},
                     but got value outside that range.
                 """
             )
-        if worst_value > best_value and not worst_value >= value >= best_value:
+        elif value is not None and worst_value > best_value and not worst_value >= value >= best_value:  # type: ignore[fixme]
             raise ValueError(
                 f"""
-                    [{values["interpretation"].name}]
-                    {values["interpretation"].description}
+                    [{metric_metadata.name}]
+                    {metric_metadata.description}
 
                     Value {value} is not in range [{worst_value}, {best_value}]. 
                     You defined worst_value = {worst_value} and best_value = {best_value},
@@ -149,4 +153,20 @@ class SampleMetricValue(cu.Record, Generic[T_OutputDatum]):
                 """
             )
 
-        return values
+
+class TextRatingsData(core_utils.Record):
+    conciseness_rating: int
+    conciseness_confidence: float
+    conciseness_reasoning: str
+
+
+def get_llm_structured_response(
+    input_text: str,
+    chat_completion_create: CompletionTextToSerializedJSON,
+    basemodel_type: Type[common.T_BaseModel],
+) -> Result[common.T_BaseModel, str]:
+    return result.do(
+        core_utils.safe_model_validate_json(response_ok, basemodel_type)
+        # get the serialized JSON response
+        for response_ok in chat_completion_create(input_text)
+    )

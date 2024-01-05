@@ -8,7 +8,7 @@ import copy
 from types import ModuleType
 from typing import Any, Dict, Generator, List, cast
 
-import lastmile_utils.lib.core.api as cu
+import lastmile_utils.lib.core.api as core_utils
 import nest_asyncio
 import openai
 from aiconfig.Config import AIConfigRuntime
@@ -76,7 +76,10 @@ def extract_outputs_from_response(response) -> List[Output]:
     return outputs
 
 
-def async_run_serialize_helper(aiconfig: AIConfigRuntime, request_kwargs: Dict):
+def async_run_serialize_helper(
+    aiconfig: AIConfigRuntime, 
+    request_kwargs: Dict,
+) -> List[Prompt]:
     """
     Method serialize() of AIConfig is an async method. If not, create a new one and await serialize().
     """
@@ -208,7 +211,7 @@ def get_completion_create_wrapped_openai(
     aiconfig_settings: dict[str, Any] | None = None,
 ) -> ModuleType:
     api = openai
-    new_module = cu.make_wrap_object(
+    new_module = core_utils.make_wrap_object(
         api,
         "chat.completions.create",
         create_and_save_to_config(
@@ -231,6 +234,6 @@ def get_completion_create_wrapped_openai_client(
         openai_api=api,
         aiconfig_settings=aiconfig_settings,
     )
-    client_mocked = cu.make_wrap_object(api, "chat.completions.create", wrapped)
+    client_mocked = core_utils.make_wrap_object(api, "chat.completions.create", wrapped)
 
     return cast(openai.OpenAI, client_mocked)
