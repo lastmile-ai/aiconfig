@@ -1,10 +1,11 @@
 import base64
 import copy
 import io
+import numpy as np
 import torch
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-from transformers import Pipeline
-
+from transformers import Pipeline, pipeline
+from scipy.io.wavfile import write as write_wav
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
@@ -45,8 +46,8 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
         "variant",
     }
 
-    pipeline_creation_params : Dict[str, Any] = {}
-    completion_params : Dict[str, Any] = {}
+    pipeline_creation_params: Dict[str, Any] = {}
+    completion_params: Dict[str, Any] = {}
     for key in model_settings:
         if key.lower() in supported_keys:
             pipeline_creation_params[key.lower()] = model_settings[key]
@@ -58,32 +59,13 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
 
     return [pipeline_creation_params, completion_params]
 
-def refine_image_completion_params(unfiltered_completion_params: Dict[str, Any]) -> Dict[str, Any]:
 
+def refine_completion_params(unfiltered_completion_params: Dict[str, Any]) -> Dict[str, Any]:
     supported_keys = {
-        # "prompt",
-        "height",
-        "width",
-        "num_inference_steps",
-        "guidance_scale",
-        "negative_prompt",
-        "num_images_per_prompt",
-        "eta",
-        "generator",
-        "latents",
-        "prompt_embeds",
-        "negative_prompt_embeds",
-        "output_type",
-        "return_dict",
-        "callback",
-        "callback_steps",
-        "cross_attention_kwargs",
-        "guidance_rescale",
-        "clip_skip",
-        "requires_safety_checker",
+        # ???
     }
 
-    completion_params : Dict[str, Any] = {}
+    completion_params: Dict[str, Any] = {}
     for key in unfiltered_completion_params:
         if key.lower() in supported_keys:
             completion_params[key.lower()] = unfiltered_completion_params[key]
@@ -91,19 +73,23 @@ def refine_image_completion_params(unfiltered_completion_params: Dict[str, Any])
     return completion_params
 
 
-def construct_output(
-        audio,
-        execution_count: int
-    ) -> Output:
-    def wav_to_base64_string(img : Image.Image):
-        buffered = io.BytesIO()
-        img.save(buffered, format="WAV")
-        return base64.b64encode(buffered.getvalue()).decode("utf-8")
+def construct_output(audio, execution_count: int) -> Output:
+    def _b64_encode_bytes(byte_array: bytes) -> str:
+        return base64.b64encode(byte_array).decode("utf-8")
 
-    data = OutputDataWithValue(
-        kind="base64",
-        value=wav_to_base64_string(audio),
-    )
+    def _audio_ndarray_to_wav_bytes(audio: np.ndarray, sampling_rate: int) -> bytes:
+        buffered = io.BytesIO()
+        write_wav(buffered, sampling_rate, audio)
+
+        # get byte array from the buffer
+        byte_array = buffered.getvalue()
+        return byte_array
+
+    def _audio_ndarray_to_b64_str(audio: np.ndarray, sampling_rate: int) -> str:
+        byte_array = _audio_ndarray_to_wav_bytes(audio, sampling_rate)
+        return _b64_encode_bytes(byte_array)
+
+    data = dict(kind="base64", value=_audio_ndarray_to_b64_str(np.squeeze(audio["audio"]), audio["sampling_rate"]))
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
@@ -117,17 +103,15 @@ def construct_output(
 
 
 class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
-
     def __init__(self):
-
         super().__init__()
-        self.synthesizers : dict[str, Pipeline]= {}
+        self.synthesizers: dict[str, Pipeline] = {}
 
     def id(self) -> str:
         """
         Returns an identifier for the Model Parser
         """
-        return "HuggingFaceText2ImageDiffusor"
+        return "HuggingFaceText2SpeechTransformer"
 
     async def serialize(
         self,
@@ -149,9 +133,9 @@ class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
         """
         data = copy.deepcopy(data)
 
-        # assume data is completion params for HF text to image task: 
+        # assume data is completion params for HF text to image task:
         # https://huggingface.co/docs/diffusers/main/en/api/pipelines/stable_diffusion/text2img#diffusers.StableDiffusionPipeline.__call__
-        # TODO (rossdanlm): Figure out how to check for StableDiffusionXLPipeline 
+        # TODO (rossdanlm): Figure out how to check for StableDiffusionXLPipeline
         prompt_input = data["prompt"]
 
         # Prompt is handled, remove from data
@@ -161,9 +145,7 @@ class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(
-                model=model_metadata, parameters=parameters, **completion_params
-            ),
+            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **completion_params),
         )
         return [prompt]
 
@@ -187,16 +169,14 @@ class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
         [_pipeline_creation_params, unfiltered_completion_params] = refine_pipeline_creation_params(model_settings)
-        completion_data = refine_image_completion_params(unfiltered_completion_params)
-        
-        #Add resolved prompt
+        completion_data = refine_completion_params(unfiltered_completion_params)
+
+        # Add resolved prompt
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
         completion_data["prompt"] = resolved_prompt
         return completion_data
 
-    async def run_inference(
-        self, prompt: Prompt, aiconfig : "AIConfigRuntime", options : InferenceOptions, parameters: Dict[str, Any]
-    ) -> List[Output]:
+    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -213,25 +193,18 @@ class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
         if not pipeline_creation_data.get("requires_safety_checker", True):
             pipeline_creation_data["safety_checker"] = None
 
-        model_name : str = aiconfig.get_model_name(prompt)
-        # TODO (rossdanlm): Figure out a way to save model and re-use checkpoint
-        # Otherwise right now a lot of these models are taking 5 mins to load with 50
-        # num_inference_steps (default value). See here for more details:
-        # https://huggingface.co/docs/diffusers/using-diffusers/loading#checkpoint-variants
+        model_name: str = aiconfig.get_model_name(prompt)
         if isinstance(model_name, str) and model_name not in self.synthesizers:
-            device = self._get_device()
-            self.synthesizers[model_name] = AutoPipelineForText2Image.from_pretrained(
-                pretrained_model_or_path=model_name,
-                **pipeline_creation_data
-            ).to(device)
+            self.synthesizers[model_name] = pipeline("text-to-speech", model_name)
         synthesizer = self.synthesizers[model_name]
 
-
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
-        response : Union[StableDiffusionPipelineOutput, StableDiffusionXLPipelineOutput] = synthesizer(**completion_data)
+        inputs = completion_data.pop("prompt", None)
+        response = synthesizer(inputs, **completion_data)
 
-        outputs : List[Output] = []
-        for count, audio in enumerate(response):
+        outputs: List[Output] = []
+        assert not isinstance(response, list)
+        for count, audio in enumerate([response]):
             output = construct_output(audio, count)
             outputs.append(output)
 
