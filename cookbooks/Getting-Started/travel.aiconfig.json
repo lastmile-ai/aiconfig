@@ -1,8 +1,8 @@
 {
   "name": "NYC Trip Planner",
-  "description": "Intrepid explorer with ChatGPT and AIConfig",
   "schema_version": "latest",
   "metadata": {
+    "parameters": {},
     "models": {
       "gpt-3.5-turbo": {
         "model": "gpt-3.5-turbo",
@@ -17,10 +17,30 @@
     },
     "default_model": "gpt-3.5-turbo"
   },
+  "description": "Intrepid explorer with ChatGPT and AIConfig",
   "prompts": [
     {
       "name": "get_activities",
-      "input": "Tell me 10 fun attractions to do in NYC."
+      "input": "Tell me 2 fun attractions to do in NYC.",
+      "metadata": {
+        "model": {
+          "name": "HuggingFaceTextGenerationParser",
+          "settings": {
+            "max_new_tokens": 500
+          }
+        },
+        "parameters": {}
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "\n\n1. The High Line - This elevated park on the west side of Manhattan is a unique and fun attraction. It's built on an old railway line and offers stunning views of the city skyline. You can walk along the park, enjoy the greenery, and take in the sights and sounds of the city.\n\n2. The Intrepid Sea, Air & Space Museum - This museum is located on a retired aircraft carrier and offers a variety of exhibits related to aviation, space, and the sea. You can see real planes and spacecraft, including a Concorde and a Space Shuttle, and learn about the history of these industries. The museum also has interactive exhibits and simulators that allow you to experience what it's like to fly a plane or explore space. It's a fun and educational attraction for all ages.",
+          "metadata": {
+            "raw_response": "\n\n1. The High Line - This elevated park on the west side of Manhattan is a unique and fun attraction. It's built on an old railway line and offers stunning views of the city skyline. You can walk along the park, enjoy the greenery, and take in the sights and sounds of the city.\n\n2. The Intrepid Sea, Air & Space Museum - This museum is located on a retired aircraft carrier and offers a variety of exhibits related to aviation, space, and the sea. You can see real planes and spacecraft, including a Concorde and a Space Shuttle, and learn about the history of these industries. The museum also has interactive exhibits and simulators that allow you to experience what it's like to fly a plane or explore space. It's a fun and educational attraction for all ages."
+          }
+        }
+      ]
     },
     {
       "name": "gen_itinerary",
@@ -30,9 +50,9 @@
         "parameters": {
           "order_by": "geographic location"
         }
-      }
+      },
+      "outputs": []
     }
-  ]
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
 }
-
-
