@@ -1,9 +1,14 @@
+import asyncio
+import copy
+import json
 import logging
 import webbrowser
 from typing import Any, Dict, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
 import result
+import threading
+import time
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.editor.server.server_utils import (
     EditServerConfig,
@@ -24,13 +29,17 @@ from aiconfig.editor.server.server_utils import (
     safe_load_from_disk,
     safe_run_aiconfig_static_method,
 )
+from aiconfig.editor.server.queue_iterator import (
+    QueueIterator,
+    STOP_STREAMING_SIGNAL,
+)
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.registry import ModelParserRegistry
-from flask import Flask, request
+from aiconfig.schema import ExecuteResult, Prompt, Output
+from flask import Flask, Response, request, stream_with_context
 from flask_cors import CORS
 from result import Err, Ok, Result
 
-from aiconfig.schema import Prompt
 
 logging.getLogger("werkzeug").disabled = True
 
@@ -168,35 +177,115 @@ def create() -> FlaskResponse:
 
 
 @app.route("/api/run", methods=["POST"])
-async def run() -> FlaskResponse:
+def run() -> FlaskResponse:
+    EXCLUDE_OPTIONS = {
+        "prompt_index": True,
+        "file_path": True,
+        "callback_manager": True,
+    }
     state = get_server_state(app)
     aiconfig = state.aiconfig
     request_json = request.get_json()
 
-    try:
-        prompt_name: Union[str, None] = request_json.get("prompt_name")
-        if prompt_name is None:
-            return HttpResponseWithAIConfig(
-                message="No prompt name provided, cannot execute `run` command",
-                code=400,
-                aiconfig=None,
-            ).to_flask_format()
-
-        # TODO (rossdanlm): Refactor aiconfig.run() to not take in `params`
-        # as a function arg since we can now just call
-        # aiconfig.get_parameters(prompt_name) directly inside of run. See:
-        # https://github.com/lastmile-ai/aiconfig/issues/671
-        params = request_json.get("params", aiconfig.get_parameters(prompt_name))  # type: ignore
-        stream = request_json.get("stream", False)
-        options = InferenceOptions(stream=stream)
-        run_output = await aiconfig.run(prompt_name, params, options)  # type: ignore
-        LOGGER.debug(f"run_output: {run_output}")
+    prompt_name: Union[str, None] = request_json.get("prompt_name")
+    if prompt_name is None:
         return HttpResponseWithAIConfig(
-            #
-            message="Ran prompt",
-            code=200,
-            aiconfig=aiconfig,
+            message="No prompt name provided, cannot execute `run` command",
+            code=400,
+            aiconfig=None,
         ).to_flask_format()
+
+    # TODO (rossdanlm): Refactor aiconfig.run() to not take in `params`
+    # as a function arg since we can now just call
+    # aiconfig.get_parameters(prompt_name) directly inside of run. See:
+    # https://github.com/lastmile-ai/aiconfig/issues/671
+    params = request_json.get("params", aiconfig.get_parameters(prompt_name))  # type: ignore
+    stream = request_json.get("stream", True)
+    
+    # Define stream callback and queue object for streaming results
+    output_text_queue = QueueIterator()
+    def update_output_queue(data, _accumulated_data, _index) -> None:
+        should_end_stream = data == STOP_STREAMING_SIGNAL
+        output_text_queue.put(data, should_end_stream)
+    inference_options = InferenceOptions(
+        stream=stream,
+        stream_callback=update_output_queue,
+    )
+
+    def generate():
+        # Use multi-threading so that we don't block run command from
+        # displaying the streamed output (if streaming is supported)
+        def run_async_config_in_thread():
+            asyncio.run(aiconfig.run(
+                    prompt_name=prompt_name,
+                    params=params,
+                    run_with_dependencies=False,
+                    options=inference_options,
+                )
+            )
+            output_text_queue.put(STOP_STREAMING_SIGNAL)
+        t = threading.Thread(target=run_async_config_in_thread)
+        t.start()
+
+        # Create a deep copy of the state aiconfig so we can yield an AIConfig
+        # with streaming partial outputs in the meantime. This probably isn't
+        # necessary, but just getting unblocked for now
+        displaying_config = copy.deepcopy(aiconfig)
+
+        # If model supports streaming, need to wait until streamer has at
+        # least 1 item to display. If model does not support streaming,
+        # need to wait until the aiconfig.run() thread is complete
+        SLEEP_DELAY_SECONDS = 0.1
+        wait_time_in_seconds = 0.0
+        while output_text_queue.isEmpty() and t.is_alive():
+            # Yea I know time.sleep() isn't super accurate, but it's fine,
+            # we can fix later
+            time.sleep(0.1)
+            wait_time_in_seconds += SLEEP_DELAY_SECONDS
+            print(f"Output queue is currently empty. Waiting for {wait_time_in_seconds:.1f}s...")
+
+        # Yield in flask is weird and you either need to send responses as a 
+        # string, or artificially wrap them around "[" and "]"
+        yield "["
+        if not output_text_queue.isEmpty():
+            accumulated_output_text = ""
+            for text in output_text_queue:
+                if isinstance(text, str):
+                    accumulated_output_text += text
+                elif isinstance(text, dict) and "content" in text:
+                    # TODO: Fix streaming output format so that it returns text
+                    accumulated_output_text += text["content"]
+
+                accumulated_output : Output = ExecuteResult(
+                    **{
+                        "output_type": "execute_result",
+                        "data": accumulated_output_text,
+                        # Assume streaming only supports single output
+                        # I think this actually may be wrong for PaLM or OpenAI
+                        # TODO: Need to sync with Ankush but can fix forward
+                        "execution_count": 0, 
+                        "metadata": {},
+                    }
+                )
+
+                displaying_config.add_output(prompt_name, accumulated_output, overwrite=True)
+                aiconfig_json = displaying_config.model_dump(exclude=EXCLUDE_OPTIONS)
+                yield json.dumps({"aiconfig": aiconfig_json})
+
+        # Ensure that the run process is complete to yield final output
+        t.join()
+        aiconfig_json = aiconfig.model_dump(exclude=EXCLUDE_OPTIONS)
+        yield json.dumps({"aiconfig": aiconfig_json})
+        yield "]"
+    try:
+        LOGGER.info(f"Running `aiconfig.run()` command with request: {request_json}")
+        # Streaming based on
+        # https://stackoverflow.com/questions/73275517/flask-not-streaming-json-response
+        return Response(
+            stream_with_context(generate()),
+            status=200,
+            content_type="application/json",
+        )
     except Exception as e:
         return HttpResponseWithAIConfig(
             #
