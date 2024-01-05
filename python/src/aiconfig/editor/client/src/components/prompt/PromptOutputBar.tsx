@@ -4,8 +4,10 @@ import { memo } from "react";
 export default memo(function PromptOutputBar() {
   return (
     <Flex direction="column" mt="0.5em">
-      <Divider size="sm" mt="0.5em" mb="0.5em" />
-      <Text color="dimmed">Output</Text>
+      <Divider size="sm" className="divider" />
+      <Text color="dimmed" size={"xs"} className="monoFont">
+        Output
+      </Text>
       {/* TODO: Add output metrics */}
     </Flex>
   );

@@ -676,16 +676,16 @@ export default function EditorContainer({
           <Tooltip
             label={isDirty ? "Save changes to config" : "No unsaved changes"}
           >
-            <div>
-              <Button
-                leftIcon={<IconDeviceFloppy />}
-                loading={isSaving}
-                onClick={onSave}
-                disabled={!isDirty}
-              >
-                Save
-              </Button>
-            </div>
+            <Button
+              leftIcon={<IconDeviceFloppy />}
+              loading={isSaving}
+              onClick={onSave}
+              disabled={!isDirty}
+              size="xs"
+              variant="gradient"
+            >
+              Save
+            </Button>
           </Tooltip>
         </Flex>
         <ConfigNameDescription
