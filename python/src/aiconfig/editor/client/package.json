@@ -44,13 +44,15 @@
     "react-scripts": "5.0.1",
     "remark-gfm": "^4.0.0",
     "ufetch": "^1.6.0",
-    "url-join": "^5.0.0"
+    "url-join": "^5.0.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.202",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
     "eslint": "^8",
