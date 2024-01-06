@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { showNotification } from "@mantine/notifications";
+import { Model } from "../shared/types";
 
 export default function useLoadModels(
   modelSearch: string,
-  getModels: (search: string) => Promise<string[]>
+  getModels: (search: string) => Promise<Model[]>
 ) {
-  const [models, setModels] = useState<string[]>([]);
+  const [models, setModels] = useState<Model[]>([]);
 
   const loadModels = useCallback(
     async (modelSearch: string) => {

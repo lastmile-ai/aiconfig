@@ -9,6 +9,11 @@ export type EditorFile = {
   disabled?: boolean;
 };
 
+export type Model = {
+  id: string;
+  parser_id: string;
+};
+
 export type ClientPrompt = Prompt & {
   _ui: {
     id: string;
