@@ -10,6 +10,9 @@ export const PaLMTextParserPromptSchema: PromptSchema = {
   model_settings: {
     type: "object",
     properties: {
+      model: {
+        type: "string",
+      },
       candidate_count: {
         type: "integer",
         minimum: 1,

@@ -8,6 +8,9 @@ export const OpenAIChatModelParserPromptSchema: PromptSchema = {
   model_settings: {
     type: "object",
     properties: {
+      model: {
+        type: "string",
+      },
       system_prompt: {
         type: "string",
       },
