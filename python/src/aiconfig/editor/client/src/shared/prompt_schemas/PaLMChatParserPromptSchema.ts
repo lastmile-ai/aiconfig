@@ -10,6 +10,9 @@ export const PaLMChatParserPromptSchema: PromptSchema = {
   model_settings: {
     type: "object",
     properties: {
+      model: {
+        type: "string",
+      },
       context: {
         type: "string",
       },
