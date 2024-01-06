@@ -38,6 +38,7 @@
     "aiconfig": "../../../../../typescript",
     "lodash": "^4.17.21",
     "node-fetch": "^3.3.2",
+    "oboe": "^2.1.5",
     "react": "^18",
     "react-dom": "^18",
     "react-markdown": "^8.0.6",
@@ -49,6 +50,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.202",
     "@types/node": "^20",
+    "@types/oboe": "^2.1.4",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
