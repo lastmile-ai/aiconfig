@@ -8,10 +8,11 @@ import {
 import { IconPlus, IconSearch, IconTextCaption } from "@tabler/icons-react";
 import { memo, useCallback, useState } from "react";
 import useLoadModels from "../../hooks/useLoadModels";
+import { Model } from "../../shared/types";
 
 type Props = {
   addPrompt: (prompt: string) => void;
-  getModels: (search: string) => Promise<string[]>;
+  getModels: (search: string) => Promise<Model[]>;
 };
 
 function ModelMenuItems({
@@ -19,8 +20,8 @@ function ModelMenuItems({
   onSelectModel,
   collapseLimit,
 }: {
-  models: string[];
-  onSelectModel: (model: string) => void;
+  models: Model[];
+  onSelectModel: (model: Model) => void;
   collapseLimit: number;
 }) {
   const [isCollapsed, setIsCollapsed] = useState(models.length > collapseLimit);
@@ -31,11 +32,11 @@ function ModelMenuItems({
     <ScrollArea mah={300} style={{ overflowY: "auto" }}>
       {displayModels.map((model) => (
         <Menu.Item
-          key={model}
+          key={model.id}
           icon={<IconTextCaption size="16" />}
           onClick={() => onSelectModel(model)}
         >
-          {model}
+          {model.id}
         </Menu.Item>
       ))}
       {isCollapsed && (
@@ -50,8 +51,8 @@ export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
   const onAddPrompt = useCallback(
-    (model: string) => {
-      addPrompt(model);
+    (model: Model) => {
+      addPrompt(model.id);
       setIsOpen(false);
     },
     [addPrompt]

@@ -1,13 +1,14 @@
 import { Autocomplete, AutocompleteItem, Button } from "@mantine/core";
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { getPromptModelName } from "../../utils/promptUtils";
 import { Prompt } from "aiconfig";
 import useLoadModels from "../../hooks/useLoadModels";
 import { IconX } from "@tabler/icons-react";
+import { Model } from "../../shared/types";
 
 type Props = {
   prompt: Prompt;
-  getModels: (search: string) => Promise<string[]>;
+  getModels: (search: string) => Promise<Model[]>;
   onSetModel: (model?: string) => void;
   defaultConfigModelName?: string;
 };
@@ -30,6 +31,8 @@ export default memo(function ModelSelector({
     showAll ? "" : autocompleteSearch ?? "",
     getModels
   );
+
+  const modelNames = useMemo(() => models.map((model) => model.id), [models]);
 
   const onSelectModel = (model?: string) => {
     setSelectedModel(model);
@@ -70,13 +73,13 @@ export default memo(function ModelSelector({
           .toLocaleLowerCase()
           .includes(searchValue.toLocaleLowerCase().trim());
       }}
-      data={models}
+      data={modelNames}
       value={autocompleteSearch}
       onChange={(value: string) => {
         setAutocompleteSearch(value);
         setShowAll(false);
         onSelectModel(value);
-        models.some((model) => {
+        modelNames.some((model) => {
           if (model === value) {
             setShowAll(true);
             return true;

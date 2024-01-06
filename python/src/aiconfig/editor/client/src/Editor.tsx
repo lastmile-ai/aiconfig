@@ -6,6 +6,7 @@ import { AIConfig, InferenceSettings, JSONObject, Prompt } from "aiconfig";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
+import { Model } from "./shared/types";
 
 export default function Editor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
@@ -28,7 +29,7 @@ export default function Editor() {
     return res;
   }, []);
 
-  const getModels = useCallback(async (search: string) => {
+  const getModels = useCallback(async (search?: string) => {
     // For now, rely on caching and handle client-side search filtering
     // We will use server-side search filtering for Gradio
     const res = await ufetch.get(ROUTE_TABLE.LIST_MODELS);
@@ -36,8 +37,8 @@ export default function Editor() {
     if (search && search.length > 0) {
       const lowerCaseSearch = search.toLowerCase();
       return models.filter(
-        (model: string) =>
-          model.toLocaleLowerCase().indexOf(lowerCaseSearch) >= 0
+        (model: Model) =>
+          model.id.toLocaleLowerCase().indexOf(lowerCaseSearch) >= 0
       );
     }
     return models;
