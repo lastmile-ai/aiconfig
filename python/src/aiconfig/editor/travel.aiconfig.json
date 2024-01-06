@@ -23,19 +23,29 @@
       "name": "get_activities",
       "input": "Tell me 10 fun attractions to do in NYC.",
       "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo",
+          "settings": {
+            "stream": true
+          }
+        },
         "parameters": {}
       },
       "outputs": [
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": "1. Visit Central Park: Exploring this iconic park offers activities like picnicking, boating, visiting the zoo, or simply enjoying the beautiful scenery.\n2. Take a stroll on the High Line: This elevated park built on a historic freight rail line provides stunning views of the city and features art installations and gardens.\n3. Explore Times Square: Known as \"The Crossroads of the World,\" Times Square is a bustling hub with vibrant billboards, shops, restaurants, and street performers.\n4. Take a boat tour to the Statue of Liberty: Enjoy a ferry ride to Liberty Island and have an up-close view of the iconic national monument.\n5. Visit the Museum of Modern Art (MoMA): Discover a vast collection of modern and contemporary art, including works by Picasso, Warhol, Van Gogh, and more.\n6. Explore the Metropolitan Museum of Art (The Met): One of the world's largest art museums, The Met showcases over 5,000 years of art from around the globe.\n7. Watch a Broadway show: New York City's theater district is famous for its world-class Broadway productions, offering a range of musicals, plays, and performances.\n8. Walk across the Brooklyn Bridge: Enjoy panoramic views of the city skyline as you stroll across this iconic bridge, connecting Manhattan and Brooklyn.\n9. Experience the 9/11 Memorial & Museum: Pay tribute to the victims of the September 11 attacks at the memorial pools and explore the museum's exhibitions.\n10. Enjoy the vibrant food scene: Indulge in diverse cuisines at food markets like Chelsea Market or Smorgasburg, or try iconic New York dishes like pizza, bagels, or hot dogs from local shops and delis.",
+          "data": "1. Visit the Statue of Liberty and Ellis Island: Take a ferry ride to explore these iconic symbol of freedom and learn about the immigrant experience.\n2. Explore Central Park: Rent a bike, go for a walk, or have a picnic in this vast green oasis in the heart of Manhattan.\n3. Go on a food tour in Brooklyn: Discover the diverse culinary scene in neighborhoods like Williamsburg or DUMBO.\n4. Watch a Broadway show: Catch a performance of a classic or new musical or play in one of New York's famous theaters.\n5. Visit the Metropolitan Museum of Art: Explore one of the world's largest and finest art collections spanning ancient to modern times.\n6. Take a walk across the Brooklyn Bridge: Enjoy breathtaking views of the Manhattan skyline and Brooklyn from this iconic landmark.\n7. Experience the High Line: A unique elevated park built atop a historic freight rail line, offering beautiful views and public art installations.\n8. Explore Times Square: Immerse yourself in the buzz of the city at this iconic and vibrant intersection, known for its bright lights and billboards.\n9. Go shopping in SoHo: Browse the trendy boutiques and designer stores in this fashionable neighborhood.\n10. Visit the 9/11 Memorial and Museum: Pay tribute to the victims of the World Trade Center attacks and learn about the events of September 11, 2001.",
           "metadata": {
-            "finish_reason": "stop",
-            "rawResponse": {
-              "content": "1. Visit Central Park: Exploring this iconic park offers activities like picnicking, boating, visiting the zoo, or simply enjoying the beautiful scenery.\n2. Take a stroll on the High Line: This elevated park built on a historic freight rail line provides stunning views of the city and features art installations and gardens.\n3. Explore Times Square: Known as \"The Crossroads of the World,\" Times Square is a bustling hub with vibrant billboards, shops, restaurants, and street performers.\n4. Take a boat tour to the Statue of Liberty: Enjoy a ferry ride to Liberty Island and have an up-close view of the iconic national monument.\n5. Visit the Museum of Modern Art (MoMA): Discover a vast collection of modern and contemporary art, including works by Picasso, Warhol, Van Gogh, and more.\n6. Explore the Metropolitan Museum of Art (The Met): One of the world's largest art museums, The Met showcases over 5,000 years of art from around the globe.\n7. Watch a Broadway show: New York City's theater district is famous for its world-class Broadway productions, offering a range of musicals, plays, and performances.\n8. Walk across the Brooklyn Bridge: Enjoy panoramic views of the city skyline as you stroll across this iconic bridge, connecting Manhattan and Brooklyn.\n9. Experience the 9/11 Memorial & Museum: Pay tribute to the victims of the September 11 attacks at the memorial pools and explore the museum's exhibitions.\n10. Enjoy the vibrant food scene: Indulge in diverse cuisines at food markets like Chelsea Market or Smorgasburg, or try iconic New York dishes like pizza, bagels, or hot dogs from local shops and delis.",
+            "id": "chatcmpl-8drL7cKobQaz1H4eLTfvskqgsTnkE",
+            "created": 1704510521,
+            "model": "gpt-3.5-turbo-0613",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "content": "1. Visit the Statue of Liberty and Ellis Island: Take a ferry ride to explore these iconic symbol of freedom and learn about the immigrant experience.\n2. Explore Central Park: Rent a bike, go for a walk, or have a picnic in this vast green oasis in the heart of Manhattan.\n3. Go on a food tour in Brooklyn: Discover the diverse culinary scene in neighborhoods like Williamsburg or DUMBO.\n4. Watch a Broadway show: Catch a performance of a classic or new musical or play in one of New York's famous theaters.\n5. Visit the Metropolitan Museum of Art: Explore one of the world's largest and finest art collections spanning ancient to modern times.\n6. Take a walk across the Brooklyn Bridge: Enjoy breathtaking views of the Manhattan skyline and Brooklyn from this iconic landmark.\n7. Experience the High Line: A unique elevated park built atop a historic freight rail line, offering beautiful views and public art installations.\n8. Explore Times Square: Immerse yourself in the buzz of the city at this iconic and vibrant intersection, known for its bright lights and billboards.\n9. Go shopping in SoHo: Browse the trendy boutiques and designer stores in this fashionable neighborhood.\n10. Visit the 9/11 Memorial and Museum: Pay tribute to the victims of the World Trade Center attacks and learn about the events of September 11, 2001.",
               "role": "assistant"
-            }
+            },
+            "role": "assistant"
           }
         }
       ]
@@ -44,7 +54,12 @@
       "name": "gen_itinerary",
       "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
       "metadata": {
-        "model": "gpt-4",
+        "model": {
+          "name": "gpt-4",
+          "settings": {
+            "stream": true
+          }
+        },
         "parameters": {
           "order_by": "geographic location"
         }
@@ -53,12 +68,17 @@
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": {
-            "content": "Here is your itinerary, ordered by duration for your listed activities:\n\n1. Visit Central Park (4-5 hours): Begin your journey by exploring this iconic park. The activities you can enjoy will include picnicking, boating, visiting the zoo, or simply enjoying the beautiful scenery. This could take most of a morning or an afternoon, depending on your pace.\n\n2. Take a stroll on the High Line (2-3 hours): For your activity following Central Park, walk along the High Line. This elevated park built on a historic freight rail line provides stunning views of the city and features art installations and gardens.\n\n3. Explore the Metropolitan Museum of Art (The Met) (3-4 hours): Following your stroll on the High Line, visit The Met. The museum is one of the world's largest art museums and showcases over 5,000 years of art from around the globe. \n\n4. Enjoy the vibrant food scene (2-3 hours): After a morning of sightseeing, indulge in diverse cuisines at food markets like Chelsea Market, or try some iconic New York dishes from local shops or delis to fuel up for your afternoon activities.\n\n5. Explore Times Square (1-2 hours): Known as \"The Crossroads of the World,\" Times Square is a bustling hub with vibrant billboards, shops, restaurants, and street performers, which you can enjoy after your meal.\n\n6. Visit the Museum of Modern Art (MoMA) (2-3 hours): Discover a vast collection of modern and contemporary art, including works by Picasso, Warhol, Van Gogh, and more.\n\n7. Take a boat tour to the Statue of Liberty (2-3 hours): After visiting MoMA, you will enjoy a ferry ride to Liberty Island for an up-close view of the iconic national monument.\n\n8. Experience the 9/11 Memorial & Museum (2 hours): After your boat tour, pay tribute to the victims of the September 11 attacks at the memorial pools and explore the museum's exhibitions.\n\n9. Walk across the Brooklyn Bridge (1 hour): Enjoy panoramic views of the city skyline as you stroll across this iconic bridge, connecting Manhattan and Brooklyn.\n\n10. Watch a Broadway show (3 hours): End your day with a world-class Broadway production in New York City's renowned theater district, offering a range of musicals, plays, and performances.\n\nPlease note that the times listed are approximate and can vary depending on personal pace, crowd sizes, and individual interest in each activity.",
-            "role": "assistant"
-          },
+          "data": "Day 1: The Upper East Side and Central Park\n\n- Begin your journey by exploring the Metropolitan Museum of Art located in the Upper East Side of Manhattan. The museum opens at 10 AM, giving you plenty of time to marvel at some of the world's most famous art pieces. \n- Spend the rest of your day at the neighboring Central Park. Have a leisurely lunch picnic, ride a bike around the park, or paddle a boat on the lake. \n\nDay 2: Midtown Manhattan\n\n- Start the day with a visit to the iconic Empire State Building. Arriving early ensures you beat the crowds and have the best view of the city.\n- Head over to the vibrant Times Square, just a 10-minute walk away. Explore its dazzling billboards, Broadway theatres, and the lively atmosphere.\n- At night, enjoy a thrilling Broadway show. Make sure to book your tickets in advance!\n\nDay 3: Lower Manhattan\n\n- Begin the morning visiting the Statue of Liberty. Ferries usually depart from Battery Park, so be sure to get there early.\n- After returning from Liberty Island, walk northwest towards the High Line. Enjoy the beautiful gardens, art installations, and views of the city from this unique park.\n- Finish the day with a walk across the Brooklyn Bridge, providing stunning views of the Manhattan skyline and the East River.\n\nDay 4: Brooklyn and the Bronx\n\n- In the morning, explore vibrant neighborhoods like Williamsburg in Brooklyn. Discover the local culture, shop at unique boutiques, and taste some local cuisine.\n- From Brooklyn, take the subway to the Bronx Zoo. Spend a relaxing afternoon amidst the exotic animals.\n\nDay 5: Shopping and Exploration Day\n\n- Dedicate this day to exploring other neighborhoods such as SoHo and Greenwich Village. Shop around and try some more New York delicacies. Its a great way to wind down your trip, taking it at your own pace and soaking in the atmosphere of the city.\n\nIn this plan, you move from north to south in Manhattan to avoid the hectic traffic. But remember, New York City is active 24/7 so there is plenty to do whatever time of day it is!",
           "metadata": {
-            "finish_reason": "stop"
+            "id": "chatcmpl-8drIoSblXwtateUU9yetslAdGPa7B",
+            "created": 1704510378,
+            "model": "gpt-4-0613",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "content": "Day 1: The Upper East Side and Central Park\n\n- Begin your journey by exploring the Metropolitan Museum of Art located in the Upper East Side of Manhattan. The museum opens at 10 AM, giving you plenty of time to marvel at some of the world's most famous art pieces. \n- Spend the rest of your day at the neighboring Central Park. Have a leisurely lunch picnic, ride a bike around the park, or paddle a boat on the lake. \n\nDay 2: Midtown Manhattan\n\n- Start the day with a visit to the iconic Empire State Building. Arriving early ensures you beat the crowds and have the best view of the city.\n- Head over to the vibrant Times Square, just a 10-minute walk away. Explore its dazzling billboards, Broadway theatres, and the lively atmosphere.\n- At night, enjoy a thrilling Broadway show. Make sure to book your tickets in advance!\n\nDay 3: Lower Manhattan\n\n- Begin the morning visiting the Statue of Liberty. Ferries usually depart from Battery Park, so be sure to get there early.\n- After returning from Liberty Island, walk northwest towards the High Line. Enjoy the beautiful gardens, art installations, and views of the city from this unique park.\n- Finish the day with a walk across the Brooklyn Bridge, providing stunning views of the Manhattan skyline and the East River.\n\nDay 4: Brooklyn and the Bronx\n\n- In the morning, explore vibrant neighborhoods like Williamsburg in Brooklyn. Discover the local culture, shop at unique boutiques, and taste some local cuisine.\n- From Brooklyn, take the subway to the Bronx Zoo. Spend a relaxing afternoon amidst the exotic animals.\n\nDay 5: Shopping and Exploration Day\n\n- Dedicate this day to exploring other neighborhoods such as SoHo and Greenwich Village. Shop around and try some more New York delicacies. Its a great way to wind down your trip, taking it at your own pace and soaking in the atmosphere of the city.\n\nIn this plan, you move from north to south in Manhattan to avoid the hectic traffic. But remember, New York City is active 24/7 so there is plenty to do whatever time of day it is!",
+              "role": "assistant"
+            },
+            "role": "assistant"
           }
         }
       ]
@@ -97,12 +117,13 @@
     },
     {
       "name": "prompt_4",
-      "input": "test",
+      "input": "Write a 100 word joke about artificial intelligence",
       "metadata": {
         "model": {
           "name": "AnyscaleEndpoint",
           "settings": {
-            "model": "meta-llama/Llama-2-7b-chat-hf"
+            "model": "meta-llama/Llama-2-7b-chat-hf",
+            "stream": false
           }
         },
         "parameters": {}
@@ -111,26 +132,35 @@
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": "  Sure! Here are 5 questions to test your understanding of the conversation:\n\n1. What is the main topic of the conversation?\n2. What is the purpose of the meeting according to the speaker?\n3. What is the speaker's opinion on the proposed meeting time?\n4. How does the speaker feel about the potential attendees of the meeting?\n5. What is the speaker's recommended solution for the meeting time conflict?",
+          "data": "  Sure! Here is a 100-word joke about artificial intelligence:\n\nWhy did the AI go to therapy? It was feeling a little glitchy and needed to work through some bugs!",
           "metadata": {
             "raw_response": {
-              "content": "  Sure! Here are 5 questions to test your understanding of the conversation:\n\n1. What is the main topic of the conversation?\n2. What is the purpose of the meeting according to the speaker?\n3. What is the speaker's opinion on the proposed meeting time?\n4. How does the speaker feel about the potential attendees of the meeting?\n5. What is the speaker's recommended solution for the meeting time conflict?",
+              "content": "  Sure! Here is a 100-word joke about artificial intelligence:\n\nWhy did the AI go to therapy? It was feeling a little glitchy and needed to work through some bugs!",
               "role": "assistant"
             },
-            "id": "meta-llama/Llama-2-7b-chat-hf-JknFQzgthe2aABGHrYeW86GhXnUVx7fH9Z7JldFLe2g",
-            "created": 1704484147,
+            "id": "meta-llama/Llama-2-7b-chat-hf-fb2N39TZDxsvBr1UAQH8IhwRbIijoGGSxMIKOKwV2BE",
+            "created": 1704510505,
             "model": "meta-llama/Llama-2-7b-chat-hf",
             "object": "text_completion",
             "usage": {
-              "completion_tokens": 97,
-              "prompt_tokens": 9,
-              "total_tokens": 106
+              "completion_tokens": 47,
+              "prompt_tokens": 20,
+              "total_tokens": 67
             },
             "finish_reason": "stop",
             "role": "assistant"
           }
         }
       ]
+    },
+    {
+      "name": "prompt_5",
+      "input": "cat",
+      "metadata": {
+        "model": "dall-e-2",
+        "parameters": {}
+      },
+      "outputs": []
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
