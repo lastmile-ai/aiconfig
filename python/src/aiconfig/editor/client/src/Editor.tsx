@@ -1,11 +1,19 @@
 import EditorContainer, {
   AIConfigCallbacks,
+  RunPromptStreamCallback,
 } from "./components/EditorContainer";
 import { Flex, Loader, MantineProvider, Image } from "@mantine/core";
-import { AIConfig, InferenceSettings, JSONObject, Prompt } from "aiconfig";
+import {
+  AIConfig,
+  InferenceSettings,
+  JSONObject,
+  Output,
+  Prompt,
+} from "aiconfig";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
+import { streamingApi } from "./utils/oboeHelpers";
 
 export default function Editor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
@@ -66,6 +74,30 @@ export default function Editor() {
     });
   }, []);
 
+  const runPromptStream = useCallback(
+    async (promptName: string, onStream: RunPromptStreamCallback) => {
+      await streamingApi(
+        {
+          url: ROUTE_TABLE.RUN_PROMPT,
+          method: "POST",
+          body: {
+            prompt_name: promptName,
+            stream: true,
+          },
+        },
+        "output_chunk",
+        (data) => {
+          onStream({ type: "output_chunk", data: data as Output });
+        },
+        "aiconfig",
+        (data) => {
+          onStream({ type: "aiconfig", data: data as AIConfig });
+        }
+      );
+    },
+    []
+  );
+
   const updatePrompt = useCallback(
     async (promptName: string, promptData: Prompt) => {
       return await ufetch.post(ROUTE_TABLE.UPDATE_PROMPT, {
@@ -124,6 +156,7 @@ export default function Editor() {
       getModels,
       getServerStatus,
       runPrompt,
+      runPromptStream,
       save,
       setConfigDescription,
       setConfigName,
@@ -137,6 +170,7 @@ export default function Editor() {
       getModels,
       getServerStatus,
       runPrompt,
+      runPromptStream,
       save,
       setConfigDescription,
       setConfigName,
@@ -168,7 +202,7 @@ export default function Editor() {
             deg: 45,
           },
 
-          globalStyles: (theme) => ({
+          globalStyles: () => ({
             ".editorBackground": {
               background:
                 "radial-gradient(ellipse at top,#08122d,#030712),radial-gradient(ellipse at bottom,#030712,#030712)",

@@ -1,6 +1,6 @@
 import { ClientAIConfig, ClientPrompt } from "../shared/types";
 import { getPromptModelName } from "../utils/promptUtils";
-import { AIConfig, JSONObject, PromptInput } from "aiconfig";
+import { AIConfig, JSONObject, Output, PromptInput } from "aiconfig";
 
 export type AIConfigReducerAction =
   | MutateAIConfigAction
@@ -14,6 +14,7 @@ export type MutateAIConfigAction =
   | RunPromptAction
   | SetDescriptionAction
   | SetNameAction
+  | StreamOutputChunkAction
   | UpdatePromptInputAction
   | UpdatePromptNameAction
   | UpdatePromptModelAction
@@ -61,6 +62,12 @@ export type SetDescriptionAction = {
 export type SetNameAction = {
   type: "SET_NAME";
   name: string;
+};
+
+export type StreamOutputChunkAction = {
+  type: "STREAM_OUTPUT_CHUNK";
+  id: string;
+  output: Output;
 };
 
 export type UpdatePromptInputAction = {
@@ -254,6 +261,12 @@ export default function aiconfigReducer(
         ...dirtyState,
         name: action.name,
       };
+    }
+    case "STREAM_OUTPUT_CHUNK": {
+      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
+        ...prompt,
+        outputs: [action.output],
+      }));
     }
     case "UPDATE_PROMPT_INPUT": {
       return reduceReplaceInput(dirtyState, action.id, () => action.input);

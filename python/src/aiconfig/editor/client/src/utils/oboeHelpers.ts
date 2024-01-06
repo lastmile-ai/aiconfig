@@ -7,11 +7,11 @@ import oboe, { Options } from "oboe";
 export async function streamingApi<T>(
   headers: Options,
   on: string = "*",
-  fn: (data: any) => void,
+  fn: (data: unknown) => void,
   on2?: string,
-  fn2?: (data: any) => void,
+  fn2?: (data: unknown) => void,
   on3?: string,
-  fn3?: (data: any) => void
+  fn3?: (data: unknown) => void
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     if (fn2 && on2 && fn3 && on3) {
