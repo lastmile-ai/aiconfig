@@ -27,8 +27,7 @@ function SchemaRenderer({ input, schema, onChangeInput }: SchemaRendererProps) {
   } = schema.properties;
 
   if (typeof input === "string") {
-    return null;
-    // TODO: Add ErrorBoundary handling and throw error here
+    throw new Error("Expected input type object but got string");
   }
 
   const { data, attachments, ..._restData } = input;
