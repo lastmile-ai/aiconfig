@@ -44,6 +44,19 @@ export default function Editor() {
     return models;
   }, []);
 
+  const getModelParsers = useCallback(async (search?: string) => {
+    const res = await ufetch.get(ROUTE_TABLE.LIST_MODEL_PARSERS);
+    const modelParsers = res.data;
+    if (search && search.length > 0) {
+      const lowerCaseSearch = search.toLowerCase();
+      return modelParsers.filter(
+        (modelParser: string) =>
+          modelParser.toLocaleLowerCase().indexOf(lowerCaseSearch) >= 0
+      );
+    }
+    return modelParsers;
+  }, []);
+
   const addPrompt = useCallback(
     async (promptName: string, promptData: Prompt, index: number) => {
       return await ufetch.post(ROUTE_TABLE.ADD_PROMPT, {
@@ -123,6 +136,7 @@ export default function Editor() {
       addPrompt,
       deletePrompt,
       getModels,
+      getModelParsers,
       getServerStatus,
       runPrompt,
       save,
@@ -136,6 +150,7 @@ export default function Editor() {
       addPrompt,
       deletePrompt,
       getModels,
+      getModelParsers,
       getServerStatus,
       runPrompt,
       save,
@@ -169,7 +184,7 @@ export default function Editor() {
             deg: 45,
           },
 
-          globalStyles: (theme) => ({
+          globalStyles: () => ({
             ".editorBackground": {
               background:
                 "radial-gradient(ellipse at top,#08122d,#030712),radial-gradient(ellipse at bottom,#030712,#030712)",

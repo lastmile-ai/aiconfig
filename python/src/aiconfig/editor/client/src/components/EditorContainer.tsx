@@ -64,7 +64,8 @@ export type AIConfigCallbacks = {
     index: number
   ) => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
-  getModels: (search: string) => Promise<Model[]>;
+  getModels: (search?: string) => Promise<Model[]>;
+  getModelParsers: (search?: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
   save: (aiconfig: AIConfig) => Promise<void>;
@@ -776,6 +777,7 @@ export default function EditorContainer({
                 <PromptContainer
                   prompt={prompt}
                   getModels={callbacks.getModels}
+                  getModelParsers={callbacks.getModelParsers}
                   onChangePromptInput={onChangePromptInput}
                   onChangePromptName={onChangePromptName}
                   onRunPrompt={onRunPrompt}
