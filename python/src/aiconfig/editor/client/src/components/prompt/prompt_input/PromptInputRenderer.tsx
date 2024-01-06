@@ -3,9 +3,12 @@ import { memo, useState } from "react";
 import { PromptInputSchema } from "../../../utils/promptUtils";
 import PromptInputSchemaRenderer from "./schema_renderer/PromptInputSchemaRenderer";
 import PromptInputConfigRenderer from "./PromptInputConfigRenderer";
-import { ActionIcon, Flex, Tooltip } from "@mantine/core";
-import { IconBraces, IconBracesOff } from "@tabler/icons-react";
+import { Flex } from "@mantine/core";
 import PromptInputJSONRenderer from "./PromptInputJSONRenderer";
+import { ErrorBoundary, useErrorBoundary } from "react-error-boundary";
+import { Text } from "@mantine/core";
+import JSONRenderer from "../../JSONRenderer";
+import JSONEditorToggleButton from "../../JSONEditorToggleButton";
 
 type Props = {
   input: PromptInput;
@@ -13,39 +16,83 @@ type Props = {
   onChangeInput: (value: PromptInput) => void;
 };
 
+type ErrorFallbackProps = {
+  input: PromptInput;
+  toggleJSONEditor: () => void;
+};
+
+function InputErrorFallback({ input, toggleJSONEditor }: ErrorFallbackProps) {
+  const { resetBoundary: clearRenderError } = useErrorBoundary();
+  return (
+    <Flex direction="column">
+      <Text color="red" size="sm">
+        Invalid input format for model. Toggle JSON editor to update
+      </Text>
+      <JSONRenderer content={input} />
+      <Flex justify="flex-end">
+        <JSONEditorToggleButton
+          isRawJSON={false}
+          setIsRawJSON={() => {
+            clearRenderError();
+            toggleJSONEditor();
+          }}
+        />
+      </Flex>
+    </Flex>
+  );
+}
+
 export default memo(function PromptInputRenderer({
   input,
   schema,
   onChangeInput,
 }: Props) {
   const [isRawJSON, setIsRawJSON] = useState(false);
+  const rawJSONToggleButton = (
+    <Flex justify="flex-end">
+      <JSONEditorToggleButton
+        isRawJSON={isRawJSON}
+        setIsRawJSON={setIsRawJSON}
+      />
+    </Flex>
+  );
   return (
     <>
       {isRawJSON ? (
-        <PromptInputJSONRenderer input={input} onChangeInput={onChangeInput} />
-      ) : schema ? (
-        <PromptInputSchemaRenderer
-          input={input}
-          schema={schema}
-          onChangeInput={onChangeInput}
-        />
+        <>
+          <PromptInputJSONRenderer
+            input={input}
+            onChangeInput={onChangeInput}
+          />
+
+          {rawJSONToggleButton}
+        </>
       ) : (
-        <PromptInputConfigRenderer
-          input={input}
-          onChangeInput={onChangeInput}
-        />
-      )}
-      <Flex justify="flex-end">
-        <Tooltip label="Toggle JSON editor" withArrow>
-          <ActionIcon onClick={() => setIsRawJSON((curr) => !curr)}>
-            {isRawJSON ? (
-              <IconBracesOff size="1rem" />
+        <ErrorBoundary
+          fallbackRender={() => (
+            <InputErrorFallback
+              input={input}
+              toggleJSONEditor={() => setIsRawJSON(true)}
+            />
+          )}
+        >
+          <>
+            {schema ? (
+              <PromptInputSchemaRenderer
+                input={input}
+                schema={schema}
+                onChangeInput={onChangeInput}
+              />
             ) : (
-              <IconBraces size="1rem" />
+              <PromptInputConfigRenderer
+                input={input}
+                onChangeInput={onChangeInput}
+              />
             )}
-          </ActionIcon>
-        </Tooltip>
-      </Flex>
+            {rawJSONToggleButton}
+          </>
+        </ErrorBoundary>
+      )}
     </>
   );
 });

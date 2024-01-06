@@ -41,6 +41,7 @@
     "oboe": "^2.1.5",
     "react": "^18",
     "react-dom": "^18",
+    "react-error-boundary": "^4.0.12",
     "react-markdown": "^8.0.6",
     "react-scripts": "5.0.1",
     "remark-gfm": "^4.0.0",
