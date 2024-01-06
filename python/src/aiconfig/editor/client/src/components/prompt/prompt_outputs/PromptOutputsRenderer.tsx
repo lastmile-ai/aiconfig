@@ -10,13 +10,21 @@ import { TextRenderer } from "../TextRenderer";
 import PromptOutputWrapper from "./PromptOutputWrapper";
 import MimeTypeRenderer from "../../MimeTypeRenderer";
 import JSONRenderer from "../../JSONRenderer";
+import { Alert, Flex } from "@mantine/core";
 
 type Props = {
   outputs: Output[];
 };
 
 function ErrorOutput({ output }: { output: Error }) {
-  return <div>{output.evalue}</div>;
+  return (
+    <Flex direction="column">
+      <Alert color="red" title={output.ename}>
+        <TextRenderer content={output.evalue} />
+        <TextRenderer content={output.traceback.join("\n")} />
+      </Alert>
+    </Flex>
+  );
 }
 
 const ExecuteResultOutput = memo(function ExecuteResultOutput({
@@ -86,7 +94,6 @@ const ExecuteResultOutput = memo(function ExecuteResultOutput({
 });
 
 const OutputRenderer = memo(function Output({ output }: { output: Output }) {
-  // TODO: Add toggle for raw JSON renderer
   switch (output.output_type) {
     case "execute_result":
       return <ExecuteResultOutput output={output} />;
