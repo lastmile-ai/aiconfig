@@ -1,7 +1,7 @@
 import PromptActionBar from "./PromptActionBar";
 import PromptInputRenderer from "./prompt_input/PromptInputRenderer";
 import PromptOutputsRenderer from "./prompt_outputs/PromptOutputsRenderer";
-import { ClientPrompt } from "../../shared/types";
+import { ClientPrompt, Model } from "../../shared/types";
 import { getPromptSchema } from "../../utils/promptUtils";
 import { Flex, Card } from "@mantine/core";
 import { PromptInput as AIConfigPromptInput, JSONObject } from "aiconfig";
@@ -12,7 +12,8 @@ import ModelSelector from "./ModelSelector";
 
 type Props = {
   prompt: ClientPrompt;
-  getModels: (search: string) => Promise<string[]>;
+  getModels: (search?: string) => Promise<Model[]>;
+  getModelParsers: (search?: string) => Promise<string[]>;
   onChangePromptInput: (
     promptId: string,
     newPromptInput: AIConfigPromptInput
@@ -34,6 +35,7 @@ type Props = {
 export default memo(function PromptContainer({
   prompt,
   getModels,
+  getModelParsers,
   onChangePromptInput,
   onChangePromptName,
   defaultConfigModelName,
@@ -93,6 +95,7 @@ export default memo(function PromptContainer({
             />
             <ModelSelector
               getModels={getModels}
+              getModelParsers={getModelParsers}
               prompt={prompt}
               onSetModel={updateModel}
               defaultConfigModelName={defaultConfigModelName}

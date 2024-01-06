@@ -18,6 +18,7 @@ export const ROUTE_TABLE = {
   SET_PARAMETERS: urlJoin(API_ENDPOINT, "/set_parameters"),
   LOAD: urlJoin(API_ENDPOINT, "/load"),
   LIST_MODELS: urlJoin(API_ENDPOINT, "/list_models"),
+  LIST_MODEL_PARSERS: urlJoin(API_ENDPOINT, "/list_model_parsers"),
   RUN_PROMPT: urlJoin(API_ENDPOINT, "/run"),
   UPDATE_MODEL: urlJoin(API_ENDPOINT, "/update_model"),
   UPDATE_PROMPT: urlJoin(API_ENDPOINT, "/update_prompt"),
