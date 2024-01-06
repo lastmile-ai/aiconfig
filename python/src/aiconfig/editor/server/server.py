@@ -91,7 +91,16 @@ def server_status() -> FlaskResponse:
 
 @app.route("/api/list_models", methods=["GET"])
 def list_models() -> FlaskResponse:
-    out: list[str] = ModelParserRegistry.parser_ids()  # type: ignore
+    model_parser_map = ModelParserRegistry.display_parsers()
+    out: list[core_utils.JSONDict] = [{"id": model_name, "parser_id": model_parser} for model_name, model_parser in model_parser_map.items()]
+    json_obj = core_utils.JSONObject({"data": core_utils.JSONList(out)})
+    return FlaskResponse((json_obj, 200))
+
+
+@app.route("/api/list_model_parsers", methods=["GET"])
+def list_model_parsers() -> FlaskResponse:
+    model_parser_map = ModelParserRegistry.display_parsers()
+    out: list[str] = list(model_parser_map.values())
     json_obj = core_utils.JSONObject({"data": core_utils.JSONList(out)})
     return FlaskResponse((json_obj, 200))
 

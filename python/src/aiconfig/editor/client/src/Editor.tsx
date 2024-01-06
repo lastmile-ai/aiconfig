@@ -6,6 +6,7 @@ import { AIConfig, InferenceSettings, JSONObject, Prompt } from "aiconfig";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
+import { Model } from "./shared/types";
 
 export default function Editor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
@@ -28,7 +29,7 @@ export default function Editor() {
     return res;
   }, []);
 
-  const getModels = useCallback(async (search: string) => {
+  const getModels = useCallback(async (search?: string) => {
     // For now, rely on caching and handle client-side search filtering
     // We will use server-side search filtering for Gradio
     const res = await ufetch.get(ROUTE_TABLE.LIST_MODELS);
@@ -36,11 +37,24 @@ export default function Editor() {
     if (search && search.length > 0) {
       const lowerCaseSearch = search.toLowerCase();
       return models.filter(
-        (model: string) =>
-          model.toLocaleLowerCase().indexOf(lowerCaseSearch) >= 0
+        (model: Model) =>
+          model.id.toLocaleLowerCase().indexOf(lowerCaseSearch) >= 0
       );
     }
     return models;
+  }, []);
+
+  const getModelParsers = useCallback(async (search?: string) => {
+    const res = await ufetch.get(ROUTE_TABLE.LIST_MODEL_PARSERS);
+    const modelParsers = res.data;
+    if (search && search.length > 0) {
+      const lowerCaseSearch = search.toLowerCase();
+      return modelParsers.filter(
+        (modelParser: string) =>
+          modelParser.toLocaleLowerCase().indexOf(lowerCaseSearch) >= 0
+      );
+    }
+    return modelParsers;
   }, []);
 
   const addPrompt = useCallback(
@@ -122,6 +136,7 @@ export default function Editor() {
       addPrompt,
       deletePrompt,
       getModels,
+      getModelParsers,
       getServerStatus,
       runPrompt,
       save,
@@ -135,6 +150,7 @@ export default function Editor() {
       addPrompt,
       deletePrompt,
       getModels,
+      getModelParsers,
       getServerStatus,
       runPrompt,
       save,
@@ -168,7 +184,7 @@ export default function Editor() {
             deg: 45,
           },
 
-          globalStyles: (theme) => ({
+          globalStyles: () => ({
             ".editorBackground": {
               background:
                 "radial-gradient(ellipse at top,#08122d,#030712),radial-gradient(ellipse at bottom,#030712,#030712)",
