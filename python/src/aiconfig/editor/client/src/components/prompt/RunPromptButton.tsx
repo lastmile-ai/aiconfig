@@ -1,4 +1,4 @@
-import { Button, Loader, Text } from "@mantine/core";
+import { Button, Flex, Loader, Text } from "@mantine/core";
 import { IconPlayerPlayFilled, IconPlayerStop } from "@tabler/icons-react";
 import { memo } from "react";
 
@@ -23,14 +23,14 @@ export default memo(function RunPromptButton({
       className="runPromptButton"
     >
       {isRunning ? (
-        <div>
+        <Flex align="center" justify="center">
           <Loader
-            style={{ position: "absolute", top: 5, left: 8 }}
+            style={{ position: "absolute", margin: "0 auto" }}
             size="xs"
             color="white"
           />
           <IconPlayerStop fill="white" size={14} />
-        </div>
+        </Flex>
       ) : (
         <>
           <IconPlayerPlayFilled size="16" />
