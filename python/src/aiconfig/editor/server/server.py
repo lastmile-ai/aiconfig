@@ -97,6 +97,14 @@ def list_models() -> FlaskResponse:
     return FlaskResponse((json_obj, 200))
 
 
+@app.route("/api/list_model_parsers", methods=["GET"])
+def list_model_parsers() -> FlaskResponse:
+    model_parser_map = ModelParserRegistry.display_parsers()
+    out: list[str] = list(model_parser_map.values())
+    json_obj = core_utils.JSONObject({"data": core_utils.JSONList(out)})
+    return FlaskResponse((json_obj, 200))
+
+
 @app.route("/api/load_model_parser_module", methods=["POST"])
 def load_model_parser_module() -> FlaskResponse:
     request_json = request.get_json()
