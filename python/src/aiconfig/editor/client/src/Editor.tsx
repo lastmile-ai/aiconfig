@@ -146,7 +146,7 @@ export default function Editor() {
         withGlobalStyles
         withNormalizeCSS
         theme={{
-          colorScheme: "dark",
+          // colorScheme: "dark",
 
           headings: {
             fontFamily:
@@ -157,15 +157,15 @@ export default function Editor() {
           },
 
           defaultGradient: {
-            from: "pink",
-            to: "pink",
-            deg: 45,
+            from: "#E88949",
+            to: "#E85921",
+            deg: 90,
           },
 
+          //gradio light theme
           globalStyles: (theme) => ({
             ".editorBackground": {
-              background:
-                "radial-gradient(ellipse at top,#08122d,#030712),radial-gradient(ellipse at bottom,#030712,#030712)",
+              background: theme.colorScheme === "light" ? "white" : "#0b0f19",
               margin: "0 auto",
               minHeight: "100vh",
             },
@@ -174,48 +174,71 @@ export default function Editor() {
                 "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
             },
             ".ghost": {
-              border: "none",
-              borderRadius: "4px",
-              padding: "4px",
-              margin: "0px",
-              backgroundColor: "transparent",
-              ":hover": {
-                backgroundColor: "rgba(226,232,255,.1)",
-              },
               input: {
                 maxHeight: "16px",
                 fontFamily:
                   "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+                borderRadius: "8px",
+                margin: "8px 0px 0px 0px",
+                backgroundColor:
+                  theme.colorScheme === "light" ? "white" : "#384152",
+                boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
+                ":focus": {
+                  outline: "solid 1px #E85921 !important",
+                  outlineOffset: "-1px",
+                },
               },
             },
             ".cellStyle": {
-              border: "1px solid rgba(226,232,255,.1) !important",
-              background: "rgb(12 21 57 / 10%)",
+              border: "1px solid",
+              borderColor:
+                theme.colorScheme === "light" ? "#E5E7EB" : "#384152",
+              background: theme.colorScheme === "light" ? "white" : "#1f2938",
               flex: 1,
               borderTopRightRadius: "0px",
               borderBottomRightRadius: "0px",
+              borderTopLeftRadius: "8px",
+              borderBottomLeftRadius: "8px",
               ":hover": {
-                background: "rgba(255, 255, 255, 0.03) !important",
+                background:
+                  theme.colorScheme === "light"
+                    ? "rgba(249, 250, 251, 0.5) !important"
+                    : "#1f2938",
               },
               textarea: {
-                border: "1px solid rgba(226,232,255,.1)",
-                backgroundColor: "#060c21",
+                border: "1px solid !important",
+                borderColor:
+                  theme.colorScheme === "light"
+                    ? "#E5E7EB !important"
+                    : "#384152 !important",
+                borderRadius: "8px",
+                margin: "8px 0px 0px 0px",
+                boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
+                backgroundColor:
+                  theme.colorScheme === "light" ? "white" : "#384152",
                 ":focus": {
-                  outline: "solid 1px #ff1cf7 !important",
+                  outline: "solid 1px #E85921 !important",
                   outlineOffset: "-1px",
                 },
               },
             },
             ".sidePanel": {
-              border: "1px solid rgba(226,232,255,.1)",
+              border: "1px solid",
+              borderColor:
+                theme.colorScheme === "light" ? "#E5E7EB" : "#384152",
               borderLeft: "none",
-              borderTopRightRadius: "4px",
-              borderBottomRightRadius: "4px",
+              borderTopRightRadius: "8px",
+              borderBottomRightRadius: "8px",
+              background:
+                theme.colorScheme === "light"
+                  ? "linear-gradient(90deg, #F6F6F6, #FFFFFF)"
+                  : "transparent",
               input: {
-                border: "1px solid rgba(226,232,255,.1)",
-                backgroundColor: "#060c21",
+                border: "1px solid #E5E7EB !important",
+                boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
+                backgroundColor: "#ffffff",
                 ":focus": {
-                  outline: "solid 1px #ff1cf7 !important",
+                  outline: "solid 1px #E85921 !important",
                   outlineOffset: "-1px",
                 },
               },
@@ -226,10 +249,19 @@ export default function Editor() {
               marginBottom: "0.5em",
             },
             ".runPromptButton": {
-              background: "#ff1cf7",
-              color: "white",
-              borderRadius: "0",
+              borderRadius: "8px",
+              border: "1px solid #FDD7AD",
+              background: "linear-gradient(180deg, #FEE1C0 0%, #FCC792 100%)",
+              boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05)",
+              margin: "4px",
               height: "auto",
+              color: "#E85921",
+              path: {
+                color: "#E85921",
+              },
+              ":hover": {
+                background: "linear-gradient(180deg, #FEE1C0 0%, #FF9E3D 100%)",
+              },
             },
             ".actionTabsPanel": {
               width: "400px",
@@ -242,17 +274,81 @@ export default function Editor() {
               justifyContent: "space-between",
               alignItems: "center",
             },
+
+            ".parametersContainer": {
+              maxWidth: "1250px",
+              maxHeight: "-webkit-fill-available",
+              margin: "16px auto",
+              padding: "0",
+              backgroundColor:
+                theme.colorScheme === "light" ? "#F9FAFB" : "#1f2938",
+              borderRadius: "8px",
+              border: "1px solid",
+              borderColor:
+                theme.colorScheme === "light" ? "#E5E7EB" : "#384152",
+              button: {
+                ":hover": {
+                  backgroundColor:
+                    theme.colorScheme === "light" ? "#F0F1F1" : "transparent",
+                },
+              },
+              input: {
+                border: "1px solid !important",
+                borderColor:
+                  theme.colorScheme === "light"
+                    ? "#E5E7EB !important"
+                    : "#384152 !important",
+                boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
+                borderRadius: "8px",
+                backgroundColor:
+                  theme.colorScheme === "light" ? "white" : "#384152",
+                ":focus": {
+                  outline: "solid 1px #E85921 !important",
+                  outlineOffset: "-1px",
+                },
+              },
+              textarea: {
+                border: "1px solid !important",
+                borderColor:
+                  theme.colorScheme === "light"
+                    ? "#E5E7EB !important"
+                    : "#384152 !important",
+                boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
+                borderRadius: "8px",
+                backgroundColor:
+                  theme.colorScheme === "light" ? "white" : "#384152",
+                ":focus": {
+                  outline: "solid 1px #E85921 !important",
+                  outlineOffset: "-1px",
+                },
+              },
+              ".addParameterButton": {
+                position: "sticky",
+                left: "0",
+                bottom: "0",
+                margin: "16px 0 0 0",
+                background: "linear-gradient(180deg, #FEE1C0 0%, #FCC792 100%)",
+                path: {
+                  color: "#E85921",
+                },
+              },
+            },
+
+            ".mantine-Slider-thumb": {
+              border: "0.25rem solid #E85921",
+            },
+            ".mantine-Slider-bar": {
+              backgroundColor: "#E85921",
+            },
+            ".mantine-Tabs-tab[data-active]": {
+              borderBottom: "solid 1px #E85921",
+              ":hover": {
+                borderBottom: "solid 1px #E85921",
+              },
+            },
           }),
         }}
       >
-        <div className="logo">
-          <Image
-            withPlaceholder
-            maw={140}
-            src="images/aiconfigLogo.png"
-            alt="AiConfig Logo"
-          />
-        </div>
         {!aiconfig ? (
           <Flex justify="center" mt="xl">
             <Loader size="xl" />
