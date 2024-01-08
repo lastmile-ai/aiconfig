@@ -14,6 +14,7 @@ diffusers # Used for image + audio generation
 torch
 torchvision
 torchaudio
+scipy # array -> wav file, text-speech. torchaudio.save seems broken.
 transformers # Used for text generation
 
 #Other
