@@ -25,6 +25,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { v4 as uuidv4 } from "uuid";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import {
   ClientPrompt,
@@ -65,7 +66,11 @@ export type AIConfigCallbacks = {
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
-  runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
+  runPrompt: (
+    promptName: string,
+    cancellationToken?: string
+  ) => Promise<{ aiconfig: AIConfig }>;
+  cancel: (cancellationToken: string) => Promise<void>;
   save: (aiconfig: AIConfig) => Promise<void>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
@@ -528,9 +533,11 @@ export default function EditorContainer({
   const runPromptCallback = callbacks.runPrompt;
   const onRunPrompt = useCallback(
     async (promptId: string) => {
+      const cancellationToken = uuidv4();
       const action: AIConfigReducerAction = {
         type: "RUN_PROMPT",
         id: promptId,
+        cancellationToken,
       };
 
       dispatch(action);
@@ -541,7 +548,10 @@ export default function EditorContainer({
           throw new Error(`Could not find prompt with id ${promptId}`);
         }
         const promptName = statePrompt.name;
-        const serverConfigRes = await runPromptCallback(promptName);
+        const serverConfigRes = await runPromptCallback(
+          promptName,
+          cancellationToken
+        );
 
         dispatch({
           type: "CONSOLIDATE_AICONFIG",
@@ -777,6 +787,7 @@ export default function EditorContainer({
                   getModels={callbacks.getModels}
                   onChangePromptInput={onChangePromptInput}
                   onChangePromptName={onChangePromptName}
+                  cancel={callbacks.cancel}
                   onRunPrompt={onRunPrompt}
                   onUpdateModel={onUpdatePromptModel}
                   onUpdateModelSettings={onUpdatePromptModelSettings}

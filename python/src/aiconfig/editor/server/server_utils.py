@@ -1,13 +1,15 @@
+from asyncio import CancelledError, Task, sleep
+from concurrent.futures import Future
 import importlib
 import importlib.util
 import logging
 import os
 import sys
 import typing
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from types import ModuleType
-from typing import Any, Callable, NewType, Type, TypeVar, cast
+from typing import Any, Callable, Coroutine, NewType, Type, TypeVar, cast
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -75,6 +77,8 @@ class EditServerConfig(core_utils.Record):
 @dataclass
 class ServerState:
     aiconfig: AIConfigRuntime | None = None
+    tasks: dict[str, Task[Any]] = field(default_factory=dict)
+    futures: dict[str, Future[Coroutine[Any, Any, Any]]] = field(default_factory=dict)
 
 
 FlaskResponse = NewType("FlaskResponse", tuple[core_utils.JSONObject, int])
@@ -85,6 +89,7 @@ class HttpResponseWithAIConfig:
     message: str
     aiconfig: AIConfigRuntime | None
     code: int = 200
+    payload: core_utils.JSONObject | None = None
 
     EXCLUDE_OPTIONS = {
         "prompt_index": True,
@@ -93,9 +98,7 @@ class HttpResponseWithAIConfig:
     }
 
     def to_flask_format(self) -> FlaskResponse:
-        out: core_utils.JSONObject = {
-            "message": self.message,
-        }
+        out: core_utils.JSONObject = {"message": self.message, **(self.payload if self.payload is not None else {})}
         if self.aiconfig is not None:
             out["aiconfig"] = self.aiconfig.model_dump(exclude=HttpResponseWithAIConfig.EXCLUDE_OPTIONS)
 
@@ -358,3 +361,12 @@ def run_aiconfig_operation_with_request_json(
                 code=400,
                 aiconfig=None,
             ).to_flask_format()
+
+
+async def check_for_cancellation():
+    try:
+        print("checking for cancellation")
+        await sleep(0.25)  # check every 250ms
+    except CancelledError as e:
+        print("cancelled")
+        raise e

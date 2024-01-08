@@ -41,6 +41,7 @@ export type DeletePromptAction = {
 export type RunPromptAction = {
   type: "RUN_PROMPT";
   id: string;
+  cancellationToken?: string;
 };
 
 export type RunPromptErrorAction = {
@@ -221,6 +222,7 @@ export default function aiconfigReducer(
         ...prompt,
         _ui: {
           ...prompt._ui,
+          cancellationToken: action.cancellationToken,
           isRunning: true,
         },
       }));

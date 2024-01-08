@@ -12,7 +12,6 @@ export default function Editor() {
 
   const loadConfig = useCallback(async () => {
     const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
-
     setAiConfig(res.aiconfig);
   }, []);
 
@@ -60,9 +59,20 @@ export default function Editor() {
     });
   }, []);
 
-  const runPrompt = useCallback(async (promptName: string) => {
-    return await ufetch.post(ROUTE_TABLE.RUN_PROMPT, {
-      prompt_name: promptName,
+  const runPrompt = useCallback(
+    async (promptName: string, cancellationToken?: string) => {
+      return await ufetch.post(ROUTE_TABLE.RUN_PROMPT, {
+        prompt_name: promptName,
+        cancellation_token_id: cancellationToken,
+      });
+    },
+    []
+  );
+
+  const cancel = useCallback(async (cancellationToken: string) => {
+    // TODO: saqadri - check the status of the response (can be 400 or 422 if cancellation fails)
+    return await ufetch.post(ROUTE_TABLE.CANCEL, {
+      cancellation_token_id: cancellationToken,
     });
   }, []);
 
@@ -120,6 +130,7 @@ export default function Editor() {
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
+      cancel,
       deletePrompt,
       getModels,
       getServerStatus,
@@ -133,6 +144,7 @@ export default function Editor() {
     }),
     [
       addPrompt,
+      cancel,
       deletePrompt,
       getModels,
       getServerStatus,

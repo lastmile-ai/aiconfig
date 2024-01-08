@@ -1,5 +1,9 @@
+import asyncio
+import concurrent.futures
+import copy
 import logging
 import webbrowser
+import uuid
 from typing import Any, Dict, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
@@ -14,6 +18,7 @@ from aiconfig.editor.server.server_utils import (
     ServerMode,
     ServerState,
     ValidatedPath,
+    check_for_cancellation,
     get_http_response_load_user_parser_module,
     get_server_state,
     get_validated_path,
@@ -65,7 +70,7 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
             LOGGER.info("Initialized server state")
             debug = edit_config.server_mode in [ServerMode.DEBUG_BACKEND, ServerMode.DEBUG_SERVERS]
             LOGGER.info(f"Running in {edit_config.server_mode} mode")
-            app.run(port=edit_config.server_port, debug=debug, use_reloader=debug)
+            app.run(port=edit_config.server_port, debug=debug, use_reloader=debug, threaded=True)
             return Ok("Done")
         case Err(e):
             LOGGER.error(f"Failed to initialize server state: {e}")
@@ -177,8 +182,14 @@ async def run() -> FlaskResponse:
     state = get_server_state(app)
     aiconfig = state.aiconfig
     request_json = request.get_json()
+    cancellation_token_id: Union[str, None] = None
+    aiconfig_deep_copy: Union[AIConfigRuntime, None] = None
 
     try:
+        cancellation_token_id = request_json.get("cancellation_token_id")
+        if not cancellation_token_id:
+            cancellation_token_id = str(uuid.uuid4())
+
         prompt_name: Union[str, None] = request_json.get("prompt_name")
         if prompt_name is None:
             return HttpResponseWithAIConfig(
@@ -194,21 +205,108 @@ async def run() -> FlaskResponse:
         params = request_json.get("params", aiconfig.get_parameters(prompt_name))  # type: ignore
         stream = request_json.get("stream", False)
         options = InferenceOptions(stream=stream)
-        run_output = await aiconfig.run(prompt_name, params, options)  # type: ignore
-        LOGGER.debug(f"run_output: {run_output}")
+
+        # Deepcopy the aiconfig prior to run so we can restore it in the case the run operation is cancelled or encounters some error
+        aiconfig_deep_copy = copy.deepcopy(aiconfig)
+
+        # Create a task to run the prompt, and associate the task with the cancellation token
+        # so that we can cancel the task if /cancel is invoked
+        task = asyncio.create_task(aiconfig.run(prompt_name, params, options))  # type: ignore
+        check_for_cancellation_task = asyncio.create_task(check_for_cancellation())
+        state.tasks[cancellation_token_id] = check_for_cancellation_task  # type: ignore
+
+        print(f"RUNNING task, cancellation_token_id: {cancellation_token_id}")
+
+        # Wait for the task to complete, or for the task to be cancelled
+        # run_output = await task  # type: ignore
+
+        done, pending = await asyncio.wait([check_for_cancellation_task, task], return_when=asyncio.FIRST_COMPLETED)  # type:ignore
+
+        for done_task in done:  # type: ignore
+            run_output = await done_task  # type: ignore
+            LOGGER.debug(f"run_output: {run_output}")
+
+        for pending_task in pending:  # type: ignore
+            pending_task.cancel()
+
+        print(f"COMPLETED task, cancellation_token_id: {cancellation_token_id}")
+
+        # Remove the task from the cancellation token map if the task is complete
+        state.tasks.pop(cancellation_token_id, None)
+
         return HttpResponseWithAIConfig(
             #
             message="Ran prompt",
             code=200,
             aiconfig=aiconfig,
         ).to_flask_format()
+    except asyncio.CancelledError:
+        print(f"CANCELLED run task, cancellation_token_id: {cancellation_token_id}")
+        # Restore the aiconfig to its state prior to the run
+        state.aiconfig = aiconfig_deep_copy if aiconfig_deep_copy is not None else state.aiconfig
+
+        # Return a 499 Client Closed Request status code to indicate that the client cancelled the request
+        return HttpResponseWithAIConfig(
+            message="The task was cancelled.",
+            payload={"cancellation_token_id": cancellation_token_id},
+            code=499,
+            aiconfig=state.aiconfig,
+        ).to_flask_format()
     except Exception as e:
+        # TODO: saqadri - should we restore the aiconfig to aiconfig_deep_copy in the case of an exception?
+
         return HttpResponseWithAIConfig(
             #
             message=f"Failed to run prompt: {type(e)}, {e}",
             code=400,
             aiconfig=None,
         ).to_flask_format()
+
+
+@app.route("/api/cancel", methods=["POST"])
+def cancel() -> FlaskResponse:
+    state = get_server_state(app)
+    request_json = request.get_json()
+
+    print("cancel request received")
+    # print(f"state: {state}")
+    # print(f"request_json: {request_json}")
+    # print(f"state.tasks: {state.tasks}")
+
+    cancellation_token_id: Union[str, None] = request_json.get("cancellation_token_id")
+    if cancellation_token_id is not None:
+        task = state.tasks.get(cancellation_token_id)
+        if task is not None:
+            # TODO: saqadri - specify a custom message here if needed
+            r = task.cancel()
+
+            print(f"TASK.CANCEL res={r}, cancellation_token_id: {cancellation_token_id}")
+
+            # Remove the task from the tasks dict
+            state.tasks.pop(cancellation_token_id)
+
+            return FlaskResponse(({"cancellation_token_id": cancellation_token_id}, 200))
+        else:
+            # Return a 422 Unprocessable Entity
+            return FlaskResponse(
+                (
+                    {
+                        "cancellation_token_id": cancellation_token_id,
+                        "message": "Unable to process cancellation request. Task not found for assosiated cancellation_token_id",
+                    },
+                    422,
+                )
+            )
+    else:
+        # Return a 400 Bad Request
+        return FlaskResponse(
+            (
+                {
+                    "message": "No cancellation_token_id was specified in the request. Unable to process cancellation.",
+                },
+                400,
+            )
+        )
 
 
 @app.route("/api/add_prompt", methods=["POST"])

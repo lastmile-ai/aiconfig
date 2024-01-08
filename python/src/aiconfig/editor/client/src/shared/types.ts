@@ -13,6 +13,7 @@ export type ClientPrompt = Prompt & {
   _ui: {
     id: string;
     isRunning?: boolean;
+    cancellationToken?: string;
   };
 };
 
