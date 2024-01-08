@@ -1,9 +1,9 @@
 # Anyscale Endpoints with AIConfig
 
-Getting Started:
+**Getting Started**:
 [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1JgGjJ2YglyaT5GHQNswkPOyB5oHGbOcv?usp=sharing)
 
-Function Calling with Mixtral:
+**Function Calling with Mixtral**:
 [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bS8hiSoNXtloQg9nEhxwgd2ZCmgUMZzl?usp=sharing)
 
 [Anyscale Endpoints](https://www.anyscale.com/endpoints) support optimized inference for many open source models, including the LLaMA2 family of models (7B, 13B, 70B, CodeLLaMA, LLaMA Guard) and Mistral (7B, Mixtral 8x7B).
