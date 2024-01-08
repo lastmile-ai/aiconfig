@@ -68,21 +68,22 @@ export default function Editor() {
     });
   }, []);
 
-  const runPrompt = useCallback(async (promptName: string) => {
-    return await ufetch.post(ROUTE_TABLE.RUN_PROMPT, {
-      prompt_name: promptName,
-    });
-  }, []);
-
-  const runPromptStream = useCallback(
-    async (promptName: string, onStream: RunPromptStreamCallback) => {
+  const runPrompt = useCallback(
+    async (
+      promptName: string,
+      enableStreaming: boolean = true,
+      onStream: RunPromptStreamCallback
+    ) => {
+      // Note: We run the streaming API even for
+      // non-streaming runs so that we can unify
+      // the way we process data on the client
       await streamingApi(
         {
           url: ROUTE_TABLE.RUN_PROMPT,
           method: "POST",
           body: {
             prompt_name: promptName,
-            stream: true,
+            stream: enableStreaming,
           },
         },
         "output_chunk",
@@ -156,7 +157,6 @@ export default function Editor() {
       getModels,
       getServerStatus,
       runPrompt,
-      runPromptStream,
       save,
       setConfigDescription,
       setConfigName,
@@ -170,7 +170,6 @@ export default function Editor() {
       getModels,
       getServerStatus,
       runPrompt,
-      runPromptStream,
       save,
       setConfigDescription,
       setConfigName,

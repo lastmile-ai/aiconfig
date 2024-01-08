@@ -79,9 +79,9 @@ export type AIConfigCallbacks = {
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
-  runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
-  runPromptStream: (
+  runPrompt: (
     promptName: string,
+    enableStreaming: boolean,
     onStream: RunPromptStreamCallback
   ) => Promise<void>;
   save: (aiconfig: AIConfig) => Promise<void>;
@@ -544,7 +544,6 @@ export default function EditorContainer({
   );
 
   const runPromptCallback = callbacks.runPrompt;
-  const runPromptStreamCallback = callbacks.runPromptStream;
 
   const onRunPrompt = useCallback(
     async (promptId: string) => {
@@ -562,34 +561,26 @@ export default function EditorContainer({
         }
 
         const promptName = statePrompt.name;
-        const isStream = isStreamingSupported(statePrompt, stateRef.current);
+        const enableStreaming = isStreamingSupported(
+          statePrompt!,
+          stateRef.current
+        );
 
-        if (isStream) {
-          await runPromptStreamCallback(promptName, (event) => {
-            if (event.type === "output_chunk") {
-              dispatch({
-                type: "STREAM_OUTPUT_CHUNK",
-                id: promptId,
-                output: event.data,
-              });
-            } else if (event.type === "aiconfig") {
-              dispatch({
-                type: "CONSOLIDATE_AICONFIG",
-                action,
-                config: event.data,
-              });
-            }
-          });
-          return;
-        } else {
-          const serverConfigRes = await runPromptCallback(promptName);
-
-          dispatch({
-            type: "CONSOLIDATE_AICONFIG",
-            action,
-            config: serverConfigRes.aiconfig,
-          });
-        }
+        await runPromptCallback(promptName, enableStreaming, (event) => {
+          if (event.type === "output_chunk") {
+            dispatch({
+              type: "STREAM_OUTPUT_CHUNK",
+              id: promptId,
+              output: event.data,
+            });
+          } else if (event.type === "aiconfig") {
+            dispatch({
+              type: "CONSOLIDATE_AICONFIG",
+              action,
+              config: event.data,
+            });
+          }
+        });
       } catch (err: unknown) {
         const message = (err as RequestCallbackError).message ?? null;
 
@@ -609,7 +600,7 @@ export default function EditorContainer({
         });
       }
     },
-    [runPromptCallback, runPromptStreamCallback]
+    [runPromptCallback]
   );
 
   const setNameCallback = callbacks.setConfigName;
