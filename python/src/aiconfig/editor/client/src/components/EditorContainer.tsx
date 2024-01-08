@@ -36,8 +36,8 @@ import {
 import AddPromptButton from "./prompt/AddPromptButton";
 import {
   getDefaultNewPromptName,
+  getModelSettingsStream,
   getPrompt,
-  isStreamingSupported,
 } from "../utils/aiconfigStateUtils";
 import { debounce, uniqueId } from "lodash";
 import PromptMenuButton from "./prompt/PromptMenuButton";
@@ -79,11 +79,11 @@ export type AIConfigCallbacks = {
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
-  runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
-  runPromptStream: (
+  runPrompt: (
     promptName: string,
-    onStream: RunPromptStreamCallback
-  ) => Promise<void>;
+    onStream: RunPromptStreamCallback,
+    enableStreaming?: boolean
+  ) => Promise<{ aiconfig?: AIConfig } | void>;
   save: (aiconfig: AIConfig) => Promise<void>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
@@ -544,7 +544,6 @@ export default function EditorContainer({
   );
 
   const runPromptCallback = callbacks.runPrompt;
-  const runPromptStreamCallback = callbacks.runPromptStream;
 
   const onRunPrompt = useCallback(
     async (promptId: string) => {
@@ -562,10 +561,14 @@ export default function EditorContainer({
         }
 
         const promptName = statePrompt.name;
-        const isStream = isStreamingSupported(statePrompt, stateRef.current);
+        const enableStreaming: boolean | undefined = getModelSettingsStream(
+          statePrompt,
+          stateRef.current
+        );
 
-        if (isStream) {
-          await runPromptStreamCallback(promptName, (event) => {
+        const serverConfigResponse = await runPromptCallback(
+          promptName,
+          (event) => {
             if (event.type === "output_chunk") {
               dispatch({
                 type: "STREAM_OUTPUT_CHUNK",
@@ -579,15 +582,15 @@ export default function EditorContainer({
                 config: event.data,
               });
             }
-          });
-          return;
-        } else {
-          const serverConfigRes = await runPromptCallback(promptName);
+          },
+          enableStreaming
+        );
 
+        if (serverConfigResponse?.aiconfig) {
           dispatch({
             type: "CONSOLIDATE_AICONFIG",
             action,
-            config: serverConfigRes.aiconfig,
+            config: serverConfigResponse?.aiconfig,
           });
         }
       } catch (err: unknown) {
@@ -609,7 +612,7 @@ export default function EditorContainer({
         });
       }
     },
-    [runPromptCallback, runPromptStreamCallback]
+    [runPromptCallback]
   );
 
   const setNameCallback = callbacks.setConfigName;
