@@ -107,6 +107,7 @@ export const OpenAIChatModelParserPromptSchema: PromptSchema = {
       },
       stream: {
         type: "boolean",
+        default: true,
         description: `Whether to stream back partial progress. 
         If set, tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a data: [DONE] message. Example Python code.`,
       },
