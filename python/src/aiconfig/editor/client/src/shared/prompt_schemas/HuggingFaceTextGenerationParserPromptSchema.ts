@@ -32,6 +32,7 @@ export const HuggingFaceTextGenerationParserPromptSchema: PromptSchema = {
       },
       stream: {
         type: "boolean",
+        default: true,
       },
       do_sample: {
         type: "boolean",
