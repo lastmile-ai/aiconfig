@@ -300,9 +300,10 @@ def run() -> FlaskResponse:
                 status=200,
                 content_type="application/json",
             )
-        
+
         # Run without streaming
         inference_options = InferenceOptions(stream=stream)
+
         def run_async_config_in_thread():
             asyncio.run(
                 aiconfig.run(
@@ -324,7 +325,7 @@ def run() -> FlaskResponse:
             code=200,
             aiconfig=aiconfig,
         ).to_flask_format()
-            
+
     except Exception as e:
         return HttpResponseWithAIConfig(
             #
