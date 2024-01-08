@@ -593,7 +593,6 @@ export default function EditorContainer({
       } catch (err: unknown) {
         const message = (err as RequestCallbackError).message ?? null;
 
-        // TODO: Add ErrorOutput component to show error instead of notification
         dispatch({
           type: "RUN_PROMPT_ERROR",
           id: promptId,

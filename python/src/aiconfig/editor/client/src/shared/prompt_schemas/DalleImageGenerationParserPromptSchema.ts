@@ -10,6 +10,9 @@ export const DalleImageGenerationParserPromptSchema: PromptSchema = {
   model_settings: {
     type: "object",
     properties: {
+      model: {
+        type: "string",
+      },
       n: {
         type: "integer",
         minimum: 1,
