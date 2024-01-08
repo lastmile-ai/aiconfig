@@ -2,20 +2,21 @@
   "name": "Chain-of-Verification (CoVe)  Template",
   "schema_version": "latest",
   "metadata": {
+    "parameters": {
+      "baseline_prompt": "Name 25 politicians who were born in New York City, New York. ",
+      "verification_question": "Where was {{entity}} born? "
+    },
     "models": {
       "gpt-4": {
-        "model": "gpt-4",
+        "model": "gpt-3.5-turbo",
         "top_p": 1,
         "temperature": 0,
         "presence_penalty": 0,
         "frequency_penalty": 0
       }
-    },
-    "parameters": {
-      "baseline_prompt": "Name 25 politicians who were born in New York City, New York. ",
-      "verification_question": "Where was {{entity}} born? "
     }
   },
+  "description": "",
   "prompts": [
     {
       "name": "baseline_response_gen",
@@ -45,7 +46,8 @@
           "entity": "George Pataki"
         },
         "remember_chat_context": false
-      }
+      },
+      "outputs": []
     },
     {
       "name": "final_response_gen",
@@ -61,7 +63,9 @@
           "verification_results": "Theodore Roosevelt was born in New York City, New York on October 27, 1858. Franklin D. Roosevelt was born in Hyde Park, New York on January 30, 1882. Alexander Hamilton was born in Charlestown, Nevis on January 11, 1755. John Jay was born in New York City, New York on December 12, 1745. DeWitt Clinton was born in Little Britain, New York on March 2, 1769. William H. Seward was born in Florida, New York on May 16, 1801. Charles Evans Hughes was born in Glens Falls, New York on April 11, 1862. Nelson Rockefeller was born in Bar Harbor, Maine on July 8, 1908. Robert F. Wagner Jr. was born in Manhattan, New York on April 20, 1910. Bella Abzug was born in New York City, New York on July 24, 1920. Shirley Chisholm was born in Brooklyn, New York on November 30, 1924. Geraldine Ferraro was born in Newburgh, New York on August 26, 1935. Eliot Spitzer was born in The Bronx, New York on June 10, 1959. Michael Bloomberg was born in Boston, Massachusetts on February 14, 1942. Andrew Cuomo was born in New York City, New York on December 6, 1957. Bill de Blasio was born in Manhattan, New York on May 8, 1961. Charles Rangel was born in Harlem, New York City on June 11, 1930. Daniel Patrick Moynihan was born in Tulsa, Oklahoma on March 16, 1927. Jacob Javits was born in New York City, New York on May 18, 1904. Al Smith was born in New York City, New York on December 30, 1873. Rudy Giuliani was born in Brooklyn, New York on May 28, 1944. George Pataki was born in Peekskill, New York on June 24, 1945. Kirsten Gillibrand was born in Albany, New York on December 9, 1966. Chuck Schumer was born in Brooklyn, New York on November 23, 1950. Alexandria Ocasio-Cortez was born in The Bronx, New York City, New York on October 13, 1989."
         },
         "remember_chat_context": false
-      }
+      },
+      "outputs": []
     }
-  ]
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
 }
