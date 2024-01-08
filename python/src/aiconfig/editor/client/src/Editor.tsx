@@ -68,6 +68,11 @@ export default function Editor() {
     });
   }, []);
 
+  const clearOutputs = useCallback(async () => {
+    return await ufetch.post(ROUTE_TABLE.CLEAR_OUTPUTS, {
+    });
+  }, []);
+
   const runPrompt = useCallback(
     async (
       promptName: string,
@@ -153,6 +158,7 @@ export default function Editor() {
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
+      clearOutputs,
       deletePrompt,
       getModels,
       getServerStatus,
@@ -166,6 +172,7 @@ export default function Editor() {
     }),
     [
       addPrompt,
+      clearOutputs,
       deletePrompt,
       getModels,
       getServerStatus,
