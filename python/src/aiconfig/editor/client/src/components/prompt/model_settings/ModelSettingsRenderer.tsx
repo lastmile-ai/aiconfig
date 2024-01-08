@@ -1,10 +1,11 @@
 import ModelSettingsSchemaRenderer from "./ModelSettingsSchemaRenderer";
 import { GenericPropertiesSchema } from "../../../utils/promptUtils";
-import { ActionIcon, Flex, Tooltip, createStyles } from "@mantine/core";
+import { Flex, Text, createStyles } from "@mantine/core";
 import { JSONObject } from "aiconfig";
 import { memo, useState } from "react";
-import { IconBraces, IconBracesOff } from "@tabler/icons-react";
 import JSONRenderer from "../../JSONRenderer";
+import JSONEditorToggleButton from "../../JSONEditorToggleButton";
+import { ErrorBoundary, useErrorBoundary } from "react-error-boundary";
 
 type Props = {
   settings?: JSONObject;
@@ -22,6 +23,35 @@ const useStyles = createStyles(() => ({
   },
 }));
 
+type ErrorFallbackProps = {
+  settings?: JSONObject;
+  toggleJSONEditor: () => void;
+};
+
+function SettingsErrorFallback({
+  settings,
+  toggleJSONEditor,
+}: ErrorFallbackProps) {
+  const { resetBoundary: clearRenderError } = useErrorBoundary();
+  return (
+    <Flex direction="column">
+      <Text color="red" size="sm">
+        <Flex justify="flex-end">
+          <JSONEditorToggleButton
+            isRawJSON={false}
+            setIsRawJSON={() => {
+              clearRenderError();
+              toggleJSONEditor();
+            }}
+          />
+        </Flex>
+        Invalid settings format for model. Toggle JSON editor to update
+      </Text>
+      <JSONRenderer content={settings} />
+    </Flex>
+  );
+}
+
 export default memo(function ModelSettingsRenderer({
   settings,
   schema,
@@ -30,37 +60,45 @@ export default memo(function ModelSettingsRenderer({
   const { classes } = useStyles();
   const [isRawJSON, setIsRawJSON] = useState(schema == null);
 
+  const rawJSONToggleButton = (
+    <Flex justify="flex-end">
+      <JSONEditorToggleButton
+        isRawJSON={isRawJSON}
+        setIsRawJSON={setIsRawJSON}
+      />
+    </Flex>
+  );
+
   return (
     <Flex direction="column" className={classes.settingsContainer}>
-      {/* // TODO: Refactor this out to a generic wrapper for toggling JSONRenderer or children component */}
-      {/* // Only show the toggle if there is a schema to toggle between JSON and custom schema renderer */}
-      {schema && (
-        <Flex justify="flex-end">
-          <Tooltip label="Toggle JSON editor" withArrow>
-            <ActionIcon onClick={() => setIsRawJSON((curr) => !curr)}>
-              {isRawJSON ? (
-                <IconBracesOff size="1rem" />
-              ) : (
-                <IconBraces size="1rem" />
-              )}
-            </ActionIcon>
-          </Tooltip>
-        </Flex>
-      )}
       {isRawJSON || !schema ? (
-        <JSONRenderer
-          content={settings}
-          onChange={(val) =>
-            onUpdateModelSettings(val as Record<string, unknown>)
-          }
-          // schema={schema} TODO: Add schema after fixing z-index issue
-        />
+        <>
+          {/* // Only show the toggle if there is a schema to toggle between JSON and custom schema renderer */}
+          {schema && rawJSONToggleButton}
+          <JSONRenderer
+            content={settings}
+            onChange={(val) =>
+              onUpdateModelSettings(val as Record<string, unknown>)
+            }
+            // schema={schema} TODO: Add schema after fixing z-index issue
+          />
+        </>
       ) : (
-        <ModelSettingsSchemaRenderer
-          settings={settings}
-          schema={schema}
-          onUpdateModelSettings={onUpdateModelSettings}
-        />
+        <ErrorBoundary
+          fallbackRender={() => (
+            <SettingsErrorFallback
+              settings={settings}
+              toggleJSONEditor={() => setIsRawJSON(true)}
+            />
+          )}
+        >
+          {rawJSONToggleButton}
+          <ModelSettingsSchemaRenderer
+            settings={settings}
+            schema={schema}
+            onUpdateModelSettings={onUpdateModelSettings}
+          />
+        </ErrorBoundary>
       )}
     </Flex>
   );

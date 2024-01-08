@@ -239,6 +239,14 @@ export default function aiconfigReducer(
           ...prompt._ui,
           isRunning: false,
         },
+        outputs: [
+          {
+            output_type: "error",
+            ename: "Error",
+            evalue: action.message ?? "Error running prompt",
+            traceback: [],
+          },
+        ],
       }));
     }
     case "SAVE_CONFIG_SUCCESS": {
