@@ -228,6 +228,10 @@ export default function Editor() {
                   "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
               },
             },
+            ".prompt-label": {
+              // display: "none",
+              color: "red",
+            },
             ".cellStyle": {
               border: "1px solid rgba(226,232,255,.1) !important",
               background: "rgb(12 21 57 / 10%)",

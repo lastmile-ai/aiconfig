@@ -1,4 +1,4 @@
-import { TextInput } from "@mantine/core";
+import { Text, TextInput } from "@mantine/core";
 import { ChangeEvent, memo, useContext, useState } from "react";
 import AIConfigContext from "../AIConfigContext";
 
@@ -21,19 +21,28 @@ export default memo(function PromptName({ promptId, name, onUpdate }: Props) {
   };
 
   return (
-    <TextInput
-      value={nameInput}
-      className="ghost"
-      variant="unstyled"
-      placeholder="Name this prompt"
-      onChange={onChange}
-      error={
-        getState().prompts.some(
-          (p) => p.name === nameInput && p._ui.id !== promptId
-        )
-          ? "Name already exists"
-          : null
-      }
-    />
+    <div>
+      <Text size="sm" className="prompt-label">
+        Cell Name
+      </Text>
+      <TextInput
+        value={nameInput}
+        label="Cell Name label prop"
+        classNames={{
+          root: "ghost",
+          label: "prompt-label",
+        }}
+        variant="unstyled"
+        placeholder="Name this prompt"
+        onChange={onChange}
+        error={
+          getState().prompts.some(
+            (p) => p.name === nameInput && p._ui.id !== promptId
+          )
+            ? "Name already exists"
+            : null
+        }
+      />
+    </div>
   );
 });

@@ -58,7 +58,10 @@ export default memo(function PromptInputRenderer({
   );
 
   const nonJSONRenderer = (
-    <>
+    <div>
+      <Text size="sm" className="prompt-label" mb="xs">
+        Prompt
+      </Text>
       {schema ? (
         <PromptInputSchemaRenderer
           input={input}
@@ -72,19 +75,22 @@ export default memo(function PromptInputRenderer({
         />
       )}
       {rawJSONToggleButton}
-    </>
+    </div>
   );
 
   return (
     <>
       {isRawJSON ? (
-        <>
+        <div>
+          <Text size="sm" className="prompt-label" mb="xs">
+            Prompt
+          </Text>
           <PromptInputJSONRenderer
             input={input}
             onChangeInput={onChangeInput}
           />
           {rawJSONToggleButton}
-        </>
+        </div>
       ) : (
         <ErrorBoundary
           fallbackRender={() => (
