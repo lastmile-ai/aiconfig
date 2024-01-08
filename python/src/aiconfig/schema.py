@@ -873,7 +873,7 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         """
         prompt = self.get_prompt(prompt_name)
         existing_outputs = prompt.outputs
-        prompt.outputs = []
+        prompt.outputs = None
 
         return existing_outputs
 
