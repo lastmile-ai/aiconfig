@@ -71,11 +71,8 @@ type RunPromptStreamEvent =
 export type RunPromptStreamCallback = (event: RunPromptStreamEvent) => void;
 
 export type AIConfigCallbacks = {
-  addPrompt: (
-    promptName: string,
-    prompt: Prompt,
-    index: number
-  ) => Promise<{ aiconfig: AIConfig }>;
+  addPrompt: (promptName: string, prompt: Prompt, index: number) => Promise<{ aiconfig: AIConfig }>;
+  clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
@@ -543,6 +540,26 @@ export default function EditorContainer({
     [deletePromptCallback, dispatch]
   );
 
+  const clearOutputsCallback = callbacks.clearOutputs;
+  const onClearOutputs = useCallback(
+    async () => {
+      try {
+        dispatch({
+          type: "CLEAR_OUTPUTS",
+        });
+        await clearOutputsCallback();
+      } catch (err: unknown) {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error clearing outputs",
+          message,
+          color: "red",
+        });
+      }
+    },
+    [clearOutputsCallback, dispatch]
+  );
+
   const runPromptCallback = callbacks.runPrompt;
   const runPromptStreamCallback = callbacks.runPromptStream;
 
@@ -773,6 +790,11 @@ export default function EditorContainer({
       )}
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
+          <div>
+            <Button loading={undefined} onClick={onClearOutputs} size="xs" variant = "gradient">
+              Clear Outputs
+            </Button>
+          </div>
           <Tooltip
             label={isDirty ? "Save changes to config" : "No unsaved changes"}
           >
