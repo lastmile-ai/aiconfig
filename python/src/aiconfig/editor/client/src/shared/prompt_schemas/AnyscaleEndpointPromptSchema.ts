@@ -40,6 +40,7 @@ export const AnyscaleEndpointPromptSchema: PromptSchema = {
       },
       stream: {
         type: "boolean",
+        default: true,
         description: `If true, send messages token by token. If false, messages send in bulk.`,
       },
       temperature: {
