@@ -29,6 +29,8 @@ import {
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import {
   ClientPrompt,
+  LogEvent,
+  LogEventData,
   aiConfigToClientConfig,
   clientConfigToAIConfig,
   clientPromptToAIConfigPrompt,
@@ -79,6 +81,7 @@ export type AIConfigCallbacks = {
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
+  logEvent?: (event: LogEvent, data?: LogEventData) => void;
   runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
   runPromptStream: (
     promptName: string,
@@ -144,6 +147,8 @@ export default function EditorContainer({
 
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
+
+  const logEvent = callbacks.logEvent;
 
   const saveCallback = callbacks.save;
   const onSave = useCallback(async () => {
@@ -493,6 +498,7 @@ export default function EditorContainer({
       };
 
       dispatch(action);
+      logEvent?.("ADD_PROMPT", { model, promptIndex });
 
       try {
         const serverConfigRes = await addPromptCallback(
@@ -514,7 +520,7 @@ export default function EditorContainer({
         });
       }
     },
-    [addPromptCallback, dispatch]
+    [addPromptCallback, logEvent]
   );
 
   const deletePromptCallback = callbacks.deletePrompt;
@@ -681,8 +687,9 @@ export default function EditorContainer({
   const contextValue = useMemo(
     () => ({
       getState,
+      logEvent,
     }),
-    [getState]
+    [getState, logEvent]
   );
 
   const isDirty = aiconfigState._ui.isDirty !== false;
@@ -778,7 +785,10 @@ export default function EditorContainer({
             <Button
               leftIcon={<IconDeviceFloppy />}
               loading={isSaving}
-              onClick={onSave}
+              onClick={() => {
+                onSave();
+                logEvent?.("SAVE_BUTTON_CLICKED");
+              }}
               disabled={!isDirty}
               size="xs"
               variant="gradient"

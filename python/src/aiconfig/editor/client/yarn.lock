@@ -1289,6 +1289,18 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
+"@datadog/browser-core@5.6.0":
+  version "5.6.0"
+  resolved "https://registry.yarnpkg.com/@datadog/browser-core/-/browser-core-5.6.0.tgz#f7a0d809afede4520bb4786886b4648c0e1b890d"
+  integrity sha512-z6CvlJyEFbYNw2ZawY9fDHQjdl71yp0OcchvB/S4SGKdQVLPUd48Y528gv132VDnY2g0UipE9JK59wnAamyS9w==
+
+"@datadog/browser-logs@^5.6.0":
+  version "5.6.0"
+  resolved "https://registry.yarnpkg.com/@datadog/browser-logs/-/browser-logs-5.6.0.tgz#2b4b62d87a315560e87d46f84504012f7b7bdecd"
+  integrity sha512-NyqkG+UfAgz86CbEbSrAlDR5GvjJHAUwaI38xo9JR+9O5KJkwMgRnvQBtmdmpjjm723yyWeDcTd+ZIdvgIP61g==
+  dependencies:
+    "@datadog/browser-core" "5.6.0"
+
 "@emotion/babel-plugin@^11.11.0":
   version "11.11.0"
   resolved "https://registry.yarnpkg.com/@emotion/babel-plugin/-/babel-plugin-11.11.0.tgz#c2d872b6a7767a9d176d007f5b31f7d504bb5d6c"
