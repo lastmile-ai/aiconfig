@@ -2,7 +2,9 @@
   "name": "NYC Trip Planner",
   "schema_version": "latest",
   "metadata": {
-    "parameters": {},
+    "parameters": {
+      "": ""
+    },
     "models": {
       "gpt-3.5-turbo": {
         "model": "gpt-3.5-turbo",
@@ -21,8 +23,7 @@
   "prompts": [
     {
       "name": "get_activities",
-      "input": "Tell me 10 fun attractions to do in NYC.",
-      "outputs": []
+      "input": "Tell me 10 fun attractions to do in NYC."
     },
     {
       "name": "gen_itinerary",
@@ -32,8 +33,7 @@
         "parameters": {
           "order_by": "geographic location"
         }
-      },
-      "outputs": []
+      }
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
