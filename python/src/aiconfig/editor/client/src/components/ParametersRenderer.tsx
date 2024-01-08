@@ -105,20 +105,20 @@ const ParameterInput = memo(function ParameterInput(props: {
           value={parameterValueString}
           autosize
           size="xs"
+          minRows={3}
           maxRows={5}
           onChange={(event) => {
             setParameterValueString(event.target.value);
             debouncedCellParameterUpdate(parameterName, event.target.value);
           }}
         />
+        <ActionIcon
+          onClick={() => removeParameter(parameterName)}
+          disabled={isReadonly}
+        >
+          <IconTrash size={16} color={isReadonly ? "grey" : "red"} />
+        </ActionIcon>
       </Stack>
-      <ActionIcon
-        onClick={() => removeParameter(parameterName)}
-        style={{ marginTop: -50 }}
-        disabled={isReadonly}
-      >
-        <IconTrash size={16} color={isReadonly ? "grey" : "red"} />
-      </ActionIcon>
     </Group>
   );
 });
@@ -247,7 +247,7 @@ export default memo(function ParametersRenderer(props: {
       </Stack>
       {isReadonly ? null : (
         <Tooltip label="Add parameter">
-          <ActionIcon onClick={addParameter}>
+          <ActionIcon onClick={addParameter} className="addParameterButton">
             <IconPlus size={16} />
           </ActionIcon>
         </Tooltip>
