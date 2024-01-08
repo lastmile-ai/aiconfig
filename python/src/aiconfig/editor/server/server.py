@@ -202,7 +202,7 @@ def run() -> FlaskResponse:
     # aiconfig.get_parameters(prompt_name) directly inside of run. See:
     # https://github.com/lastmile-ai/aiconfig/issues/671
     params = request_json.get("params", aiconfig.get_parameters(prompt_name))  # type: ignore
-    stream = request_json.get("stream", False) # TODO: set this automatically to True after client supports stream output
+    stream = request_json.get("stream", True)
 
     # Define stream callback and queue object for streaming results
     output_text_queue = QueueIterator()
@@ -291,39 +291,38 @@ def run() -> FlaskResponse:
         yield "]"
 
     try:
-        if stream:
-            LOGGER.info(f"Running `aiconfig.run()` command with request: {request_json}")
-            # Streaming based on
-            # https://stackoverflow.com/questions/73275517/flask-not-streaming-json-response
-            return Response(
-                stream_with_context(generate()),
-                status=200,
-                content_type="application/json",
-            )
-        
-        # Run without streaming
-        inference_options = InferenceOptions(stream=stream)
-        def run_async_config_in_thread():
-            asyncio.run(
-                aiconfig.run(
-                    prompt_name=prompt_name,
-                    params=params,
-                    run_with_dependencies=False,
-                    options=inference_options,
-                )
-            )
-            output_text_queue.put(STOP_STREAMING_SIGNAL)
-
-        t = threading.Thread(target=run_async_config_in_thread)
-        t.start()
         LOGGER.info(f"Running `aiconfig.run()` command with request: {request_json}")
-        t.join()
-        return HttpResponseWithAIConfig(
-            #
-            message="Ran prompt",
-            code=200,
-            aiconfig=aiconfig,
-        ).to_flask_format()
+        # Streaming based on
+        # https://stackoverflow.com/questions/73275517/flask-not-streaming-json-response
+        return Response(
+            stream_with_context(generate()),
+            status=200,
+            content_type="application/json",
+        )
+        
+        # # Run without streaming
+        # inference_options = InferenceOptions(stream=stream)
+        # def run_async_config_in_thread():
+        #     asyncio.run(
+        #         aiconfig.run(
+        #             prompt_name=prompt_name,
+        #             params=params,
+        #             run_with_dependencies=False,
+        #             options=inference_options,
+        #         )
+        #     )
+        #     output_text_queue.put(STOP_STREAMING_SIGNAL)
+
+        # t = threading.Thread(target=run_async_config_in_thread)
+        # t.start()
+        # LOGGER.info(f"Running `aiconfig.run()` command with request: {request_json}")
+        # t.join()
+        # return HttpResponseWithAIConfig(
+        #     #
+        #     message="Ran prompt",
+        #     code=200,
+        #     aiconfig=aiconfig,
+        # ).to_flask_format()
             
     except Exception as e:
         return HttpResponseWithAIConfig(

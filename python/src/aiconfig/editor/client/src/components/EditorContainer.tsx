@@ -14,6 +14,7 @@ import {
   AIConfig,
   InferenceSettings,
   JSONObject,
+  Output,
   Prompt,
   PromptInput,
 } from "aiconfig";
@@ -36,6 +37,7 @@ import AddPromptButton from "./prompt/AddPromptButton";
 import {
   getDefaultNewPromptName,
   getPrompt,
+  isStreamingSupported,
 } from "../utils/aiconfigStateUtils";
 import { debounce, uniqueId } from "lodash";
 import PromptMenuButton from "./prompt/PromptMenuButton";
@@ -56,6 +58,18 @@ type Props = {
   callbacks: AIConfigCallbacks;
 };
 
+type RunPromptStreamEvent =
+  | {
+      type: "output_chunk";
+      data: Output;
+    }
+  | {
+      type: "aiconfig";
+      data: AIConfig;
+    };
+
+export type RunPromptStreamCallback = (event: RunPromptStreamEvent) => void;
+
 export type AIConfigCallbacks = {
   addPrompt: (
     promptName: string,
@@ -65,7 +79,12 @@ export type AIConfigCallbacks = {
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
-  runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
+  // runPrompt: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
+  runPrompt: (
+    promptName: string,
+    enableStreamin: boolean,
+    onStream: RunPromptStreamCallback
+  ) => Promise<void>;
   save: (aiconfig: AIConfig) => Promise<void>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
@@ -526,6 +545,7 @@ export default function EditorContainer({
   );
 
   const runPromptCallback = callbacks.runPrompt;
+
   const onRunPrompt = useCallback(
     async (promptId: string) => {
       const action: AIConfigReducerAction = {
@@ -540,14 +560,39 @@ export default function EditorContainer({
         if (!statePrompt) {
           throw new Error(`Could not find prompt with id ${promptId}`);
         }
-        const promptName = statePrompt.name;
-        const serverConfigRes = await runPromptCallback(promptName);
 
-        dispatch({
-          type: "CONSOLIDATE_AICONFIG",
-          action,
-          config: serverConfigRes.aiconfig,
+        const promptName = statePrompt.name;
+        const enableStreaming = isStreamingSupported(
+          statePrompt!,
+          stateRef.current
+        );
+
+        // if (isStream) {
+        await runPromptCallback(promptName, enableStreaming, (event) => {
+          if (event.type === "output_chunk") {
+            dispatch({
+              type: "STREAM_OUTPUT_CHUNK",
+              id: promptId,
+              output: event.data,
+            });
+          } else if (event.type === "aiconfig") {
+            dispatch({
+              type: "CONSOLIDATE_AICONFIG",
+              action,
+              config: event.data,
+            });
+          }
         });
+        // return;
+        // // } else {
+        // //   const serverConfigRes = await runPromptCallback(promptName);
+
+        // //   dispatch({
+        // //     type: "CONSOLIDATE_AICONFIG",
+        // //     action,
+        // //     config: serverConfigRes.aiconfig,
+        // //   });
+        // // }
       } catch (err: unknown) {
         const message = (err as RequestCallbackError).message ?? null;
 
