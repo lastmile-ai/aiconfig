@@ -349,14 +349,6 @@ export default function Editor() {
           }),
         }}
       >
-        <div className="logo">
-          <Image
-            withPlaceholder
-            maw={140}
-            src="images/aiconfigLogo.png"
-            alt="AiConfig Logo"
-          />
-        </div>
         {!aiconfig ? (
           <Flex justify="center" mt="xl">
             <Loader size="xl" />
