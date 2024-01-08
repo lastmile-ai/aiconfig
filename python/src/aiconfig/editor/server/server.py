@@ -457,3 +457,30 @@ def set_description() -> FlaskResponse:
     operation = make_op_run_method(MethodName("set_description"))
     operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"description": description}))
     return run_aiconfig_operation_with_op_args(aiconfig, "set_description", operation, operation_args)
+
+@app.route("/api/clear_outputs", methods=["POST"])
+def clear_outputs() -> FlaskResponse:
+    """
+    Clears all outputs in the server state's AIConfig.
+    """
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+
+    if aiconfig is None:
+        LOGGER.info("No AIConfig in memory, can't run clear outputs.")
+        return HttpResponseWithAIConfig(
+            message="No AIConfig in memory, can't run clear outputs.",
+            code=400,
+            aiconfig=None,
+        ).to_flask_format()
+
+    for prompt in aiconfig.prompts:
+        prompt_name = prompt.name
+        # fn name `delete_output`` is misleading. TODO: Rename to `delete_outputs`` in AIConfig API
+        aiconfig.delete_output(prompt_name)
+
+
+    return HttpResponseWithAIConfig(
+                message="Done",
+                aiconfig=aiconfig,
+            ).to_flask_format()
