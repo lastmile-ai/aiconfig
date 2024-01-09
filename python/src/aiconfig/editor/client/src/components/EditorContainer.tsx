@@ -90,7 +90,11 @@ export type RunPromptStreamErrorCallback = (
 ) => void;
 
 export type AIConfigCallbacks = {
-  addPrompt: (promptName: string, prompt: Prompt, index: number) => Promise<{ aiconfig: AIConfig }>;
+  addPrompt: (
+    promptName: string,
+    prompt: Prompt,
+    index: number
+  ) => Promise<{ aiconfig: AIConfig }>;
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
@@ -563,24 +567,21 @@ export default function EditorContainer({
   );
 
   const clearOutputsCallback = callbacks.clearOutputs;
-  const onClearOutputs = useCallback(
-    async () => {
-      dispatch({
-        type: "CLEAR_OUTPUTS",
+  const onClearOutputs = useCallback(async () => {
+    dispatch({
+      type: "CLEAR_OUTPUTS",
+    });
+    try {
+      await clearOutputsCallback();
+    } catch (err: unknown) {
+      const message = (err as RequestCallbackError).message ?? null;
+      showNotification({
+        title: "Error clearing outputs",
+        message,
+        color: "red",
       });
-      try {
-        await clearOutputsCallback();
-      } catch (err: unknown) {
-        const message = (err as RequestCallbackError).message ?? null;
-        showNotification({
-          title: "Error clearing outputs",
-          message,
-          color: "red",
-        });
-      }
-    },
-    [clearOutputsCallback, dispatch]
-  );
+    }
+  }, [clearOutputsCallback, dispatch]);
 
   const runPromptCallback = callbacks.runPrompt;
 
@@ -856,24 +857,29 @@ export default function EditorContainer({
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
           <Group>
-            <Button loading={undefined} onClick={onClearOutputs} size="xs" variant="gradient">
-              Clear Outputs
-            </Button>
-          
-          <Tooltip
-            label={isDirty ? "Save changes to config" : "No unsaved changes"}
-          >
             <Button
-              leftIcon={<IconDeviceFloppy />}
-              loading={isSaving}
-              onClick={onSave}
-              disabled={!isDirty}
+              loading={undefined}
+              onClick={onClearOutputs}
               size="xs"
               variant="gradient"
             >
-              Save
+              Clear Outputs
             </Button>
-          </Tooltip>
+
+            <Tooltip
+              label={isDirty ? "Save changes to config" : "No unsaved changes"}
+            >
+              <Button
+                leftIcon={<IconDeviceFloppy />}
+                loading={isSaving}
+                onClick={onSave}
+                disabled={!isDirty}
+                size="xs"
+                variant="gradient"
+              >
+                Save
+              </Button>
+            </Tooltip>
           </Group>
         </Flex>
         <ConfigNameDescription
