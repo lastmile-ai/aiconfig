@@ -24,4 +24,5 @@ export const ROUTE_TABLE = {
   RUN_PROMPT: urlJoin(API_ENDPOINT, "/run"),
   UPDATE_MODEL: urlJoin(API_ENDPOINT, "/update_model"),
   UPDATE_PROMPT: urlJoin(API_ENDPOINT, "/update_prompt"),
+  UPLOAD_POLICY: "https://lastmileai.dev/api/upload/publicpolicy",
 };
