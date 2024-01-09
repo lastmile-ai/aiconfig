@@ -1,9 +1,9 @@
-import EditorContainer, {
+import AIConfigEditor, {
   AIConfigCallbacks,
   RunPromptStreamCallback,
   RunPromptStreamErrorCallback,
   RunPromptStreamErrorEvent,
-} from "./components/EditorContainer";
+} from "./components/AIConfigEditor";
 import { Flex, Loader, MantineProvider, Image } from "@mantine/core";
 import {
   AIConfig,
@@ -229,7 +229,7 @@ export default function Editor() {
             deg: 45,
           },
           // local editor theme
-          globalStyles: (local) => ({
+          globalStyles: () => ({
             ".editorBackground": {
               background:
                 "radial-gradient(ellipse at top,#08122d,#030712),radial-gradient(ellipse at bottom,#030712,#030712)",
@@ -400,7 +400,7 @@ export default function Editor() {
             <Loader size="xl" />
           </Flex>
         ) : (
-          <EditorContainer aiconfig={aiconfig} callbacks={callbacks} />
+          <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} />
         )}
       </MantineProvider>
     </div>
