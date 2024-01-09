@@ -12,6 +12,12 @@ export default memo(function MimeTypeRenderer({ mimeType, content }: Props) {
     case "image":
       // TODO: Figure out base64 encoding
       return <Image alt="Attachment image" src={content} maw={300} />;
+    case "audio":
+      return (
+        <audio controls>
+          <source src={content} type={mimeType} />
+        </audio>
+      );
     default: // "text"
       return <span>{content}</span>;
   }
