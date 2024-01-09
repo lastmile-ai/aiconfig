@@ -11,8 +11,8 @@ from aiconfig_extension_hugging_face import (
 def register_model_parsers() -> None:
     # NOTE: Commented out models need a new version of the aiconfig_extension_hugging_face package
 
-    # AIConfigRuntime.register_model_parser(HuggingFaceTextSummarizationTransformer(), "TextSummarizationTask")
-    AIConfigRuntime.register_model_parser(HuggingFaceText2ImageDiffusor(), "Text2ImageTask")
-    # AIConfigRuntime.register_model_parser(HuggingFaceText2SpeechTransformer(), "Text2SpeechTask")
-    AIConfigRuntime.register_model_parser(HuggingFaceTextGenerationTransformer(), "TextGenerationTask")
-    # AIConfigRuntime.register_model_parser(HuggingFaceTextTranslationTransformer(), "TranslationTask")
+    # AIConfigRuntime.register_model_parser(HuggingFaceTextSummarizationTransformer(), "TextSummarization")
+    AIConfigRuntime.register_model_parser(HuggingFaceText2ImageDiffusor(), "Text2Image")
+    # AIConfigRuntime.register_model_parser(HuggingFaceText2SpeechTransformer(), "Text2Speech")
+    AIConfigRuntime.register_model_parser(HuggingFaceTextGenerationTransformer(), "TextGeneration")
+    # AIConfigRuntime.register_model_parser(HuggingFaceTextTranslationTransformer(), "Translation")
