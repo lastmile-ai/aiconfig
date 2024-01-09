@@ -18,12 +18,10 @@ export function getPrompt(
   return aiconfig.prompts.find((prompt) => prompt._ui.id === id);
 }
 
-// TODO: This is pretty hacky. Streaming is actually part of AIConfig runtime and not necessarily part of model settings,
-// let alone required to be defined by 'stream' boolean... Ideally we should treat everything as stream but this should work for now.
-export function isStreamingSupported(
+export function getModelSettingsStream(
   prompt: ClientPrompt,
   config: ClientAIConfig
-): boolean {
+): boolean | undefined {
   const promptModelSettings =
     prompt.metadata?.model && typeof prompt.metadata.model !== "string"
       ? prompt.metadata.model?.settings
@@ -40,8 +38,12 @@ export function isStreamingSupported(
   if (promptModelName) {
     const globalModelSettings =
       config.metadata?.models?.[promptModelName]?.settings;
-    return globalModelSettings?.stream === true;
+    if (globalModelSettings?.stream === true) {
+      return true;
+    } else if (promptModelSettings?.stream === false) {
+      return false;
+    }
   }
 
-  return false;
+  return undefined;
 }
