@@ -1,10 +1,14 @@
 import asyncio
 import copy
+import ctypes
 import json
+import concurrent.futures
+import copy
 import logging
 import threading
 import time
 import webbrowser
+import uuid
 from typing import Any, Dict, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
@@ -71,7 +75,7 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
             LOGGER.info("Initialized server state")
             debug = edit_config.server_mode in [ServerMode.DEBUG_BACKEND, ServerMode.DEBUG_SERVERS]
             LOGGER.info(f"Running in {edit_config.server_mode} mode")
-            app.run(port=edit_config.server_port, debug=debug, use_reloader=debug)
+            app.run(port=edit_config.server_port, debug=debug, use_reloader=debug, threaded=True)
             return Ok("Done")
         case Err(e):
             LOGGER.error(f"Failed to initialize server state: {e}")
@@ -188,8 +192,14 @@ def run() -> FlaskResponse:
     state = get_server_state(app)
     aiconfig = state.aiconfig
     request_json = request.get_json()
+    cancellation_token_id: str | None = None
+    aiconfig_deep_copy: AIConfigRuntime | None = None
 
-    prompt_name: Union[str, None] = request_json.get("prompt_name")
+    cancellation_token_id = request_json.get("cancellation_token_id")
+    if not cancellation_token_id:
+        cancellation_token_id = str(uuid.uuid4())
+
+    prompt_name: str | None = request_json.get("prompt_name")
     if prompt_name is None:
         return HttpResponseWithAIConfig(
             message="No prompt name provided, cannot execute `run` command",
@@ -207,8 +217,8 @@ def run() -> FlaskResponse:
     # Define stream callback and queue object for streaming results
     output_text_queue = QueueIterator()
 
-    def update_output_queue(data, _accumulated_data, _index) -> None:
-        should_end_stream = data == STOP_STREAMING_SIGNAL
+    def update_output_queue(data: str, _accumulated_data: str, _index: int) -> None:
+        should_end_stream: bool = data == STOP_STREAMING_SIGNAL
         output_text_queue.put(data, should_end_stream)
 
     inference_options = InferenceOptions(
@@ -216,19 +226,54 @@ def run() -> FlaskResponse:
         stream_callback=update_output_queue,
     )
 
-    def generate():
+    # Deepcopy the aiconfig prior to run so we can restore it in the case the run operation is cancelled or encounters some error
+    aiconfig_deep_copy = copy.deepcopy(aiconfig)
+
+    state.events[cancellation_token_id] = threading.Event()
+
+    def generate(cancellation_token_id: str):
         # Use multi-threading so that we don't block run command from
         # displaying the streamed output (if streaming is supported)
         def run_async_config_in_thread():
-            asyncio.run(
-                aiconfig.run(
-                    prompt_name=prompt_name,
-                    params=params,
-                    run_with_dependencies=False,
-                    options=inference_options,
-                )
-            )
-            output_text_queue.put(STOP_STREAMING_SIGNAL)
+            asyncio.run(aiconfig.run(prompt_name=prompt_name, params=params, run_with_dependencies=False, options=inference_options))  # type: ignore
+            output_text_queue.put(STOP_STREAMING_SIGNAL)  # type: ignore
+
+        def create_cancellation_payload():
+            aiconfig_json = aiconfig_deep_copy.model_dump(exclude=EXCLUDE_OPTIONS) if aiconfig_deep_copy is not None else None
+            return json.dumps({"error": {"message": "The task was cancelled.", "code": 499, "data": aiconfig_json}})
+
+        def handle_cancellation():
+            yield "["
+            yield create_cancellation_payload()
+            yield "]"
+
+            # Reset the aiconfig state to the state prior to the run, and kill the running thread
+            kill_thread(t.ident)
+            state.aiconfig = aiconfig_deep_copy
+
+        def kill_thread(thread_id: int | None):
+            """
+            Kill the thread with the given thread_id.
+
+            PyThreadState_SetAsyncExc: This is a C API function in Python which is used to raise an exception in the context
+            of the specified thread.
+
+            SystemExit: This is the exception we'd like to raise in the target thread.
+            """
+            if thread_id is None:
+                # Nothing to do
+                return
+
+            response = ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(thread_id), ctypes.py_object(SystemExit))
+            print(f"kill_thread id: {thread_id}, response: {response}")
+
+            if response == 0:
+                print(f"Invalid thread id {thread_id}")
+            elif response != 1:
+                # If the response is not 1, the function didn't work correctly, and you should call it again with exc=NULL to reset it.
+                ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, None)
+
+        cancellation_event = state.events[cancellation_token_id]
 
         t = threading.Thread(target=run_async_config_in_thread)
         t.start()
@@ -244,6 +289,10 @@ def run() -> FlaskResponse:
         SLEEP_DELAY_SECONDS = 0.1
         wait_time_in_seconds = 0.0
         while output_text_queue.isEmpty() and t.is_alive():
+            if cancellation_event.is_set():
+                yield from handle_cancellation()
+                return
+
             # Yea I know time.sleep() isn't super accurate, but it's fine,
             # we can fix later
             time.sleep(0.1)
@@ -256,6 +305,10 @@ def run() -> FlaskResponse:
         if not output_text_queue.isEmpty():
             accumulated_output_text = ""
             for text in output_text_queue:
+                if cancellation_event.is_set():
+                    yield from handle_cancellation()
+                    return
+
                 if isinstance(text, str):
                     accumulated_output_text += text
                 elif isinstance(text, dict) and "content" in text:
@@ -274,7 +327,7 @@ def run() -> FlaskResponse:
                         # TODO: Need to sync with Ankush but can fix forward
                         "execution_count": 0,
                         "metadata": {},
-                    }
+                    }  # type: ignore
                 )
 
                 displaying_config.add_output(prompt_name, accumulated_output, overwrite=True)
@@ -285,10 +338,17 @@ def run() -> FlaskResponse:
 
         # Ensure that the run process is complete to yield final output
         t.join()
-        aiconfig_json = aiconfig.model_dump(exclude=EXCLUDE_OPTIONS)
-        yield "["
-        yield json.dumps({"aiconfig": aiconfig_json})
-        yield "]"
+
+        if cancellation_event.is_set():
+            yield from handle_cancellation()
+            return
+        else:
+            state.events.pop(cancellation_token_id, None)
+
+            aiconfig_json = aiconfig.model_dump(exclude=EXCLUDE_OPTIONS) if aiconfig is not None else None
+            yield "["
+            yield json.dumps({"aiconfig_complete": aiconfig_json})
+            yield "]"
 
     try:
         LOGGER.info(f"Running `aiconfig.run()` command with request: {request_json}")
@@ -297,10 +357,10 @@ def run() -> FlaskResponse:
         # Streaming based on
         # https://stackoverflow.com/questions/73275517/flask-not-streaming-json-response
         return Response(
-            stream_with_context(generate()),
+            stream_with_context(generate(cancellation_token_id)),
             status=200,
             content_type="application/json",
-        )   
+        )  # type: ignore
     except Exception as e:
         return HttpResponseWithAIConfig(
             #
@@ -308,6 +368,45 @@ def run() -> FlaskResponse:
             code=400,
             aiconfig=None,
         ).to_flask_format()
+
+
+@app.route("/api/cancel", methods=["POST"])
+def cancel() -> FlaskResponse:
+    state = get_server_state(app)
+    request_json = request.get_json()
+
+    print("cancel request received")
+
+    cancellation_token_id: str | None = request_json.get("cancellation_token_id")
+    if cancellation_token_id is not None:
+        event = state.events.get(cancellation_token_id)
+        if event is not None:
+            event.set()
+            # Remove the event from the events dict
+            state.events.pop(cancellation_token_id)
+
+            return FlaskResponse(({"cancellation_token_id": cancellation_token_id}, 200))
+        else:
+            # Return a 422 Unprocessable Entity
+            return FlaskResponse(
+                (
+                    {
+                        "cancellation_token_id": cancellation_token_id,
+                        "message": "Unable to process cancellation request. Task not found for assosiated cancellation_token_id",
+                    },
+                    422,
+                )
+            )
+    else:
+        # Return a 400 Bad Request
+        return FlaskResponse(
+            (
+                {
+                    "message": "No cancellation_token_id was specified in the request. Unable to process cancellation.",
+                },
+                400,
+            )
+        )
 
 
 @app.route("/api/add_prompt", methods=["POST"])

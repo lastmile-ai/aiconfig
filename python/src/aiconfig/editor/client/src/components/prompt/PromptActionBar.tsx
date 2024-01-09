@@ -7,7 +7,7 @@ import {
 } from "../../utils/promptUtils";
 import { ActionIcon, Container, Flex, Tabs } from "@mantine/core";
 import { IconClearAll } from "@tabler/icons-react";
-import { memo, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import ParametersRenderer from "../ParametersRenderer";
 import RunPromptButton from "./RunPromptButton";
 import { JSONObject } from "aiconfig";
@@ -15,6 +15,7 @@ import { JSONObject } from "aiconfig";
 type Props = {
   prompt: ClientPrompt;
   promptSchema?: PromptSchema;
+  cancel: (cancellationToken: string) => Promise<void>;
   onRunPrompt: () => Promise<void>;
   onUpdateModelSettings: (settings: Record<string, unknown>) => void;
   onUpdateParameters: (parameters: JSONObject) => void;
@@ -35,6 +36,7 @@ function getPromptParameters(prompt: ClientPrompt) {
 export default memo(function PromptActionBar({
   prompt,
   promptSchema,
+  cancel,
   onRunPrompt,
   onUpdateModelSettings,
   onUpdateParameters,
@@ -43,6 +45,21 @@ export default memo(function PromptActionBar({
   // TODO: Handle drag-to-resize
   const modelSettingsSchema = promptSchema?.model_settings;
   const promptMetadataSchema = promptSchema?.prompt_metadata;
+
+  const onCancel = useCallback(async () => {
+    if (prompt._ui.cancellationToken) {
+      console.log(
+        `Cancelling prompt: ${prompt.name}, cancellationToken=${prompt._ui.cancellationToken}`
+      );
+      return await cancel(prompt._ui.cancellationToken);
+    } else {
+      // TODO: saqadri - Maybe surface an error to the user, or explicitly throw an error in this case.
+      console.log(
+        `Warning: No cancellation token found for prompt: ${prompt.name}`
+      );
+      return;
+    }
+  }, [prompt.name, prompt._ui.cancellationToken, cancel]);
 
   return (
     <Flex direction="column" justify="space-between" h="100%">
@@ -90,6 +107,7 @@ export default memo(function PromptActionBar({
           </Container>
           <RunPromptButton
             isRunning={prompt._ui.isRunning}
+            cancel={onCancel}
             runPrompt={onRunPrompt}
             size="full"
           />
@@ -103,6 +121,7 @@ export default memo(function PromptActionBar({
           </Flex>
           <RunPromptButton
             isRunning={prompt._ui.isRunning}
+            cancel={onCancel}
             runPrompt={onRunPrompt}
             size="compact"
           />
