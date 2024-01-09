@@ -12,6 +12,7 @@ import ModelSelector from "./ModelSelector";
 
 type Props = {
   prompt: ClientPrompt;
+  cancel: (cancellationToken: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   onChangePromptInput: (
     promptId: string,
@@ -21,7 +22,7 @@ type Props = {
   onRunPrompt(promptId: string): Promise<void>;
   onUpdateModel: (promptId: string, newModel?: string) => void;
   onUpdateModelSettings: (
-    ppromptId: string,
+    promptId: string,
     newModelSettings: JSONObject
   ) => void;
   onUpdateParameters: (
@@ -33,6 +34,7 @@ type Props = {
 
 export default memo(function PromptContainer({
   prompt,
+  cancel,
   getModels,
   onChangePromptInput,
   onChangePromptName,
@@ -111,6 +113,7 @@ export default memo(function PromptContainer({
         <PromptActionBar
           prompt={prompt}
           promptSchema={promptSchema}
+          cancel={cancel}
           onRunPrompt={runPrompt}
           onUpdateModelSettings={updateModelSettings}
           onUpdateParameters={updateParameters}
