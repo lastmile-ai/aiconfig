@@ -160,7 +160,7 @@ class OpenAIInference(ParameterizedModelParser):
         # Build Completion params
         model_settings = self.get_model_settings(prompt, aiconfig)
 
-        completion_params = refine_chat_completion_params(model_settings)
+        completion_params = refine_chat_completion_params(model_settings, aiconfig, prompt)
 
         # In the case thhat the messages array weren't saves as part of the model settings, build it here. Messages array is used for conversation history.
         if not completion_params.get("messages"):
@@ -407,10 +407,10 @@ def multi_choice_message_reducer(messages: Union[Dict[int, dict], None], chunk: 
     return messages
 
 
-def refine_chat_completion_params(model_settings):
+def refine_chat_completion_params(model_settings, aiconfig, prompt):
     # completion parameters to be used for openai's chat completion api
     # system prompt handled separately
-    # streaming handled seperatly.
+    # streaming handled separately.
     # Messages array built dynamically and handled separately
     supported_keys = {
         "frequency_penalty",
@@ -435,6 +435,11 @@ def refine_chat_completion_params(model_settings):
     for key in supported_keys:
         if key in model_settings:
             completion_data[key] = model_settings[key]
+
+    # Explicitly set the model to use if not already specified
+    if completion_data.get("model") is None:
+        model_name = aiconfig.get_model_name(prompt)
+        completion_data["model"] = model_name
 
     return completion_data
 

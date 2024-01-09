@@ -90,7 +90,7 @@ class PaLMTextParser(ParameterizedModelParser):
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
 
-        completion_data = refine_chat_completion_params(model_settings)
+        completion_data = refine_chat_completion_params(model_settings, aiconfig, prompt)
 
         prompt_str = resolve_prompt(prompt, params, aiconfig)
 
@@ -246,7 +246,7 @@ class PaLMChatParser(ParameterizedModelParser):
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
 
-        completion_data = refine_chat_completion_params(model_settings)
+        completion_data = refine_chat_completion_params(model_settings, aiconfig, prompt)
 
         # TODO: handle if user specifies previous messages in settings
         completion_data["messages"] = []
@@ -366,7 +366,7 @@ class PaLMChatParser(ParameterizedModelParser):
         return ""
 
 
-def refine_chat_completion_params(model_settings):
+def refine_chat_completion_params(model_settings, aiconfig, prompt):
     # completion parameters to be used for Palm's chat completion api
     # messages handled seperately
     supported_keys = {
@@ -383,6 +383,11 @@ def refine_chat_completion_params(model_settings):
     for key in model_settings:
         if key.lower() in supported_keys:
             completion_data[key.lower()] = model_settings[key]
+
+    # Explicitly set the model to use if not already specified
+    if completion_data.get("model") is None:
+        model_name = aiconfig.get_model_name(prompt)
+        completion_data["model"] = model_name
 
     return completion_data
 
