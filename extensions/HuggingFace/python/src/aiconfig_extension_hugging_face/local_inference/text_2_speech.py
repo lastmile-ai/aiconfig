@@ -198,6 +198,7 @@ class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
 
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
         inputs = completion_data.pop("prompt", None)
+        print("Running text to speech model. This might take a while, please be patient...")
         response = synthesizer(inputs, **completion_data)
 
         outputs: List[Output] = []
