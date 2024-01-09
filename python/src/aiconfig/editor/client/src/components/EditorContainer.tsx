@@ -27,6 +27,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { v4 as uuidv4 } from "uuid";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import {
   ClientPrompt,
@@ -59,7 +60,7 @@ type Props = {
   callbacks: AIConfigCallbacks;
 };
 
-type RunPromptStreamEvent =
+export type RunPromptStreamEvent =
   | {
       type: "output_chunk";
       data: Output;
@@ -67,9 +68,26 @@ type RunPromptStreamEvent =
   | {
       type: "aiconfig";
       data: AIConfig;
+    }
+  | {
+      type: "aiconfig_complete";
+      data: AIConfig;
     };
 
+export type RunPromptStreamErrorEvent = {
+  type: "error";
+  data: {
+    message: string;
+    code: number;
+    data: AIConfig;
+  };
+};
+
 export type RunPromptStreamCallback = (event: RunPromptStreamEvent) => void;
+
+export type RunPromptStreamErrorCallback = (
+  event: RunPromptStreamErrorEvent
+) => void;
 
 export type AIConfigCallbacks = {
   addPrompt: (promptName: string, prompt: Prompt, index: number) => Promise<{ aiconfig: AIConfig }>;
@@ -80,8 +98,11 @@ export type AIConfigCallbacks = {
   runPrompt: (
     promptName: string,
     onStream: RunPromptStreamCallback,
-    enableStreaming?: boolean
-  ) => Promise<{ aiconfig?: AIConfig } | void>;
+    onError: RunPromptStreamErrorCallback,
+    enableStreaming?: boolean,
+    cancellationToken?: string
+  ) => Promise<{ aiconfig: AIConfig }>;
+  cancel: (cancellationToken: string) => Promise<void>;
   save: (aiconfig: AIConfig) => Promise<void>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
@@ -565,9 +586,11 @@ export default function EditorContainer({
 
   const onRunPrompt = useCallback(
     async (promptId: string) => {
+      const cancellationToken = uuidv4();
       const action: AIConfigReducerAction = {
         type: "RUN_PROMPT",
         id: promptId,
+        cancellationToken,
       };
 
       dispatch(action);
@@ -596,12 +619,51 @@ export default function EditorContainer({
             } else if (event.type === "aiconfig") {
               dispatch({
                 type: "CONSOLIDATE_AICONFIG",
+                action: {
+                  ...action,
+                  // Ensure we keep the prompt in a running state since this is an in-progress update
+                  isRunning: true,
+                },
+                config: event.data,
+              });
+            } else if (event.type === "aiconfig_complete") {
+              dispatch({
+                type: "CONSOLIDATE_AICONFIG",
                 action,
                 config: event.data,
               });
             }
           },
-          enableStreaming
+          (event) => {
+            console.log(
+              `Error running prompt ${promptName}: ${JSON.stringify(event)}`
+            );
+            if (event.type === "error") {
+              //throw new Error(event.data.message);
+
+              if (event.data.code === 499) {
+                // This is a cancellation
+                // Reset the aiconfig to the state before we started running the prompt
+                dispatch({
+                  type: "CONSOLIDATE_AICONFIG",
+                  action,
+                  config: event.data.data,
+                });
+
+                const promptName = getPrompt(stateRef.current, promptId)?.name;
+
+                showNotification({
+                  title: `Execution interrupted for prompt${
+                    promptName ? ` ${promptName}` : ""
+                  }. Resetting to previous state.`,
+                  message: event.data.message,
+                  color: "yellow",
+                });
+              }
+            }
+          },
+          enableStreaming,
+          cancellationToken
         );
 
         if (serverConfigResponse?.aiconfig) {
@@ -845,6 +907,7 @@ export default function EditorContainer({
                   getModels={callbacks.getModels}
                   onChangePromptInput={onChangePromptInput}
                   onChangePromptName={onChangePromptName}
+                  cancel={callbacks.cancel}
                   onRunPrompt={onRunPrompt}
                   onUpdateModel={onUpdatePromptModel}
                   onUpdateModelSettings={onUpdatePromptModelSettings}

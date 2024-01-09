@@ -4,19 +4,29 @@ import { memo } from "react";
 
 type Props = {
   isRunning?: boolean;
+  cancel: () => Promise<void>;
   runPrompt: () => Promise<void>;
   size: "compact" | "full";
 };
 
 export default memo(function RunPromptButton({
+  cancel,
   runPrompt,
   size,
   isRunning = false,
 }: Props) {
+  const onClick = async () => {
+    if (isRunning) {
+      return await cancel();
+    } else {
+      return await runPrompt();
+    }
+  };
+
   return (
     <Button
-      onClick={runPrompt}
-      disabled={isRunning}
+      onClick={onClick}
+      disabled={false}
       p="xs"
       size="xs"
       fullWidth={size === "full"}
