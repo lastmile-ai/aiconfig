@@ -54,7 +54,38 @@ class HuggingFaceAutomaticSpeechRecognition(ParameterizedModelParser):
         Returns:
             str: Serialized representation of the prompt and inference settings.
         """
-        raise NotImplementedError("serialize is not implemented for HuggingFaceAutomaticSpeechRecognition")
+        await ai_config.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_serialize_start",
+                __name__,
+                {
+                    "prompt_name": prompt_name,
+                    "data": data,
+                    "parameters": parameters,
+                },
+            )
+        )
+
+        prompts = []
+
+        if not isinstance(data, dict):
+            raise ValueError("Invalid data type. Expected dict when serializing prompt data to aiconfig.")
+        if data.get("inputs", None) is None:
+            raise ValueError("Invalid data when serializing prompt to aiconfig. Input data must contain an inputs field.")
+
+        prompt = Prompt(
+            **{
+                "name": prompt_name,
+                "input": {"attachments": [{"data": data["inputs"]}]},
+                "metadata": None,
+                "outputs": None,
+            }
+        )
+
+        prompts.append(prompt)
+
+        await ai_config.callback_manager.run_callbacks(CallbackEvent("on_serialize_complete", __name__, {"result": prompts}))
+        return prompts
 
     async def deserialize(
         self,
