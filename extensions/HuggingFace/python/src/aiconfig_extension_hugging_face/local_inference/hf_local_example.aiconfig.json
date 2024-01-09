@@ -1,0 +1,68 @@
+{
+  "name": "The Tale of the Quick Brown Fox",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {
+      "stevhliu/my_awesome_billsum_model": {
+        "model": "stevhliu/my_awesome_billsum_model",
+        "min_length": 10,
+        "max_length": 30
+      },
+      "Salesforce/blip-image-captioning-base": {
+        "model": "Salesforce/blip-image-captioning-base"
+      }
+    },
+    "model_parsers": {
+      "suno/bark": "HuggingFaceText2SpeechTransformer"
+    },
+    "default_model": "stevhliu/my_awesome_billsum_model"
+  },
+  "description": "The Tale of the Quick Brown Fox",
+  "prompts": [
+    {
+      "name": "translate_instruction",
+      "input": "Tell the tale of {{topic}}",
+      "outputs": [],
+      "metadata": {
+        "model": "translation_en_to_fr",
+        "parameters": {
+          "topic": "the quick brown fox"
+        }
+      }
+    },
+    {
+      "name": "summarize_story",
+      "input": "Once upon a time, in a lush and vibrant forest, there lived a magnificent creature known as the Quick Brown Fox. This fox was unlike any other, possessing incredible speed and agility that awed all the animals in the forest. With its fur as golden as the sun and its eyes as sharp as emeralds, the Quick Brown Fox was admired by everyone, from the tiniest hummingbird to the mightiest bear. The fox had a kind heart and would often lend a helping paw to those in need. The Quick Brown Fox had a particular fondness for games and challenges. It loved to test its skills against others, always seeking new adventures to satisfy its boundless curiosity. Its favorite game was called \"The Great Word Hunt,\" where it would embark on a quest to find hidden words scattered across the forest.",
+      "outputs": [],
+      "metadata": {
+        "model": "stevhliu/my_awesome_billsum_model"
+      }
+    },
+    {
+      "name": "generate_audio_title",
+      "input": "The Quick Brown Fox was admired by all the animals in the forest.",
+      "metadata": {
+        "model": {
+          "name": "suno/bark",
+          "settings": {}
+        }
+      }
+    },
+    {
+      "name": "generate_caption",
+      "input": {
+        "attachments": [
+          {
+            "mime_type": "image/png",
+            "data": "/Users/jonathan/Desktop/pic.png"
+          }
+        ]
+      },
+      "metadata": {
+        "model": "Salesforce/blip-image-captioning-base"
+      }
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}
