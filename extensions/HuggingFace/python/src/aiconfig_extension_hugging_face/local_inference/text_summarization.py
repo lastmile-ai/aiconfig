@@ -255,6 +255,7 @@ class HuggingFaceTextSummarizationTransformer(ParameterizedModelParser):
         output = None
 
         def _summarize():
+            print(f"{inputs=}, {completion_data=}")
             return summarizer(inputs, **completion_data)
 
         if not should_stream:
