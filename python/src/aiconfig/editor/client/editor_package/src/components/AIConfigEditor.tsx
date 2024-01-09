@@ -154,7 +154,7 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
-export default function EditorContainer({
+export function AIConfigEditor({
   aiconfig: initialAIConfig,
   callbacks,
 }: Props) {

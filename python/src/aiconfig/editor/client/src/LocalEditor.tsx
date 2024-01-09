@@ -1,9 +1,10 @@
-import AIConfigEditor, {
+import {
+  AIConfigEditor,
   AIConfigCallbacks,
   RunPromptStreamCallback,
   RunPromptStreamErrorCallback,
   RunPromptStreamErrorEvent,
-} from "./components/AIConfigEditor";
+} from "aiconfig-editor";
 import { Flex, Loader, MantineProvider, Image } from "@mantine/core";
 import {
   AIConfig,
@@ -17,7 +18,7 @@ import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
 import { streamingApiChain } from "./utils/oboeHelpers";
 
-export default function Editor() {
+export default function LocalEditor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
 
   const loadConfig = useCallback(async () => {
