@@ -26,6 +26,7 @@ export default memo(function PromptName({ promptId, name, onUpdate }: Props) {
       className="ghost"
       variant="unstyled"
       placeholder="Name this prompt"
+      label="Prompt Name"
       onChange={onChange}
       error={
         getState().prompts.some(

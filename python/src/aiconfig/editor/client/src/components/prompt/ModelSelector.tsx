@@ -41,7 +41,7 @@ export default memo(function ModelSelector({
       placeholder="Select model"
       limit={100}
       className="ghost"
-      variant="unstyled"
+      variant="Model"
       maxDropdownHeight={200}
       rightSection={
         selectedModel ? (
