@@ -94,7 +94,12 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ParameterizedModelParser)
 
         model_settings = self.get_model_settings(prompt, aiconfig)
         [pipeline_creation_data, _] = refine_pipeline_creation_params(model_settings)
-        model_name = aiconfig.get_model_name(prompt)
+        
+        model_name: str = aiconfig.get_model_name(prompt)
+        # TODO: Clean this up after we allow people in the AIConfig UI to specify their
+        # own model name for HuggingFace tasks. This isn't great but it works for now
+        if (model_name == "TextTranslation"):
+            model_name = self._get_default_model_name()
 
         if isinstance(model_name, str) and model_name not in self.pipelines:
             device = self._get_device()
@@ -139,6 +144,9 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ParameterizedModelParser)
             if isinstance(output_data, str):
                 return output_data
         return ""
+    
+    def _get_default_model_name(self) -> str:
+        return "openai/whisper-small"
 
 
 def validate_attachment_type_is_audio(attachment: Attachment):

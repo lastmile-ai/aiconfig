@@ -239,6 +239,11 @@ class HuggingFaceTextTranslationTransformer(ParameterizedModelParser):
         inputs = completion_data.pop("prompt", None)
 
         model_name: str = aiconfig.get_model_name(prompt)
+        # TODO: Clean this up after we allow people in the AIConfig UI to specify their
+        # own model name for HuggingFace tasks. This isn't great but it works for now
+        if (model_name == "TextTranslation"):
+            model_name = self._get_default_model_name()
+
         if isinstance(model_name, str) and model_name not in self.translators:
             self.translators[model_name] = pipeline(model_name)
         translator = self.translators[model_name]
@@ -297,3 +302,6 @@ class HuggingFaceTextTranslationTransformer(ParameterizedModelParser):
                 # calls so shouldn't get here, but just being safe
                 return json.dumps(output_data.value, indent=2)
         return ""
+
+    def _get_default_model_name(self) -> str:
+        return "translation_en_to_fr"
