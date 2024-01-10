@@ -8,11 +8,8 @@ export const HuggingFaceAutomaticSpeechRecognitionPromptSchema: PromptSchema = {
   // tokenizer, feature_extractor, device, decoder
   input: {
     type: "object",
-    required: ["data"],
+    required: ["attachments"],
     properties: {
-      data: {
-        type: "string",
-      },
       attachments: {
         type: "array",
         items: {
@@ -25,6 +22,7 @@ export const HuggingFaceAutomaticSpeechRecognitionPromptSchema: PromptSchema = {
             },
           },
         },
+        max_items: 1,
       },
     },
   },
