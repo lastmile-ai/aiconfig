@@ -242,6 +242,8 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         
         model_name : str = aiconfig.get_model_name(prompt)
         if isinstance(model_name, str) and model_name not in self.generators:
+            print(f"Rossdan Loading model {prompt.metadata.model}")
+            print(f"Rossdan Loading model {model_name}")
             self.generators[model_name] = pipeline('text-generation', model=model_name)
         generator = self.generators[model_name]
 
