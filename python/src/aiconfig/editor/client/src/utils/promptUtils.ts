@@ -7,6 +7,7 @@ import { PaLMChatParserPromptSchema } from "../shared/prompt_schemas/PaLMChatPar
 import { HuggingFaceTextGenerationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationParserPromptSchema";
 import { AnyscaleEndpointPromptSchema } from "../shared/prompt_schemas/AnyscaleEndpointPromptSchema";
 import { HuggingFaceText2ImageDiffusorPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageDiffusorPromptSchema";
+import { HuggingFaceAutomaticSpeechRecognitionPromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -72,6 +73,7 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
 
   // HuggingFaceTextGenerationParser
   HuggingFaceTextGenerationParser: HuggingFaceTextGenerationParserPromptSchema,
+  "HuggingFaceAutomaticSpeechRecognitionTransformer": HuggingFaceAutomaticSpeechRecognitionPromptSchema,
 
   // PaLMTextParser
   "models/text-bison-001": PaLMTextParserPromptSchema,
