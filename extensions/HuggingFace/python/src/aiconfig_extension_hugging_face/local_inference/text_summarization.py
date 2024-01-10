@@ -128,7 +128,7 @@ def construct_stream_output(
             "metadata": {},
         }
     )
-
+    
     accumulated_message = ""
     for new_text in streamer:
         if isinstance(new_text, str):
