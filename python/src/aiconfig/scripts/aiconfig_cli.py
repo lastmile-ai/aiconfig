@@ -7,6 +7,7 @@ import sys
 
 import lastmile_utils.lib.core.api as core_utils
 import result
+import yaml
 from aiconfig.editor.server.server import run_backend_server
 from aiconfig.editor.server.server_utils import EditServerConfig, ServerMode
 from result import Err, Ok, Result
@@ -14,6 +15,8 @@ from result import Err, Ok, Result
 
 class AIConfigCLIConfig(core_utils.Record):
     log_level: str | int = "WARNING"
+    config_path: str = "aiconfig_cli.config.yaml"
+    allow_usage_data_sharing: bool = False
 
 
 logging.basicConfig(format=core_utils.LOGGER_FMT)
@@ -46,12 +49,13 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
         LOGGER.debug("Running edit subcommand")
         res_edit_config = core_utils.parse_args(main_parser, argv[1:], EditServerConfig)
         LOGGER.debug(f"{res_edit_config.is_ok()=}")
-        res_servers = res_edit_config.and_then(_run_editor_servers)
         out: Result[str, str] = result.do(
             #
             Ok(",".join(res_servers_ok))
             #
-            for res_servers_ok in res_servers
+            for edit_config in res_edit_config
+            for cli_config in res_cli_config
+            for res_servers_ok in _run_editor_servers(edit_config, cli_config.config_path)
         )
         return out
     else:
@@ -76,7 +80,7 @@ def is_port_in_use(port: int) -> bool:
         return s.connect_ex(("localhost", port)) == 0
 
 
-def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]:
+def _run_editor_servers(edit_config: EditServerConfig, cli_config_path: str) -> Result[list[str], str]:
     port = edit_config.server_port
 
     while is_port_in_use(port):
@@ -100,7 +104,7 @@ def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]
             return Err(e)
 
     results: list[Result[str, str]] = []
-    backend_res = run_backend_server(edit_config)
+    backend_res = run_backend_server(edit_config, cli_config_path)
     match backend_res:
         case Ok(_):
             pass
@@ -116,6 +120,24 @@ def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]
 
 def _process_cli_config(cli_config: AIConfigCLIConfig) -> Result[bool, str]:
     LOGGER.setLevel(cli_config.log_level)
+
+    config_path = cli_config.config_path
+    file_contents = yaml.dump({"allow_usage_data_sharing": cli_config.allow_usage_data_sharing})
+    try:
+        with open(config_path, "x") as f:
+            f.write(file_contents)
+    except FileExistsError:
+        with open(config_path, "r") as f:
+            existing_file_contents = f.read()
+
+        existing_config = yaml.safe_load(existing_file_contents)
+        existing_config["allow_usage_data_sharing"] = cli_config.allow_usage_data_sharing
+        file_contents = yaml.dump(existing_config)
+        with open(config_path, "w") as f:
+            f.write(file_contents)
+    except Exception as e:
+        return core_utils.ErrWithTraceback(e)
+
     return Ok(True)
 
 
