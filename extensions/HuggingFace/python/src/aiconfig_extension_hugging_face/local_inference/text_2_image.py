@@ -289,6 +289,11 @@ https://huggingface.co/docs/diffusers/using-diffusers/loading
         print(pipeline_building_disclaimer_message)
 
         model_name: str = aiconfig.get_model_name(prompt)
+        # TODO: Clean this up after we allow people in the AIConfig UI to specify their
+        # own model name for HuggingFace tasks. This isn't great but it works for now
+        if (model_name == "Text2Image"):
+            model_name = self._get_default_model_name()
+            
         # TODO (rossdanlm): Figure out a way to save model and re-use checkpoint
         # Otherwise right now a lot of these models are taking 5 mins to load with 50
         # num_inference_steps (default value). See here for more details:
@@ -363,6 +368,9 @@ If that doesn't work, you can also try less computationally intensive models.
         elif torch.backends.mps.is_available():
             return "mps"
         return "cpu"
+
+    def _get_default_model_name(self) -> str:
+        return "runwayml/stable-diffusion-v1-5"
 
 def _refine_responses(
     response_images:  List[Image.Image],
