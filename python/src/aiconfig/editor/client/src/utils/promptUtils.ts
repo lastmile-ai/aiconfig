@@ -10,6 +10,8 @@ import { HuggingFaceText2ImageDiffusorPromptSchema } from "../shared/prompt_sche
 import { HuggingFaceTextGenerationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationTransformerPromptSchema";
 import { HuggingFaceAutomaticSpeechRecognitionPromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionPromptSchema";
 import { HuggingFaceTextSummarizationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationTransformerPromptSchema";
+import { HuggingFaceImage2TextTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextTransformerPromptSchema";
+import { HuggingFaceText2SpeechTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2SpeechTransformerPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -94,8 +96,9 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
     HuggingFaceTextSummarizationTransformerPromptSchema,
   HuggingFaceTextTranslationTransformer:
     HuggingFaceTextGenerationTransformerPromptSchema,
-  // Image2Text: HuggingFaceImage2TextTransformerPromptSchema,
-  // Text2Speech: HuggingFaceText2SpeechTransformerPromptSchema,
+  HuggingFaceImage2TextTransformer:
+    HuggingFaceImage2TextTransformerPromptSchema,
+  Text2Speech: HuggingFaceText2SpeechTransformerPromptSchema,
 };
 
 export type PromptInputSchema =
@@ -131,7 +134,7 @@ export type PromptInputObjectAttachmentsSchema = {
 export type PromptInputObjectSchema = {
   type: "object";
   properties: {
-    data: PromptInputObjectDataSchema;
+    data?: PromptInputObjectDataSchema;
     attachments?: PromptInputObjectAttachmentsSchema;
   } & Record<string, JSONObject>;
   required?: string[] | undefined;
@@ -179,4 +182,22 @@ function isTextInputModality(prompt: Prompt): boolean {
 
 export function checkParametersSupported(prompt: Prompt): boolean {
   return prompt.metadata?.parameters != null || isTextInputModality(prompt);
+}
+
+export function getDefaultPromptInputForModel(model: string) {
+  const schema = PROMPT_SCHEMAS[model];
+  if (schema) {
+    if (schema.input.type === "string") {
+      return "";
+    } else {
+      if (schema.input.properties.data) {
+        return {
+          data: schema.input.properties.data.type === "string" ? "" : {},
+        };
+      }
+      return {};
+    }
+  }
+
+  return "";
 }

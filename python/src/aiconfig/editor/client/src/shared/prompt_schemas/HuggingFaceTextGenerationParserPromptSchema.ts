@@ -13,6 +13,7 @@ export const HuggingFaceTextGenerationParserPromptSchema: PromptSchema = {
     properties: {
       model: {
         type: "string",
+        description: `Hugging Face model to use`,
       },
       temperature: {
         type: "number",

@@ -128,13 +128,18 @@ def construct_stream_output(
             "metadata": {},
         }
     )
+
     accumulated_message = ""
     for new_text in streamer:
         if isinstance(new_text, str):
+            # For some reason these symbols aren't filtered out by the streamer
+            new_text = new_text.replace("</s>", "")
+            new_text = new_text.replace("<s>", "")
+
             accumulated_message += new_text
             options.stream_callback(new_text, accumulated_message, 0)
-
             output.data = accumulated_message
+
     return output
 
 
@@ -250,7 +255,9 @@ class HuggingFaceTextSummarizationTransformer(ParameterizedModelParser):
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         streamer = None
-        should_stream = (options.stream if options else False) and (not "stream" in completion_data or completion_data.get("stream") != False)
+        should_stream = (options.stream if options else False) and (
+            not "stream" in completion_data or completion_data.get("stream") != False
+        )
         if should_stream:
             tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
             streamer = TextIteratorStreamer(tokenizer)

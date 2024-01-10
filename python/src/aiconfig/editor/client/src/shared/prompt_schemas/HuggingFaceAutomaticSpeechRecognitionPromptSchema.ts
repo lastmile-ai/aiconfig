@@ -8,11 +8,8 @@ export const HuggingFaceAutomaticSpeechRecognitionPromptSchema: PromptSchema = {
   // tokenizer, feature_extractor, device, decoder
   input: {
     type: "object",
-    required: ["data"],
+    required: ["attachments"],
     properties: {
-      data: {
-        type: "string",
-      },
       attachments: {
         type: "array",
         items: {
@@ -25,12 +22,17 @@ export const HuggingFaceAutomaticSpeechRecognitionPromptSchema: PromptSchema = {
             },
           },
         },
+        max_items: 1,
       },
     },
   },
   model_settings: {
     type: "object",
     properties: {
+      model: {
+        type: "string",
+        description: `Hugging Face model to use`,
+      },
       chunk_length_s: {
         type: "number",
         description: `The input length for each chunk. If chunk_length_s = 0 then chunking is disabled (default).`,
