@@ -153,7 +153,7 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
                 config.register_model_parser(parser)
         """
         super().__init__()
-        self.generators : dict[str, Pipeline]= {}
+        self.generators: dict[str, Pipeline]= {}
 
     def id(self) -> str:
         """
@@ -217,14 +217,14 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
         completion_data = refine_chat_completion_params(model_settings)
-        
+
         #Add resolved prompt
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
         completion_data["prompt"] = resolved_prompt
         return completion_data
 
     async def run_inference(
-        self, prompt: Prompt, aiconfig : "AIConfigRuntime", options : InferenceOptions, parameters: Dict[str, Any]
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]
     ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
@@ -239,8 +239,8 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         """
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
         completion_data["text_inputs"] = completion_data.pop("prompt", None)
-        
-        model_name : str = aiconfig.get_model_name(prompt)
+
+        model_name: str | None = aiconfig.get_model_name(prompt)
         if isinstance(model_name, str) and model_name not in self.generators:
             self.generators[model_name] = pipeline('text-generation', model=model_name)
         generator = self.generators[model_name]
@@ -255,10 +255,10 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
             streamer = TextIteratorStreamer(tokenizer)
             completion_data["streamer"] = streamer
 
-        outputs : List[Output] = []
+        outputs: List[Output] = []
         output = None
         if not should_stream:
-            response : List[Any] = generator(**completion_data)
+            response: List[Any] = generator(**completion_data)
             for count, result in enumerate(response):
                 output = construct_regular_output(result, count)
                 outputs.append(output)
@@ -267,7 +267,7 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
                 raise ValueError("Sorry, TextIteratorStreamer does not support multiple return sequences, please set `num_return_sequences` to 1")
             if not streamer:
                 raise ValueError("Stream option is selected but streamer is not initialized")
-            
+
             # For streaming, cannot call `generator` directly otherwise response will be blocking
             thread = threading.Thread(target=generator, kwargs=completion_data)
             thread.start()
