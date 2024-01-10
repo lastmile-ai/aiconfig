@@ -1,28 +1,29 @@
-from typing import Any, Dict, Literal, Optional, List, TYPE_CHECKING
+from typing import Any, Dict, Optional, List, TYPE_CHECKING
+
+import torch
+from transformers import pipeline, Pipeline
 from aiconfig import ParameterizedModelParser, InferenceOptions
 from aiconfig.callback import CallbackEvent
-from pydantic import BaseModel
-import torch
 from aiconfig.schema import Prompt, Output, ExecuteResult, Attachment
 
-from transformers import pipeline, Pipeline
 
 if TYPE_CHECKING:
     from aiconfig import AIConfigRuntime
-"""
-Model Parser for HuggingFace ASR (Automatic Speech Recognition) models.
-"""
 
 
 class HuggingFaceAutomaticSpeechRecognitionTransformer(ParameterizedModelParser):
+    """
+    Model Parser for HuggingFace ASR (Automatic Speech Recognition) models.
+    """
+
     def __init__(self):
         """
         Returns:
-            HuggingFaceAutomaticSpeechRecognition
+            HuggingFaceAutomaticSpeechRecognitionTransformer
 
         Usage:
         1. Create a new model parser object with the model ID of the model to use.
-                parser = HuggingFaceAutomaticSpeechRecognition()
+                parser = HuggingFaceAutomaticSpeechRecognitionTransformer()
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
         """
@@ -55,7 +56,8 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ParameterizedModelParser)
         Returns:
             str: Serialized representation of the prompt and inference settings.
         """
-        raise NotImplementedError("serialize is not implemented for HuggingFaceAutomaticSpeechRecognition")
+        # TODO: See https://github.com/lastmile-ai/aiconfig/issues/822
+        raise NotImplementedError("serialize is not implemented for HuggingFaceAutomaticSpeechRecognitionTransformer")
 
     async def deserialize(
         self,
