@@ -9,6 +9,8 @@ from transformers import (
     TextIteratorStreamer,
 )
 
+from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
+
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import (
@@ -244,16 +246,15 @@ class HuggingFaceTextTranslationTransformer(ParameterizedModelParser):
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
         inputs = completion_data.pop("prompt", None)
 
-        model_name: str = aiconfig.get_model_name(prompt)
-        if isinstance(model_name, str) and model_name not in self.translators:
-            self.translators[model_name] = pipeline("translation", model_name)
-        translator = self.translators[model_name]
+        model_name = get_hf_model(aiconfig, prompt, self)
+        key = model_name if model_name is not None else "__default__"
+        if key not in self.translators:
+            self.translators[key] = pipeline("translation", model_name)
+        translator = self.translators[key]
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         streamer = None
-        should_stream = (options.stream if options else False) and (
-            not "stream" in completion_data or completion_data.get("stream") != False
-        )
+        should_stream = (options.stream if options else False) and (not "stream" in completion_data or completion_data.get("stream") != False)
         if should_stream:
             tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
             streamer = TextIteratorStreamer(tokenizer)
