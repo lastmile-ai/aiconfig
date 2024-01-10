@@ -26,7 +26,7 @@ export default memo(function GlobalParametersContainer({
   const { classes } = useStyles();
 
   return (
-    <Container maw="80rem" className={classes.parametersContainer}>
+    <Container maw="80rem" className="parametersContainer">
       <Accordion
         styles={{
           item: { borderBottom: 0 },
