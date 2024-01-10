@@ -10,6 +10,7 @@ export type AIConfigReducerAction =
 
 export type MutateAIConfigAction =
   | AddPromptAction
+  | ClearOutputsAction
   | DeletePromptAction
   | RunPromptAction
   | SetDescriptionAction
@@ -34,6 +35,10 @@ export type AddPromptAction = {
   prompt: ClientPrompt;
 };
 
+export type ClearOutputsAction = {
+  type: "CLEAR_OUTPUTS";
+};
+
 export type DeletePromptAction = {
   type: "DELETE_PROMPT";
   id: string;
@@ -42,6 +47,8 @@ export type DeletePromptAction = {
 export type RunPromptAction = {
   type: "RUN_PROMPT";
   id: string;
+  cancellationToken?: string;
+  isRunning?: boolean;
 };
 
 export type RunPromptErrorAction = {
@@ -185,7 +192,7 @@ function reduceConsolidateAIConfig(
           ...prompt,
           _ui: {
             ...prompt._ui,
-            isRunning: false,
+            isRunning: action.isRunning ?? false,
           },
           outputs,
         };
@@ -215,6 +222,29 @@ export default function aiconfigReducer(
     case "ADD_PROMPT_AT_INDEX": {
       return reduceInsertPromptAtIndex(dirtyState, action.index, action.prompt);
     }
+    case "CLEAR_OUTPUTS": {
+      const prompts = state.prompts.map((prompt) => {
+        if (prompt.outputs) {
+          return {
+             ...prompt,
+              outputs: undefined
+           }
+        } else {
+          return prompt;
+        }
+      });
+
+
+    for (const prompt of prompts) {
+      if (prompt.outputs) {
+        delete prompt.outputs;
+    }}
+
+      return {
+        ...dirtyState,
+        prompts,
+      };
+    }
     case "DELETE_PROMPT": {
       return {
         ...dirtyState,
@@ -228,6 +258,7 @@ export default function aiconfigReducer(
         ...prompt,
         _ui: {
           ...prompt._ui,
+          cancellationToken: action.cancellationToken,
           isRunning: true,
         },
       }));
@@ -239,6 +270,14 @@ export default function aiconfigReducer(
           ...prompt._ui,
           isRunning: false,
         },
+        outputs: [
+          {
+            output_type: "error",
+            ename: "Error",
+            evalue: action.message ?? "Error running prompt",
+            traceback: [],
+          },
+        ],
       }));
     }
     case "SAVE_CONFIG_SUCCESS": {

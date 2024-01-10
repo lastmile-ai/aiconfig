@@ -8,6 +8,7 @@ import {
   Text,
   Tooltip,
   Alert,
+  Group,
 } from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
 import {
@@ -26,6 +27,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { v4 as uuidv4 } from "uuid";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import {
   ClientPrompt,
@@ -58,7 +60,7 @@ type Props = {
   callbacks: AIConfigCallbacks;
 };
 
-type RunPromptStreamEvent =
+export type RunPromptStreamEvent =
   | {
       type: "output_chunk";
       data: Output;
@@ -66,9 +68,26 @@ type RunPromptStreamEvent =
   | {
       type: "aiconfig";
       data: AIConfig;
+    }
+  | {
+      type: "aiconfig_complete";
+      data: AIConfig;
     };
 
+export type RunPromptStreamErrorEvent = {
+  type: "error";
+  data: {
+    message: string;
+    code: number;
+    data: AIConfig;
+  };
+};
+
 export type RunPromptStreamCallback = (event: RunPromptStreamEvent) => void;
+
+export type RunPromptStreamErrorCallback = (
+  event: RunPromptStreamErrorEvent
+) => void;
 
 export type AIConfigCallbacks = {
   addPrompt: (
@@ -76,14 +95,18 @@ export type AIConfigCallbacks = {
     prompt: Prompt,
     index: number
   ) => Promise<{ aiconfig: AIConfig }>;
+  clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   runPrompt: (
     promptName: string,
     onStream: RunPromptStreamCallback,
-    enableStreaming?: boolean
-  ) => Promise<{ aiconfig?: AIConfig } | void>;
+    onError: RunPromptStreamErrorCallback,
+    enableStreaming?: boolean,
+    cancellationToken?: string
+  ) => Promise<{ aiconfig: AIConfig }>;
+  cancel: (cancellationToken: string) => Promise<void>;
   save: (aiconfig: AIConfig) => Promise<void>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
@@ -543,13 +566,32 @@ export default function EditorContainer({
     [deletePromptCallback, dispatch]
   );
 
+  const clearOutputsCallback = callbacks.clearOutputs;
+  const onClearOutputs = useCallback(async () => {
+    dispatch({
+      type: "CLEAR_OUTPUTS",
+    });
+    try {
+      await clearOutputsCallback();
+    } catch (err: unknown) {
+      const message = (err as RequestCallbackError).message ?? null;
+      showNotification({
+        title: "Error clearing outputs",
+        message,
+        color: "red",
+      });
+    }
+  }, [clearOutputsCallback, dispatch]);
+
   const runPromptCallback = callbacks.runPrompt;
 
   const onRunPrompt = useCallback(
     async (promptId: string) => {
+      const cancellationToken = uuidv4();
       const action: AIConfigReducerAction = {
         type: "RUN_PROMPT",
         id: promptId,
+        cancellationToken,
       };
 
       dispatch(action);
@@ -578,12 +620,51 @@ export default function EditorContainer({
             } else if (event.type === "aiconfig") {
               dispatch({
                 type: "CONSOLIDATE_AICONFIG",
+                action: {
+                  ...action,
+                  // Ensure we keep the prompt in a running state since this is an in-progress update
+                  isRunning: true,
+                },
+                config: event.data,
+              });
+            } else if (event.type === "aiconfig_complete") {
+              dispatch({
+                type: "CONSOLIDATE_AICONFIG",
                 action,
                 config: event.data,
               });
             }
           },
-          enableStreaming
+          (event) => {
+            console.log(
+              `Error running prompt ${promptName}: ${JSON.stringify(event)}`
+            );
+            if (event.type === "error") {
+              //throw new Error(event.data.message);
+
+              if (event.data.code === 499) {
+                // This is a cancellation
+                // Reset the aiconfig to the state before we started running the prompt
+                dispatch({
+                  type: "CONSOLIDATE_AICONFIG",
+                  action,
+                  config: event.data.data,
+                });
+
+                const promptName = getPrompt(stateRef.current, promptId)?.name;
+
+                showNotification({
+                  title: `Execution interrupted for prompt${
+                    promptName ? ` ${promptName}` : ""
+                  }. Resetting to previous state.`,
+                  message: event.data.message,
+                  color: "yellow",
+                });
+              }
+            }
+          },
+          enableStreaming,
+          cancellationToken
         );
 
         if (serverConfigResponse?.aiconfig) {
@@ -596,7 +677,6 @@ export default function EditorContainer({
       } catch (err: unknown) {
         const message = (err as RequestCallbackError).message ?? null;
 
-        // TODO: Add ErrorOutput component to show error instead of notification
         dispatch({
           type: "RUN_PROMPT_ERROR",
           id: promptId,
@@ -776,20 +856,31 @@ export default function EditorContainer({
       )}
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
-          <Tooltip
-            label={isDirty ? "Save changes to config" : "No unsaved changes"}
-          >
+          <Group>
             <Button
-              leftIcon={<IconDeviceFloppy />}
-              loading={isSaving}
-              onClick={onSave}
-              disabled={!isDirty}
+              loading={undefined}
+              onClick={onClearOutputs}
               size="xs"
               variant="gradient"
             >
-              Save
+              Clear Outputs
             </Button>
-          </Tooltip>
+
+            <Tooltip
+              label={isDirty ? "Save changes to config" : "No unsaved changes"}
+            >
+              <Button
+                leftIcon={<IconDeviceFloppy />}
+                loading={isSaving}
+                onClick={onSave}
+                disabled={!isDirty}
+                size="xs"
+                variant="gradient"
+              >
+                Save
+              </Button>
+            </Tooltip>
+          </Group>
         </Flex>
         <ConfigNameDescription
           name={aiconfigState.name}
@@ -822,6 +913,7 @@ export default function EditorContainer({
                   getModels={callbacks.getModels}
                   onChangePromptInput={onChangePromptInput}
                   onChangePromptName={onChangePromptName}
+                  cancel={callbacks.cancel}
                   onRunPrompt={onRunPrompt}
                   onUpdateModel={onUpdatePromptModel}
                   onUpdateModelSettings={onUpdatePromptModelSettings}

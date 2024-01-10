@@ -4,10 +4,11 @@ import logging
 import os
 import sys
 import typing
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from types import ModuleType
 from typing import Any, Callable, NewType, Type, TypeVar, cast
+from threading import Event
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -75,6 +76,7 @@ class EditServerConfig(core_utils.Record):
 @dataclass
 class ServerState:
     aiconfig: AIConfigRuntime | None = None
+    events: dict[str, Event] = field(default_factory=dict)
 
 
 FlaskResponse = NewType("FlaskResponse", tuple[core_utils.JSONObject, int])
@@ -85,6 +87,7 @@ class HttpResponseWithAIConfig:
     message: str
     aiconfig: AIConfigRuntime | None
     code: int = 200
+    payload: core_utils.JSONObject | None = None
 
     EXCLUDE_OPTIONS = {
         "prompt_index": True,
@@ -93,9 +96,7 @@ class HttpResponseWithAIConfig:
     }
 
     def to_flask_format(self) -> FlaskResponse:
-        out: core_utils.JSONObject = {
-            "message": self.message,
-        }
+        out: core_utils.JSONObject = {"message": self.message, **(self.payload if self.payload is not None else {})}
         if self.aiconfig is not None:
             out["aiconfig"] = self.aiconfig.model_dump(exclude=HttpResponseWithAIConfig.EXCLUDE_OPTIONS)
 
