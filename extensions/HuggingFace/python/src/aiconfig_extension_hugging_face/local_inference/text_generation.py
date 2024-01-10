@@ -247,7 +247,7 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         streamer = None
-        should_stream = (options.stream if options else False) and (not "stream" in completion_data or completion_data.get("stream") != False)
+        should_stream = (options.stream if options else True) and (not "stream" in completion_data or completion_data.get("stream") != False)
         if should_stream:
             tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
             streamer = TextIteratorStreamer(tokenizer)
