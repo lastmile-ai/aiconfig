@@ -35,3 +35,20 @@ export async function streamingApi<T>(
     }
   });
 }
+
+export async function streamingApiChain<T>(
+  headers: Options,
+  chain: { [on: string]: (data: unknown) => void }
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let oboeInstance = oboe(headers);
+    Object.keys(chain).forEach((on) => {
+      const fn = chain[on];
+      oboeInstance = oboeInstance.node(on, fn);
+    });
+
+    oboeInstance
+      .done((data) => resolve(data))
+      .fail((err) => reject(err.jsonBody));
+  });
+}

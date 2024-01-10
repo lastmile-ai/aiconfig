@@ -1,7 +1,9 @@
-import EditorContainer, {
+import AIConfigEditor, {
   AIConfigCallbacks,
   RunPromptStreamCallback,
-} from "./components/EditorContainer";
+  RunPromptStreamErrorCallback,
+  RunPromptStreamErrorEvent,
+} from "./components/AIConfigEditor";
 import { Flex, Loader, MantineProvider, Image } from "@mantine/core";
 import {
   AIConfig,
@@ -13,14 +15,13 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
-import { streamingApi } from "./utils/oboeHelpers";
+import { streamingApiChain } from "./utils/oboeHelpers";
 
 export default function Editor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
 
   const loadConfig = useCallback(async () => {
     const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
-
     setAiConfig(res.aiconfig);
   }, []);
 
@@ -76,32 +77,51 @@ export default function Editor() {
     async (
       promptName: string,
       onStream: RunPromptStreamCallback,
-      enableStreaming: boolean = true
+      onError: RunPromptStreamErrorCallback,
+      enableStreaming: boolean = true,
+      cancellationToken?: string
     ) => {
       // Note: We run the streaming API even for
       // non-streaming runs so that we can unify
       // the way we process data on the client
-      return await streamingApi<{ aiconfig?: AIConfig } | void>(
+      return await streamingApiChain<{ aiconfig: AIConfig }>(
         {
           url: ROUTE_TABLE.RUN_PROMPT,
           method: "POST",
           body: {
             prompt_name: promptName,
             stream: enableStreaming,
+            cancellation_token_id: cancellationToken,
           },
         },
-        "output_chunk",
-        (data) => {
-          onStream({ type: "output_chunk", data: data as Output });
-        },
-        "aiconfig",
-        (data) => {
-          onStream({ type: "aiconfig", data: data as AIConfig });
+        {
+          output_chunk: (data) => {
+            onStream({ type: "output_chunk", data: data as Output });
+          },
+          aiconfig: (data) => {
+            onStream({ type: "aiconfig", data: data as AIConfig });
+          },
+          aiconfig_complete: (data) => {
+            onStream({ type: "aiconfig_complete", data: data as AIConfig });
+          },
+          error: (data) => {
+            onError({
+              type: "error",
+              data: data as RunPromptStreamErrorEvent["data"],
+            });
+          },
         }
       );
     },
     []
   );
+
+  const cancel = useCallback(async (cancellationToken: string) => {
+    // TODO: saqadri - check the status of the response (can be 400 or 422 if cancellation fails)
+    return await ufetch.post(ROUTE_TABLE.CANCEL, {
+      cancellation_token_id: cancellationToken,
+    });
+  }, []);
 
   const updatePrompt = useCallback(
     async (promptName: string, promptData: Prompt) => {
@@ -157,6 +177,7 @@ export default function Editor() {
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
+      cancel,
       clearOutputs,
       deletePrompt,
       getModels,
@@ -171,6 +192,7 @@ export default function Editor() {
     }),
     [
       addPrompt,
+      cancel,
       clearOutputs,
       deletePrompt,
       getModels,
@@ -207,7 +229,7 @@ export default function Editor() {
             deg: 45,
           },
           // local editor theme
-          globalStyles: (local) => ({
+          globalStyles: () => ({
             ".editorBackground": {
               background:
                 "radial-gradient(ellipse at top,#08122d,#030712),radial-gradient(ellipse at bottom,#030712,#030712)",
@@ -258,8 +280,12 @@ export default function Editor() {
               ".mantine-InputWrapper-label": {
                 display: "none",
               },
+              ".cellInputField": {
+                width: "-webkit-fill-available",
+              },
             },
             ".sidePanel": {
+              minWidth: "32px",
               border: "1px solid rgba(226,232,255,.1)",
               borderLeft: "none",
               borderTopRightRadius: "4px",
@@ -289,8 +315,10 @@ export default function Editor() {
             ".runPromptButton": {
               background: "#ff1cf7",
               color: "white",
-              borderRadius: "0",
-              height: "auto",
+              borderRadius: "4px",
+              marginLeft: "4px",
+              width: "44px",
+              height: "44px",
               "&:hover": {
                 background: "#ff46f8",
               },
@@ -378,7 +406,7 @@ export default function Editor() {
             <Loader size="xl" />
           </Flex>
         ) : (
-          <EditorContainer aiconfig={aiconfig} callbacks={callbacks} />
+          <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} />
         )}
       </MantineProvider>
     </div>
