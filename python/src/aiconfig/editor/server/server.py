@@ -234,7 +234,11 @@ def run() -> FlaskResponse:
         # Use multi-threading so that we don't block run command from
         # displaying the streamed output (if streaming is supported)
         def run_async_config_in_thread():
-            asyncio.run(aiconfig.run(prompt_name=prompt_name, params=params, run_with_dependencies=False, options=inference_options))  # type: ignore
+            try:
+                asyncio.run(aiconfig.run(prompt_name=prompt_name, params=params, run_with_dependencies=False, options=inference_options))  # type: ignore
+            except Exception as e:
+                output_text_queue.put(e)
+
             output_text_queue.put(STOP_STREAMING_SIGNAL)  # type: ignore
 
         def create_cancellation_payload():
@@ -307,7 +311,11 @@ def run() -> FlaskResponse:
                     yield from handle_cancellation()
                     return
 
-                if isinstance(text, str):
+                if isinstance(text, Exception):
+                    yield "["
+                    yield json.dumps({"message": "exception", "output": str(text)})
+                    yield "]"
+                elif isinstance(text, str):
                     accumulated_output_text += text
                 elif isinstance(text, dict) and "content" in text:
                     # TODO: Fix streaming output format so that it returns text
