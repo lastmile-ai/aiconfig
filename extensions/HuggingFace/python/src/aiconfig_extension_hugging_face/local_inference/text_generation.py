@@ -251,7 +251,7 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
             not "stream" in completion_data or completion_data.get("stream") != False
         )
         if should_stream:
-            tokenizer : AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
+            tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
             streamer = TextIteratorStreamer(tokenizer)
             completion_data["streamer"] = streamer
 
