@@ -3166,8 +3166,8 @@ agentkeepalive@^4.2.1:
   dependencies:
     humanize-ms "^1.2.1"
 
-aiconfig@../../../../../typescript:
-  version "1.1.2"
+aiconfig@../../../../../typescript, aiconfig@^1.1.3:
+  version "1.1.3"
   dependencies:
     "@google-ai/generativelanguage" "^1.1.0"
     "@huggingface/inference" "^2.6.4"
