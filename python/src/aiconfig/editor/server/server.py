@@ -293,9 +293,9 @@ def run() -> FlaskResponse:
 
             # Yea I know time.sleep() isn't super accurate, but it's fine,
             # we can fix later
-            time.sleep(0.1)
+            # time.sleep(0.1)
             wait_time_in_seconds += SLEEP_DELAY_SECONDS
-            print(f"Output queue is currently empty. Waiting for {wait_time_in_seconds:.1f}s...")
+            # print(f"Output queue is currently empty. Waiting for {wait_time_in_seconds:.1f}s...")
 
         # Yield in flask is weird and you either need to send responses as a
         # string, or artificially wrap them around "[" and "]"
