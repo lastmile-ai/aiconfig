@@ -1,4 +1,4 @@
-import { Button, Flex, Loader, Text } from "@mantine/core";
+import { Button, Flex, Loader } from "@mantine/core";
 import { IconPlayerPlayFilled, IconPlayerStop } from "@tabler/icons-react";
 import { memo } from "react";
 
@@ -6,13 +6,11 @@ type Props = {
   isRunning?: boolean;
   cancel: () => Promise<void>;
   runPrompt: () => Promise<void>;
-  size: "compact" | "full";
 };
 
 export default memo(function RunPromptButton({
   cancel,
   runPrompt,
-  size,
   isRunning = false,
 }: Props) {
   const onClick = async () => {
@@ -29,7 +27,6 @@ export default memo(function RunPromptButton({
       disabled={false}
       p="xs"
       size="xs"
-      fullWidth={size === "full"}
       className="runPromptButton"
     >
       {isRunning ? (
@@ -40,7 +37,6 @@ export default memo(function RunPromptButton({
       ) : (
         <>
           <IconPlayerPlayFilled size="16" />
-          {size === "full" && <Text ml="0.5em">Run</Text>}
         </>
       )}
     </Button>
