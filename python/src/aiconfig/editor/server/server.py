@@ -234,12 +234,19 @@ def run() -> FlaskResponse:
         # Use multi-threading so that we don't block run command from
         # displaying the streamed output (if streaming is supported)
         def run_async_config_in_thread():
-            asyncio.run(aiconfig.run(prompt_name=prompt_name, params=params, run_with_dependencies=False, options=inference_options))  # type: ignore
+            try:
+                asyncio.run(aiconfig.run(prompt_name=prompt_name, params=params, run_with_dependencies=False, options=inference_options))  # type: ignore
+            except Exception as e:
+                output_text_queue.put(e)
+
             output_text_queue.put(STOP_STREAMING_SIGNAL)  # type: ignore
 
-        def create_cancellation_payload():
+        def create_error_payload(message: str, code: int):
             aiconfig_json = aiconfig_deep_copy.model_dump(exclude=EXCLUDE_OPTIONS) if aiconfig_deep_copy is not None else None
-            return json.dumps({"error": {"message": "The task was cancelled.", "code": 499, "data": aiconfig_json}})
+            return json.dumps({"error": {"message": message, "code": code, "data": aiconfig_json}})
+
+        def create_cancellation_payload():
+            return create_error_payload(message="The task was cancelled.", code=499)
 
         def handle_cancellation():
             yield "["
@@ -307,7 +314,10 @@ def run() -> FlaskResponse:
                     yield from handle_cancellation()
                     return
 
-                if isinstance(text, str):
+                if isinstance(text, Exception):
+                    yield from create_error_payload(message=f"Exception: {text}", code=500)
+                    return
+                elif isinstance(text, str):
                     accumulated_output_text += text
                 elif isinstance(text, dict) and "content" in text:
                     # TODO: Fix streaming output format so that it returns text
