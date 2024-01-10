@@ -11,6 +11,7 @@ import { HuggingFaceTextGenerationTransformerPromptSchema } from "../shared/prom
 import { HuggingFaceAutomaticSpeechRecognitionPromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionPromptSchema";
 import { HuggingFaceTextSummarizationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationTransformerPromptSchema";
 import { HuggingFaceImage2TextTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextTransformerPromptSchema";
+import { HuggingFaceText2SpeechTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2SpeechTransformerPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -97,7 +98,7 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
     HuggingFaceTextGenerationTransformerPromptSchema,
   HuggingFaceImage2TextTransformer:
     HuggingFaceImage2TextTransformerPromptSchema,
-  // Text2Speech: HuggingFaceText2SpeechTransformerPromptSchema,
+  Text2Speech: HuggingFaceText2SpeechTransformerPromptSchema,
 };
 
 export type PromptInputSchema =
