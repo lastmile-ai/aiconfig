@@ -8,6 +8,8 @@ from transformers import (
     pipeline,
 )
 
+from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
+
 from aiconfig import ParameterizedModelParser, InferenceOptions
 from aiconfig.callback import CallbackEvent
 from aiconfig.schema import (
@@ -108,7 +110,7 @@ class HuggingFaceImage2TextTransformer(ParameterizedModelParser):
         model_settings = self.get_model_settings(prompt, aiconfig)
         completion_params = refine_completion_params(model_settings)
 
-        #Add image inputs
+        # Add image inputs
         inputs = validate_and_retrieve_images_from_attachments(prompt)
         completion_params["inputs"] = inputs
 
@@ -127,10 +129,12 @@ class HuggingFaceImage2TextTransformer(ParameterizedModelParser):
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         inputs = completion_data.pop("inputs")
 
-        model_name: str | None = aiconfig.get_model_name(prompt)
-        if isinstance(model_name, str) and model_name not in self.pipelines:
-            self.pipelines[model_name] = pipeline(task="image-to-text", model=model_name)
-        captioner = self.pipelines[model_name]
+        model_name = get_hf_model(aiconfig, prompt, self)
+        key = model_name if model_name is not None else "__default__"
+
+        if key not in self.pipelines:
+            self.pipelines[key] = pipeline(task="image-to-text", model=model_name)
+        captioner = self.pipelines[key]
 
         outputs: List[Output] = []
         response: List[Any] = captioner(inputs, **completion_data)
@@ -189,6 +193,7 @@ def refine_completion_params(model_settings: Dict[str, Any]) -> Dict[str, Any]:
 
     return completion_data
 
+
 # Helper methods
 def construct_regular_output(result: Dict[str, str], execution_count: int) -> Output:
     """
@@ -198,7 +203,7 @@ def construct_regular_output(result: Dict[str, str], execution_count: int) -> Ou
         **{
             "output_type": "execute_result",
             # For some reason result is always in list format we haven't found
-            # a way of being able to return multiple sequences from the image 
+            # a way of being able to return multiple sequences from the image
             # to text pipeline
             "data": result[0]["generated_text"],
             "execution_count": execution_count,
@@ -251,7 +256,7 @@ def validate_and_retrieve_images_from_attachments(prompt: Prompt) -> list[Union[
         # vs. uri. This will be fixed once we have standardized inputs
         # See https://github.com/lastmile-ai/aiconfig/issues/829
         if len(input_data) > 10000:
-            pil_image : Image = Image.open(BytesIO(base64.b64decode(input_data)))
+            pil_image: Image = Image.open(BytesIO(base64.b64decode(input_data)))
             images.append(pil_image)
         else:
             images.append(input_data)

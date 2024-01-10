@@ -6,7 +6,9 @@ from .local_inference.text_generation import HuggingFaceTextGenerationTransforme
 from .local_inference.text_summarization import HuggingFaceTextSummarizationTransformer
 from .local_inference.text_translation import HuggingFaceTextTranslationTransformer
 from .remote_inference_client.text_generation import HuggingFaceTextGenerationParser
+from .local_inference.util import get_hf_model
 
+UTILS = [get_hf_model]
 
 LOCAL_INFERENCE_CLASSES = [
     "HuggingFaceAutomaticSpeechRecognitionTransformer",
@@ -18,4 +20,4 @@ LOCAL_INFERENCE_CLASSES = [
     "HuggingFaceTextTranslationTransformer",
 ]
 REMOTE_INFERENCE_CLASSES = ["HuggingFaceTextGenerationParser"]
-__ALL__ = LOCAL_INFERENCE_CLASSES + REMOTE_INFERENCE_CLASSES
+__ALL__ = LOCAL_INFERENCE_CLASSES + REMOTE_INFERENCE_CLASSES + UTILS
