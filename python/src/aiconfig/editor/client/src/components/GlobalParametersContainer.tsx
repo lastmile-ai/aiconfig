@@ -1,4 +1,4 @@
-import { createStyles, Container, Accordion, Text } from "@mantine/core";
+import { Container, Accordion, Text } from "@mantine/core";
 import { JSONObject } from "aiconfig";
 import { memo, useState } from "react";
 import ParametersRenderer from "./ParametersRenderer";
@@ -8,22 +8,11 @@ type Props = {
   onUpdateParameters: (newParameters: JSONObject) => void;
 };
 
-const useStyles = createStyles((theme) => ({
-  parametersContainer: {
-    [theme.fn.smallerThan("sm")]: {
-      padding: "0 0 200px 0",
-    },
-    paddingBottom: 50,
-  },
-}));
-
 export default memo(function GlobalParametersContainer({
   initialValue,
   onUpdateParameters,
 }: Props) {
   const [isParametersDrawerOpen, setIsParametersDrawerOpen] = useState(false);
-
-  const { classes } = useStyles();
 
   return (
     <Container maw="80rem" className="parametersContainer">

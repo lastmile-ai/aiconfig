@@ -23,6 +23,7 @@ export default memo(function PromptName({ promptId, name, onUpdate }: Props) {
   return (
     <TextInput
       value={nameInput}
+      label="Prompt Name"
       className="ghost"
       variant="unstyled"
       placeholder="Name this prompt"
