@@ -311,7 +311,6 @@ export default function Editor() {
             ".runPromptButton": {
               background: "#ff1cf7",
               color: "white",
-              borderRadius: "0",
               height: "auto",
               "&:hover": {
                 background: "#ff46f8",
