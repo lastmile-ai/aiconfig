@@ -21,4 +21,13 @@ export const HuggingFaceImage2TextTransformerPromptSchema: PromptSchema = {
       },
     },
   },
+  model_settings: {
+    type: "object",
+    properties: {
+      model: {
+        type: "string",
+        description: `Hugging Face model to use`,
+      },
+    },
+  },
 };

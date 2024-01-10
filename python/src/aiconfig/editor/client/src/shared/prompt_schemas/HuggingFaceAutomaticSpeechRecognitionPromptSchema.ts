@@ -29,6 +29,10 @@ export const HuggingFaceAutomaticSpeechRecognitionPromptSchema: PromptSchema = {
   model_settings: {
     type: "object",
     properties: {
+      model: {
+        type: "string",
+        description: `Hugging Face model to use`,
+      },
       chunk_length_s: {
         type: "number",
         description: `The input length for each chunk. If chunk_length_s = 0 then chunking is disabled (default).`,

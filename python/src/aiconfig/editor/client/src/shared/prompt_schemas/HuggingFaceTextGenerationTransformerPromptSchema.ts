@@ -12,6 +12,10 @@ export const HuggingFaceTextGenerationTransformerPromptSchema: PromptSchema = {
   model_settings: {
     type: "object",
     properties: {
+      model: {
+        type: "string",
+        description: `Hugging Face model to use`,
+      },
       max_length: {
         type: "integer",
         description: `The maximum length the generated tokens can have. Corresponds to the length
