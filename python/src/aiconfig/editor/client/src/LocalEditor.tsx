@@ -280,8 +280,12 @@ export default function Editor() {
               ".mantine-InputWrapper-label": {
                 display: "none",
               },
+              ".cellInputField": {
+                width: "-webkit-fill-available",
+              },
             },
             ".sidePanel": {
+              minWidth: "32px",
               border: "1px solid rgba(226,232,255,.1)",
               borderLeft: "none",
               borderTopRightRadius: "4px",
@@ -311,8 +315,10 @@ export default function Editor() {
             ".runPromptButton": {
               background: "#ff1cf7",
               color: "white",
-              borderRadius: "0",
-              height: "auto",
+              borderRadius: "4px",
+              marginLeft: "4px",
+              width: "44px",
+              height: "44px",
               "&:hover": {
                 background: "#ff46f8",
               },

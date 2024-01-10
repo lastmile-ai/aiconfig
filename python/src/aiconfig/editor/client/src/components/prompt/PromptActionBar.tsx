@@ -102,12 +102,12 @@ export default memo(function PromptActionBar({
               )}
             </Tabs>
           </Container>
-          <RunPromptButton
+          {/* <RunPromptButton
             isRunning={prompt._ui.isRunning}
             cancel={onCancel}
             runPrompt={onRunPrompt}
             size="full"
-          />
+          /> */}
         </>
       ) : (
         <Flex direction="column" justify="space-between" h="100%">
@@ -116,12 +116,12 @@ export default memo(function PromptActionBar({
               <IconClearAll />
             </ActionIcon>
           </Flex>
-          <RunPromptButton
+          {/* <RunPromptButton
             isRunning={prompt._ui.isRunning}
             cancel={onCancel}
             runPrompt={onRunPrompt}
             size="compact"
-          />
+          /> */}
         </Flex>
       )}
     </Flex>

@@ -9,6 +9,7 @@ import { memo, useCallback } from "react";
 import PromptOutputBar from "./PromptOutputBar";
 import PromptName from "./PromptName";
 import ModelSelector from "./ModelSelector";
+import RunPromptButton from "./RunPromptButton";
 
 type Props = {
   prompt: ClientPrompt;
@@ -83,6 +84,18 @@ export default memo(function PromptContainer({
   const promptSchema = getPromptSchema(prompt, defaultConfigModelName);
   const inputSchema = promptSchema?.input;
 
+  const onCancel = useCallback(async () => {
+    if (prompt._ui.cancellationToken) {
+      return await cancel(prompt._ui.cancellationToken);
+    } else {
+      // TODO: saqadri - Maybe surface an error to the user, or explicitly throw an error in this case.
+      console.log(
+        `Warning: No cancellation token found for prompt: ${prompt.name}`
+      );
+      return;
+    }
+  }, [prompt.name, prompt._ui.cancellationToken, cancel]);
+
   return (
     <Flex justify="space-between" w="100%">
       <Card withBorder className="cellStyle">
@@ -100,11 +113,20 @@ export default memo(function PromptContainer({
               defaultConfigModelName={defaultConfigModelName}
             />
           </Flex>
-          <PromptInputRenderer
-            input={prompt.input}
-            schema={inputSchema}
-            onChangeInput={onChangeInput}
-          />
+          <Flex>
+            <PromptInputRenderer
+              input={prompt.input}
+              schema={inputSchema}
+              onChangeInput={onChangeInput}
+            />
+            <RunPromptButton
+              isRunning={prompt._ui.isRunning}
+              cancel={onCancel}
+              runPrompt={runPrompt}
+              size="compact"
+            />
+          </Flex>
+
           <PromptOutputBar />
           {prompt.outputs && <PromptOutputsRenderer outputs={prompt.outputs} />}
         </Flex>
