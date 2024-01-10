@@ -14,7 +14,6 @@ from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import (
     ExecuteResult,
     Output,
-    OutputDataWithValue,
     Prompt,
     PromptMetadata,
 )
@@ -26,7 +25,7 @@ if TYPE_CHECKING:
 
 
 # Step 1: define Helpers
-def refine_chat_completion_params(model_settings: Dict[str, Any]) -> Dict[str, Any]:
+def refine_completion_params(model_settings: Dict[str, Any]) -> Dict[str, Any]:
     """
     Refines the completion params for the HF text translation api. Removes any unsupported params.
     The supported keys were found by looking at the HF text translation api. `huggingface_hub.InferenceClient.text_translation()`
@@ -223,7 +222,7 @@ class HuggingFaceTextTranslationTransformer(ParameterizedModelParser):
         """
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
-        completion_data = refine_chat_completion_params(model_settings)
+        completion_data = refine_completion_params(model_settings)
 
         # Add resolved prompt
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
@@ -304,10 +303,7 @@ class HuggingFaceTextTranslationTransformer(ParameterizedModelParser):
             output_data = output.data
             if isinstance(output_data, str):
                 return output_data
-            if isinstance(output_data, OutputDataWithValue):
-                if isinstance(output_data.value, str):
-                    return output_data.value
-                # HuggingFace Text translation does not support function
-                # calls so shouldn't get here, but just being safe
-                return json.dumps(output_data.value, indent=2)
+            # HuggingFace text translation outputs should only ever be in
+            # string format so shouldn't get here, but just being safe
+            return json.dumps(output_data, indent=2)
         return ""

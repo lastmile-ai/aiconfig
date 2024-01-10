@@ -1,8 +1,8 @@
 import base64
 import copy
 import io
+import json
 import numpy as np
-import torch
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from transformers import Pipeline, pipeline
 from scipy.io.wavfile import write as write_wav
@@ -12,7 +12,6 @@ from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import (
     ExecuteResult,
     Output,
-    OutputDataWithValue,
     Prompt,
     PromptMetadata,
 )
@@ -25,7 +24,7 @@ if TYPE_CHECKING:
 
 # Step 1: define Helpers
 def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict[str, Any]]:
-    # There are from the transformers Github repo: 
+    # These are from the transformers Github repo: 
     # https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_utils.py#L2534
     supported_keys = {
         "torch_dtype",
@@ -228,8 +227,9 @@ class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
         # TODO (rossdanlm): Handle multiple outputs in list
         # https://github.com/lastmile-ai/aiconfig/issues/467
         if output.output_type == "execute_result":
-            if isinstance(output.data, OutputDataWithValue):
-                return output.data.value
-            elif isinstance(output.data, str):
+            if isinstance(output.data, str):
                 return output.data
+            # HuggingFace text to speech outputs should only ever be string
+            # format so shouldn't get here, but just being safe
+            return json.dumps(output.data, indent=2)
         return ""
