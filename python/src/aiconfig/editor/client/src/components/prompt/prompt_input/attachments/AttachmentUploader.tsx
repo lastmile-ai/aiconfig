@@ -15,15 +15,65 @@ type Props = {
   onCancel?: () => void;
 };
 
-async function uploadFile(_file: File) {
-  // TODO: Implement
-  return {
-    url: "https://s3.amazonaws.com/files.uploads.lastmileai.com/uploads/cldxsqbel0000qs8owp8mkd0z/2023_12_1_21_23_24/942/Screenshot 2023-11-28 at 11.11.25 AM.png",
-  };
+// s3 file uris cannot have '+' character, so replace with '_'
+function sanitizeFileName(name: string) {
+  return name.replace(/[_+]/g, "_");
+}
+
+export function getTodayDateString(): string {
+  const date = new Date();
+  const dateString = `${date.getFullYear()}_${
+    date.getMonth() + 1
+  }_${date.getDate()}`;
+  const timeString = `${date.getUTCHours()}_${date.getUTCMinutes()}_${date.getUTCSeconds()}`;
+  return `${dateString}_${timeString}`;
+}
+
+// TODO: Make this configurable for external deployments
+async function uploadFile(file: File): Promise<{ url: string }> {
+  const randomPath = Math.round(Math.random() * 10000);
+  // TODO: Add back once CORS is resolved
+  // const policyResponse = await fetch(
+  //   "https://lastmileai.dev/api/upload/publicpolicy"
+  // );
+  // const policy = await policyResponse.json();
+  const uploadUrl = "https://s3.amazonaws.com/lastmileai.aiconfig.public/";
+  const uploadKey = `uploads/${getTodayDateString()}/${randomPath}/${sanitizeFileName(
+    file.name
+  )}`;
+
+  const formData = new FormData();
+  formData.append("key", uploadKey);
+  formData.append("acl", "public-read");
+  formData.append("Content-Type", file.type);
+  // formData.append("AWSAccessKeyId", policy.AWSAccessKeyId);
+  formData.append("success_action_status", "201");
+  // formData.append("Policy", policy.s3Policy);
+  // formData.append("Signature", policy.s3Signature);
+  formData.append("file", file);
+
+  // See this about changing to use XMLHTTPRequest to show upload progress as well
+  // https://medium.com/@cpatarun/tracking-file-upload-progress-to-amazon-s3-from-the-browser-71be6712c63d
+  const rawRes = await fetch(uploadUrl, {
+    method: "POST",
+    mode: "cors",
+    cache: "no-cache",
+    body: formData,
+    headers: {
+      Authorization: "",
+    },
+  });
+
+  if (rawRes.ok && rawRes.status === 201) {
+    // Dont really need to parse xml s3 response, just use the keys, etc. that were passed
+    return { url: `${uploadUrl}${uploadKey}` };
+  } else {
+    throw new Error("Error uploading to S3!");
+  }
 }
 
 function getSupportedFileTypes(schema: PromptInputObjectAttachmentsSchema) {
-  return schema.items.mime_types;
+  return schema.items.mime_types.join(", ");
 }
 
 export default memo(function AttachmentUploader({
@@ -66,7 +116,7 @@ Props) {
       const attachments: Attachment[] = uploads.map((upload) => {
         return {
           data: upload.url,
-          mimeType: upload.mimeType,
+          mime_type: upload.mimeType,
         };
       });
 
@@ -112,10 +162,10 @@ Props) {
           }}
           // TODO: Get these from schema,
           // maxSize={MAX_IMAGE_FILE_SIZE}
-          // accept={}
+          accept={schema.items.mime_types}
         >
           {fileList.length > 0 ? (
-            `${fileList.length} File(s) to Upload`
+            `${fileList.length} File(s) Uploading...`
           ) : (
             <div>
               <Title order={4}>Upload File</Title>
