@@ -1,0 +1,5 @@
+# AIConfig
+python-aiconfig
+
+# Hugging Face Extension for AIConfig
+aiconfig-extension-hugging-face >= 0.0.2
