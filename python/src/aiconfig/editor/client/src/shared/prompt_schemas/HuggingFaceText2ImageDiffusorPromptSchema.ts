@@ -17,6 +17,10 @@ export const HuggingFaceText2ImageDiffusorPromptSchema: PromptSchema = {
   model_settings: {
     type: "object",
     properties: {
+      model: {
+        type: "string",
+        description: `Hugging Face model to use`,
+      },
       height: {
         type: "integer",
         description: `The height in pixels of the generated image.`,

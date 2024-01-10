@@ -10,6 +10,10 @@ export const HuggingFaceText2SpeechTransformerPromptSchema: PromptSchema = {
   model_settings: {
     type: "object",
     properties: {
+      model: {
+        type: "string",
+        description: `Hugging Face model to use`,
+      },
       torch_dtype: {
         type: "string",
         description: `Override the default torch.dtype and load the model under this dtype. 
