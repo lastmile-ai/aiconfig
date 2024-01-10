@@ -10,6 +10,7 @@ import result
 import yaml
 from aiconfig.editor.server.server import run_backend_server
 from aiconfig.editor.server.server_utils import EditServerConfig, ServerMode
+import aiconfig.scripts.rage.rage as rage
 from result import Err, Ok, Result
 
 
@@ -36,7 +37,7 @@ async def main_with_args(argv: list[str]) -> int:
 
 def run_subcommand(argv: list[str]) -> Result[str, str]:
     LOGGER.info("Running subcommand")
-    subparser_record_types = {"edit": EditServerConfig}
+    subparser_record_types = {"edit": EditServerConfig, "rage": rage.RageConfig}
     main_parser = core_utils.argparsify(AIConfigCLIConfig, subparser_record_types=subparser_record_types)
 
     res_cli_config = core_utils.parse_args(main_parser, argv[1:], AIConfigCLIConfig)
@@ -58,6 +59,24 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
             for res_servers_ok in _run_editor_servers(edit_config, cli_config.config_path)
         )
         return out
+    elif subparser_name == "rage":
+        LOGGER.debug("Running rage subcommand")
+        print("Raging...")
+        rage.spin(2)
+        print("Please hold. Your call is important to us.\nA representative will be with you shortly.")
+        rage.spin(3, type="music")
+        print("Turning up the heat...")
+        rage.spin(2)
+        print("Looking for your flipping server logs...")
+        rage.spin(4, type="music")
+        print("Do you know how many Zuckerbucks I should be charging for this?")
+        rage.spin(5)
+        print("I'm glad we're finally spending time together.")
+        rage.spin(4, type="music")
+
+        res_rage_config = core_utils.parse_args(main_parser, argv[1:], rage.RageConfig)
+        res_rage = res_rage_config.and_then(rage.rage)
+        return result.do(Ok("Rage complete!") for _ in res_rage)
     else:
         return Err(f"Unknown subparser: {subparser_name}")
 
@@ -164,7 +183,6 @@ def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], s
 
 
 def main() -> int:
-    print("Running main")
     argv = sys.argv
     return asyncio.run(main_with_args(argv))
 
