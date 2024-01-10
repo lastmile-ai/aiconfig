@@ -4,16 +4,22 @@
   "metadata": {
     "parameters": {},
     "models": {
-      "TextGeneration": {
-        "model": "stevhliu/my_awesome_billsum_model",
-        "min_length": 10,
-        "max_length": 30
+      "AudioSpeechRecognition": {
+        "model": "openai/whisper-small"
       },
-      "ImageToText": {
+      "Image2Text": {
         "model": "Salesforce/blip-image-captioning-base"
       },
       "Text2Speech": {
         "model": "suno/bark"
+      },
+      "Text2Image": {
+        "model": "runwayml/stable-diffusion-v1-5"
+      },
+      "TextGeneration": {
+        "model": "stevhliu/my_awesome_billsum_model",
+        "min_length": 10,
+        "max_length": 30
       },
       "TextSummarization": {
         "model": "facebook/bart-large-cnn"
@@ -24,16 +30,13 @@
     },
     "default_model": "TextGeneration",
     "model_parsers": {
+      "AudioSpeechRecognition": "HuggingFaceAutomaticSpeechRecognitionTransformer",
       "Image2Text": "HuggingFaceImage2TextTransformer",
-      "Salesforce/blip-image-captioning-base": "HuggingFaceImage2TextTransformer",
       "Text2Speech": "HuggingFaceText2SpeechTransformer",
-      "suno/bark": "HuggingFaceText2SpeechTransformer",
+      "Text2Image": "HuggingFaceText2ImageTransformer",
       "TextGeneration": "HuggingFaceTextGenerationTransformer",
-      // "stevhliu/my_awesome_billsum_model": "HuggingFaceTextGenerationTransformer",
       "TextSummarization": "HuggingFaceTextSummarizationTransformer",
-      "facebook/bart-large-cnn": "HuggingFaceTextSummarizationTransformer",
-      "TextTranslation": "HuggingFaceTextTranslationTransformer",
-      "translation_en_to_fr": "HuggingFaceTextTranslationTransformer"
+      "TextTranslation": "HuggingFaceTextTranslationTransformer"
     }
   },
   "description": "The Tale of the Quick Brown Fox",
@@ -52,22 +55,14 @@
         "parameters": {
           "city": "New York"
         }
-      },
-      "outputs": [
-        {
-          "output_type": "execute_result",
-          "execution_count": 0,
-          "data": "<pad> a sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden sudden",
-          "metadata": {}
-        }
-      ]
+      }
     },
     {
       "name": "translate_instruction",
       "input": "Tell the tale of {{topic}}",
       "metadata": {
         "model": {
-          "name": "TextGeneration",
+          "name": "TextTranslation",
           "settings": {
             "min_length": "",
             "max_new_tokens": 100
@@ -76,8 +71,7 @@
         "parameters": {
           "topic": "the quick brown fox"
         }
-      },
-      "outputs": []
+      }
     },
     {
       "name": "summarize_story",
@@ -88,8 +82,7 @@
           "settings": {}
         },
         "parameters": {}
-      },
-      "outputs": []
+      }
     },
     {
       "name": "generate_audio_title",
@@ -97,8 +90,7 @@
       "metadata": {
         "model": "Text2Speech",
         "parameters": {}
-      },
-      "outputs": []
+      }
     },
     {
       "name": "generate_caption",
@@ -113,8 +105,7 @@
       "metadata": {
         "model": "Image2Text",
         "parameters": {}
-      },
-      "outputs": []
+      }
     },
     {
       "name": "openai_gen_itinerary",
@@ -124,8 +115,7 @@
         "parameters": {
           "order_by": "geographic location"
         }
-      },
-      "outputs": []
+      }
     },
     {
       "name": "Audio Speech Recognition",
@@ -138,10 +128,9 @@
         ]
       },
       "metadata": {
-        "model": "openai/whisper-small",
+        "model": "AudioSpeechRecognition",
         "parameters": {}
-      },
-      "outputs": []
+      }
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"

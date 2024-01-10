@@ -240,10 +240,13 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
         completion_data["text_inputs"] = completion_data.pop("prompt", None)
         
-        model_name : str = aiconfig.get_model_name(prompt)
+        model_name: str = aiconfig.get_model_name(prompt)
+        # TODO: Clean this up after we allow people in the AIConfig UI to specify their
+        # own model name for HuggingFace tasks. This isn't great but it works for now
+        if (model_name == "TextGeneration"):
+            model_name = self._get_default_model_name()
+                
         if isinstance(model_name, str) and model_name not in self.generators:
-            print(f"Rossdan Loading model {prompt.metadata.model}")
-            print(f"Rossdan Loading model {model_name}")
             self.generators[model_name] = pipeline('text-generation', model=model_name)
         generator = self.generators[model_name]
 
@@ -305,3 +308,6 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
                 # calls so shouldn't get here, but just being safe
                 return json.dumps(output_data.value, indent=2)
         return ""
+    
+    def _get_default_model_name(self) -> str:
+        return "stevhliu/my_awesome_billsum_model"
