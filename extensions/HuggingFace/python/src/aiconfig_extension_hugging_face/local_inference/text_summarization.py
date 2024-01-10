@@ -258,12 +258,10 @@ class HuggingFaceTextSummarizationTransformer(ParameterizedModelParser):
             streamer = TextIteratorStreamer(tokenizer)
             completion_data["streamer"] = streamer
 
-        outputs: List[Output] = []
-        output = None
-
         def _summarize():
             return summarizer(inputs, **completion_data)
 
+        outputs: List[Output] = []
         if not should_stream:
             response: List[Any] = _summarize()
             for count, result in enumerate(response):
