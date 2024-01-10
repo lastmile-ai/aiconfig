@@ -25,6 +25,8 @@ if TYPE_CHECKING:
 
 # Step 1: define Helpers
 def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict[str, Any]]:
+    # There are from the transformers Github repo: 
+    # https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_utils.py#L2534
     supported_keys = {
         "torch_dtype",
         "force_download",
@@ -61,9 +63,11 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
 
 
 def refine_completion_params(unfiltered_completion_params: Dict[str, Any]) -> Dict[str, Any]:
-    supported_keys = {
-        # ???
-    }
+    # Note: There seems to be no public API docs on what completion
+    # params are supported for text to speech: 
+    # https://huggingface.co/docs/transformers/tasks/text-to-speech#inference
+    # The only one mentioned is `forward_params` which can contain `speaker_embeddings`
+    supported_keys = {}
 
     completion_params: Dict[str, Any] = {}
     for key in unfiltered_completion_params:
