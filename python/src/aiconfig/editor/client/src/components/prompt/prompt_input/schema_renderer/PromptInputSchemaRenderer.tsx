@@ -74,6 +74,7 @@ export default memo(function PromptInputSchemaRenderer(props: Props) {
     return (
       <Textarea
         value={props.input}
+        label="Prompt"
         onChange={(e) => props.onChangeInput(e.target.value)}
         placeholder="Type a prompt"
         autosize

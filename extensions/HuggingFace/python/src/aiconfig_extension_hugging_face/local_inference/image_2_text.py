@@ -14,7 +14,6 @@ from aiconfig.schema import (
     Attachment,
     ExecuteResult,
     Output,
-    OutputDataWithValue,
     Prompt,
 )
 
@@ -140,7 +139,6 @@ class HuggingFaceImage2TextTransformer(ParameterizedModelParser):
             outputs.append(output)
 
         prompt.outputs = outputs
-        print(f"{prompt.outputs=}")
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_run_complete",
@@ -168,12 +166,9 @@ class HuggingFaceImage2TextTransformer(ParameterizedModelParser):
             output_data = output.data
             if isinstance(output_data, str):
                 return output_data
-            if isinstance(output_data, OutputDataWithValue):
-                if isinstance(output_data.value, str):
-                    return output_data.value
-                # HuggingFace Text summarization does not support function
-                # calls so shouldn't get here, but just being safe
-                return json.dumps(output_data.value, indent=2)
+            # HuggingFace image to text outputs should only ever be string
+            # format so shouldn't get here, but just being safe
+            return json.dumps(output_data, indent=2)
         return ""
 
 
@@ -213,12 +208,19 @@ def construct_regular_output(result: Dict[str, str], execution_count: int) -> Ou
     return output
 
 
-def validate_attachment_type_is_image(attachment: Attachment):
+def validate_attachment_type_is_image(
+    prompt_name: str,
+    attachment: Attachment,
+) -> None:
+    """
+    Simple helper function to verify that the mimetype is set to a valid
+    image format. Raises ValueError if there's an issue.
+    """
     if not hasattr(attachment, "mime_type"):
-        raise ValueError(f"Attachment has no mime type. Specify the image mimetype in the aiconfig")
+        raise ValueError(f"Attachment has no mime type for prompt '{prompt_name}'. Please specify the image mimetype in the AIConfig")
 
     if not attachment.mime_type.startswith("image/"):
-        raise ValueError(f"Invalid attachment mimetype {attachment.mime_type}. Expected image mimetype.")
+        raise ValueError(f"Invalid attachment mimetype {attachment.mime_type} for prompt '{prompt_name}'. Please use a mimetype that starts with 'image/'.")
 
 
 def validate_and_retrieve_images_from_attachments(prompt: Prompt) -> list[Union[str, Image]]:
@@ -233,17 +235,17 @@ def validate_and_retrieve_images_from_attachments(prompt: Prompt) -> list[Union[
     """
 
     if not hasattr(prompt.input, "attachments") or len(prompt.input.attachments) == 0:
-        raise ValueError(f"No attachments found in input for prompt {prompt.name}. Please add an image attachment to the prompt input.")
+        raise ValueError(f"No attachments found in input for prompt '{prompt.name}'. Please add an image attachment to the prompt input.")
 
     images: list[Union[str, Image]] = []
 
     for i, attachment in enumerate(prompt.input.attachments):
-        validate_attachment_type_is_image(attachment)
+        validate_attachment_type_is_image(prompt.name, attachment)
 
         input_data = attachment.data
         if not isinstance(input_data, str):
-            # See todo above, but for now only support uri's
-            raise ValueError(f"Attachment #{i} data is not a uri. Please specify a uri for the image attachment in prompt {prompt.name}.")
+            # See todo above, but for now only support uris and base64
+            raise ValueError(f"Attachment #{i} data is not a uri or base64 string. Please specify a uri or base64 encoded string for the image attachment in prompt '{prompt.name}'.")
 
         # Really basic heurestic to check if the data is a base64 encoded str
         # vs. uri. This will be fixed once we have standardized inputs

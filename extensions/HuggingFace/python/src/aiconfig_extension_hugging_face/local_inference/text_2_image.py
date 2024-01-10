@@ -2,6 +2,7 @@ import base64
 import copy
 import io
 import itertools
+import json
 import torch
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from diffusers import AutoPipelineForText2Image
@@ -351,16 +352,21 @@ If that doesn't work, you can also try less computationally intensive models.
         # TODO (rossdanlm): Handle multiple outputs in list
         # https://github.com/lastmile-ai/aiconfig/issues/467
         if output.output_type == "execute_result":
-            if isinstance(output.data, OutputDataWithStringValue):
-                return output.data.value
-            elif isinstance(output.data, str):
-                return output.data
+            output_data = output.data
+            if isinstance(output_data, OutputDataWithStringValue):
+                return output_data.value
+            # HuggingFace text to image outputs should only ever be in
+            # outputDataWithStringValue format so shouldn't get here, but
+            # just being safe
+            if isinstance(output_data, str):
+                return output_data
+            return json.dumps(output_data, indent=2)
         return ""
 
     def _get_device(self) -> str:
         if torch.cuda.is_available():
             return "cuda"
-        elif torch.backends.mps.is_available():
+        if torch.backends.mps.is_available():
             return "mps"
         return "cpu"
 
