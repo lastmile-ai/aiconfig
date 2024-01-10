@@ -2,6 +2,21 @@ import json
 import os
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
+# Run either of these commands
+    """
+
+    Option 1
+        pip3 install aiconfig-extension-hugging-face --force
+    Option 2 (be sure ot rebase on master first)
+        # Go to aiconfig/extensions/HuggingFace/python do do
+        pip3 install -e .
+    
+    # If you run this command you should see `aiconfig-extension-hugging-face` with v0.0.2
+    pip list | grep aiconfig
+    """
+from aiconfig_extension_hugging_face import (
+    HuggingFaceTextSummarizationTransformer,
+)
 import requests
 import yaml
 from aiconfig.callback import CallbackEvent, CallbackManager
@@ -43,7 +58,7 @@ dalle_image_generation_models = [
 ]
 for model in dalle_image_generation_models:
     ModelParserRegistry.register_model_parser(DalleImageGenerationParser(model))
-
+ModelParserRegistry.register_model_parser(HuggingFaceTextSummarizationTransformer())
 
 class AIConfigRuntime(AIConfig):
     # A mapping of model names to their respective parsers
