@@ -9,6 +9,8 @@ from transformers import (
     TextIteratorStreamer,
 )
 
+from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
+
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import (
@@ -80,7 +82,7 @@ def refine_chat_completion_params(model_settings: Dict[str, Any]) -> Dict[str, A
         "encoder_no_repeat_ngram_size",
         "decoder_start_token_id",
         "num_assistant_tokens",
-        "num_assistant_tokens_schedule"
+        "num_assistant_tokens_schedule",
     }
 
     completion_data = {}
@@ -105,6 +107,7 @@ def construct_regular_output(result: Dict[str, str], execution_count: int) -> Ou
     )
     return output
 
+
 def construct_stream_output(
     streamer: TextIteratorStreamer,
     options: InferenceOptions,
@@ -120,13 +123,13 @@ def construct_stream_output(
 
     """
     output = ExecuteResult(
-            **{
-                "output_type": "execute_result",
-                "data": "", # We update this below
-                "execution_count": 0, #Multiple outputs are not supported for streaming
-                "metadata": {},
-            }
-        )
+        **{
+            "output_type": "execute_result",
+            "data": "",  # We update this below
+            "execution_count": 0,  # Multiple outputs are not supported for streaming
+            "metadata": {},
+        }
+    )
     accumulated_message = ""
     for new_text in streamer:
         if isinstance(new_text, str):
@@ -153,7 +156,7 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
                 config.register_model_parser(parser)
         """
         super().__init__()
-        self.generators: dict[str, Pipeline]= {}
+        self.generators: dict[str, Pipeline] = {}
 
     def id(self) -> str:
         """
@@ -191,9 +194,7 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(
-                model=model_metadata, parameters=parameters, **kwargs
-            ),
+            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **kwargs),
         )
         return [prompt]
 
@@ -218,14 +219,12 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         model_settings = self.get_model_settings(prompt, aiconfig)
         completion_data = refine_chat_completion_params(model_settings)
 
-        #Add resolved prompt
+        # Add resolved prompt
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
         completion_data["prompt"] = resolved_prompt
         return completion_data
 
-    async def run_inference(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]
-    ) -> List[Output]:
+    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -240,16 +239,15 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
         completion_data["text_inputs"] = completion_data.pop("prompt", None)
 
-        model_name: str | None = aiconfig.get_model_name(prompt)
-        if isinstance(model_name, str) and model_name not in self.generators:
-            self.generators[model_name] = pipeline('text-generation', model=model_name)
-        generator = self.generators[model_name]
+        model_name = get_hf_model(aiconfig, prompt, self)
+        key = model_name if model_name is not None else "__default__"
+        if key not in self.generators:
+            self.generators[key] = pipeline("text-generation", model=model_name)
+        generator = self.generators[key]
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         streamer = None
-        should_stream = (options.stream if options else False) and (
-            not "stream" in completion_data or completion_data.get("stream") != False
-        )
+        should_stream = (options.stream if options else False) and (not "stream" in completion_data or completion_data.get("stream") != False)
         if should_stream:
             tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
             streamer = TextIteratorStreamer(tokenizer)
