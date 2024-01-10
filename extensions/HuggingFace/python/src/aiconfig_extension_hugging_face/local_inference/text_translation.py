@@ -240,12 +240,13 @@ class HuggingFaceTextTranslationTransformer(ParameterizedModelParser):
 
         model_name: str = aiconfig.get_model_name(prompt)
         if isinstance(model_name, str) and model_name not in self.translators:
-            self.translators[model_name] = pipeline(model_name)
+            self.translators[model_name] = pipeline("translation_en_to_fr")
         translator = self.translators[model_name]
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         streamer = None
         should_stream = (options.stream if options else False) and (not "stream" in completion_data or completion_data.get("stream") != False)
+        should_stream = False
         if should_stream:
             raise NotImplementedError("Streaming is not supported for HuggingFace Text Translation")
 

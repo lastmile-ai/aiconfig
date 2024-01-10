@@ -34,7 +34,7 @@ log_handler.setFormatter(formatter)
 LOGGER.addHandler(log_handler)
 
 # TODO unhardcode
-LOGGER.setLevel(logging.INFO)
+LOGGER.setLevel(logging.DEBUG)
 
 
 UnvalidatedPath = NewType("UnvalidatedPath", str)
@@ -123,20 +123,26 @@ def get_validated_path(raw_path: str | None, allow_create: bool = False) -> Resu
 
 def _import_module_from_path(path_to_module: str) -> Result[ModuleType, str]:
     LOGGER.debug(f"{path_to_module=}")
+    print(f"{path_to_module=}")
     resolved_path = resolve_path(path_to_module)
     LOGGER.debug(f"{resolved_path=}")
     module_name = os.path.basename(resolved_path).replace(".py", "")
 
     try:
+        LOGGER.debug(f"running spec_from_file_location({module_name}, {resolved_path})")
         spec = importlib.util.spec_from_file_location(module_name, resolved_path)
         if spec is None:
             return Err(f"Could not import module from path: {resolved_path}")
         elif spec.loader is None:
             return Err(f"Could not import module from path: {resolved_path} (no loader)")
         else:
+            LOGGER.debug(f"{spec=}")
             module = importlib.util.module_from_spec(spec)
+            LOGGER.debug(f"{module=}")
             sys.modules[module_name] = module
-            spec.loader.exec_module(module)
+            exec_module_result = spec.loader.exec_module(module)
+            LOGGER.debug(f"{exec_module_result=}")
+            LOGGER.debug(f"{module=}")
             return Ok(module)
     except Exception as e:
         return core_utils.ErrWithTraceback(e)
