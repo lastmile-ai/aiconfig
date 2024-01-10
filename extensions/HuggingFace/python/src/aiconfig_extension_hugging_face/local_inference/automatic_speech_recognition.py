@@ -1,7 +1,6 @@
-from typing import Any, Dict, Literal, Optional, List, TYPE_CHECKING
-from aiconfig import ParameterizedModelParser, InferenceOptions
+from typing import Any, Dict, Optional, List, TYPE_CHECKING
+from aiconfig import ModelParser, InferenceOptions
 from aiconfig.callback import CallbackEvent
-from pydantic import BaseModel
 import torch
 from aiconfig.schema import Prompt, Output, ExecuteResult, Attachment
 
@@ -14,7 +13,7 @@ Model Parser for HuggingFace ASR (Automatic Speech Recognition) models.
 """
 
 
-class HuggingFaceAutomaticSpeechRecognitionTransformer(ParameterizedModelParser):
+class HuggingFaceAutomaticSpeechRecognitionTransformer(ModelParser):
     def __init__(self):
         """
         Returns:
@@ -83,7 +82,7 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ParameterizedModelParser)
         await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data}))
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> list[Output]:
+    async def run(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> list[Output]:
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_run_start",
@@ -232,8 +231,8 @@ def refine_asr_completion_params(unfiltered_completion_params: Dict[str, Any]) -
     Note: This doesn't support base pipeline params like `num_workers`
     TODO: Figure out how to find which params are supported.
 
-    TODO: Distinguish pipeline creation and refine completion 
-    https://github.com/lastmile-ai/aiconfig/issues/825 
+    TODO: Distinguish pipeline creation and refine completion
+    https://github.com/lastmile-ai/aiconfig/issues/825
     https://github.com/lastmile-ai/aiconfig/issues/824
     """
 
