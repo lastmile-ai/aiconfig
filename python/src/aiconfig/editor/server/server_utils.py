@@ -75,6 +75,7 @@ class EditServerConfig(core_utils.Record):
 
 @dataclass
 class ServerState:
+    cli_config_path: str = "aiconfig_cli.config.yaml"
     aiconfig: AIConfigRuntime | None = None
     events: dict[str, Event] = field(default_factory=dict)
 
@@ -200,10 +201,11 @@ def safe_load_from_disk(aiconfig_path: ValidatedPath) -> Result[AIConfigRuntime,
         return core_utils.ErrWithTraceback(e)
 
 
-def init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None, str]:
+def init_server_state(app: Flask, edit_config: EditServerConfig, cli_config_path: str) -> Result[None, str]:
     LOGGER.info("Initializing server state")
     _load_user_parser_module_if_exists(edit_config.parsers_module_path)
     state = get_server_state(app)
+    state.cli_config_path = cli_config_path
 
     assert state.aiconfig is None
     if os.path.exists(edit_config.aiconfig_path):

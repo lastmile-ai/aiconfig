@@ -12,6 +12,7 @@ from typing import Any, Dict, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
 import result
+import yaml
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.editor.server.queue_iterator import STOP_STREAMING_SIGNAL, QueueIterator
 from aiconfig.editor.server.server_utils import (
@@ -57,7 +58,7 @@ app = Flask(__name__, static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
-def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
+def run_backend_server(edit_config: EditServerConfig, cli_config_path: str) -> Result[str, str]:
     LOGGER.setLevel(edit_config.log_level)
     LOGGER.info("Edit config: %s", edit_config.model_dump_json())
     LOGGER.info(f"Starting server on http://localhost:{edit_config.server_port}")
@@ -68,7 +69,7 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
         LOGGER.warning(f"Failed to open browser: {e}. Please open http://localhost:{port} manually.")
 
     app.server_state = ServerState()  # type: ignore
-    res_server_state_init = init_server_state(app, edit_config)
+    res_server_state_init = init_server_state(app, edit_config, cli_config_path)
     match res_server_state_init:
         case Ok(_):
             LOGGER.info("Initialized server state")
@@ -566,3 +567,48 @@ def clear_outputs() -> FlaskResponse:
 
     signature: dict[str, Type[Any]] = {}
     return run_aiconfig_operation_with_request_json(aiconfig, request_json, f"method_", _op, signature)
+
+
+@app.route("/api/get_cli_config", methods=["GET"])
+def get_cli_config() -> FlaskResponse:
+    state = get_server_state(app)
+
+    def _yaml_deserialize(yaml_str: str) -> Result[dict[str, Any], str]:
+        try:
+            out = yaml.safe_load(yaml_str)
+            if out is None:
+                return Err("YAML string not parsed")
+            else:
+                return Ok(out)
+        except Exception as e:
+            return core_utils.ErrWithTraceback(e)
+
+    cli_config_object = core_utils.read_text_file(state.cli_config_path).and_then(_yaml_deserialize)
+    match cli_config_object:
+        case Ok(cli_config_object_):
+            return FlaskResponse(({"message": "got cli_config", "data": cli_config_object_}, 200))
+        case Err(e):
+            return FlaskResponse(({"message": f"failed to get cli_config: {e}", "data": None}, 400))
+
+
+@app.route("/api/set_cli_config", methods=["POST"])
+def set_cli_config() -> FlaskResponse:
+    state = get_server_state(app)
+    request_json = request.get_json()
+    try:
+        new_contents = request_json.get("new_contents")
+        serialized = yaml.dump(new_contents)
+        with open(state.cli_config_path, "w") as f:
+            f.write(serialized)
+
+        return HttpResponseWithAIConfig(
+            message=f"Successfully set cli_config to {serialized}",
+            code=200,
+            aiconfig=None,
+        ).to_flask_format()
+    except Exception as e:
+        return HttpResponseWithAIConfig(
+            message=f"Failed to set cli_config: {e}",
+            code=400,
+            aiconfig=None,
+        ).to_flask_format()
