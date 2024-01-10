@@ -1,0 +1,6 @@
+enable_telemetry:
+  default: False
+datadog_token:
+  default: ""
+datadog_url:
+  default: ""
