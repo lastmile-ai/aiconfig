@@ -131,7 +131,7 @@ export type PromptInputObjectAttachmentsSchema = {
 export type PromptInputObjectSchema = {
   type: "object";
   properties: {
-    data: PromptInputObjectDataSchema;
+    data?: PromptInputObjectDataSchema;
     attachments?: PromptInputObjectAttachmentsSchema;
   } & Record<string, JSONObject>;
   required?: string[] | undefined;
@@ -179,4 +179,22 @@ function isTextInputModality(prompt: Prompt): boolean {
 
 export function checkParametersSupported(prompt: Prompt): boolean {
   return prompt.metadata?.parameters != null || isTextInputModality(prompt);
+}
+
+export function getDefaultPromptInputForModel(model: string) {
+  const schema = PROMPT_SCHEMAS[model];
+  if (schema) {
+    if (schema.input.type === "string") {
+      return "";
+    } else {
+      if (schema.input.properties.data) {
+        return {
+          data: schema.input.properties.data.type === "string" ? "" : {},
+        };
+      }
+      return {};
+    }
+  }
+
+  return "";
 }

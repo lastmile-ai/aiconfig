@@ -32,10 +32,11 @@ export function getTodayDateString(): string {
 // TODO: Make this configurable for external deployments
 async function uploadFile(file: File): Promise<{ url: string }> {
   const randomPath = Math.round(Math.random() * 10000);
-  const policyResponse = await fetch(
-    "https://lastmileai.dev/api/upload/publicpolicy"
-  );
-  const policy = await policyResponse.json();
+  // TODO: Add back once CORS is resolved
+  // const policyResponse = await fetch(
+  //   "https://lastmileai.dev/api/upload/publicpolicy"
+  // );
+  // const policy = await policyResponse.json();
   const uploadUrl = "https://s3.amazonaws.com/lastmileai.aiconfig.public/";
   const uploadKey = `uploads/${getTodayDateString()}/${randomPath}/${sanitizeFileName(
     file.name
@@ -45,10 +46,10 @@ async function uploadFile(file: File): Promise<{ url: string }> {
   formData.append("key", uploadKey);
   formData.append("acl", "public-read");
   formData.append("Content-Type", file.type);
-  formData.append("AWSAccessKeyId", policy.AWSAccessKeyId);
+  // formData.append("AWSAccessKeyId", policy.AWSAccessKeyId);
   formData.append("success_action_status", "201");
-  formData.append("Policy", policy.s3Policy);
-  formData.append("Signature", policy.s3Signature);
+  // formData.append("Policy", policy.s3Policy);
+  // formData.append("Signature", policy.s3Signature);
   formData.append("file", file);
 
   // See this about changing to use XMLHTTPRequest to show upload progress as well
@@ -72,7 +73,7 @@ async function uploadFile(file: File): Promise<{ url: string }> {
 }
 
 function getSupportedFileTypes(schema: PromptInputObjectAttachmentsSchema) {
-  return schema.items.mime_types;
+  return schema.items.mime_types.join(", ");
 }
 
 export default memo(function AttachmentUploader({
@@ -161,10 +162,10 @@ Props) {
           }}
           // TODO: Get these from schema,
           // maxSize={MAX_IMAGE_FILE_SIZE}
-          // accept={}
+          accept={schema.items.mime_types}
         >
           {fileList.length > 0 ? (
-            `${fileList.length} File(s) to Upload`
+            `${fileList.length} File(s) Uploading...`
           ) : (
             <div>
               <Title order={4}>Upload File</Title>

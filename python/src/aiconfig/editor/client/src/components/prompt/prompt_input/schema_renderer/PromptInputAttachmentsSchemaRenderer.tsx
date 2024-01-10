@@ -68,13 +68,21 @@ export default memo(function PromptInputAttachmentsSchemaRenderer({
     addedAttachments: InputAttachment[],
     index: number
   ) => {
-    const updatedAttachments = attachments.reduce((acc, attachment, i) => {
-      if (i === index) {
-        // Replace the attachment at the given index with the new attachments
-        return [...acc, ...addedAttachments];
-      }
-      return [...acc, attachment];
-    }, [] as InputAttachment[]);
+    let updatedAttachments;
+
+    // Add to end of attachments
+    if (index > attachments.length) {
+      updatedAttachments = [...attachments, ...addedAttachments];
+    } else {
+      updatedAttachments = attachments.reduce((acc, attachment, i) => {
+        if (i === index) {
+          // Replace the attachment at the given index with the new attachments
+          return [...acc, ...addedAttachments];
+        }
+        return [...acc, attachment];
+      }, [] as InputAttachment[]);
+    }
+
     onChangeAttachments(updatedAttachments);
   };
 
@@ -106,18 +114,20 @@ export default memo(function PromptInputAttachmentsSchemaRenderer({
       {/* If the schema supports more attachments, add another attachment input below existing attachments. This
        * will allow the user to add more attachments without 'clearing' existing ones.
        */}
-      {schema.max_items == null ||
-        (numAttachments < schema.max_items && (
-          <EditableAttachmentRenderer
-            schema={schema}
-            onUpdateAttachment={(attachment) =>
-              onUpdateAttachment(attachment, numAttachments + 1)
-            }
-            onAddAttachments={(addedAttachments) =>
-              onAddAttachments(addedAttachments, numAttachments + 1)
-            }
-          />
-        ))}
+      {(schema.max_items == null || numAttachments < schema.max_items) && (
+        <EditableAttachmentRenderer
+          // Use key to force re-mount if a new attachment is 'attached' (will render above as a result)
+          // So that this 'new' attachment input is mounted with fresh state
+          key={numAttachments}
+          schema={schema}
+          onUpdateAttachment={(attachment) =>
+            onUpdateAttachment(attachment, numAttachments + 1)
+          }
+          onAddAttachments={(addedAttachments) =>
+            onAddAttachments(addedAttachments, numAttachments + 1)
+          }
+        />
+      )}
     </>
   );
 });
