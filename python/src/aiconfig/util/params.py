@@ -207,7 +207,7 @@ def resolve_parameters(params, prompt: Prompt, ai_config: "AIConfig"):
     return resolved_prompt
 
 
-def get_prompt_template(prompt: Prompt, aiconfig: "AIConfigRuntime"):
+def get_prompt_template(prompt: Prompt, aiconfig: "AIConfigRuntime") -> str | None:
     """
     Returns the template for a prompt.
 
@@ -224,13 +224,13 @@ def get_prompt_template(prompt: Prompt, aiconfig: "AIConfigRuntime"):
 
     if isinstance(model_parser, ParameterizedModelParser):
         return model_parser.get_prompt_template(prompt, aiconfig)
-
-    if isinstance(prompt.input, str):
+    elif isinstance(prompt.input, str):
         return prompt.input
     elif isinstance(prompt.input.data, str):
         return prompt.input.data
     else:
-        raise Exception(f"Cannot get prompt template string from prompt: {prompt.input}")
+        # Not all model inputs are parameterizable (e.g. image inputs)
+        return None
 
 
 def collect_prompt_references(current_prompt: Prompt, ai_config: "AIConfigRuntime"):
@@ -243,6 +243,10 @@ def collect_prompt_references(current_prompt: Prompt, ai_config: "AIConfigRuntim
             break
 
         prompt_input = get_prompt_template(previous_prompt, ai_config)
+        if prompt_input is None:
+            # not all model inputs are parameterizable
+            continue
+
         prompt_output = ai_config.get_output_text(previous_prompt, ai_config.get_latest_output(previous_prompt)) if previous_prompt.outputs else None
         prompt_references[previous_prompt.name] = {
             "input": prompt_input,
