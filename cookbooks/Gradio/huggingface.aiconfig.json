@@ -1,18 +1,72 @@
 {
-  "name": "",
+  "name": "The Tale of the Quick Brown Fox",
   "schema_version": "latest",
   "metadata": {
     "parameters": {},
-    "models": {}
+    "models": {
+      "Salesforce/blip-image-captioning-base": {}
+    },
+    "default_model": "Salesforce/blip-image-captioning-base",
+    "model_parsers": {
+      "Salesforce/blip-image-captioning-base": "HuggingFaceImage2TextTransformer"
+    }
   },
-  "description": "",
+  "description": "The Tale of the Quick Brown Fox",
   "prompts": [
     {
-      "name": "prompt_1",
-      "input": "",
+      "name": "prompt_2",
+      "input": {
+        "attachments": [
+          {
+            "data": "/Users/rossdancraig/Downloads/fox_in_forest.png",
+            "mime_type": "image/png"
+          },
+          {
+            "data": "/Users/rossdancraig/Downloads/trex.png",
+            "mime_type": "image/png"
+          }
+        ]
+      },
       "metadata": {
-        "model": "gpt-4",
+        "model": {
+          "name": "Salesforce/blip-image-captioning-base",
+          "settings": {
+            "max_new_tokens": 4
+          }
+        },
         "parameters": {}
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "a red fox in",
+          "metadata": {}
+        },
+        {
+          "output_type": "execute_result",
+          "execution_count": 1,
+          "data": "a dinosaur in the",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "name": "Generate a caption based on this image",
+      "input": "Once upon a time, in the booming metropolis of Santa Cruz",
+      "metadata": {
+        "model": {
+          "name": "Salesforce/blip-image-captioning-base",
+          "settings": {
+            "max_length": 100,
+            "min_length": 50,
+            "num_beams": 1,
+            "stream": false
+          }
+        },
+        "parameters": {
+          "city": "New York"
+        }
       },
       "outputs": []
     }
