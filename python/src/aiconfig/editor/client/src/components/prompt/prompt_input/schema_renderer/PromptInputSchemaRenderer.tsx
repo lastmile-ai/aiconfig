@@ -42,16 +42,18 @@ function SchemaRenderer({ input, schema, onChangeInput }: SchemaRendererProps) {
 
   return (
     <Flex direction="column">
-      <DataRenderer
-        schema={dataSchema}
-        data={data}
-        onChangeData={onChangeData}
-      />
+      {dataSchema && (
+        <DataRenderer
+          schema={dataSchema}
+          data={data}
+          onChangeData={onChangeData}
+        />
+      )}
       {attachmentsSchema && (
         <AttachmentsRenderer
           schema={attachmentsSchema}
           onChangeAttachments={onChangeAttachments}
-          attachments={attachments}
+          attachments={attachments ?? []}
         />
       )}
       {/* <JSONRenderer properties={restProperties} data={restData}/> */}
@@ -72,6 +74,7 @@ export default memo(function PromptInputSchemaRenderer(props: Props) {
     return (
       <Textarea
         value={props.input}
+        label="Prompt"
         onChange={(e) => props.onChangeInput(e.target.value)}
         placeholder="Type a prompt"
         autosize

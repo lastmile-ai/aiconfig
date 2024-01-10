@@ -71,6 +71,18 @@ export default memo(function PromptContainer({
     [promptId, onRunPrompt]
   );
 
+  const onCancelRun = useCallback(async () => {
+    if (prompt._ui.cancellationToken) {
+      return await cancel(prompt._ui.cancellationToken);
+    } else {
+      // TODO: saqadri - Maybe surface an error to the user, or explicitly throw an error in this case.
+      console.log(
+        `Warning: No cancellation token found for prompt: ${prompt.name}`
+      );
+      return;
+    }
+  }, [prompt.name, prompt._ui.cancellationToken, cancel]);
+
   const updateModel = useCallback(
     (model?: string) => onUpdateModel(promptId, model),
     [promptId, onUpdateModel]
@@ -104,6 +116,9 @@ export default memo(function PromptContainer({
             input={prompt.input}
             schema={inputSchema}
             onChangeInput={onChangeInput}
+            onCancelRun={onCancelRun}
+            onRunPrompt={runPrompt}
+            isRunning={prompt._ui.isRunning}
           />
           <PromptOutputBar />
           {prompt.outputs && <PromptOutputsRenderer outputs={prompt.outputs} />}
@@ -113,8 +128,6 @@ export default memo(function PromptContainer({
         <PromptActionBar
           prompt={prompt}
           promptSchema={promptSchema}
-          cancel={cancel}
-          onRunPrompt={runPrompt}
           onUpdateModelSettings={updateModelSettings}
           onUpdateParameters={updateParameters}
         />

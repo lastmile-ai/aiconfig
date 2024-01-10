@@ -9,6 +9,8 @@ from transformers import (
     TextIteratorStreamer,
 )
 
+from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
+
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import (
@@ -128,13 +130,18 @@ def construct_stream_output(
             "metadata": {},
         }
     )
+
     accumulated_message = ""
     for new_text in streamer:
         if isinstance(new_text, str):
+            # For some reason these symbols aren't filtered out by the streamer
+            new_text = new_text.replace("</s>", "")
+            new_text = new_text.replace("<s>", "")
+
             accumulated_message += new_text
             options.stream_callback(new_text, accumulated_message, 0)
-
             output.data = accumulated_message
+
     return output
 
 
@@ -238,10 +245,11 @@ class HuggingFaceTextSummarizationTransformer(ParameterizedModelParser):
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
         inputs = completion_data.pop("prompt", None)
 
-        model_name: str = aiconfig.get_model_name(prompt)
-        if isinstance(model_name, str) and model_name not in self.summarizers:
-            self.summarizers[model_name] = pipeline("summarization", model=model_name)
-        summarizer = self.summarizers[model_name]
+        model_name = get_hf_model(aiconfig, prompt, self)
+        key = model_name if model_name is not None else "__default__"
+        if key not in self.summarizers:
+            self.summarizers[key] = pipeline("summarization", model=model_name)
+        summarizer = self.summarizers[key]
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         streamer = None
@@ -251,12 +259,10 @@ class HuggingFaceTextSummarizationTransformer(ParameterizedModelParser):
             streamer = TextIteratorStreamer(tokenizer)
             completion_data["streamer"] = streamer
 
-        outputs: List[Output] = []
-        output = None
-
         def _summarize():
             return summarizer(inputs, **completion_data)
 
+        outputs: List[Output] = []
         if not should_stream:
             response: List[Any] = _summarize()
             for count, result in enumerate(response):

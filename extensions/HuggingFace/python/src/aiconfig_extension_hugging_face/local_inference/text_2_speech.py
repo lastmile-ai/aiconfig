@@ -2,10 +2,11 @@ import base64
 import copy
 import io
 import numpy as np
-import torch
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from transformers import Pipeline, pipeline
 from scipy.io.wavfile import write as write_wav
+
+from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
@@ -25,6 +26,8 @@ if TYPE_CHECKING:
 
 # Step 1: define Helpers
 def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict[str, Any]]:
+    # There are from the transformers Github repo:
+    # https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_utils.py#L2534
     supported_keys = {
         "torch_dtype",
         "force_download",
@@ -61,9 +64,11 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
 
 
 def refine_completion_params(unfiltered_completion_params: Dict[str, Any]) -> Dict[str, Any]:
-    supported_keys = {
-        # ???
-    }
+    # Note: There seems to be no public API docs on what completion
+    # params are supported for text to speech:
+    # https://huggingface.co/docs/transformers/tasks/text-to-speech#inference
+    # The only one mentioned is `forward_params` which can contain `speaker_embeddings`
+    supported_keys = {}
 
     completion_params: Dict[str, Any] = {}
     for key in unfiltered_completion_params:
@@ -191,10 +196,11 @@ class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
         model_settings = self.get_model_settings(prompt, aiconfig)
         [pipeline_creation_data, _] = refine_pipeline_creation_params(model_settings)
 
-        model_name: str = aiconfig.get_model_name(prompt)
-        if isinstance(model_name, str) and model_name not in self.synthesizers:
-            self.synthesizers[model_name] = pipeline("text-to-speech", model_name)
-        synthesizer = self.synthesizers[model_name]
+        model_name = get_hf_model(aiconfig, prompt, self)
+        key = model_name if model_name is not None else "__default__"
+        if key not in self.synthesizers:
+            self.synthesizers[key] = pipeline("text-to-speech", model=model_name)
+        synthesizer = self.synthesizers[key]
 
         completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
         inputs = completion_data.pop("prompt", None)

@@ -51,7 +51,10 @@ import {
   DEBOUNCE_MS,
   SERVER_HEARTBEAT_INTERVAL_MS,
 } from "../utils/constants";
-import { getPromptModelName } from "../utils/promptUtils";
+import {
+  getDefaultPromptInputForModel,
+  getPromptModelName,
+} from "../utils/promptUtils";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
 
@@ -498,7 +501,7 @@ export default function EditorContainer({
 
       const newPrompt: Prompt = {
         name: promptName,
-        input: "", // TODO: Can we use schema to get input structure, string vs object?
+        input: getDefaultPromptInputForModel(model),
         metadata: {
           model,
         },
