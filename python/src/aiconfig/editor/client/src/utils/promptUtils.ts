@@ -7,6 +7,8 @@ import { PaLMChatParserPromptSchema } from "../shared/prompt_schemas/PaLMChatPar
 import { HuggingFaceTextGenerationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationParserPromptSchema";
 import { AnyscaleEndpointPromptSchema } from "../shared/prompt_schemas/AnyscaleEndpointPromptSchema";
 import { HuggingFaceText2ImageDiffusorPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageDiffusorPromptSchema";
+import { HuggingFaceTextGenerationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationTransformerPromptSchema";
+import { HuggingFaceAutomaticSpeechRecognitionPromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -84,6 +86,12 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
 
   // Local HuggingFace Parsers
   HuggingFaceText2ImageDiffusor: HuggingFaceText2ImageDiffusorPromptSchema,
+  TextGeneration: HuggingFaceTextGenerationTransformerPromptSchema,
+  Text2Image: HuggingFaceText2ImageDiffusorPromptSchema,
+  AutomaticSpeechRecognition: HuggingFaceAutomaticSpeechRecognitionPromptSchema,
+  // Text2Speech: HuggingFaceText2SpeechTransformerPromptSchema,
+  // HuggingFaceTextTranslationTransformer: HuggingFaceTextTranslationTransformerPromptSchema,
+  // Image2Text: HuggingFaceImage2TextTransformerPromptSchema,
 };
 
 export type PromptInputSchema =
