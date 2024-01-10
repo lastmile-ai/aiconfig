@@ -18,7 +18,7 @@ export const HuggingFaceAutomaticSpeechRecognitionPromptSchema: PromptSchema = {
         items: {
           type: "attachment",
           required: ["data"],
-          mime_types: ["audio/mpeg", "audio/wav", "audio/webm"],
+          mime_types: ["audio/mpeg", "audio/wav", "audio/webm", "audio/flac", "audio/ogg", "audio/ogg"],
           properties: {
             data: {
               type: "string",
@@ -31,6 +31,10 @@ export const HuggingFaceAutomaticSpeechRecognitionPromptSchema: PromptSchema = {
   model_settings: {
     type: "object",
     properties: {
+      model: {
+        type: "string",
+        description: `The model name `
+      },
       chunk_length_s: {
         type: "number",
         description: `The input length for each chunk. If chunk_length_s = 0 then chunking is disabled (default).`,
@@ -43,6 +47,10 @@ export const HuggingFaceAutomaticSpeechRecognitionPromptSchema: PromptSchema = {
          bits at the end to make the final reconstitution as perfect as possible.
          Defaults to defaults to chunk_length_s / 6`,
       },
+      device:{
+        type: "string",
+        enum: ["cuda", "mps", "cpu"]
+      },
       framework: {
         type: "string",
         enum: ["pt", "tf"],
@@ -52,6 +60,19 @@ export const HuggingFaceAutomaticSpeechRecognitionPromptSchema: PromptSchema = {
         frameworks are installed, will default to the framework of the model, or to PyTorch if 
         no model is provided.`,
       },
+      tokenizer: {
+        type: "string",
+      },
+      return_timestamps: {
+        type: "string",
+        enum: ["word", "True"]
+      },
+      max_new_tokens: {
+        type: "number"
+      }
     },
   },
 };
+
+
+

@@ -199,7 +199,8 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
         "device",
         "framework",
         "feature_extractor",
-        "stride_length_s" "tokenizer",
+        "stride_length_s",
+        "tokenizer",
     }
 
     pipeline_creation_params: Dict[str, Any] = {}
