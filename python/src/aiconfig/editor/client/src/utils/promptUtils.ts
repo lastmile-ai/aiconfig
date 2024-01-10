@@ -77,6 +77,7 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
 
   // HuggingFaceTextGenerationParser
   HuggingFaceTextGenerationParser: HuggingFaceTextGenerationParserPromptSchema,
+  "HuggingFaceAutomaticSpeechRecognitionTransformer": HuggingFaceAutomaticSpeechRecognitionPromptSchema,
 
   // PaLMTextParser
   "models/text-bison-001": PaLMTextParserPromptSchema,
