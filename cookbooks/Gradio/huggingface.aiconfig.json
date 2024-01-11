@@ -16,7 +16,7 @@
     "default_model": "stevhliu/my_awesome_billsum_model",
     "model_parsers": {
       "Salesforce/blip-image-captioning-base": "HuggingFaceImage2TextTransformer",
-      "suno/bark": "HuggingFaceText2SpeechTransformer"
+      "facebook/mms-tts-eng": "HuggingFaceText2SpeechTransformer"
     }
   },
   "description": "Welcome to the first Hugging Face AIConfig! Let's showcase the many capabilities of Hugging Face models, all in one place.",
@@ -141,7 +141,7 @@
         "model": {
           "name": "HuggingFaceText2SpeechTransformer",
           "settings": {
-            "model": "suno/bark",
+            "model": "facebook/mms-tts-eng",
             "max_length": 100,
             "min_length": 50,
             "num_beams": 1
