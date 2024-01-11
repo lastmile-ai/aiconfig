@@ -3,15 +3,17 @@ from typing import Any, Dict, Optional, List, TYPE_CHECKING
 import torch
 from transformers import pipeline, Pipeline
 from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
-from aiconfig import ModelParser, InferenceOptions
+
 from aiconfig.callback import CallbackEvent
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import Prompt, Output, ExecuteResult, Attachment
 
 if TYPE_CHECKING:
     from aiconfig import AIConfigRuntime
 
 
-class HuggingFaceAutomaticSpeechRecognitionTransformer(ModelParser):
+class HuggingFaceAutomaticSpeechRecognitionTransformer(ParameterizedModelParser):
     """
     Model Parser for HuggingFace ASR (Automatic Speech Recognition) models.
     """
