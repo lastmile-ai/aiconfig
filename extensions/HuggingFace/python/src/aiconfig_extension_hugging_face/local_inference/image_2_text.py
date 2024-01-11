@@ -10,8 +10,9 @@ from transformers import (
 
 from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
 
-from aiconfig import ModelParser, InferenceOptions
 from aiconfig.callback import CallbackEvent
+from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import (
     Attachment,
     ExecuteResult,
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
     from aiconfig import AIConfigRuntime
 
 
-class HuggingFaceImage2TextTransformer(ModelParser):
+class HuggingFaceImage2TextTransformer(ParameterizedModelParser):
     def __init__(self):
         """
         Returns:
@@ -117,7 +118,7 @@ class HuggingFaceImage2TextTransformer(ModelParser):
         await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_params}))
         return completion_params
 
-    async def run(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> list[Output]:
+    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> List[Output]:
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_run_start",
