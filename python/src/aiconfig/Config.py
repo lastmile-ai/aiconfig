@@ -267,7 +267,6 @@ class AIConfigRuntime(AIConfig):
             self,
             options,
             params,
-            callback_manager=self.callback_manager,
             **kwargs, # TODO: We should remove and make argument explicit
         )
 
@@ -333,7 +332,6 @@ class AIConfigRuntime(AIConfig):
             self,
             parameters_list,
             options,
-            callback_manager=self.callback_manager,
             **kwargs,
         )
 
