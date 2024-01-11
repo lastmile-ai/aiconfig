@@ -221,6 +221,7 @@ def init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None,
     else:
         LOGGER.info(f"Creating new AIConfig at {edit_config.aiconfig_path}")
         aiconfig_runtime = AIConfigRuntime.create()  # type: ignore
+        aiconfig_runtime.file_path = edit_config.aiconfig_path # type: ignore
         model_ids = ModelParserRegistry.parser_ids()
         if len(model_ids) > 0:
             aiconfig_runtime.add_prompt("prompt_1", Prompt(name="prompt_1", input="", metadata=PromptMetadata(model=model_ids[0])))
