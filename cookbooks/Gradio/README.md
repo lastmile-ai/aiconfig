@@ -18,6 +18,21 @@ What you see here is a "local editor" -- a React frontend and a Flask server whi
 
 - [Backend server code](https://github.com/lastmile-ai/aiconfig/tree/main/python/src/aiconfig/editor/server)
 
+### Supported Hugging Face tasks
+
+We have started by supporting the 6 most popular Hugging Face tasks (by number of models). We will open up contributions for other tasks from the community, and also progressively add support for more ourselves. Currently supported with **Transformers** and **Diffusers**:
+
+- image-to-text
+- text-to-image
+- asr (automatic speech recognition)
+- text generation
+- text summarization
+- text translation
+
+In addition we support the following **HF inference API**:
+
+- text generation
+
 ### Gradio custom component
 
 The Gradio custom component is currently WIP.
@@ -31,7 +46,7 @@ We are working on using `sveltris` to package our React frontend to work with Gr
 **Instructions**:
 
 - Clone https://github.com/lastmile-ai/aiconfig
-- Go back to top-level directory: `cd <aiconfig>`
+- Go to top-level directory: `cd <aiconfig>`
 
 - `cd <aiconfig>/cookbooks/Gradio`
 
@@ -48,9 +63,3 @@ Now run this command to start the AIConfig editor:
 ```bash
 aiconfig edit --aiconfig-path=huggingface.aiconfig.json --parsers-module-path=hf_model_parsers.py
 ```
-
-## TODO
-
-- Publish new version of aiconfig_extension_hugging_face package
-- Update huggingface.aiconfig.json with clean examples
-- Add video demo
