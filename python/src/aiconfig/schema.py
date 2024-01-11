@@ -1,3 +1,4 @@
+import json
 import warnings
 from typing import Any, Dict, List, Literal, Optional, Union
 
@@ -10,6 +11,11 @@ JSONObject = Dict[str, Any]
 # InferenceSettings represents settings for model inference as a JSON object
 InferenceSettings = JSONObject
 
+EXCLUDE_OPTIONS = {
+    "prompt_index": True,
+    "file_path": True,
+    "callback_manager": True,
+}
 
 class OutputDataWithStringValue(BaseModel):
     """
@@ -89,6 +95,14 @@ class ExecuteResult(BaseModel):
     mime_type: Optional[str] = None
     # Output metadata
     metadata: Dict[str, Any]
+    
+    def to_json(self) -> JSONObject:
+        """
+        Helper method used to ensure this is formatted to a valid JSON object
+        so that it can be used for streaming
+        """
+        # TODO: We have EXCLUDE_OPTIONS all throughout codebase, just centralize them in one place in this file
+        return self.model_dump(exclude=EXCLUDE_OPTIONS)
 
 
 class Error(BaseModel):
