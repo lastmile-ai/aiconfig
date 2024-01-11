@@ -6,9 +6,10 @@ import sys
 import typing
 from dataclasses import dataclass, field
 from enum import Enum
+from textwrap import dedent
+from threading import Event
 from types import ModuleType
 from typing import Any, Callable, NewType, Type, TypeVar, cast
-from threading import Event
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -17,6 +18,7 @@ from aiconfig.registry import ModelParserRegistry
 from flask import Flask
 from pydantic import field_validator
 from result import Err, Ok, Result
+from ruamel.yaml import YAML
 
 from aiconfig.schema import Prompt, PromptMetadata
 
@@ -75,8 +77,38 @@ class EditServerConfig(core_utils.Record):
 
 @dataclass
 class ServerState:
+    aiconfigrc_path: str = os.path.join(os.path.expanduser("~"), ".aiconfigrc")
     aiconfig: AIConfigRuntime | None = None
     events: dict[str, Event] = field(default_factory=dict)
+
+
+class AIConfigRC(core_utils.Record):
+    allow_usage_data_sharing: bool
+
+    class Config:
+        extra = "forbid"
+
+    @classmethod
+    def from_yaml(cls: Type["AIConfigRC"], yaml: str) -> Result["AIConfigRC", str]:
+        try:
+            loaded = YAML().load(yaml)
+            loaded_dict = dict(loaded)
+            validated_model = cls.model_validate(loaded_dict)
+            return Ok(validated_model)
+        except Exception as e:
+            return core_utils.ErrWithTraceback(e)
+
+
+DEFAULT_AICONFIGRC = YAML().load(
+    dedent(
+        """
+            # Tip: make sure this file is called .aiconfigrc and is in your home directory.
+
+            # Flag allowing or denying telemetry for product development purposes.
+            allow_usage_data_sharing: true
+            """
+    ),
+)
 
 
 FlaskResponse = NewType("FlaskResponse", tuple[core_utils.JSONObject, int])
@@ -200,10 +232,11 @@ def safe_load_from_disk(aiconfig_path: ValidatedPath) -> Result[AIConfigRuntime,
         return core_utils.ErrWithTraceback(e)
 
 
-def init_server_state(app: Flask, edit_config: EditServerConfig) -> Result[None, str]:
+def init_server_state(app: Flask, edit_config: EditServerConfig, aiconfigrc_path: str) -> Result[None, str]:
     LOGGER.info("Initializing server state")
     _load_user_parser_module_if_exists(edit_config.parsers_module_path)
     state = get_server_state(app)
+    state.aiconfigrc_path = aiconfigrc_path
 
     assert state.aiconfig is None
     if os.path.exists(edit_config.aiconfig_path):
