@@ -67,9 +67,9 @@
         "model": {
           "name": "HuggingFaceTextTranslationTransformer",
           "settings": {
-            "model": "Helsinki-NLP/opus-mt-en-fr",
             "max_length": 100,
             "min_length": 50,
+            "model": "Helsinki-NLP/opus-mt-en-fr",
             "num_beams": 1
           }
         },
@@ -219,6 +219,15 @@
             "model": "openai/whisper-small"
           }
         },
+        "parameters": {}
+      },
+      "outputs": []
+    },
+    {
+      "name": "prompt_8",
+      "input": "",
+      "metadata": {
+        "model": "HuggingFaceTextGenerationTransformer",
         "parameters": {}
       },
       "outputs": []
