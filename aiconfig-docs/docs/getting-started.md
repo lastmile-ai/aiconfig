@@ -58,11 +58,27 @@ $ yarn add aiconfig
 
 ## Setup your OpenAI API Key
 
-For this tutorial, you will need to have an OpenAI key that has access to GPT-4.
+You will need to specifiy API keys for the model providers (i.e. OpenAI, Google, HuggingFace) you plan to use. We recommend adding your API keys as environment variables so that they are accessible for all projects. The python library will automatically detect and use them without you having to write any code.
 
-1. Get your OpenAI API Key: https://platform.openai.com/account/api-keys
-2. Open Terminal
-3. Add this line, replace ‘your-api-key-here’ with your API key: `export OPENAI_API_KEY='your-api-key-here'`
+For this tutorial, you will need to have an OpenAI API key that has access to GPT-4.
+
+<details> 
+    <summary> Setup your OpenAI API Key as a environment variable (MacOS / Linux / Windows)</summary>
+    <div>
+        1. Get your OpenAI API Key: https://platform.openai.com/account/api-keys 
+        2. Open Terminal
+        3. Edit Bash Profile: Use the command `nano ~/.bash_profile` or `nano ~/.zshrc` (for newer MacOS versions) to open the profile file in a text editor.
+        4. Add Environment Variable: In the editor, add the line below, replacing *your-api-key-here* with your actual API key:
+        ```bash 
+        export OPENAI_API_KEY='your-api-key-here'
+        ```
+        5. *[Optional] add in [Environment Variables](#env-api-keys) for your other model providers (Google, HuggingFace, Anyscale, etc.).*
+        6. Save and Exit: Press `Ctrl+O` followed by `ENTER` to write the change. Then `Ctrl+X` to close the editor.
+        7. Load Your Profile: Use the command `source ~/.bash_profile` or `source ~/.zshrc` to load the updated profile.
+        8. Verification: Verify the setup by typing `echo $OPENAI_API_KEY` in the terminal. It should display your API key.
+    </div>
+
+</details>
 
 ## Open AIConfig Editor
 
