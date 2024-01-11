@@ -214,14 +214,13 @@
       },
       "metadata": {
         "model": {
-          "name": "HuggingFaceAutomaticSpeechRecognition",
+          "name": "HuggingFaceAutomaticSpeechRecognitionTransformer",
           "settings": {
             "model": "openai/whisper-small"
           }
         },
         "parameters": {}
-      },
-      "outputs": []
+      }
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
