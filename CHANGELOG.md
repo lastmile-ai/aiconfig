@@ -1,6 +1,6 @@
 # Changelog
 
-## (2024-01-11) Python Version 1.1.10, NPM Version 1.1.5
+## (2024-01-11) Python Version 1.1.11, NPM Version 1.1.5
 
 We built an AIConfig Editor which is like VSCode + Jupyter notebooks for AIConfig files! You can edit the config prompts, parameters, settings, and most importantly, run them for generating outputs. Source control your AIConfig files by clearing outputs and saving. It’s the most convenient way to work with Generative AI models through a local, user interface. See the [README](https://github.com/lastmile-ai/aiconfig/tree/v1.1.8/python/src/aiconfig/editor#readme) to learn more on how to use it!
 
