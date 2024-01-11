@@ -15,7 +15,14 @@ export const HuggingFaceAutomaticSpeechRecognitionPromptSchema: PromptSchema = {
         items: {
           type: "attachment",
           required: ["data"],
-          mime_types: ["audio/mpeg", "audio/wav", "audio/webm", "audio/flac", "audio/ogg", "audio/ogg"],
+          mime_types: [
+            "audio/mpeg",
+            "audio/wav",
+            "audio/webm",
+            "audio/flac",
+            "audio/ogg",
+            "audio/ogg",
+          ],
           properties: {
             data: {
               type: "string",
@@ -45,10 +52,10 @@ export const HuggingFaceAutomaticSpeechRecognitionPromptSchema: PromptSchema = {
          bits at the end to make the final reconstitution as perfect as possible.
          Defaults to defaults to chunk_length_s / 6`,
       },
-      device:{
+      device: {
         type: "string",
         enum: ["cuda", "mps", "cpu"],
-        description: `The device to load the pipeline to. Mps backend not supported for all models.`
+        description: `The device to load the pipeline to. Mps backend not supported for all models.`,
       },
       framework: {
         type: "string",
@@ -65,15 +72,12 @@ export const HuggingFaceAutomaticSpeechRecognitionPromptSchema: PromptSchema = {
       return_timestamps: {
         type: "string",
         enum: ["word", "char", "True", ""],
-        description: `Only available for pure CTC models (Wav2Vec2, HuBERT, etc) and the Whisper model. Not available for other sequence-to-sequence models.`
+        description: `Only available for pure CTC models (Wav2Vec2, HuBERT, etc) and the Whisper model. Not available for other sequence-to-sequence models.`,
       },
       max_new_tokens: {
-        type: "number",
-        description: `The maximum numbers of tokens to generate, ignoring the number of tokens in the prompt`
-      }
+        type: "integer",
+        description: `The maximum numbers of tokens to generate, ignoring the number of tokens in the prompt`,
+      },
     },
   },
 };
-
-
-
