@@ -3,10 +3,12 @@ black
 flake8
 flask-cors
 flask[async]
+fastapi
 google-generativeai
 huggingface_hub
 hypothesis==6.91.0
-lastmile-utils==0.0.14
+hypercorn
+lastmile-utils==0.0.16
 mock
 nest_asyncio
 nltk
