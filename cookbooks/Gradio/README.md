@@ -55,7 +55,7 @@ We are working on using `sveltris` to package our React frontend to work with Gr
 - Install `python-aiconfig-test` package from `test-pypi`:
 
 ```
-pip3 install --index-url https://test.pypi.org/simple --extra-index-url https://pypi.org/simple python-aiconfig-test==1.1.30 --force
+pip3 install --index-url https://test.pypi.org/simple --extra-index-url https://pypi.org/simple python-aiconfig-test==1.1.36 --force
 ```
 
 Now run this command to start the AIConfig editor:
