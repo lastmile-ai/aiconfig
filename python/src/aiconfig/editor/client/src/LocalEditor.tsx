@@ -16,6 +16,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
 import { streamingApiChain } from "./utils/oboeHelpers";
+import { datadogLogs } from "@datadog/browser-logs";
+import { LogEvent, LogEventData } from "./shared/types";
 
 export default function Editor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
@@ -174,6 +176,14 @@ export default function Editor() {
     return await ufetch.get(ROUTE_TABLE.SERVER_STATUS);
   }, []);
 
+  const logEvent = useCallback((event: LogEvent, data?: LogEventData) => {
+    try {
+      datadogLogs.logger.info(event, data);
+    } catch (e) {
+      // Ignore logger errors for now
+    }
+  }, []);
+
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
@@ -182,6 +192,7 @@ export default function Editor() {
       deletePrompt,
       getModels,
       getServerStatus,
+      logEvent,
       runPrompt,
       save,
       setConfigDescription,
@@ -197,6 +208,7 @@ export default function Editor() {
       deletePrompt,
       getModels,
       getServerStatus,
+      logEvent,
       runPrompt,
       save,
       setConfigDescription,
