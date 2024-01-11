@@ -8,15 +8,11 @@ import constants from '@site/core/tabConstants';
 
 # Getting Started
 
-AIConfig saves prompts, models and model parameters as source control friendly configs. This allows you to iterate on prompts and model parameters _separately from your application code_.
+AIConfig is a framework that makes it easy to build generative AI applications for production. It manages generative AI prompts and model parameters as JSON-serializable configs that can be version controlled, evaluated, and opened in a local editor for rapid prototyping. Please read [AIConfig Basics](https://aiconfig.lastmileai.dev/docs/basics/) to learn more.
 
-:::tip
-Please read [AIConfig Basics](/docs/basics) to understand the motivation behind storing prompts and model parameters as configs.
-:::
+**In this tutorial, we will create a customizable NYC travel itinerary using AIConfig.**
 
-## Installation
-
-The [`aiconfig` file format](/docs/overview/ai-config-format) is best used with the AIConfig SDK. To install the SDK, use your favorite package manager:
+## Install
 
 #### Python
 
@@ -58,29 +54,82 @@ $ yarn add aiconfig
 
 </Tabs>
 
-:::caution
-Make sure to specify the API keys (such as `OPENAI_API_KEY`) in your environment before proceeding.
-:::
+**Note:** You need to install the python AIConfig package to create and edit your configs using the AIConfig Editor. You can still use the AIConfig Node SDK to interact with your config in your application code.
 
-## Quickstart
+## Setup your OpenAI API Key
 
-In this quickstart, you will create a customizable NYC travel itinerary using `aiconfig`. We will start with a pre-built AIConfig that we generated from this [AI Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9).
+For this tutorial, you will need to have an OpenAI key that has access to GPT-4.
 
-:::tip
-Clone the tutorial code used below from [**here**](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Getting-Started)
-:::
+1. Get your OpenAI API Key: https://platform.openai.com/account/api-keys
+2. Open Terminal
+3. Add this line, replace ‘your-api-key-here’ with your API key: `export OPENAI_API_KEY='your-api-key-here'`
 
-<p align="center">
-<video controls height="480" width="800">
-    <source src="https://github.com/lastmile-ai/aiconfig/assets/25641935/d3d41ad2-ab66-4eb6-9deb-012ca283ff81"/>
-  </video>
-</p>
+## Open AIConfig Editor
 
-### 1. Download the AIConfig.
+AIConfig Editor allows you to visually create and edit the prompt chains and model parameters that are stored as AIConfigs. You can also chain prompts and use global and local variables in your prompts.
 
-This AIConfig `travel.aiconfig.json` contains a prompt chain to get a list of travel activities from an LLM and then customize the activities based on user preferences (defined as parameters of the prompt). It also contains the specific models and model parameters for the LLMs.
+1. Open your Terminal
+2. Run this command: `aiconfig edit --aiconfig-path travel.aiconfig.json`
 
-Download AIConfig [here](https://github.com/lastmile-ai/aiconfig/blob/main/cookbooks/Getting-Started/travel.aiconfig.json).
+This will open AIConfig Editor in your default browser at http://localhost:8080/ and create a new AIConfig JSON file `travel.aiconfig.json` in your current directory.
+
+![img_editor](https://github.com/lastmile-ai/aiconfig/assets/81494782/ae3188c7-2471-41d4-bb7f-9012284d9a88)
+
+An AIConfig JSON file is generated - shown below:
+
+<details>
+<summary>`travel.aiconfig.json`</summary>
+
+```json
+{
+  "name": "",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {}
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "prompt_1",
+      "input": "",
+      "metadata": {
+        "model": "gpt-4",
+        "parameters": {}
+      },
+      "outputs": []
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}
+```
+
+</details>
+
+## Create an AIConfig
+
+**1. Give your AIConfig a title and a description.**
+
+![image2](https://github.com/lastmile-ai/aiconfig/assets/81494782/6c929c8d-1f91-4ea8-aacf-63bd985d4600)
+
+**2. Create your first prompt `get_activities`.**
+
+This prompt uses GPT-3.5 to generate a list of activities in NYC. Prompt is "Tell me 10 fun attractions to do in NYC". Run the prompt using the **Play** button.
+![image3](https://github.com/lastmile-ai/aiconfig/assets/81494782/3463be60-cd39-4e3b-8081-eb616e8967f8)
+
+**3. Click the Save button.**
+
+Notice that your AIConfig JSON file updates with the prompt. Your work in AIConfig Editor will auto-save every 15 seconds but you can always manually save with the button.
+
+**4. Create your second prompt `gen_itinerary` which depends on your first prompt.**
+
+This prompt uses GPT-4 to generate an itinerary based on the output of our first prompt `get_activities` (chaining) and a local variable `order_by`. Local variables are local to the prompt cell whereas global variables can be used across prompt cells in the editor. Run the prompt using the Play button.
+
+![img_editor](https://github.com/lastmile-ai/aiconfig/assets/81494782/73558099-b42b-48d2-bac4-3023766da5a0)
+
+**5. Click the **Save** button.**
+
+Notice that your AIConfig JSON file updates with the second prompt, including the chaining logic and variables. See below:
 
 <details>
 <summary>`travel.aiconfig.json`</summary>
@@ -99,8 +148,7 @@ Download AIConfig [here](https://github.com/lastmile-ai/aiconfig/blob/main/cookb
       },
       "gpt-4": {
         "model": "gpt-4",
-        "max_tokens": 3000,
-        "system_prompt": "You are an expert travel coordinator with exquisite taste."
+        "max_tokens": 3000
       }
     },
     "default_model": "gpt-3.5-turbo"
@@ -126,29 +174,22 @@ Download AIConfig [here](https://github.com/lastmile-ai/aiconfig/blob/main/cookb
 
 </details>
 
-:::tip
-Don't worry if you don't understand all parts of this yet, we'll go over it in steps. We will also cover a prompt editor ([AI Workbooks](#ai-workbook-playground)) to help you create AIConfigs visually.
-:::
+## Use AIConfig in your Application Code
 
-### 2. Run the `get_activities` prompt.
+You can execute the prompts from the AIConfig generated from Local Editor in your application code using either the python or Node SDK. In this section we will demonstrate basic features of the SDK. Please refer to the API reference documentation for more features.
 
-You don't need to worry about how to run inference for the model; it's all handled by AIConfig. The prompt runs with gpt-3.5-turbo since that is the `default_model` for this AIConfig.
+**1. Create a new script `app.py` or `app.ts`.**
+
+**2. Load your AIConfig.**
+
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
 <TabItem value="python">
 
 ```python title="app.py"
-import asyncio
 from aiconfig import AIConfigRuntime, InferenceOptions
+import asyncio
 
-async def main():
-  # Load the aiconfig
-  aiconfig = AIConfigRuntime.load('travel.aiconfig.json')
-
-  # Run a single prompt
-  result = await aiconfig.run("get_activities")
-  print(result)
-
-asyncio.run(main())
+config = AIConfigRuntime.load("travel.aiconfig.json")
 ```
 
 </TabItem>
@@ -160,14 +201,9 @@ import * as path from "path";
 import { AIConfigRuntime, InferenceOptions } from "aiconfig";
 
 async function travelWithGPT() {
-  // Load the AIConfig. You can also use AIConfigRuntime.loadJSON({})
   const aiConfig = AIConfigRuntime.load(
     path.join(__dirname, "travel.aiconfig.json")
   );
-
-  // Run a single prompt
-  const result = await aiConfig.run("get_activities");
-  console.log(result);
 }
 
 travelWithGPT();
@@ -176,39 +212,60 @@ travelWithGPT();
 </TabItem>
 </Tabs>
 
-### 3. Enable streaming for your prompt.
-
-You can enable streaming for your prompt responses by passing in a streaming callback.
+**3. Setup streaming for your model responses.**
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
 <TabItem value="python">
 
 ```python title="app.py"
-import asyncio
-from aiconfig import AIConfigRuntime, InferenceOptions
-
-async def travelWithGPT():
-    aiconfig = AIConfigRuntime.load("travel.aiconfig.json")
-
-    # Run a single prompt (with streaming)
-    options = InferenceOptions(
-        stream=True,
-        # Write stream data to stdout
-        stream_callback=lambda data, _acc, _idx: print(data.get("content", ""), end=""),
-    )
-    await aiconfig.run("get_activities", options=options)
-
-if __name__ == "__main__":
-    asyncio.run(travelWithGPT())
+inference_options = InferenceOptions(stream=True)
 ```
 
 </TabItem>
+
 <TabItem value="node">
 
 ```typescript title="app.ts"
-import * as path from "path";
-import { AIConfigRuntime, InferenceOptions } from "aiconfig";
+async function travelWithGPT() {
+  const aiConfig = AIConfigRuntime.load(
+    path.join(__dirname, "travel.aiconfig.json")
+  );
 
+  const options: InferenceOptions = {
+    callbacks: {
+      streamCallback: (data: any, _acc: any, _idx: any) => {
+        // Write streamed content to console
+        process.stdout.write(data?.content || "\n");
+      },
+    },
+  };
+}
+
+travelWithGPT();
+```
+
+</TabItem>
+</Tabs>
+
+**4. Run `get_activities` prompt from the AIConfig.**
+
+Add these lines to your script. To see the output, open your terminal and run your script.
+
+<Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
+
+```python title="app.py"
+async def travelWithGPT():
+  get_activities_response = await config.run("get_activities", options=inference_options)
+
+asyncio.run(travelWithGPT())
+```
+
+</TabItem>
+
+<TabItem value="node">
+
+```typescript title="app.ts"
 async function travelWithGPT() {
   const aiConfig = AIConfigRuntime.load(
     path.join(__dirname, "travel.aiconfig.json")
@@ -233,149 +290,240 @@ travelWithGPT();
 </TabItem>
 </Tabs>
 
-### 4. Run the `gen_itinerary` prompt.
+**5. Run the `gen_itinerary` prompt from the AIConfig.**
 
-This prompt depends on the output of `get_activities`. It also takes in parameters (user input) to determine the customized itinerary.
-
-Let's take a closer look:
-
-**`gen_itinerary` prompt:**
-
-```
-"Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}."
-```
-
-**prompt metadata:**
-
-```json
-{
-  "metadata": {
-    "model": "gpt-4",
-    "parameters": {
-      "order_by": "geographic location"
-    }
-  }
-}
-```
-
-Observe the following:
-
-1. The prompt depends on the output of the `get_activities` prompt.
-2. It also depends on an `order_by` parameter
-3. It uses **gpt-4**, whereas the `get_activities` prompt it depends on uses **gpt-3.5-turbo**.
-
-Effectively, this is a prompt chain between `gen_itinerary` and `get_activities` prompts, _as well as_ as a model chain between **gpt-3.5-turbo** and **gpt-4**.
-
-Let's run this with AIConfig:
+Replace the travelWithGPT() function code with these line(s). To see the output, open your terminal and run your script.
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
 <TabItem value="python">
 
-Replace `config.run` above with this:
+```python title="app.py"
+async def travelWithGPT():
+  gen_itinerary_response = await config.run("gen_itinerary", options=inference_options, run_with_dependencies=True)
 
-```python
-await aiconfig.run(
+asyncio.run(travelWithGPT())
+```
+
+</TabItem>
+
+<TabItem value="node">
+
+```typescript title="app.ts"
+async function travelWithGPT() {
+  const aiConfig = AIConfigRuntime.load(
+    path.join(__dirname, "travel.aiconfig.json")
+  );
+
+  const options: InferenceOptions = {
+    callbacks: {
+      streamCallback: (data: any, _acc: any, _idx: any) => {
+        // Write streamed content to console
+        process.stdout.write(data?.content || "\n");
+      },
+    },
+  };
+
+  // Run a prompt with dependencies
+  await aiConfig.runWithDependencies(
     "gen_itinerary",
-    params={"order_by": "duration"},
-    options=options,
-    run_with_dependencies=True)
-```
+    /*params*/ { order_by: "duration" },
+    options
+  );
+}
 
-</TabItem>
-<TabItem value="node">
-
-Replace the `aiconfig.run` call above with this:
-
-```typescript
-// Run a prompt chain, with data passed in as params
-// This will first run get_activities with GPT-3.5, and
-// then use its output to run the gen_itinerary using GPT-4
-await aiConfig.runWithDependencies(
-  "gen_itinerary",
-  /*params*/ { order_by: "duration" },
-  options
-);
+travelWithGPT();
 ```
 
 </TabItem>
 </Tabs>
 
-:::info
-Notice how simple the syntax is to perform a fairly complex task - running 2 different prompts across 2 different models and chaining one's output as part of the input of another.
-:::
+You will see the model response in your terminal. Since this prompt depends on another prompt, we see the response from the `get_activities` prompt followed by the response from the `gen_itinerary` prompt.
 
-### 5. Save the AIConfig.
+**6. Run the `gen_itinerary` prompt with a different parameter.**
 
-Let's save the AIConfig back to disk, and serialize the outputs from the latest inference run as well:
+Replace the travelWithGPT() function code with these line(s). To see the output, open your terminal and run your script.
 
 <Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
 <TabItem value="python">
 
-```python
-# Save the aiconfig to disk. and serialize outputs from the model run
-aiconfig.save('updated.aiconfig.json', include_outputs=True)
+```python title="app.py"
+async def travelWithGPT():
+  gen_itinerary_response = await config.run("gen_itinerary", params = {"order_by" : "location"}, options=inference_options, run_with_dependencies=True)
+
+asyncio.run(travelWithGPT())
 ```
 
 </TabItem>
+
 <TabItem value="node">
 
-```typescript
-// Save the AIConfig to disk, and serialize outputs from the model run
-aiConfig.save(
-  "updated.aiconfig.json",
-  /*saveOptions*/ { serializeOutputs: true }
-);
+```typescript title="app.ts"
+async function travelWithGPT() {
+  const aiConfig = AIConfigRuntime.load(
+    path.join(__dirname, "travel.aiconfig.json")
+  );
+
+  const options: InferenceOptions = {
+    callbacks: {
+      streamCallback: (data: any, _acc: any, _idx: any) => {
+        // Write streamed content to console
+        process.stdout.write(data?.content || "\n");
+      },
+    },
+  };
+
+  // Run a prompt with dependencies
+  await aiConfig.runWithDependencies(
+    "gen_itinerary",
+    /*params*/ { order_by: "location" },
+    options
+  );
+}
+
+travelWithGPT();
 ```
 
 </TabItem>
 </Tabs>
 
-:::note
-The AIConfig SDK supports [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations for prompts, models, parameters, and arbitrary metadata in the `aiconfig`.
+You will see the model response in your terminal. Notice how the output differs with the updated parameter.
 
-<!-- For more details, see the [SDK Overview](/docs/category/sdk). -->
+**7. Save the aiconfig to disk and serialize outputs from the model run.**
 
-:::
+Run your script.
 
-### 6. Open the AIConfig in AI Workbook editor.
+<Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
 
-We can iterate on an `aiconfig` using a notebook-like editor called an **AI Workbook**. Now that we have an `aiconfig` file artifact that encapsulates the generative AI part of our application, the application code doesn't need to change even as the `aiconfig` is updated.
-
-1. Go to https://lastmileai.dev.
-2. Go to Workbooks page: https://lastmileai.dev/workbooks
-3. Click dropdown from '+ New Workbook' and select 'Create from AIConfig'
-4. Upload `travel.aiconfig.json`
-
-Try out the workbook playground here: **[NYC Travel Workbook](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9)**
-
-:::note
-We are working on a local editor that you can run yourself. For now, please use the hosted version on https://lastmileai.dev.
-:::
-
-<video controls><source src="https://s3.amazonaws.com/publicdata.lastmileai.com/workbook_editor_480.mov"/></video>
-
+```python title="app.py"
+config.save('updated_travel.aiconfig.json', include_outputs=True)
 ```
 
+</TabItem>
+
+<TabItem value="node">
+
+```typescript title="app.ts"
+async function travelWithGPT() {
+  const aiConfig = AIConfigRuntime.load(
+    path.join(__dirname, "travel.aiconfig.json")
+  );
+
+  const options: InferenceOptions = {
+    callbacks: {
+      streamCallback: (data: any, _acc: any, _idx: any) => {
+        // Write streamed content to console
+        process.stdout.write(data?.content || "\n");
+      },
+    },
+  };
+
+  // Run a prompt with dependencies
+  await aiConfig.runWithDependencies(
+    "gen_itinerary",
+    /*params*/ { order_by: "location" },
+    options
+  );
+
+  // Save and serialize outputs
+  aiConfig.save(
+    "updated.aiconfig.json",
+    /*saveOptions*/ { serializeOutputs: true }
+  );
+}
+
+travelWithGPT();
 ```
 
-### Code for Getting Started
+</TabItem>
+</Tabs>
 
-Tutorial code can be found [here](https://github.com/lastmile-ai/aiconfig/tree/ad38040ec3d9f0273e006464e01e02b06f2809e9/cookbook/Getting-Started).
+**Full Script**
 
-## Additional Guides
+<Tabs groupId="aiconfig-language" queryString defaultValue={constants.defaultAIConfigLanguage} values={constants.aiConfigLanguages}>
+<TabItem value="python">
 
-There is a lot you can do with `aiconfig`. We have several other tutorials to help get you started:
+```python title="app.py"
+from aiconfig import AIConfigRuntime, InferenceOptions
+import asyncio
 
-- [Create an AIConfig from scratch](/docs/overview/create-an-aiconfig)
-- [Run a prompt](/docs/overview/run-aiconfig)
-- [Pass data into prompts](/docs/overview/parameters)
-- [Prompt chains](/docs/overview/define-prompt-chain)
-- [Callbacks and monitoring](/docs/overview/monitoring-aiconfig)
+config = AIConfigRuntime.load("travel.aiconfig.json")
+inference_options = InferenceOptions(stream=True)
 
-### Cookbooks
+async def travelWithGPT():
+  gen_itinerary_response = await config.run("gen_itinerary", params = {"order_by" : "location"}, options=inference_options, run_with_dependencies=True)
 
-- [CLI Chatbot](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Wizard-GPT)
-- [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
-- [Prompt routing](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Basic-Prompt-Routing)
+asyncio.run(travelWithGPT())
+config.save('updated_travel.aiconfig.json', include_outputs=True)
+```
+
+</TabItem>
+
+<TabItem value="node">
+
+```typescript title="app.ts"
+import * as path from "path";
+import { AIConfigRuntime, InferenceOptions } from "aiconfig";
+
+async function travelWithGPT() {
+  const aiConfig = AIConfigRuntime.load(
+    path.join(__dirname, "travel.aiconfig.json")
+  );
+
+  const options: InferenceOptions = {
+    callbacks: {
+      streamCallback: (data: any, _acc: any, _idx: any) => {
+        // Write streamed content to console
+        process.stdout.write(data?.content || "\n");
+      },
+    },
+  };
+
+  // Run a prompt with dependencies
+  await aiConfig.runWithDependencies(
+    "gen_itinerary",
+    /*params*/ { order_by: "location" },
+    options
+  );
+
+  // Save and serialize outputs
+  aiConfig.save(
+    "updated.aiconfig.json",
+    /*saveOptions*/ { serializeOutputs: true }
+  );
+}
+
+travelWithGPT();
+```
+
+</TabItem>
+</Tabs>
+
+## Edit your AIConfig
+
+You can iterate and edit your aiconfig using the AIConfig Editor. Now that we have an aiconfig file artifact that encapsulates the generative AI parts of our application, the application code doesn't need to change even as the aiconfig is updated.
+
+1. Open your Terminal
+2. Run this command: `aiconfig edit --aiconfig-path updated_travel.aiconfig.json`
+
+A new tab with the AIConfig Editor opens in your default browser at http://localhost:8080/ with the prompts, chaining logic, and settings from `updated_travel.aiconfig.json`. Your edits will auto-save every 15 seconds. You can also manually save with the Save button.
+
+## Next Steps
+
+Check out these examples and guides:
+
 - [OpenAI function calling](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI)
+- [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
+- [CLI Chatbot](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Wizard-GPT)
+- [Prompt routing](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Basic-Prompt-Routing)
 - [Chain of thought](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Chain-of-Verification)
+
+## Coming Soon
+
+- Non-default model support in Local Editor
+- OpenAI Assistants API support
+- Multimodal ModelParsers: GPT4-V support, Whisper
+
+## Questions or Feedback?
+
+Join our Discord community [here](https://discord.com/invite/xBhNKTetGx)! We welcome your feedback and are here to help with any questions.
