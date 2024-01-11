@@ -36,6 +36,7 @@
     "@mantine/prism": "^6.0.7",
     "@monaco-editor/react": "^4.6.0",
     "@tabler/icons-react": "^2.44.0",
+    "@types/uuid": "^9.0.7",
     "aiconfig": "../../../../../typescript",
     "lodash": "^4.17.21",
     "node-fetch": "^3.3.2",
