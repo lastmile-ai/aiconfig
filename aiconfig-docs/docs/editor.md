@@ -57,21 +57,17 @@ You will need to specify your API keys for the model providers (i.e. OpenAI, Goo
 <details> 
     <summary>Example: Setup your OpenAI API Key as a environment variable (MacOS / Linux / Windows)</summary>
     <div>
-        Get your OpenAI API Key: https://platform.openai.com/account/api-keys
-        Open Terminal /
-        Set your environment variable in the Terminal session
-        Add your api key replacing your-api-key-here
-
-        MacOS / Linux
+        1. Get your OpenAI API Key: https://platform.openai.com/account/api-keys 
+        2. Open Terminal
+        3. Edit Bash Profile: Use the command `nano ~/.bash_profile` or `nano ~/.zshrc` (for newer MacOS versions) to open the profile file in a text editor.
+        4. Add Environment Variable: In the editor, add the line below, replacing *your-api-key-here* with your actual API key:
+        ```bash 
         export OPENAI_API_KEY='your-api-key-here'
+        ```
+        5. Save and Exit: Press `Ctrl+O` followed by `ENTER` to write the change. Then `Ctrl+X` to close the editor.
+        6. Load Your Profile: Use the command `source ~/.bash_profile` or `source ~/.zshrc` to load the updated profile.
+        7. Verification: Verify the setup by typing `echo $OPENAI_API_KEY` in the terminal. It should display your API key.
 
-        Windows
-        set OPENAI_API_KEY='your-api-key-here'
-
-        Saving your key across multiple sessions
-        Open Terminal
-        Edit Bash Profile: Use the command nano ~/.bash_profile or nano ~/.zshrc (for newer MacOS sdds
-        Verification: Verify the setup by typing echo $OPENAI_API_KEY in the terminal. It should display your API key.
     </div>
 
 </details>
