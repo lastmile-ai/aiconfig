@@ -10,6 +10,7 @@ import result
 import yaml
 from aiconfig.editor.server.server import run_backend_server
 from aiconfig.editor.server.server_utils import EditServerConfig, ServerMode
+import aiconfig.scripts.rage.rage as rage
 from result import Err, Ok, Result
 
 
@@ -36,7 +37,7 @@ async def main_with_args(argv: list[str]) -> int:
 
 def run_subcommand(argv: list[str]) -> Result[str, str]:
     LOGGER.info("Running subcommand")
-    subparser_record_types = {"edit": EditServerConfig}
+    subparser_record_types = {"edit": EditServerConfig, "rage": rage.RageConfig}
     main_parser = core_utils.argparsify(AIConfigCLIConfig, subparser_record_types=subparser_record_types)
 
     res_cli_config = core_utils.parse_args(main_parser, argv[1:], AIConfigCLIConfig)
@@ -58,6 +59,10 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
             for res_servers_ok in _run_editor_servers(edit_config, cli_config.settings_path)
         )
         return out
+    elif subparser_name == "rage":
+        res_rage_config = core_utils.parse_args(main_parser, argv[1:], rage.RageConfig)
+        res_rage = res_rage_config.and_then(rage.rage)
+        return result.do(Ok("Rage complete!") for _ in res_rage)
     else:
         return Err(f"Unknown subparser: {subparser_name}")
 
@@ -118,27 +123,42 @@ def _run_editor_servers(edit_config: EditServerConfig, settings_path: str) -> Re
     return core_utils.result_reduce_list_all_ok(results)
 
 
-def _process_cli_config(cli_config: AIConfigCLIConfig) -> Result[bool, str]:
-    LOGGER.setLevel(cli_config.log_level)
-
-    config_path = cli_config.settings_path
-    file_contents = yaml.dump({"allow_usage_data_sharing": cli_config.allow_usage_data_sharing})
+def _process_settings(settings_path: str, allow_usage_data_sharing: bool) -> Result[bool, str]:
+    """
+    Iff file doesn't exist, create it and write the initial contents.
+    If it does exist, read the contents,
+    update the allow_usage_data_sharing field,
+    and write the updated contents.
+    """
+    file_contents = yaml.dump({"allow_usage_data_sharing": allow_usage_data_sharing})
     try:
-        with open(config_path, "x") as f:
+        with open(settings_path, "x") as f:
             f.write(file_contents)
+
+        return Ok(True)
     except FileExistsError:
-        with open(config_path, "r") as f:
+        with open(settings_path, "r") as f:
             existing_file_contents = f.read()
 
         existing_config = yaml.safe_load(existing_file_contents)
-        existing_config["allow_usage_data_sharing"] = cli_config.allow_usage_data_sharing
+        existing_config["allow_usage_data_sharing"] = allow_usage_data_sharing
         file_contents = yaml.dump(existing_config)
-        with open(config_path, "w") as f:
+        with open(settings_path, "w") as f:
             f.write(file_contents)
+
+        return Ok(True)
     except Exception as e:
         return core_utils.ErrWithTraceback(e)
 
-    return Ok(True)
+
+def _process_cli_config(cli_config: AIConfigCLIConfig) -> Result[bool, str]:
+    LOGGER.setLevel(cli_config.log_level)
+
+    step1_outcome = _process_settings(cli_config.settings_path, cli_config.allow_usage_data_sharing)
+
+    # If there are more steps later, we can aggregate the results.
+    out = step1_outcome
+    return out
 
 
 def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], str]:
@@ -164,7 +184,6 @@ def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], s
 
 
 def main() -> int:
-    print("Running main")
     argv = sys.argv
     return asyncio.run(main_with_args(argv))
 
