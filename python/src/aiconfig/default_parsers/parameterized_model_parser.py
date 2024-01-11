@@ -117,13 +117,13 @@ class ParameterizedModelParser(ModelParser):
         """
         return resolve_prompt_string(prompt, params, ai_config, prompt_template)
 
-    def get_prompt_template(self, prompt: Prompt, aiConfig: "AIConfigRuntime") -> str:
+    def get_prompt_template(self, prompt: Prompt, aiConfig: "AIConfigRuntime") -> str | None:
         """
         An overrideable method that returns a template for a prompt.
         """
         if isinstance(prompt.input, str):
             return prompt.input
-        elif isinstance(prompt.input, PromptInput) and isinstance(prompt.input.data, str):
+        if isinstance(prompt.input, PromptInput) and isinstance(prompt.input.data, str):
             return prompt.input.data
-        else:
-            raise Exception(f"Cannot get prompt template string from prompt input: {prompt.input}")
+        # Not all model inputs are parameterizable (e.g. image inputs)
+        return None
