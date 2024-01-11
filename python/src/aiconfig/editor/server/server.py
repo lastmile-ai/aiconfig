@@ -182,7 +182,7 @@ def create() -> FlaskResponse:
 
 
 @app.route("/api/run", methods=["POST"])
-def run() -> FlaskResponse:
+async def run() -> FlaskResponse:
     EXCLUDE_OPTIONS = {
         "prompt_index": True,
         "file_path": True,
@@ -212,6 +212,9 @@ def run() -> FlaskResponse:
     # https://github.com/lastmile-ai/aiconfig/issues/671
     params = request_json.get("params", aiconfig.get_parameters(prompt_name))  # type: ignore
     stream = request_json.get("stream", True)
+    
+    await aiconfig.run(prompt_name=prompt_name, params=params)
+    raise NotImplementedError("TODO: Implement this")
 
     # Define stream callback and queue object for streaming results
     output_text_queue = QueueIterator()
