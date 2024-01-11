@@ -44,7 +44,7 @@
     "react-error-boundary": "^4.0.12",
     "react-markdown": "^8.0.6",
     "react-scripts": "5.0.1",
-    "remark-gfm": "^4.0.0",
+    "remark-gfm": "^3.0.1",
     "ufetch": "^1.6.0",
     "url-join": "^5.0.0",
     "uuid": "^9.0.1"

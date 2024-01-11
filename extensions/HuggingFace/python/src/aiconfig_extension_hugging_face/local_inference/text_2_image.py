@@ -11,6 +11,7 @@ from diffusers.pipelines.stable_diffusion_xl.pipeline_output import StableDiffus
 from PIL import Image
 from transformers import Pipeline
 
+from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
 
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
@@ -124,11 +125,12 @@ def refine_image_completion_params(unfiltered_completion_params: Dict[str, Any])
     return completion_params
 
 
-class ImageData():
+class ImageData:
     """
-    Helper class to store each image response data as fields instead 
+    Helper class to store each image response data as fields instead
     of separate arrays. See `_refine_responses` for more details
     """
+
     image: Image.Image
     nsfw_content_detected: bool
 
@@ -289,17 +291,17 @@ https://huggingface.co/docs/diffusers/using-diffusers/loading
 """
         print(pipeline_building_disclaimer_message)
 
-        model_name: str = aiconfig.get_model_name(prompt)
+        model_name = get_hf_model(aiconfig, prompt, self)
+        key = model_name if model_name is not None else "__default__"
+
         # TODO (rossdanlm): Figure out a way to save model and re-use checkpoint
         # Otherwise right now a lot of these models are taking 5 mins to load with 50
         # num_inference_steps (default value). See here for more details:
         # https://huggingface.co/docs/diffusers/using-diffusers/loading#checkpoint-variants
-        if isinstance(model_name, str) and model_name not in self.generators:
+        if key not in self.generators:
             device = self._get_device()
-            self.generators[model_name] = AutoPipelineForText2Image.from_pretrained(pretrained_model_or_path=model_name, **pipeline_creation_data).to(
-                device
-            )
-        generator = self.generators[model_name]
+            self.generators[key] = AutoPipelineForText2Image.from_pretrained(pretrained_model_or_path=model_name, **pipeline_creation_data).to(device)
+        generator = self.generators[key]
 
         disclaimer_long_response_print_message = """\n
 Calling image generation. This can take a long time, (up to SEVERAL MINUTES depending
@@ -370,21 +372,22 @@ If that doesn't work, you can also try less computationally intensive models.
             return "mps"
         return "cpu"
 
+
 def _refine_responses(
-    response_images:  List[Image.Image],
+    response_images: List[Image.Image],
     nsfw_content_detected: List[bool],
 ) -> List[ImageData]:
     """
     Helper function for taking the separate response data lists (`images` and
-    `nsfw_content_detected`) from StableDiffusionPipelineOutput or 
+    `nsfw_content_detected`) from StableDiffusionPipelineOutput or
     StableDiffusionXLPipelineOutput and merging this data into a single array
-    containing ImageData which stores information at the image-level. This 
-    makes processing later easier since all the data we need is stored in a 
+    containing ImageData which stores information at the image-level. This
+    makes processing later easier since all the data we need is stored in a
     single object, so we don't need to compare two separate lists
 
     Args:
         response_images List[Image.Image]: List of images
-        nsfw_content_detected List[bool]: List of whether the image at that 
+        nsfw_content_detected List[bool]: List of whether the image at that
             corresponding index from `response_images` has detected that it
             contains nsfw_content. It is possible for this list to be empty
 
@@ -396,8 +399,5 @@ def _refine_responses(
         # Use zip.longest because nsfw_content_detected can be empty
         itertools.zip_longest(response_images, nsfw_content_detected)
     )
-    image_data_objects: List[ImageData] = [
-        ImageData(image=image, nsfw_content_detected=has_nsfw)
-        for (image, has_nsfw) in merged_responses
-    ]
+    image_data_objects: List[ImageData] = [ImageData(image=image, nsfw_content_detected=has_nsfw) for (image, has_nsfw) in merged_responses]
     return image_data_objects
