@@ -117,7 +117,7 @@ class HuggingFaceImage2TextTransformer(ModelParser):
         await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_params}))
         return completion_params
 
-    async def run(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> list[Output]:
+    async def run(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any], **kwargs) -> list[Output]:
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_run_start",
@@ -179,7 +179,8 @@ class HuggingFaceImage2TextTransformer(ModelParser):
 def refine_completion_params(model_settings: Dict[str, Any]) -> Dict[str, Any]:
     """
     Refines the completion params for the HF image to text api. Removes any unsupported params.
-    The supported keys were found by looking at the HF ImageToTextPipeline.__call__ method
+    The supported keys were found by looking at the HF ImageToTextPipeline.__call__ method:
+    https://github.com/huggingface/transformers/blob/cbbe30749b425f7c327acdab11473b33567a6e26/src/transformers/pipelines/image_to_text.py#L83
     """
     supported_keys = {
         "max_new_tokens",

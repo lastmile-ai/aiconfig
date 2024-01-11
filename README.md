@@ -26,17 +26,21 @@
   </a>
 </p>
 
-AIConfig is a framework that makes it easy to build generative AI applications for production. It manages generative AI prompts, models and model parameters as JSON-serializable configs that can be version controlled, evaluated, monitored and opened in a notebook playground for rapid prototyping.
+AIConfig is a framework that makes it easy to build generative AI applications for production. It manages generative AI prompts, models and model parameters as JSON-serializable configs that can be version controlled, evaluated, monitored and opened in a local editor for rapid prototyping.
 
 It allows you to store and iterate on generative AI behavior _separately from your application code_, offering a streamlined AI development workflow.
 
-<div style="center">
-    <img src="aiconfig-docs/static/img/aiconfig_dataflow.png" alt="AIConfig flow" width="500">
-</div>
+<div align="center"><picture>
+  <img alt="aiconfig" src="aiconfig-docs/static/img/aiconfig_dataflow.png" width="500"/>
+</picture></div>
 
 **[More context here](#why-is-this-important).**
 
 ## Getting Started
+
+Check out the full [Getting Started tutorial](https://aiconfig.lastmileai.dev/docs/getting-started/).
+
+### Install
 
 ```bash
 # for python installation:
@@ -48,44 +52,66 @@ npm install aiconfig
 # or using yarn: yarn add aiconfig
 ```
 
-Here is a sample AIConfig that uses gpt-3.5-turbo and gpt-4:
+**Note:** You need to install the python AIConfig package to use AIConfig Editor to create and iterate on prompts even if you plan to use the Node SDK to interact with your aiconfig in your application code.
+
+You must specify your [OpenAI API Key](https://platform.openai.com/account/api-keys). Open your Terminal and add this line, replacing ‘your-api-key-here’ with your API key: `export OPENAI_API_KEY='your-api-key-here'`.
+
+### Open AIConfig Editor
+
+AIConfig Editor helps you visually create and edit the prompts and model parameters stored as AIConfigs.
+
+1. Open your Terminal
+2. Run this command: `aiconfig edit --aiconfig-path travel.aiconfig.json`
+
+This will open AIConfig Editor in your default browser at http://localhost:8080/ and create a new AIConfig JSON file `travel.aiconfig.json` in your current directory.
+
+### Run Prompts in the Editor
+
+With AIConfig Editor, you can create and run prompts with complex chaining and variables. The editor auto-saves every 15 seconds and you can manually save with the Save button. Your updates will be reflected in the AIConfig JSON file. See this example of a prompt chain created with the editor:
+
+<div align="center"><picture>
+  <img alt="aiconfig" src="https://github.com/lastmile-ai/aiconfig/assets/81494782/6f564fc8-65fd-4e25-9ef8-699e1601d3e6" width="800"/>
+</picture></div>
+
+<br>
+
+**Corresponding AIConfig JSON file:**
 
 <details style="border: 1px solid #e8e8e8; padding: 10px; border-radius: 10px;">
-<summary style="cursor: pointer; color: #ffffff; user-select: none; font-weight: bold; padding:5px 10px">trip_planner_aiconfig.json</summary>
+<summary style="cursor: pointer; color: #ffffff; user-select: none; font-weight: bold; padding:5px 10px">travel.aiconfig.json</summary>
 <pre style="font-size: 14px; color: #444;">
 <code>
 {
-  "name": "trip_planner",
+  "name": "NYC Trip Planner",
+  "description": "Intrepid explorer with ChatGPT and AIConfig",
   "schema_version": "latest",
   "metadata": {
     "models": {
       "gpt-3.5-turbo": {
         "model": "gpt-3.5-turbo",
         "top_p": 1,
-        "temperature": 0
+        "temperature": 1
       },
       "gpt-4": {
         "model": "gpt-4",
-        "top_p": 1,
-        "temperature": 0,
-        "system_prompt": "You are an expert travel coordinator with exquisite taste. Be concise but specific in recommendations.\n\nEmoji: Choose an emoji based on the location: \n\nOutput Format: \n## Personalized  Itinerary [emoji]\n&nbsp;\n### Morning\n[Breakfast spot and attraction]\n&nbsp;\n### Afternoon\n[Lunch spot and attraction]\n&nbsp;\n###Evening\n[Dinner spot and attraction]\n&nbsp;\n### Night\n[Dessert spot and attraction]\n\nStyle Guidelines: \nBold the restaurants and the attractions. Be structured."
+        "max_tokens": 3000
       }
     },
-    "default_model": "gpt-3.5-turbo",
-    "parameters": {"city": "London"}
+    "default_model": "gpt-3.5-turbo"
   },
   "prompts": [
     {
-      "name": "get_activities", 
-      "input": "Give me the top 5 fun attractions to do in {{city}}"
+      "name": "get_activities",
+      "input": "Tell me 10 fun attractions to do in NYC."
     },
     {
       "name": "gen_itinerary",
-      "input": "Generate a one-day personalized itinerary based on : \n1. my favorite cuisine: {{cuisine}} \n2. list of activities:  {{get_activities.output}}",
+      "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
       "metadata": {
-        "model": {"name": "gpt-4"},
-        "parameters": {"cuisine": "Malaysian"},
-        "remember_chat_context": false
+        "model": "gpt-4",
+        "parameters": {
+          "order_by": "geographic location"
+        }
       }
     }
   ]
@@ -93,55 +119,38 @@ Here is a sample AIConfig that uses gpt-3.5-turbo and gpt-4:
 </code></pre>
 </details>
 
-The core SDK connects your AIConfig to your application code.
-We cover Python instructions here - for Node.js please see the detailed Getting Started guide [here](https://aiconfig.lastmileai.dev/docs/getting-started).
-The example below uses `trip_planner_aiconfig.json` shared above.
+### Use the AIConfig SDK
 
-[![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1RlGQmtR0uK7OTI5nG10E219JoH2mgAQr#scrollTo=h2G7ThhyFWxg)
-
-Resources: [Getting Started Docs](https://aiconfig.lastmileai.dev/docs/getting-started) | [YouTube Demo Video](https://www.youtube.com/watch?v=X_Z-M2ZcpjA)
-
-```bash
-# first, setup your openai key: https://platform.openai.com/api-keys
-# in your CLI, set the environment variable
-export OPENAI_API_KEY=my_key
-```
+You can run the prompts from the aiconfig generated from AIConfig Editor in your application code using either python or Node SDK. We’ve shown the python SDK below.
 
 ```python
 # load your AIConfig
 from aiconfig import AIConfigRuntime, InferenceOptions
+import asyncio
 
-config = AIConfigRuntime.load("trip_planner_aiconfig.json")
+config = AIConfigRuntime.load("travel.aiconfig.json")
 
 # setup streaming
 inference_options = InferenceOptions(stream=True)
 
 # run a prompt
-# `get_activities` prompt generates a list of activities in specified city ('london' is default)
-get_activities_response = await config.run("get_activities", options=inference_options)
+async def gen_nyc_itinerary():
+  gen_itinerary_response = await config.run("gen_itinerary", params = {"order_by" : "location"}, options=inference_options, run_with_dependencies=True)
 
-# run a prompt with a different parameter
-# update city parameter to 'san francisco'
-get_activities_response = await config.run("get_activities", params = {“city” : “san francisco”}, options=inference_options)
+asyncio.run(gen_nyc_itinerary())
 
-# run a prompt that has dependencies
-# `gen_itinterary` prompt generates itinerary based the output from `get_activities` prompt and user's specified cuisine
-await config.run("gen_itinerary", params = {"cuisine" : "russian"}, run_with_dependencies=True)
-
-# save the aiconfig to disk. and serialize outputs from the model run
-config.save('updated_aiconfig.json', include_outputs=True)
+# save the aiconfig to disk and serialize outputs from the model run
+config.save('updated_travel.aiconfig.json', include_outputs=True)
 ```
 
-### Edit the AIConfig in a notebook editor
+### Edit your AIConfig
 
-We can iterate on an AIConfig using a notebook editor called an AI Workbook.
+You can quickly iterate and edit your aiconfig using AIConfig Editor.
 
-1. Go to https://lastmileai.dev.
-2. Go to Workbooks page: https://lastmileai.dev/workbooks
-3. Click dropdown from '+ New Workbook' and select 'Create from AIConfig'
-4. Upload `trip_planner_aiconfig.json`
+1. Open your Terminal
+2. Run this command: `aiconfig edit --aiconfig-path travel.aiconfig.json`
 
-https://github.com/lastmile-ai/aiconfig/assets/81494782/5d901493-bbda-4f8e-93c7-dd9a91bf242e
+A new tab with AIConfig Editor opens in your default browser at http://localhost:8080/ with the prompts, chaining logic, and settings from `travel.aiconfig.json`. The editor auto-saves every 15 seconds and you can manually save with the Save button. Your updates will be reflected in the AIConfig file.
 
 ## Why is this important?
 
@@ -160,7 +169,7 @@ AIConfig helps unwind complexity by separating prompts, model parameters, and mo
 ## Features
 
 - **Prompts as Configs**: [standardized JSON format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to store prompts and model settings in source control.
-- **Editor for Prompt Chains**: Prototype and iterate on your prompt chains and model settings in [AI Workbooks](https://lastmileai.dev/workbooks/clooqs3p200kkpe53u6n2rhr9).
+- **Editor for Prompts**: Prototype and quickly iterate on your prompts and model settings with AIConfig Editor.
 - **Model-agnostic and multimodal SDK**: Python & Node SDKs to use `aiconfig` in your application code. AIConfig is designed to be **model-agnostic** and **multi-modal**, so you can extend it to work with any generative AI model, including text, image and audio.
 - **Extensible**: Extend AIConfig to work with any model and your own endpoints.
 - **Collaborative Development**: AIConfig enables different people to work on prompts and app development, and collaborate together by sharing the `aiconfig` artifact.
@@ -179,7 +188,7 @@ AIConfig makes it easy to work with complex prompt chains, various models, and a
 
 ## Schema
 
-[AIConfig Schema](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format/)
+- [AIConfig Schema](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format/)
 
 ## Supported Models
 
