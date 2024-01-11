@@ -1,3 +1,4 @@
+import json
 import warnings
 from typing import Any, Dict, List, Literal, Optional, Union
 
@@ -89,6 +90,13 @@ class ExecuteResult(BaseModel):
     mime_type: Optional[str] = None
     # Output metadata
     metadata: Dict[str, Any]
+    
+    def to_json(self) -> JSONObject:
+        """
+        Helper method used to ensure this is formatted to a valid JSON object
+        so that it can be used for streaming
+        """
+        return self.__dict__
 
 
 class Error(BaseModel):
