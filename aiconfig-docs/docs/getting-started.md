@@ -82,7 +82,7 @@ For this tutorial, you will need to have an OpenAI API key that has access to GP
 
 ## Open AIConfig Editor
 
-AIConfig Editor allows you to visually create and edit the prompt chains and model parameters that are stored as AIConfigs. You can also chain prompts and use global and local variables in your prompts.
+AIConfig Editor allows you to visually create and edit the prompt chains and model parameters that are stored as AIConfigs. You can also chain prompts and use global and local variables in your prompts. Learn more about [AIConfig Editor](https://aiconfig.lastmileai.dev/docs/editor).
 
 1. Open your Terminal
 2. Run this command: `aiconfig edit --aiconfig-path travel.aiconfig.json`
