@@ -3,17 +3,15 @@ from typing import Any, Dict, Optional, List, TYPE_CHECKING
 import torch
 from transformers import pipeline, Pipeline
 from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
-
+from aiconfig import ModelParser, InferenceOptions
 from aiconfig.callback import CallbackEvent
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import Prompt, Output, ExecuteResult, Attachment
 
 if TYPE_CHECKING:
     from aiconfig import AIConfigRuntime
 
 
-class HuggingFaceAutomaticSpeechRecognitionTransformer(ParameterizedModelParser):
+class HuggingFaceAutomaticSpeechRecognitionTransformer(ModelParser):
     """
     Model Parser for HuggingFace ASR (Automatic Speech Recognition) models.
     """
@@ -87,7 +85,7 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ParameterizedModelParser)
         await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data}))
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> List[Output]:
+    async def run(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any], **kwargs) -> list[Output]:
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_run_start",
