@@ -1,6 +1,6 @@
 import * as uuid from "uuid";
 
 
-function generateUniqueSessionId(): string {
+export function generateUniqueSessionId(): string {
     return uuid.v4();
 }
