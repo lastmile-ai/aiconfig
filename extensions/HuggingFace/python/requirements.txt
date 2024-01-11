@@ -11,6 +11,7 @@ huggingface_hub
 #Hugging Face Libraries - Local Inference Tranformers & Diffusors
 accelerate # Used to help speed up image generation
 diffusers # Used for image generation
+sacremoses # Used for tokenizer, detokenizer, pipelines
 scipy # array -> wav file, text-speech. torchaudio.save seems broken.
 sentencepiece # Used for text translation
 torch
