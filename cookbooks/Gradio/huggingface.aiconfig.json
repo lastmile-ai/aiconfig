@@ -207,21 +207,20 @@
       "input": {
         "attachments": [
           {
-            "data": "./hi.mp3",
+            "data": "cookbooks/Gradio/hi.mp3",
             "mime_type": "audio/mpeg"
           }
         ]
       },
       "metadata": {
         "model": {
-          "name": "HuggingFaceAutomaticSpeechRecognition",
+          "name": "HuggingFaceAutomaticSpeechRecognitionTransformer",
           "settings": {
             "model": "openai/whisper-small"
           }
         },
         "parameters": {}
-      },
-      "outputs": []
+      }
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
