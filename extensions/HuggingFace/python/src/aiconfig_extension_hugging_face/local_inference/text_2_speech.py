@@ -14,6 +14,7 @@ from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import (
     ExecuteResult,
     Output,
+    OutputDataWithStringValue,
     Prompt,
     PromptMetadata,
 )
@@ -230,9 +231,13 @@ class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
         # TODO (rossdanlm): Handle multiple outputs in list
         # https://github.com/lastmile-ai/aiconfig/issues/467
         if output.output_type == "execute_result":
-            if isinstance(output.data, str):
-                return output.data
-            # HuggingFace text to speech outputs should only ever be string
-            # format so shouldn't get here, but just being safe
-            return json.dumps(output.data, indent=2)
+            output_data = output.data
+            if isinstance(output_data, OutputDataWithStringValue):
+                return output_data.value
+            # HuggingFace text to image outputs should only ever be in
+            # outputDataWithStringValue format so shouldn't get here, but
+            # just being safe
+            if isinstance(output_data, str):
+                return output_data
+            return json.dumps(output_data, indent=2)
         return ""
