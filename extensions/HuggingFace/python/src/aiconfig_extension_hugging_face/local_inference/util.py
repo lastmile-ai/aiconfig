@@ -14,7 +14,7 @@ def get_hf_model(aiconfig: "AIConfigRuntime", prompt: Prompt, model_parser: Para
     """
     model_name: str | None = aiconfig.get_model_name(prompt)
     model_settings = model_parser.get_model_settings(prompt, aiconfig)
-    hf_model = model_settings.get("model", None)
+    hf_model = model_settings.get("model") or None # Replace "" with None value
 
     if hf_model is not None and isinstance(hf_model, str):
         # If the model property is set in the model settings, use that.

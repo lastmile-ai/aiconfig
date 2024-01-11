@@ -267,8 +267,7 @@ class AIConfigRuntime(AIConfig):
             self,
             options,
             params,
-            callback_manager=self.callback_manager,
-            **kwargs,
+            **kwargs, # TODO: We should remove and make argument explicit
         )
 
         event = CallbackEvent("on_run_complete", __name__, {"result": response})
@@ -333,7 +332,6 @@ class AIConfigRuntime(AIConfig):
             self,
             parameters_list,
             options,
-            callback_manager=self.callback_manager,
             **kwargs,
         )
 

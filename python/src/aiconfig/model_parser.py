@@ -66,6 +66,7 @@ class ModelParser(ABC):
         aiconfig: AIConfig,
         options: Optional["InferenceOptions"] = None,
         parameters: Dict = {},
+        **kwargs, # TODO: Remove this, just a hack for now to ensure that it doesn't break
     ) -> ExecuteResult:
         """
         Execute model inference based on completion data to be constructed in deserialize(), which includes the input prompt and
