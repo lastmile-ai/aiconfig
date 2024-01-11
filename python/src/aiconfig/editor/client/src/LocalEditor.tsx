@@ -5,17 +5,12 @@ import AIConfigEditor, {
   RunPromptStreamErrorEvent,
 } from "./components/AIConfigEditor";
 import { Flex, Loader, MantineProvider, Image } from "@mantine/core";
-import {
-  AIConfig,
-  InferenceSettings,
-  JSONObject,
-  Output,
-  Prompt,
-} from "aiconfig";
+import { AIConfig, InferenceSettings, JSONObject, Output, Prompt } from "aiconfig";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
 import { streamingApiChain } from "./utils/oboeHelpers";
+import { generateUniqueSessionId } from "./utils/logging";
 import { datadogLogs } from "@datadog/browser-logs";
 import { LogEvent, LogEventData } from "./shared/types";
 
@@ -30,6 +25,31 @@ export default function Editor() {
   useEffect(() => {
     loadConfig();
   }, [loadConfig]);
+
+  const enableTelemetryIfAllowed = useCallback(async () => {
+    const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
+
+    const enableTelemetry = res.allow_usage_data_sharing;
+
+    if (enableTelemetry) {
+      datadogLogs.init({
+        clientToken: "pub356987caf022337989e492681d1944a8",
+        env: process.env.NODE_ENV ?? "development",
+        service: "aiconfig-editor",
+        site: "us5.datadoghq.com",
+        forwardErrorsToLogs: true,
+        sessionSampleRate: 100,
+      });
+
+      const sessionID = generateUniqueSessionId();
+
+      datadogLogs.setGlobalContext({ session_id: sessionID });
+    }
+  }, []);
+
+  useEffect(() => {
+    enableTelemetryIfAllowed();
+  }, [enableTelemetryIfAllowed]);
 
   const save = useCallback(async (aiconfig: AIConfig) => {
     const res = await ufetch.post(ROUTE_TABLE.SAVE, {
