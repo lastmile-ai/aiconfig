@@ -156,6 +156,7 @@ def save() -> FlaskResponse:
         if aiconfig is None:
             return HttpResponseWithAIConfig(message="No AIConfig loaded", code=400, aiconfig=None).to_flask_format()
         else:
+            LOGGER.info(f"No path provided, saving to original path, {aiconfig.file_path}")
             path = aiconfig.file_path
 
     res_path_val = get_validated_path(path, allow_create=True)

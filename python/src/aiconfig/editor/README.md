@@ -4,14 +4,14 @@
 
 One liner for local testing; run this inside the root of aiconfig repo. Create a model parser registry py file to get started.
 
-`python -m 'aiconfig.scripts.aiconfig_cli' edit  --aiconfig-path=../cookbooks/Getting-Started/travel.aiconfig.json --server-mode='prod' `
+`python3 -m 'aiconfig.scripts.aiconfig_cli' edit  --aiconfig-path=../cookbooks/Getting-Started/travel.aiconfig.json --server-mode='prod' `
 
 ### Install:
 
 Install python-aiconfig from pip, then set `aiconfig` alias (in shell, .bashrc, .zshrc, etc.)
 
 One-liner:
-`pip install python-aiconfig; alias aiconfig="python -m 'aiconfig.scripts.aiconfig_cli'"`
+`pip3 install python-aiconfig; alias aiconfig="python3 -m 'aiconfig.scripts.aiconfig_cli'"`
 
 ### Run
 
@@ -30,10 +30,10 @@ Go to url in browser to use app.
 ### Loading model parsers
 
 To use a model parser that doesn't ship with aiconfig: 0. Make sure your model parser package is installed, e.g.
-`pip install aiconfig-extension-gemini`, or
-`pip install -e path/to/my/local/parser/package`
+`pip3 install aiconfig-extension-gemini`, or
+`pip3 install -e path/to/my/local/parser/package`
 
-1. Make a Python file e.g. my_editor_plugin.py. It must define a () -> None called `register_model_parsers.
+1. Make a python3 file e.g. my_editor_plugin.py. It must define a () -> None called `register_model_parsers.
    Example:
 
 ```
@@ -57,7 +57,7 @@ e.g. `aiconfig edit --parsers-module-path="/path/to/my_editor_plugin.py"`
 
 ### Environment Setup
 It is recommended to use (mini)conda. This sets up an environment for you in terminal
-which ensures you have the proper Python packages and dependencies installed.
+which ensures you have the proper python3 packages and dependencies installed.
 Ex: you won't have to worry about issues between `python` vs. `python3`
 
 If you already have conda installed, you can skip these next 3 commands:
