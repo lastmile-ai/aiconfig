@@ -118,7 +118,7 @@ class HuggingFaceImage2TextTransformer(ParameterizedModelParser):
         await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_params}))
         return completion_params
 
-    async def run(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> list[Output]:
+    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> List[Output]:
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_run_start",
