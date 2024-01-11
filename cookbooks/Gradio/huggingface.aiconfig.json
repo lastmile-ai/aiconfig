@@ -207,7 +207,7 @@
       "input": {
         "attachments": [
           {
-            "data": "./hi.mp3",
+            "data": "cookbooks/Gradio/hi.mp3",
             "mime_type": "audio/mpeg"
           }
         ]
@@ -220,8 +220,7 @@
           }
         },
         "parameters": {}
-      },
-      "outputs": []
+      }
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
