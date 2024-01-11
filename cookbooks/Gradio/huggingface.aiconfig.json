@@ -207,7 +207,7 @@
       "input": {
         "attachments": [
           {
-            "data": "./hi.mp3",
+            "data": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_11_20_34_32/3386/hi.mp3",
             "mime_type": "audio/mpeg"
           }
         ]
