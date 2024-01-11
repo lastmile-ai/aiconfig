@@ -220,7 +220,8 @@
           }
         },
         "parameters": {}
-      }
+      },
+      "outputs": []
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
