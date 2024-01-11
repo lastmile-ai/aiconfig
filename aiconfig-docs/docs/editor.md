@@ -18,6 +18,8 @@ This guide covers the core features of AIConfig Editor and demonstrates how to:
 - [Run prompts](#run-prompts)
 - [Chain prompts](#chain-prompts)
 - [Create prompt templates](#prompt-templates)
+- [Add custom model parsers](#custom-model-parsers)
+- [FAQ](#faq)
 
 Want to get started quickly? Check out our [Getting Started Tutorial](./getting-started).
 
@@ -52,7 +54,7 @@ You need to install the python AIConfig package to create and edit your configs 
 
 2. Setup your API Keys required by the model providers.
 
-You will need to specify your API keys for the model providers (i.e. OpenAI, Google, HuggingFace) you plan to use. We recommend adding your API keys as environment variables so that they are accessible for all projects. The python library will automatically detect and use them without you having to write any code.
+You will need to specify your API keys for the model providers (i.e. OpenAI, Google, HuggingFace) you plan to use. We recommend adding your API keys as [environment variables](#env-api-keys) so that they are accessible for all projects. The python library will automatically detect and use them without you having to write any code.
 
 <details> 
     <summary>Example: Setup your OpenAI API Key as a environment variable (MacOS / Linux / Windows)</summary>
@@ -64,10 +66,10 @@ You will need to specify your API keys for the model providers (i.e. OpenAI, Goo
         ```bash 
         export OPENAI_API_KEY='your-api-key-here'
         ```
-        5. Save and Exit: Press `Ctrl+O` followed by `ENTER` to write the change. Then `Ctrl+X` to close the editor.
-        6. Load Your Profile: Use the command `source ~/.bash_profile` or `source ~/.zshrc` to load the updated profile.
-        7. Verification: Verify the setup by typing `echo $OPENAI_API_KEY` in the terminal. It should display your API key.
-
+        5. *[Optional] add in [Environment Variables](#env-api-keys) for your other model providers (Google, HuggingFace, Anyscale, etc.).*
+        6. Save and Exit: Press `Ctrl+O` followed by `ENTER` to write the change. Then `Ctrl+X` to close the editor.
+        7. Load Your Profile: Use the command `source ~/.bash_profile` or `source ~/.zshrc` to load the updated profile.
+        8. Verification: Verify the setup by typing `echo $OPENAI_API_KEY` in the terminal. It should display your API key.
     </div>
 
 </details>
@@ -79,7 +81,7 @@ You can open the AIConfig Editor from your terminal to start prompting against m
 1. Open Terminal
 2. Run this command: `aiconfig edit`
 
-This will open the AIConfig Editor in your default browser and in parallel create a new empty AIConfig JSON file in your current directory. Your work in the editor will be saved by default to `my_aiconfig.aiconfig.json`. Update the command to `aiconfig edit –{file_path_name}` if you want to save to a specified file path.
+This will open the AIConfig Editor in your default browser and in parallel create a new empty AIConfig JSON file in your current directory. Your work in the editor will be saved by default to `my_aiconfig.aiconfig.json`. Update the command to `aiconfig edit –aiconfig-path={file_path_name}` if you want to save to a specified file path.
 
 :::note
 We also support YAML in addition to JSON for the AIConfig file format.
@@ -118,7 +120,7 @@ Each cell in AIConfig Editor is used to prompt generative AI models and output r
 | **Settings**                     | The settings and parameters specific to the model (i.e. system prompt, temperature). These settings will vary depending on the model selected.                |
 | **Local Variables (Parameters)** | These are variables that you set to be used in the prompt via handlebars syntax. Local variables are local to the cell and cannot be accessed in other cells. |
 
-Click ▶️ at the bottom right of the cell to execute the prompt and see the model response. Support for streaming responses is coming soon!
+Click ▶️ at the right of the cell to execute the prompt and see the model response.
 
 ![image3](https://github.com/lastmile-ai/aiconfig/assets/129882602/df2718ba-41e8-46ac-88f6-0ab312ecdc6b)
 
@@ -153,14 +155,35 @@ Prompt templates are created using [handlebars syntax](https://handlebarsjs.com/
 
 ![image4](https://github.com/lastmile-ai/aiconfig/assets/129882602/4333b532-bc04-41c4-adcb-ce1e9c8ef8ea)
 
+## Add Custom Model Parsers {#custom-model-parsers}
+
+The AIConfig Editor is highly customizable and allows for custom models to be integrated into the editor. Check out our [Gradio cookbook](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Gradio) to see an example of integrating other cool model parsers like:
+
+- text-to-image
+- text-to-audio
+- image-to-text
+- audio-to-text
+- text-summarization
+- and much more!
+
 ## More Resources
 
 Check out these resources on how you can use your AIConfig created from your AIConfig Editor in your application code.
-Getting Started Tutorial
-AIConfig API Reference
-Cookbooks
+
+- [Getting Started Tutorial](./getting-started)
+- [Github repo](https://github.com/lastmile-ai/aiconfig)
+- [Cookbooks](./cookbooks)
 
 ## Coming Soon
 
-- **Streaming model responses in Editor.** Streaming is the printing or processing of the beginning of the completion before the full completion is finished.
 - **Support for non-default models in Editor.** AIConfig Editor currently supports the default models available with AIConfig - see here. We will soon be adding support for non-default models via model parser extensions.
+
+## FAQ {#faq}
+
+### How do I set the keys for non-OpenAI models? {#env-api-keys}
+
+| Environment Variable Name     | Description                                                                                    | Link                                                                               |
+| ----------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **GOOGLE_API_KEY**            | API Key for Google Gemini and PaLM models                                                      | [Google API Keys](https://ai.google.dev/tutorials/setup)                           |
+| **HUGGING_FACE_API_TOKEN**    | API Token for models running on [Hugging Face inference](https://huggingface.co/inference-api) | [Hugging Face User access tokens](https://huggingface.co/docs/hub/security-tokens) |
+| **ANYSCALE_ENDPOINT_API_KEY** | API Key for models hosted on [Anyscale endpoints](https://www.anyscale.com/endpoints)          | [Anyscale API Keys](https://docs.endpoints.anyscale.com/guides/authenticate)       |
