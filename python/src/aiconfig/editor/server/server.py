@@ -12,6 +12,7 @@ from typing import Any, Dict, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
 import result
+import yaml
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.editor.server.queue_iterator import STOP_STREAMING_SIGNAL, QueueIterator
 from aiconfig.editor.server.server_utils import (
@@ -57,7 +58,7 @@ app = Flask(__name__, static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
-def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
+def run_backend_server(edit_config: EditServerConfig, aiconfigrc_path: str) -> Result[str, str]:
     LOGGER.setLevel(edit_config.log_level)
     LOGGER.info("Edit config: %s", edit_config.model_dump_json())
     LOGGER.info(f"Starting server on http://localhost:{edit_config.server_port}")
@@ -68,7 +69,7 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
         LOGGER.warning(f"Failed to open browser: {e}. Please open http://localhost:{port} manually.")
 
     app.server_state = ServerState()  # type: ignore
-    res_server_state_init = init_server_state(app, edit_config)
+    res_server_state_init = init_server_state(app, edit_config, aiconfigrc_path)
     match res_server_state_init:
         case Ok(_):
             LOGGER.info("Initialized server state")
@@ -566,3 +567,31 @@ def clear_outputs() -> FlaskResponse:
 
     signature: dict[str, Type[Any]] = {}
     return run_aiconfig_operation_with_request_json(aiconfig, request_json, f"method_", _op, signature)
+
+
+@app.route("/api/get_aiconfigrc", methods=["GET"])
+def get_aiconfigrc() -> FlaskResponse:
+    state = get_server_state(app)
+    request_json = request.get_json()
+    # TODO
+    # Here's how to load it with comments:
+    # from ruamel.yaml import YAML
+    # yaml = YAML()
+    # file_contents = read_file_contents(state.aiconfigrc_path)
+    # yaml.load(file_contents)
+
+
+@app.route("/api/set_aiconfigrc", methods=["POST"])
+def set_aiconfigrc() -> FlaskResponse:
+    state = get_server_state(app)
+    request_json = request.get_json()
+    # TODO:
+    # Assuming request_json["aiconfigrc"] is a yaml-formatted string
+    # (possibly with comments)
+    # Note that the file might already exist and have contents.
+    #
+    # here's how to write it to a file:
+    # from ruamel.yaml import YAML
+    # yaml = YAML()
+    # with open(state.aiconfigrc_path, "w") as f:
+    #     yaml.dump(request_json["aiconfigrc"], f)
