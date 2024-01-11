@@ -231,7 +231,8 @@ def init_server_state(app: Flask, edit_config: EditServerConfig, settings_path: 
         LOGGER.info("Created new AIConfig")
         try:
             aiconfig_runtime.save(edit_config.aiconfig_path)
-            LOGGER.info(f"Saved new AIConfig to {edit_config.aiconfig_path}")
+            aiconfig_runtime.file_path = edit_config.aiconfig_path  # type: ignore[bug in runtime init]
+            LOGGER.info(f"Saved new AIConfig to {edit_config.aiconfig_path} (aiconfig path field: {aiconfig_runtime.file_path})")
             state.aiconfig = aiconfig_runtime
             return Ok(None)
         except Exception as e:
