@@ -196,7 +196,6 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
     """
 
     supported_keys = {
-        "model",
         "chunk_length_s",
         "decoder",
         "device",
