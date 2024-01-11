@@ -4,9 +4,11 @@ import signal
 import socket
 import subprocess
 import sys
+from textwrap import dedent
 
 import lastmile_utils.lib.core.api as core_utils
-import result
+from ruamel.yaml import YAML
+
 from aiconfig.editor.server.server import run_backend_server
 from aiconfig.editor.server.server_utils import EditServerConfig, ServerMode
 from result import Err, Ok, Result
@@ -14,6 +16,7 @@ from result import Err, Ok, Result
 
 class AIConfigCLIConfig(core_utils.Record):
     log_level: str | int = "WARNING"
+    aiconfigrc_path: str = ".aiconfigrc"
 
 
 logging.basicConfig(format=core_utils.LOGGER_FMT)
@@ -36,26 +39,34 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
     subparser_record_types = {"edit": EditServerConfig}
     main_parser = core_utils.argparsify(AIConfigCLIConfig, subparser_record_types=subparser_record_types)
 
-    res_cli_config = core_utils.parse_args(main_parser, argv[1:], AIConfigCLIConfig)
-    res_cli_config.and_then(_process_cli_config)
+    # Try to parse the CLI args into a config.
+    cli_config: Result[AIConfigCLIConfig, str] = core_utils.parse_args(main_parser, argv[1:], AIConfigCLIConfig)
+
+    # If cli_config is Ok(), pass its contents to _get_cli_process_result_from_config().
+    # Otherwise, short circuit and assign process_result to the Err.
+    # Nothing gets mutated except for log level (see inside _get_cli_process_result_from_config()
+    process_result = cli_config.and_then(_get_cli_process_result_from_config)
+    LOGGER.info(f"{process_result=}")
 
     subparser_name = core_utils.get_subparser_name(main_parser, argv[1:])
     LOGGER.info(f"Running subcommand: {subparser_name}")
 
     if subparser_name == "edit":
         LOGGER.debug("Running edit subcommand")
-        res_edit_config = core_utils.parse_args(main_parser, argv[1:], EditServerConfig)
-        LOGGER.debug(f"{res_edit_config.is_ok()=}")
-        res_servers = res_edit_config.and_then(_run_editor_servers)
-        out: Result[str, str] = result.do(
-            #
-            Ok(",".join(res_servers_ok))
-            #
-            for res_servers_ok in res_servers
-        )
+        edit_config = core_utils.parse_args(main_parser, argv[1:], EditServerConfig)
+        LOGGER.debug(f"{edit_config.is_ok()=}")
+        out = _run_editor_servers_with_configs(edit_config, cli_config)
         return out
     else:
         return Err(f"Unknown subparser: {subparser_name}")
+
+
+def _run_editor_servers_with_configs(edit_config: Result[EditServerConfig, str], cli_config: Result[AIConfigCLIConfig, str]) -> Result[str, str]:
+    if not (edit_config.is_ok() and cli_config.is_ok()):
+        return Err(f"Something went wrong: {edit_config=}, {cli_config=}")
+
+    server_outcomes = _run_editor_servers(edit_config.unwrap(), cli_config.unwrap().aiconfigrc_path)
+    return Ok(",".join(server_outcomes.unwrap()))
 
 
 def _sigint(procs: list[subprocess.Popen[bytes]]) -> Result[str, str]:
@@ -76,7 +87,7 @@ def is_port_in_use(port: int) -> bool:
         return s.connect_ex(("localhost", port)) == 0
 
 
-def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]:
+def _run_editor_servers(edit_config: EditServerConfig, aiconfigrc_path: str) -> Result[list[str], str]:
     port = edit_config.server_port
 
     while is_port_in_use(port):
@@ -100,7 +111,7 @@ def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]
             return Err(e)
 
     results: list[Result[str, str]] = []
-    backend_res = run_backend_server(edit_config)
+    backend_res = run_backend_server(edit_config, aiconfigrc_path)
     match backend_res:
         case Ok(_):
             pass
@@ -114,8 +125,30 @@ def _run_editor_servers(edit_config: EditServerConfig) -> Result[list[str], str]
     return core_utils.result_reduce_list_all_ok(results)
 
 
-def _process_cli_config(cli_config: AIConfigCLIConfig) -> Result[bool, str]:
+def _get_cli_process_result_from_config(cli_config: AIConfigCLIConfig) -> Result[bool, str]:
     LOGGER.setLevel(cli_config.log_level)
+    try:
+        config_path = cli_config.aiconfigrc_path
+        with open(config_path, "x") as f:
+            yaml = YAML()
+            yaml.dump(
+                yaml.load(
+                    dedent(
+                        """
+                # Tip: make sure this file is called .aiconfigrc and is in your home directory.
+
+                # Flag allowing or denying telemetry for product development purposes.
+                allow_usage_data_sharing: true
+                """
+                    ),
+                ),
+                f,
+            )
+    except FileExistsError:
+        pass
+    except Exception as e:
+        return core_utils.ErrWithTraceback(e)
+
     return Ok(True)
 
 
