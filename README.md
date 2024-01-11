@@ -26,7 +26,7 @@
   </a>
 </p>
 
-AIConfig is a framework that makes it easy to build generative AI applications for production. It manages generative AI prompts, models and model parameters as JSON-serializable configs that can be version controlled, evaluated, monitored and opened in a notebook playground for rapid prototyping.
+AIConfig is a framework that makes it easy to build generative AI applications for production. It manages generative AI prompts, models and model parameters as JSON-serializable configs that can be version controlled, evaluated, monitored and opened in a local editor for rapid prototyping.
 
 It allows you to store and iterate on generative AI behavior _separately from your application code_, offering a streamlined AI development workflow.
 
