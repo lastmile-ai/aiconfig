@@ -180,10 +180,11 @@ Check out these resources on how you can use your AIConfig created from your AIC
 
 ## FAQ {#faq}
 
-### How do I set the keys for non-OpenAI models? {#env-api-keys}
+### What are the Environment Variables for different model providers? {#env-api-keys}
 
 | Environment Variable Name     | Description                                                                                    | Link                                                                               |
 | ----------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **OPENAI_API_KEY**            | API Key for OpenAI models                                                                      | [OpenAI API Keys](https://platform.openai.com/api-keys)                            |
 | **GOOGLE_API_KEY**            | API Key for Google Gemini and PaLM models                                                      | [Google API Keys](https://ai.google.dev/tutorials/setup)                           |
 | **HUGGING_FACE_API_TOKEN**    | API Token for models running on [Hugging Face inference](https://huggingface.co/inference-api) | [Hugging Face User access tokens](https://huggingface.co/docs/hub/security-tokens) |
 | **ANYSCALE_ENDPOINT_API_KEY** | API Key for models hosted on [Anyscale endpoints](https://www.anyscale.com/endpoints)          | [Anyscale API Keys](https://docs.endpoints.anyscale.com/guides/authenticate)       |
