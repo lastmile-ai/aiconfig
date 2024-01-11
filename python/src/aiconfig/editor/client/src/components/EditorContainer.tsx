@@ -788,7 +788,7 @@ export default function EditorContainer({
               loading={isSaving}
               onClick={() => {
                 onSave();
-                logEvent?.("SAVE_BUTTON_CLICKED");
+                logEvent?.("SAVE_BUTTON_CLICKED",{"test": "testValue"});
               }}
               disabled={!isDirty}
               size="xs"
