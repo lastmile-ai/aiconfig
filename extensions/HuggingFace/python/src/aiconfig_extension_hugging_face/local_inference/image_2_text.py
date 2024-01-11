@@ -179,7 +179,8 @@ class HuggingFaceImage2TextTransformer(ModelParser):
 def refine_completion_params(model_settings: Dict[str, Any]) -> Dict[str, Any]:
     """
     Refines the completion params for the HF image to text api. Removes any unsupported params.
-    The supported keys were found by looking at the HF ImageToTextPipeline.__call__ method
+    The supported keys were found by looking at the HF ImageToTextPipeline.__call__ method:
+    https://github.com/huggingface/transformers/blob/cbbe30749b425f7c327acdab11473b33567a6e26/src/transformers/pipelines/image_to_text.py#L83
     """
     supported_keys = {
         "max_new_tokens",
