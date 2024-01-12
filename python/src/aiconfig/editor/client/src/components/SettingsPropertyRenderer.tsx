@@ -13,13 +13,14 @@ import {
   AutocompleteItem,
   Select,
 } from "@mantine/core";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { uniqueId } from "lodash";
 import { IconHelp, IconPlus, IconTrash } from "@tabler/icons-react";
 import UnionPropertyControl, {
   UnionProperty,
 } from "./property_controls/UnionPropertyControl";
 import { JSONObject, JSONValue } from "aiconfig";
+import JSONEditor from "./JSONEditor";
 
 export type StateSetFromPrevFn = (prev: JSONValue) => void;
 export type SetStateFn = (val: StateSetFromPrevFn | JSONValue) => void;
@@ -90,7 +91,7 @@ export default function SettingsPropertyRenderer({
   // Used in the case the property is an array
   // TODO: Should initialize with values from settings if available
   const [itemControls, setItemControls] = useState<JSX.Element[]>([]);
-  const itemValues = useRef(new Map<string, JSONValue>());
+  const itemValues = useRef(propertyValue ?? new Map<string, JSONValue>());
 
   const removeItemFromList = useCallback(
     async (key: string) => {
@@ -123,6 +124,33 @@ export default function SettingsPropertyRenderer({
       </Group>,
     ]);
   }, [property.items, removeItemFromList, setAndPropagateValue]);
+
+ 
+
+  useEffect(() => {
+    if (Array.isArray(initialValue)) {
+        const initialItemControls = initialValue.map((arrayItem,index) => {
+            const key = uniqueId();
+            return (
+                <Group key={key}>
+                    <SettingsPropertyRenderer
+                        propertyName=""
+                        property={property.items}
+                        initialValue={arrayItem}
+                        setValue={newItem => {
+                            itemValues.current.set(key, newItem);
+                            setAndPropagateValue(Array.from(itemValues.current.values()));
+                        }}
+                    />
+                    <ActionIcon onClick={() => removeItemFromList(key)}>
+                        <IconTrash size={16} />
+                    </ActionIcon>
+                </Group>
+            );
+        });
+        setItemControls(initialItemControls);
+    }
+}, [initialValue, property.items, removeItemFromList, setAndPropagateValue]);
 
   switch (propertyType) {
     case "string": {
@@ -356,7 +384,7 @@ export default function SettingsPropertyRenderer({
         );
       }
 
-      if (subpropertyControls.length > 0) {
+if (subpropertyControls.length > 0) {
         propertyControl = (
           <>
             {propertyName != null && propertyName.trim() !== "" ? (
@@ -367,8 +395,14 @@ export default function SettingsPropertyRenderer({
             <Stack>{subpropertyControls}</Stack>
           </>
         );
+      } else {
+        propertyControl = (
+          <JSONEditor
+            content={initialValue as JSONObject}
+            onChangeContent={setAndPropagateValue}
+          />
+        );
       }
-
       break;
     }
     case "select": {
