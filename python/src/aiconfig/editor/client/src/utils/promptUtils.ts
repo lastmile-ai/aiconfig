@@ -4,14 +4,14 @@ import { OpenAIChatVisionModelParserPromptSchema } from "../shared/prompt_schema
 import { DalleImageGenerationParserPromptSchema } from "../shared/prompt_schemas/DalleImageGenerationParserPromptSchema";
 import { PaLMTextParserPromptSchema } from "../shared/prompt_schemas/PaLMTextParserPromptSchema";
 import { PaLMChatParserPromptSchema } from "../shared/prompt_schemas/PaLMChatParserPromptSchema";
-import { HuggingFaceTextGenerationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationParserPromptSchema";
 import { AnyscaleEndpointPromptSchema } from "../shared/prompt_schemas/AnyscaleEndpointPromptSchema";
-import { HuggingFaceText2ImageDiffusorPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageDiffusorPromptSchema";
-import { HuggingFaceTextGenerationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationTransformerPromptSchema";
 import { HuggingFaceAutomaticSpeechRecognitionPromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionPromptSchema";
-import { HuggingFaceTextSummarizationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationTransformerPromptSchema";
 import { HuggingFaceImage2TextTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextTransformerPromptSchema";
+import { HuggingFaceText2ImageDiffusorPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageDiffusorPromptSchema";
 import { HuggingFaceText2SpeechTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2SpeechTransformerPromptSchema";
+import { HuggingFaceTextGenerationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationTransformerPromptSchema";
+import { HuggingFaceTextSummarizationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationTransformerPromptSchema";
+import { HuggingFaceTextGenerationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationParserPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -75,9 +75,10 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "dall-e-2": DalleImageGenerationParserPromptSchema,
   "dall-e-3": DalleImageGenerationParserPromptSchema,
 
-  // HuggingFaceTextGenerationParser
+  // TODO: core parser and remote inference share the same code, delete
+  // hf core parser and keep it in the extension instead
+  // HuggingFaceTextGenerationParser (Core parser and remote inference extension)
   HuggingFaceTextGenerationParser: HuggingFaceTextGenerationParserPromptSchema,
-  "HuggingFaceAutomaticSpeechRecognitionTransformer": HuggingFaceAutomaticSpeechRecognitionPromptSchema,
 
   // PaLMTextParser
   "models/text-bison-001": PaLMTextParserPromptSchema,
@@ -88,18 +89,27 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   // AnyscaleEndpoint
   AnyscaleEndpoint: AnyscaleEndpointPromptSchema,
 
-  // Local HuggingFace Parsers
+  // Local HuggingFace Parser Extensions
+  HuggingFaceAutomaticSpeechRecognitionTransformer:
+    HuggingFaceAutomaticSpeechRecognitionPromptSchema,
+
+  HuggingFaceImage2TextTransformer:
+    HuggingFaceImage2TextTransformerPromptSchema,
+
   HuggingFaceText2ImageDiffusor: HuggingFaceText2ImageDiffusorPromptSchema,
-  TextGeneration: HuggingFaceTextGenerationTransformerPromptSchema,
   Text2Image: HuggingFaceText2ImageDiffusorPromptSchema,
-  AutomaticSpeechRecognition: HuggingFaceAutomaticSpeechRecognitionPromptSchema,
+
+  HuggingFaceText2SpeechTransformer:
+    HuggingFaceText2SpeechTransformerPromptSchema,
+  Text2Speech: HuggingFaceText2SpeechTransformerPromptSchema,
+
+  HuggingFaceTextGenerationTransformer:
+    HuggingFaceTextGenerationTransformerPromptSchema,
+  TextGeneration: HuggingFaceTextGenerationTransformerPromptSchema,
   HuggingFaceTextSummarizationTransformer:
     HuggingFaceTextSummarizationTransformerPromptSchema,
   HuggingFaceTextTranslationTransformer:
     HuggingFaceTextGenerationTransformerPromptSchema,
-  HuggingFaceImage2TextTransformer:
-    HuggingFaceImage2TextTransformerPromptSchema,
-  Text2Speech: HuggingFaceText2SpeechTransformerPromptSchema,
 };
 
 export type PromptInputSchema =
