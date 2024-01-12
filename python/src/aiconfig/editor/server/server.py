@@ -2,7 +2,6 @@ import asyncio
 import copy
 import ctypes
 import json
-import copy
 import logging
 import threading
 import time
@@ -157,6 +156,7 @@ def save() -> FlaskResponse:
         if aiconfig is None:
             return HttpResponseWithAIConfig(message="No AIConfig loaded", code=400, aiconfig=None).to_flask_format()
         else:
+            LOGGER.info(f"No path provided, saving to original path, {aiconfig.file_path}")
             path = aiconfig.file_path
 
     res_path_val = get_validated_path(path, allow_create=True)
@@ -284,11 +284,6 @@ def run() -> FlaskResponse:
         t = threading.Thread(target=run_async_config_in_thread)
         t.start()
 
-        # Create a deep copy of the state aiconfig so we can yield an AIConfig
-        # with streaming partial outputs in the meantime. This probably isn't
-        # necessary, but just getting unblocked for now
-        displaying_config = copy.deepcopy(aiconfig)
-
         # If model supports streaming, need to wait until streamer has at
         # least 1 item to display. If model does not support streaming,
         # need to wait until the aiconfig.run() thread is complete
@@ -338,11 +333,8 @@ def run() -> FlaskResponse:
                         "metadata": {},
                     }  # type: ignore
                 )
-
-                displaying_config.add_output(prompt_name, accumulated_output, overwrite=True)
-                aiconfig_json = displaying_config.model_dump(exclude=EXCLUDE_OPTIONS)
                 yield "["
-                yield json.dumps({"aiconfig": aiconfig_json})
+                yield json.dumps({"output_chunk": accumulated_output.to_json()})
                 yield "]"
 
         # Ensure that the run process is complete to yield final output

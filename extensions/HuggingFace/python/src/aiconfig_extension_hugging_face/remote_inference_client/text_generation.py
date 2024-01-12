@@ -315,7 +315,14 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             output_data = output.data
             if isinstance(output_data, str):
                 return output_data
-            
+
+            # Doing this to be backwards-compatible with old output format
+            # where we used to save the TextGenerationResponse or
+            # TextGenerationStreamResponse in output.data
+            if hasattr(output_data, "generated_text"):
+                assert isinstance(output_data.generated_text, str)
+                return output_data.generated_text
+
             # HuggingFace text generation outputs should only ever be string
             # format so shouldn't get here, but just being safe
             return json.dumps(output_data, indent=2)

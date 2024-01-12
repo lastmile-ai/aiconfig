@@ -599,6 +599,22 @@ export default function EditorContainer({
 
       dispatch(action);
 
+      const onPromptError = (message: string | null) => {
+        dispatch({
+          type: "RUN_PROMPT_ERROR",
+          id: promptId,
+          message: message ?? undefined,
+        });
+
+        const promptName = getPrompt(stateRef.current, promptId)?.name;
+
+        showNotification({
+          title: `Error running prompt${promptName ? ` ${promptName}` : ""}`,
+          message,
+          color: "red",
+        });
+      };
+
       try {
         const statePrompt = getPrompt(stateRef.current, promptId);
         if (!statePrompt) {
@@ -643,8 +659,6 @@ export default function EditorContainer({
               `Error running prompt ${promptName}: ${JSON.stringify(event)}`
             );
             if (event.type === "error") {
-              //throw new Error(event.data.message);
-
               if (event.data.code === 499) {
                 // This is a cancellation
                 // Reset the aiconfig to the state before we started running the prompt
@@ -663,6 +677,8 @@ export default function EditorContainer({
                   message: event.data.message,
                   color: "yellow",
                 });
+              } else {
+                onPromptError(event.data.message);
               }
             }
           },
@@ -679,20 +695,7 @@ export default function EditorContainer({
         }
       } catch (err: unknown) {
         const message = (err as RequestCallbackError).message ?? null;
-
-        dispatch({
-          type: "RUN_PROMPT_ERROR",
-          id: promptId,
-          message: message ?? undefined,
-        });
-
-        const promptName = getPrompt(stateRef.current, promptId)?.name;
-
-        showNotification({
-          title: `Error running prompt${promptName ? ` ${promptName}` : ""}`,
-          message,
-          color: "red",
-        });
+        onPromptError(message);
       }
     },
     [runPromptCallback]

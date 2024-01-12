@@ -2,16 +2,16 @@ from typing import Any, Dict, Optional, List, TYPE_CHECKING
 
 import torch
 from transformers import pipeline, Pipeline
-from aiconfig import ParameterizedModelParser, InferenceOptions
+from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
+from aiconfig import ModelParser, InferenceOptions
 from aiconfig.callback import CallbackEvent
 from aiconfig.schema import Prompt, Output, ExecuteResult, Attachment
-
 
 if TYPE_CHECKING:
     from aiconfig import AIConfigRuntime
 
 
-class HuggingFaceAutomaticSpeechRecognitionTransformer(ParameterizedModelParser):
+class HuggingFaceAutomaticSpeechRecognitionTransformer(ModelParser):
     """
     Model Parser for HuggingFace ASR (Automatic Speech Recognition) models.
     """
@@ -85,7 +85,7 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ParameterizedModelParser)
         await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data}))
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> list[Output]:
+    async def run(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any], **kwargs) -> list[Output]:
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_run_start",
@@ -96,15 +96,16 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ParameterizedModelParser)
 
         model_settings = self.get_model_settings(prompt, aiconfig)
         [pipeline_creation_data, _] = refine_pipeline_creation_params(model_settings)
-        model_name = aiconfig.get_model_name(prompt)
+        model_name = get_hf_model(aiconfig, prompt, self)
+        key = model_name if model_name is not None else "__default__"
 
-        if isinstance(model_name, str) and model_name not in self.pipelines:
+        if key not in self.pipelines:
             device = self._get_device()
             if pipeline_creation_data.get("device", None) is None:
                 pipeline_creation_data["device"] = device
-            self.pipelines[model_name] = pipeline(task="automatic-speech-recognition", **pipeline_creation_data)
+            self.pipelines[key] = pipeline(task="automatic-speech-recognition", model=model_name, **pipeline_creation_data)
 
-        asr_pipeline = self.pipelines[model_name]
+        asr_pipeline = self.pipelines[key]
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
 
         response = asr_pipeline(**completion_data)
@@ -195,7 +196,6 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
     """
 
     supported_keys = {
-        "model",
         "chunk_length_s",
         "decoder",
         "device",
@@ -234,8 +234,8 @@ def refine_asr_completion_params(unfiltered_completion_params: Dict[str, Any]) -
     Note: This doesn't support base pipeline params like `num_workers`
     TODO: Figure out how to find which params are supported.
 
-    TODO: Distinguish pipeline creation and refine completion 
-    https://github.com/lastmile-ai/aiconfig/issues/825 
+    TODO: Distinguish pipeline creation and refine completion
+    https://github.com/lastmile-ai/aiconfig/issues/825
     https://github.com/lastmile-ai/aiconfig/issues/824
     """
 
