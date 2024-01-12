@@ -2,17 +2,25 @@ import copy
 import json
 from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Union
 
+# HuggingFace API imports
+from huggingface_hub import InferenceClient
+from huggingface_hub.inference._text_generation import (
+    TextGenerationResponse,
+    TextGenerationStreamResponse,
+)
+
+from aiconfig import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    Prompt,
+    PromptMetadata,
+)
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt
 
-# HuggingFace API imports
-from huggingface_hub import InferenceClient
-from huggingface_hub.inference._text_generation import TextGenerationResponse, TextGenerationStreamResponse
-
-from aiconfig import CallbackEvent
-from aiconfig.schema import ExecuteResult, Output, OutputDataWithValue, Prompt, PromptMetadata
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -20,9 +28,7 @@ if TYPE_CHECKING:
 
 
 # Step 1: define Helpers
-
-
-def refine_chat_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
+def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
     """
     Refines the completion params for the HF text generation api. Removes any unsupported params.
     The supported keys were found by looking at the HF text generation api. `huggingface_hub.InferenceClient.text_generation()`
@@ -99,7 +105,7 @@ def construct_stream_output(
     return output
 
 
-def construct_regular_output(response: str, response_includes_details: bool) -> Output:
+def construct_regular_output(response: TextGenerationResponse, response_includes_details: bool) -> Output:
     metadata = {"raw_response": response}
     if response_includes_details:
         metadata["details"] = response.details
@@ -107,7 +113,7 @@ def construct_regular_output(response: str, response_includes_details: bool) -> 
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": response,
+            "data": response.generated_text,
             "execution_count": 0,
             "metadata": metadata,
         }
@@ -120,7 +126,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
     A model parser for HuggingFace text generation models.
     """
 
-    def __init__(self, model_id: str = None, use_api_token=True):
+    def __init__(self, model_id: str = None, use_api_token=False):
         """
         Args:
             model_id (str): The model ID of the model to use.
@@ -164,7 +170,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         ai_config: "AIConfigRuntime",
         parameters: Optional[dict[Any, Any]] = None,
         **kwargs,
-    ) -> List[Prompt]:
+    ) -> list[Prompt]:
         """
         Defines how a prompt and model inference settings get serialized in the .aiconfig.
 
@@ -234,7 +240,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
 
-        completion_data = refine_chat_completion_params(model_settings)
+        completion_data = refine_completion_params(model_settings)
 
         completion_data["prompt"] = resolved_prompt
 
@@ -309,16 +315,15 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             output_data = output.data
             if isinstance(output_data, str):
                 return output_data
-            if isinstance(output_data, OutputDataWithValue):
-                if isinstance(output_data.value, str):
-                    return output_data.value
-                # HuggingFace Text generation does not support function
-                # calls so shouldn't get here, but just being safe
-                return json.dumps(output_data.value, indent=2)
 
             # Doing this to be backwards-compatible with old output format
             # where we used to save the TextGenerationResponse or
             # TextGenerationStreamResponse in output.data
             if hasattr(output_data, "generated_text"):
+                assert isinstance(output_data.generated_text, str)
                 return output_data.generated_text
+
+            # HuggingFace text generation outputs should only ever be string
+            # format so shouldn't get here, but just being safe
+            return json.dumps(output_data, indent=2)
         return ""
