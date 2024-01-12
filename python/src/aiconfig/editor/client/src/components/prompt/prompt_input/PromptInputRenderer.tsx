@@ -92,6 +92,7 @@ export default memo(function PromptInputRenderer({
     // Wrap with a div to prevent it from expanding to input height
     <div className={classes.promptInputButtonWrapper}>
       <RunPromptButton
+        enabled={false}
         isRunning={isRunning}
         cancel={onCancelRun}
         runPrompt={onRunPrompt}
