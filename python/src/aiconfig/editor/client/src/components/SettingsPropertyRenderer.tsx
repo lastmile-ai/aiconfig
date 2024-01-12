@@ -13,7 +13,7 @@ import {
   AutocompleteItem,
   Select,
 } from "@mantine/core";
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { uniqueId } from "lodash";
 import { IconHelp, IconPlus, IconTrash } from "@tabler/icons-react";
 import UnionPropertyControl, {
@@ -29,6 +29,10 @@ export type PropertyRendererProps = {
   property: JSONObject;
   isRequired?: boolean;
   initialValue?: JSONValue;
+  onUpdateMissingRequiredFields: (
+    fieldName: string,
+    fieldValue: JSONValue
+  ) => void;
   setValue: SetStateFn;
 };
 
@@ -57,6 +61,7 @@ export default function SettingsPropertyRenderer({
   property,
   isRequired = false,
   initialValue = null,
+  onUpdateMissingRequiredFields,
   setValue,
 }: PropertyRendererProps) {
   const propertyType = property.type;
@@ -65,6 +70,14 @@ export default function SettingsPropertyRenderer({
   const [propertyValue, setPropertyValue] = useState(
     initialValue ?? defaultValue
   );
+
+  // Tried to set this under the "object" case to do all required fields at
+  // once, but got an error and it failed to initialize with empty model name
+  // The warning still shows (see L354) but now the missingRequiredFields
+  // state gets properly initialized
+  if (isRequired) {
+    onUpdateMissingRequiredFields(propertyName, propertyValue);
+  }
 
   let propertyControl;
 
@@ -83,6 +96,9 @@ export default function SettingsPropertyRenderer({
       }
 
       setPropertyValue(valueToSet);
+      if (isRequired) {
+        onUpdateMissingRequiredFields(propertyName, valueToSet);
+      }
     },
     [propertyName, propertyValue, setValue]
   );
@@ -112,6 +128,7 @@ export default function SettingsPropertyRenderer({
         <SettingsPropertyRenderer
           propertyName=""
           property={property.items}
+          onUpdateMissingRequiredFields={onUpdateMissingRequiredFields}
           setValue={(newItem) => {
             itemValues.current.set(key, newItem);
             setAndPropagateValue(Array.from(itemValues.current.values()));
@@ -329,6 +346,68 @@ export default function SettingsPropertyRenderer({
     }
     case "object": {
       const requiredFields = new Set<string>(property.required ?? []);
+      // useEffect(() => {
+      //   requiredFields.forEach((fieldName) => {
+      //     onUpdateMissingRequiredFields(fieldName, propertyValue);
+      //   });
+      // }, [onUpdateMissingRequiredFields, propertyValue, requiredFields]);
+      /* 
+Warning: Cannot update a component (`PromptContainer`) while rendering a different component (`SettingsPropertyRenderer`). To locate the bad setState() call inside `SettingsPropertyRenderer`, follow the stack trace as described in https://reactjs.org/link/setstate-in-render
+    at SettingsPropertyRenderer (http://localhost:3000/static/js/bundle.js:2603:3)
+    at ModelSettingsSchemaRenderer (http://localhost:3000/static/js/bundle.js:5037:3)
+    at ErrorBoundary (http://localhost:3000/static/js/bundle.js:98890:5)
+    at div
+    at http://localhost:3000/static/js/bundle.js:16970:7
+    at http://localhost:3000/static/js/bundle.js:19757:87
+    at ModelSettingsRenderer (http://localhost:3000/static/js/bundle.js:4900:3)
+    at div
+    at http://localhost:3000/static/js/bundle.js:16970:7
+    at http://localhost:3000/static/js/bundle.js:29355:87
+    at div
+    at http://localhost:3000/static/js/bundle.js:16970:7
+    at Provider (http://localhost:3000/static/js/bundle.js:36683:5)
+    at TabsProvider (http://localhost:3000/static/js/bundle.js:29451:3)
+    at http://localhost:3000/static/js/bundle.js:29024:87
+    at div
+    at http://localhost:3000/static/js/bundle.js:16970:7
+    at http://localhost:3000/static/js/bundle.js:19356:87
+    at div
+    at http://localhost:3000/static/js/bundle.js:16970:7
+    at http://localhost:3000/static/js/bundle.js:19757:87
+    at PromptActionBar (http://localhost:3000/static/js/bundle.js:3810:3)
+    at div
+    at div
+    at http://localhost:3000/static/js/bundle.js:16970:7
+    at http://localhost:3000/static/js/bundle.js:19757:87
+    at PromptContainer (http://localhost:3000/static/js/bundle.js:4028:3)
+    at div
+    at http://localhost:3000/static/js/bundle.js:16970:7
+    at http://localhost:3000/static/js/bundle.js:19757:87
+    at div
+    at http://localhost:3000/static/js/bundle.js:16970:7
+    at http://localhost:3000/static/js/bundle.js:28574:87
+    at div
+    at http://localhost:3000/static/js/bundle.js:16970:7
+    at http://localhost:3000/static/js/bundle.js:19356:87
+    at EditorContainer (http://localhost:3000/static/js/bundle.js:591:13)
+    at ThemeProvider (http://localhost:3000/static/js/bundle.js:10359:50)
+    at MantineProvider (http://localhost:3000/static/js/bundle.js:34891:3)
+    at div
+    at Editor (http://localhost:3000/static/js/bundle.js:41:82)
+
+
+*/
+
+      // useMemo(
+      //   () =>
+      //   requiredFields.forEach((fieldName) => {
+      //     onUpdateMissingRequiredFields(fieldName, propertyValue);
+      //   });
+      //   [fieldName, onUpdateMissingRequiredFields, propertyValue, requiredFields]
+      // );
+      // requiredFields.forEach((fieldName) => {
+      //   onUpdateMissingRequiredFields(fieldName, propertyValue);
+      // });
 
       const subproperties = property.properties;
 
@@ -348,6 +427,7 @@ export default function SettingsPropertyRenderer({
             property={subproperty}
             propertyName={subpropertyName}
             key={subpropertyName}
+            onUpdateMissingRequiredFields={onUpdateMissingRequiredFields}
             initialValue={
               (initialValue as JSONObject | undefined)?.[subpropertyName]
             }
@@ -404,6 +484,7 @@ export default function SettingsPropertyRenderer({
             isRequired={isRequired}
             propertyName={propertyName}
             initialValue={initialValue}
+            onUpdateMissingRequiredFields={onUpdateMissingRequiredFields}
             setValue={setAndPropagateValue}
             renderProperty={(props) => <SettingsPropertyRenderer {...props} />}
           />

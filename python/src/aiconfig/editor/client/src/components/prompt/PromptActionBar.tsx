@@ -5,18 +5,35 @@ import {
   PromptSchema,
   checkParametersSupported,
 } from "../../utils/promptUtils";
-import { ActionIcon, Container, Flex, Tabs } from "@mantine/core";
+import { ActionIcon, Container, Flex, Tabs, createStyles } from "@mantine/core";
 import { IconClearAll } from "@tabler/icons-react";
-import { memo, useState } from "react";
+import { memo } from "react";
 import ParametersRenderer from "../ParametersRenderer";
-import { JSONObject } from "aiconfig";
+import { JSONObject, JSONValue } from "aiconfig";
 
 type Props = {
+  isExpanded?: boolean;
+  missingRequiredFields: Set<string>;
   prompt: ClientPrompt;
   promptSchema?: PromptSchema;
+  onUpdateMissingRequiredFields: (
+    fieldName: string,
+    fieldValue: JSONValue
+  ) => void;
   onUpdateModelSettings: (settings: Record<string, unknown>) => void;
   onUpdateParameters: (parameters: JSONObject) => void;
+  onSetExpandedButton: (newValue: boolean) => void;
 };
+
+const useStyles = createStyles(() => ({
+  missingFieldsText: {
+    // TODO: Fix max height to be full height if input/output is larger than settings
+    // otherwise bound to some reasonable height
+    color: "red",
+    paddingTop: "0.5em",
+    width: "100%",
+  },
+}));
 
 // Don't default to config-level model settings since that could be confusing
 // to have them shown at the prompt level in the editor but not in the config
@@ -31,12 +48,16 @@ function getPromptParameters(prompt: ClientPrompt) {
 }
 
 export default memo(function PromptActionBar({
+  isExpanded = false,
+  missingRequiredFields,
   prompt,
   promptSchema,
+  onUpdateMissingRequiredFields,
   onUpdateModelSettings,
   onUpdateParameters,
+  onSetExpandedButton,
 }: Props) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const { classes } = useStyles();
   // TODO: Handle drag-to-resize
   const modelSettingsSchema = promptSchema?.model_settings;
   const promptMetadataSchema = promptSchema?.prompt_metadata;
@@ -48,7 +69,7 @@ export default memo(function PromptActionBar({
           <Container miw="400px">
             <ActionIcon
               size="sm"
-              onClick={() => setIsExpanded(false)}
+              onClick={() => onSetExpandedButton(false)}
               mt="0.5em"
             >
               <IconClearAll />
@@ -64,9 +85,17 @@ export default memo(function PromptActionBar({
               </Tabs.List>
 
               <Tabs.Panel value="settings" className="actionTabsPanel">
+                {missingRequiredFields.size > 0 && (
+                  <div className={classes.missingFieldsText}>
+                    {"Missing required fields: ["}
+                    {Array.from(missingRequiredFields).join(", ")}
+                    {"]"}
+                  </div>
+                )}
                 <ModelSettingsRenderer
                   settings={getModelSettings(prompt)}
                   schema={modelSettingsSchema}
+                  onUpdateMissingRequiredFields={onUpdateMissingRequiredFields}
                   onUpdateModelSettings={onUpdateModelSettings}
                 />
                 <PromptMetadataRenderer
@@ -89,7 +118,7 @@ export default memo(function PromptActionBar({
       ) : (
         <Flex direction="column" justify="space-between" h="100%">
           <Flex direction="row" justify="center" mt="0.5em">
-            <ActionIcon size="sm" onClick={() => setIsExpanded(true)}>
+            <ActionIcon size="sm" onClick={() => onSetExpandedButton(true)}>
               <IconClearAll />
             </ActionIcon>
           </Flex>
