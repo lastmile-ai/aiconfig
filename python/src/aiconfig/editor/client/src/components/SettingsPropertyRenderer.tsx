@@ -5,7 +5,6 @@ import {
   Autocomplete,
   Tooltip,
   NumberInput,
-  TextInput,
   Slider,
   Checkbox,
   ActionIcon,
@@ -89,27 +88,30 @@ export default function SettingsPropertyRenderer({
   );
 
   const itemValues = useRef(
-    Array.isArray(propertyValue) ? new Map(propertyValue.map(val => [uniqueId(), val])) : 
-    new Map<string, JSONValue>());
+    Array.isArray(propertyValue)
+      ? new Map(propertyValue.map((val) => [uniqueId(), val]))
+      : new Map<string, JSONValue>()
+  );
 
   // Used in the case the property is an array
-  const [itemControls, setItemControls] = useState<JSX.Element[]>(() => Array.from(itemValues.current, ([key, value]) => (
-    <Group key={key}>
-      <SettingsPropertyRenderer
-        propertyName=""
-        property={property.items}
-        initialValue={value}
-        setValue={newItem => {
-          itemValues.current.set(key, newItem);
-          setAndPropagateValue(Array.from(itemValues.current.values()));
-        }}
-     />
-     <ActionIcon onClick={() => removeItemFromList(key)}>
-       <IconTrash size={16} />
-     </ActionIcon>
-   </Group>
-  )));
-
+  const [itemControls, setItemControls] = useState<JSX.Element[]>(() =>
+    Array.from(itemValues.current, ([key, value]) => (
+      <Group key={key}>
+        <SettingsPropertyRenderer
+          propertyName=""
+          property={property.items}
+          initialValue={value}
+          setValue={(newItem) => {
+            itemValues.current.set(key, newItem);
+            setAndPropagateValue(Array.from(itemValues.current.values()));
+          }}
+        />
+        <ActionIcon onClick={() => removeItemFromList(key)}>
+          <IconTrash size={16} />
+        </ActionIcon>
+      </Group>
+    ))
+  );
 
   const removeItemFromList = useCallback(
     async (key: string) => {
@@ -178,7 +180,7 @@ export default function SettingsPropertyRenderer({
         );
       } else {
         propertyControl = (
-          <TextInput
+          <Textarea
             label={
               <PropertyLabel
                 propertyName={propertyName}
@@ -193,6 +195,8 @@ export default function SettingsPropertyRenderer({
             onChange={(event) =>
               setAndPropagateValue(event.currentTarget.value)
             }
+            autosize
+            maxRows={20}
           />
         );
       }
@@ -390,10 +394,10 @@ export default function SettingsPropertyRenderer({
         propertyControl = (
           <Stack>
             <PropertyLabel
-             propertyName={propertyName}
-             propertyDescription={propertyDescription}
-           />
-            <div style={{minWidth: "350px"}}>
+              propertyName={propertyName}
+              propertyDescription={propertyDescription}
+            />
+            <div style={{ minWidth: "350px" }}>
               <JSONEditor
                 content={initialValue as JSONObject}
                 onChangeContent={setAndPropagateValue}
