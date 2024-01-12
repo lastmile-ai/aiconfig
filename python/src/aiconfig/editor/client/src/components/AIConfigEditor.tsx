@@ -828,6 +828,57 @@ export default function EditorContainer({
     return () => clearInterval(interval);
   }, [getServerStatusCallback, serverStatus]);
 
+  const runningPromptId: string | undefined = aiconfigState._ui.runningPromptId;
+  const promptListContainer = (
+    <Container maw="80rem" className={classes.promptsContainer}>
+      <div className={classes.addPromptRow}>
+        <AddPromptButton
+          getModels={callbacks.getModels}
+          addPrompt={(model: string) => onAddPrompt(0, model)}
+        />
+      </div>
+      {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
+        return (
+          <Stack key={prompt._ui.id}>
+            <Flex mt="md">
+              <PromptMenuButton
+                promptId={prompt._ui.id}
+                onDeletePrompt={() => onDeletePrompt(prompt._ui.id)}
+              />
+              <PromptContainer
+                prompt={prompt}
+                getModels={callbacks.getModels}
+                onChangePromptInput={onChangePromptInput}
+                onChangePromptName={onChangePromptName}
+                cancel={callbacks.cancel}
+                onRunPrompt={onRunPrompt}
+                onUpdateModel={onUpdatePromptModel}
+                onUpdateModelSettings={onUpdatePromptModelSettings}
+                onUpdateParameters={onUpdatePromptParameters}
+                defaultConfigModelName={aiconfigState.metadata.default_model}
+                isRunButtonDisabled={
+                  runningPromptId !== undefined &&
+                  runningPromptId !== prompt._ui.id
+                }
+              />
+            </Flex>
+            <div className={classes.addPromptRow}>
+              <AddPromptButton
+                getModels={callbacks.getModels}
+                addPrompt={(model: string) =>
+                  onAddPrompt(
+                    i + 1 /* insert below current prompt index */,
+                    model
+                  )
+                }
+              />
+            </div>
+          </Stack>
+        );
+      })}
+    </Container>
+  );
+
   return (
     <AIConfigContext.Provider value={contextValue}>
       <Notifications />
@@ -899,49 +950,7 @@ export default function EditorContainer({
         initialValue={aiconfigState?.metadata?.parameters ?? {}}
         onUpdateParameters={onUpdateGlobalParameters}
       />
-      <Container maw="80rem" className={classes.promptsContainer}>
-        <div className={classes.addPromptRow}>
-          <AddPromptButton
-            getModels={callbacks.getModels}
-            addPrompt={(model: string) => onAddPrompt(0, model)}
-          />
-        </div>
-        {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
-          return (
-            <Stack key={prompt._ui.id}>
-              <Flex mt="md">
-                <PromptMenuButton
-                  promptId={prompt._ui.id}
-                  onDeletePrompt={() => onDeletePrompt(prompt._ui.id)}
-                />
-                <PromptContainer
-                  prompt={prompt}
-                  getModels={callbacks.getModels}
-                  onChangePromptInput={onChangePromptInput}
-                  onChangePromptName={onChangePromptName}
-                  cancel={callbacks.cancel}
-                  onRunPrompt={onRunPrompt}
-                  onUpdateModel={onUpdatePromptModel}
-                  onUpdateModelSettings={onUpdatePromptModelSettings}
-                  onUpdateParameters={onUpdatePromptParameters}
-                  defaultConfigModelName={aiconfigState.metadata.default_model}
-                />
-              </Flex>
-              <div className={classes.addPromptRow}>
-                <AddPromptButton
-                  getModels={callbacks.getModels}
-                  addPrompt={(model: string) =>
-                    onAddPrompt(
-                      i + 1 /* insert below current prompt index */,
-                      model
-                    )
-                  }
-                />
-              </div>
-            </Stack>
-          );
-        })}
-      </Container>
+      {promptListContainer}
     </AIConfigContext.Provider>
   );
 }
