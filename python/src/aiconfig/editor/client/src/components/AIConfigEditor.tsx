@@ -828,6 +828,8 @@ export default function EditorContainer({
     return () => clearInterval(interval);
   }, [getServerStatusCallback, serverStatus]);
 
+  const runningPromptId: string | undefined = aiconfigState._ui.runningPromptId;
+
   return (
     <AIConfigContext.Provider value={contextValue}>
       <Notifications />
@@ -907,6 +909,8 @@ export default function EditorContainer({
           />
         </div>
         {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
+          const isAnotherPromptRunning =
+            runningPromptId !== undefined && runningPromptId !== prompt._ui.id;
           return (
             <Stack key={prompt._ui.id}>
               <Flex mt="md">
@@ -925,6 +929,7 @@ export default function EditorContainer({
                   onUpdateModelSettings={onUpdatePromptModelSettings}
                   onUpdateParameters={onUpdatePromptParameters}
                   defaultConfigModelName={aiconfigState.metadata.default_model}
+                  isRunButtonDisabled={isAnotherPromptRunning}
                 />
               </Flex>
               <div className={classes.addPromptRow}>

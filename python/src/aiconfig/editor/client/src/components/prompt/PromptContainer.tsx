@@ -30,6 +30,7 @@ type Props = {
     newParameters: Record<string, unknown>
   ) => void;
   defaultConfigModelName?: string;
+  isRunButtonDisabled?: boolean;
 };
 
 export default memo(function PromptContainer({
@@ -43,6 +44,7 @@ export default memo(function PromptContainer({
   onUpdateModel,
   onUpdateModelSettings,
   onUpdateParameters,
+  isRunButtonDisabled = false,
 }: Props) {
   const promptId = prompt._ui.id;
   const onChangeInput = useCallback(
@@ -119,6 +121,7 @@ export default memo(function PromptContainer({
             onCancelRun={onCancelRun}
             onRunPrompt={runPrompt}
             isRunning={prompt._ui.isRunning}
+            isRunButtonDisabled={isRunButtonDisabled}
           />
           <PromptOutputBar />
           {prompt.outputs && <PromptOutputsRenderer outputs={prompt.outputs} />}
