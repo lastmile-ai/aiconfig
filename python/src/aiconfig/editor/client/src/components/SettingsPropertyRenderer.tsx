@@ -20,6 +20,7 @@ import UnionPropertyControl, {
   UnionProperty,
 } from "./property_controls/UnionPropertyControl";
 import { JSONObject, JSONValue } from "aiconfig";
+import JSONEditor from "./JSONEditor";
 
 export type StateSetFromPrevFn = (prev: JSONValue) => void;
 export type SetStateFn = (val: StateSetFromPrevFn | JSONValue) => void;
@@ -87,10 +88,28 @@ export default function SettingsPropertyRenderer({
     [propertyName, propertyValue, setValue]
   );
 
+  const itemValues = useRef(
+    Array.isArray(propertyValue) ? new Map(propertyValue.map(val => [uniqueId(), val])) : 
+    new Map<string, JSONValue>());
+
   // Used in the case the property is an array
-  // TODO: Should initialize with values from settings if available
-  const [itemControls, setItemControls] = useState<JSX.Element[]>([]);
-  const itemValues = useRef(new Map<string, JSONValue>());
+  const [itemControls, setItemControls] = useState<JSX.Element[]>(() => Array.from(itemValues.current, ([key, value]) => (
+    <Group key={key}>
+      <SettingsPropertyRenderer
+        propertyName=""
+        property={property.items}
+        initialValue={value}
+        setValue={newItem => {
+          itemValues.current.set(key, newItem);
+          setAndPropagateValue(Array.from(itemValues.current.values()));
+        }}
+     />
+     <ActionIcon onClick={() => removeItemFromList(key)}>
+       <IconTrash size={16} />
+     </ActionIcon>
+   </Group>
+  )));
+
 
   const removeItemFromList = useCallback(
     async (key: string) => {
@@ -367,8 +386,22 @@ export default function SettingsPropertyRenderer({
             <Stack>{subpropertyControls}</Stack>
           </>
         );
+      } else {
+        propertyControl = (
+          <Stack>
+            <PropertyLabel
+             propertyName={propertyName}
+             propertyDescription={propertyDescription}
+           />
+            <div style={{minWidth: "350px"}}>
+              <JSONEditor
+                content={initialValue as JSONObject}
+                onChangeContent={setAndPropagateValue}
+              />
+            </div>
+          </Stack>
+        );
       }
-
       break;
     }
     case "select": {
