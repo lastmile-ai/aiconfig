@@ -100,7 +100,7 @@ If you already have an AIConfig JSON file, you can use the AIConfig Editor to vi
 Open Terminal, run this command:
 
 ```bash
-aiconfig edit --aiconfig-path {file_path_existing_aiconfig}
+aiconfig edit --aiconfig-path={file_path_existing_aiconfig}
 ```
 
 A new tab with the AIConfig Editor opens in your default browser with the prompts, chaining logic, and settings from the specified AIConfig populated in the editor. If the file path doesn’t exist, a new AIConfig will be created at that path and the editor will be blank.
