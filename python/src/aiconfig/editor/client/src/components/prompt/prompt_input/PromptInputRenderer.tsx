@@ -92,6 +92,7 @@ export default memo(function PromptInputRenderer({
     // Wrap with a div to prevent it from expanding to input height
     <div className={classes.promptInputButtonWrapper}>
       <RunPromptButton
+        enabled={true} // Next PR: Set this to false if another prompt is running
         isRunning={isRunning}
         cancel={onCancelRun}
         runPrompt={onRunPrompt}
