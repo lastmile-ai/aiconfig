@@ -85,7 +85,7 @@ For this tutorial, you will need to have an OpenAI API key that has access to GP
 AIConfig Editor allows you to visually create and edit the prompt chains and model parameters that are stored as AIConfigs. You can also chain prompts and use global and local variables in your prompts. Learn more about [AIConfig Editor](https://aiconfig.lastmileai.dev/docs/editor).
 
 1. Open your Terminal
-2. Run this command: `aiconfig edit --aiconfig-path travel.aiconfig.json`
+2. Run this command: `aiconfig edit --aiconfig-path=travel.aiconfig.json`
 
 This will open AIConfig Editor in your default browser at http://localhost:8080/ and create a new AIConfig JSON file `travel.aiconfig.json` in your current directory.
 
@@ -520,7 +520,7 @@ travelWithGPT();
 You can iterate and edit your aiconfig using the AIConfig Editor. Now that we have an aiconfig file artifact that encapsulates the generative AI parts of our application, the application code doesn't need to change even as the aiconfig is updated.
 
 1. Open your Terminal
-2. Run this command: `aiconfig edit --aiconfig-path updated_travel.aiconfig.json`
+2. Run this command: `aiconfig edit --aiconfig-path=updated_travel.aiconfig.json`
 
 A new tab with the AIConfig Editor opens in your default browser at http://localhost:8080/ with the prompts, chaining logic, and settings from `updated_travel.aiconfig.json`. Your edits will auto-save every 15 seconds. You can also manually save with the Save button.
 
