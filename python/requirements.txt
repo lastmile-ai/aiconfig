@@ -21,3 +21,4 @@ python-dotenv
 pyyaml
 requests
 result
+ruamel.yaml
