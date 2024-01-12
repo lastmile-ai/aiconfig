@@ -61,7 +61,7 @@ You must specify your [OpenAI API Key](https://platform.openai.com/account/api-k
 AIConfig Editor helps you visually create and edit the prompts and model parameters stored as AIConfigs.
 
 1. Open your Terminal
-2. Run this command: `aiconfig edit --aiconfig-path travel.aiconfig.json`
+2. Run this command: `aiconfig edit --aiconfig-path=travel.aiconfig.json`
 
 This will open AIConfig Editor in your default browser at http://localhost:8080/ and create a new AIConfig JSON file `travel.aiconfig.json` in your current directory.
 
@@ -148,7 +148,7 @@ config.save('updated_travel.aiconfig.json', include_outputs=True)
 You can quickly iterate and edit your aiconfig using AIConfig Editor.
 
 1. Open your Terminal
-2. Run this command: `aiconfig edit --aiconfig-path travel.aiconfig.json`
+2. Run this command: `aiconfig edit --aiconfig-path=travel.aiconfig.json`
 
 A new tab with AIConfig Editor opens in your default browser at http://localhost:8080/ with the prompts, chaining logic, and settings from `travel.aiconfig.json`. The editor auto-saves every 15 seconds and you can manually save with the Save button. Your updates will be reflected in the AIConfig file.
 
@@ -169,7 +169,7 @@ AIConfig helps unwind complexity by separating prompts, model parameters, and mo
 ## Features
 
 - **Prompts as Configs**: [standardized JSON format](https://aiconfig.lastmileai.dev/docs/overview/ai-config-format) to store prompts and model settings in source control.
-- **Editor for Prompts**: Prototype and quickly iterate on your prompts and model settings with AIConfig Editor.
+- **Editor for Prompts**: Prototype and quickly iterate on your prompts and model settings with [AIConfig Editor](https://aiconfig.lastmileai.dev/docs/editor).
 - **Model-agnostic and multimodal SDK**: Python & Node SDKs to use `aiconfig` in your application code. AIConfig is designed to be **model-agnostic** and **multi-modal**, so you can extend it to work with any generative AI model, including text, image and audio.
 - **Extensible**: Extend AIConfig to work with any model and your own endpoints.
 - **Collaborative Development**: AIConfig enables different people to work on prompts and app development, and collaborate together by sharing the `aiconfig` artifact.

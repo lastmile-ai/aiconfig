@@ -1,0 +1,66 @@
+{
+  "name": "ai-workbook-ext",
+  "displayName": "ai-workbook-ext",
+  "description": "AI Workbook editor",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ai-workbook-ext.helloWorld",
+        "title": "Hello World"
+      },
+      {
+        "command": "ai-workbook-ext.helloWorld2",
+        "title": "Testing testing"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "ai-workbook-ext.aiConfigEditor",
+        "displayName": "AI Workbook Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.aiconfig.json"
+          },
+          {
+            "filenamePattern": "*.aiconfig.yaml"
+          },
+          {
+            "filenamePattern": "*.aiconfig"
+          }
+        ],
+        "priority": "default"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "yarn run compile && yarn run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test",
+    "install:all": "yarn install && cd webview-ui && yarn install",
+    "start:webview": "cd webview-ui && yarn start",
+    "build:webview": "cd webview-ui && yarn build",
+    "test:webview": "cd webview-ui && yarn test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3",
+    "@vscode/test-cli": "^0.0.4",
+    "@vscode/test-electron": "^2.3.8"
+  }
+}
