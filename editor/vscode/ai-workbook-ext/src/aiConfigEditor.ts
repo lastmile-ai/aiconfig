@@ -210,7 +210,7 @@ export class CatScratchEditorProvider
 		 <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
      <link href="${styleResetUri}" rel="stylesheet" />
 		 <link href="${styleVSCodeUri}" rel="stylesheet" />
-		 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src vscode-webview: http://localhost:8080; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
+		 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: 'self'; connect-src vscode-webview: http://localhost:8080; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
 		 <title>Hello World</title>
 	   </head>
 	   <body>
