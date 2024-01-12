@@ -181,22 +181,38 @@ function reduceConsolidateAIConfig(
       );
     }
     case "RUN_PROMPT": {
-      return reduceReplacePrompt(state, action.id, (prompt) => {
-        const responsePrompt = responseConfig.prompts.find(
-          (resPrompt) => resPrompt.name === prompt.name
-        );
+      // Note: We are relying on the callsite to explicitly set `isRunning`
+      // to true when it's needed. If isRunning is not explicitly defined
+      // in the action, and we have called consolidate aiconfig, then we
+      // assume that we are finished running the prompt.
+      const isRunning = action.isRunning ?? false;
+      const stateWithUpdatedRunningPromptId = {
+        ...state,
+        _ui: {
+          ...state._ui,
+          runningPromptId: isRunning ? action.id : undefined,
+        },
+      };
+      return reduceReplacePrompt(
+        stateWithUpdatedRunningPromptId,
+        action.id,
+        (prompt) => {
+          const responsePrompt = responseConfig.prompts.find(
+            (resPrompt) => resPrompt.name === prompt.name
+          );
 
-        const outputs = responsePrompt?.outputs ?? prompt.outputs;
+          const outputs = responsePrompt?.outputs ?? prompt.outputs;
 
-        return {
-          ...prompt,
-          _ui: {
-            ...prompt._ui,
-            isRunning: action.isRunning ?? false,
-          },
-          outputs,
-        };
-      });
+          return {
+            ...prompt,
+            _ui: {
+              ...prompt._ui,
+              isRunning,
+            },
+            outputs,
+          };
+        }
+      );
     }
     case "UPDATE_PROMPT_INPUT": {
       return reduceReplacePrompt(state, action.id, consolidatePrompt);
@@ -226,19 +242,19 @@ export default function aiconfigReducer(
       const prompts = state.prompts.map((prompt) => {
         if (prompt.outputs) {
           return {
-             ...prompt,
-              outputs: undefined
-           }
+            ...prompt,
+            outputs: undefined,
+          };
         } else {
           return prompt;
         }
       });
 
-
-    for (const prompt of prompts) {
-      if (prompt.outputs) {
-        delete prompt.outputs;
-    }}
+      for (const prompt of prompts) {
+        if (prompt.outputs) {
+          delete prompt.outputs;
+        }
+      }
 
       return {
         ...dirtyState,
@@ -254,7 +270,14 @@ export default function aiconfigReducer(
       };
     }
     case "RUN_PROMPT": {
-      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
+      const runningState = {
+        ...dirtyState,
+        _ui: {
+          ...dirtyState._ui,
+          runningPromptId: action.id,
+        },
+      };
+      return reduceReplacePrompt(runningState, action.id, (prompt) => ({
         ...prompt,
         _ui: {
           ...prompt._ui,
@@ -264,7 +287,14 @@ export default function aiconfigReducer(
       }));
     }
     case "RUN_PROMPT_ERROR": {
-      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
+      const nonRunningState = {
+        ...dirtyState,
+        _ui: {
+          ...dirtyState._ui,
+          runningPromptId: undefined,
+        },
+      };
+      return reduceReplacePrompt(nonRunningState, action.id, (prompt) => ({
         ...prompt,
         _ui: {
           ...prompt._ui,

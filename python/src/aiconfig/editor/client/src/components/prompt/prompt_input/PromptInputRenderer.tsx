@@ -18,6 +18,7 @@ type Props = {
   onCancelRun: () => Promise<void>;
   onRunPrompt: () => Promise<void>;
   isRunning?: boolean;
+  isRunButtonDisabled?: boolean;
 };
 
 type ErrorFallbackProps = {
@@ -75,6 +76,7 @@ export default memo(function PromptInputRenderer({
   onCancelRun,
   onRunPrompt,
   isRunning = false,
+  isRunButtonDisabled = false,
 }: Props) {
   const { classes } = useStyles();
 
@@ -93,6 +95,7 @@ export default memo(function PromptInputRenderer({
     <div className={classes.promptInputButtonWrapper}>
       <RunPromptButton
         isRunning={isRunning}
+        disabled={isRunButtonDisabled}
         cancel={onCancelRun}
         runPrompt={onRunPrompt}
       />
