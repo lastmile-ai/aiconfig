@@ -13,7 +13,7 @@ import {
   AutocompleteItem,
   Select,
 } from "@mantine/core";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { uniqueId } from "lodash";
 import { IconHelp, IconPlus, IconTrash } from "@tabler/icons-react";
 import UnionPropertyControl, {
@@ -67,7 +67,7 @@ export default function SettingsPropertyRenderer({
   );
 
   let propertyControl;
-
+  
   const setAndPropagateValue = useCallback(
     (newValue: ((prev: JSONValue) => void) | JSONValue) => {
       const valueToSet =
@@ -90,7 +90,7 @@ export default function SettingsPropertyRenderer({
   // Used in the case the property is an array
   // TODO: Should initialize with values from settings if available
   const [itemControls, setItemControls] = useState<JSX.Element[]>([]);
-  const itemValues = useRef(new Map<string, JSONValue>());
+  const itemValues = useRef(propertyValue ?? new Map<string, JSONValue>());
 
   const removeItemFromList = useCallback(
     async (key: string) => {
@@ -123,6 +123,33 @@ export default function SettingsPropertyRenderer({
       </Group>,
     ]);
   }, [property.items, removeItemFromList, setAndPropagateValue]);
+
+ 
+
+  useEffect(() => {
+    if (Array.isArray(initialValue)) {
+        const initialItemControls = initialValue.map((arrayItem,index) => {
+            const key = uniqueId();
+            return (
+                <Group key={key}>
+                    <SettingsPropertyRenderer
+                        propertyName=""
+                        property={property.items}
+                        initialValue={arrayItem}
+                        setValue={newItem => {
+                            itemValues.current.set(key, newItem);
+                            setAndPropagateValue(Array.from(itemValues.current.values()));
+                        }}
+                    />
+                    <ActionIcon onClick={() => removeItemFromList(key)}>
+                        <IconTrash size={16} />
+                    </ActionIcon>
+                </Group>
+            );
+        });
+        setItemControls(initialItemControls);
+    }
+}, [initialValue, property.items, removeItemFromList, setAndPropagateValue]);
 
   switch (propertyType) {
     case "string": {
