@@ -36,7 +36,7 @@ async def main_with_args(argv: list[str]) -> int:
 
 def run_subcommand(argv: list[str]) -> Result[str, str]:
     LOGGER.info("Running subcommand")
-    subparser_record_types = {"edit": EditServerConfig}
+    subparser_record_types = {"edit": EditServerConfig, "rage": rage.RageConfig}
     main_parser = core_utils.argparsify(AIConfigCLIConfig, subparser_record_types=subparser_record_types)
 
     # Try to parse the CLI args into a config.
@@ -57,6 +57,10 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
         LOGGER.debug(f"{edit_config.is_ok()=}")
         out = _run_editor_servers_with_configs(edit_config, cli_config)
         return out
+    elif subparser_name == "rage":
+        res_rage_config = core_utils.parse_args(main_parser, argv[1:], rage.RageConfig)
+        res_rage = res_rage_config.and_then(rage.rage)
+        return result.do(Ok("Rage complete!") for _ in res_rage)
     else:
         return Err(f"Unknown subparser: {subparser_name}")
 
@@ -164,8 +168,6 @@ def _set_log_level_and_create_default_yaml(cli_config: AIConfigCLIConfig) -> Res
             return core_utils.ErrWithTraceback(e)
     except Exception as e:
         return core_utils.ErrWithTraceback(e)
-
-    return Ok(True)
 
 
 def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], str]:
