@@ -20,6 +20,7 @@ import UnionPropertyControl, {
   UnionProperty,
 } from "./property_controls/UnionPropertyControl";
 import { JSONObject, JSONValue } from "aiconfig";
+import JSONEditor from "./JSONEditor";
 
 export type StateSetFromPrevFn = (prev: JSONValue) => void;
 export type SetStateFn = (val: StateSetFromPrevFn | JSONValue) => void;
@@ -383,7 +384,7 @@ export default function SettingsPropertyRenderer({
         );
       }
 
-      if (subpropertyControls.length > 0) {
+if (subpropertyControls.length > 0) {
         propertyControl = (
           <>
             {propertyName != null && propertyName.trim() !== "" ? (
@@ -394,8 +395,14 @@ export default function SettingsPropertyRenderer({
             <Stack>{subpropertyControls}</Stack>
           </>
         );
+      } else {
+        propertyControl = (
+          <JSONEditor
+            content={initialValue as JSONObject}
+            onChangeContent={setAndPropagateValue}
+          />
+        );
       }
-
       break;
     }
     case "select": {
