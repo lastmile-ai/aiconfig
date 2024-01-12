@@ -5,7 +5,7 @@ import { WebviewApi } from "vscode-webview";
  * Context for VSCode Webview state and methods.
  */
 const WebviewContext = createContext<{
-  vscode: WebviewApi<Record<string, any>> | null;
+  vscode: WebviewApi<Record<string, unknown>> | null;
 }>({
   vscode: null,
 });
