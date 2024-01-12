@@ -4,16 +4,16 @@ import { memo } from "react";
 
 type Props = {
   cancel: () => Promise<void>;
-  disabled: boolean;
   runPrompt: () => Promise<void>;
   isRunning?: boolean;
+  disabled?: boolean;
 };
 
 export default memo(function RunPromptButton({
   cancel,
-  disabled,
   runPrompt,
   isRunning = false,
+  disabled = false,
 }: Props) {
   const onClick = async () => {
     if (isRunning) {
