@@ -4,8 +4,12 @@ import PromptOutputsRenderer from "./prompt_outputs/PromptOutputsRenderer";
 import { ClientPrompt } from "../../shared/types";
 import { getPromptSchema } from "../../utils/promptUtils";
 import { Flex, Card } from "@mantine/core";
-import { PromptInput as AIConfigPromptInput, JSONObject } from "aiconfig";
-import { memo, useCallback } from "react";
+import {
+  PromptInput as AIConfigPromptInput,
+  JSONObject,
+  JSONValue,
+} from "aiconfig";
+import { memo, useCallback, useState } from "react";
 import PromptOutputBar from "./PromptOutputBar";
 import PromptName from "./PromptName";
 import ModelSelector from "./ModelSelector";
@@ -66,10 +70,54 @@ export default memo(function PromptContainer({
     [promptId, onUpdateParameters]
   );
 
-  const runPrompt = useCallback(
-    async () => await onRunPrompt(promptId),
-    [promptId, onRunPrompt]
+  const [missingRequiredFields, setMissingRequiredFields] = useState(
+    new Set<string>()
   );
+  const onUpdateMissingRequiredFields = useCallback(
+    (fieldName: string, fieldValue: JSONValue) => {
+      setMissingRequiredFields((prevState) => {
+        const newState = new Set<string>(prevState);
+        const isPrimitiveValue =
+          typeof fieldValue === "string" ||
+          typeof fieldValue === "number" ||
+          typeof fieldValue === "boolean" ||
+          typeof fieldValue === "undefined" ||
+          typeof fieldValue === "bigint";
+        if (isPrimitiveValue) {
+          if (
+            fieldValue == null ||
+            fieldValue == undefined ||
+            fieldValue === ""
+          ) {
+            newState.add(fieldName);
+          } else {
+            newState.delete(fieldName);
+          }
+          if (fieldName === "model") {
+            console.log("new state: ", newState);
+          }
+        }
+        return newState;
+      });
+    },
+    [setMissingRequiredFields]
+  );
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  const onSetExpandedButton = useCallback(
+    (newValue: boolean) => setIsExpanded(newValue),
+    [setIsExpanded]
+  );
+
+  const runPrompt = useCallback(async () => {
+    console.log("missing required fields: ", missingRequiredFields);
+    if (missingRequiredFields.size > 0) {
+      setIsExpanded(true);
+      return;
+    } else {
+      await onRunPrompt(promptId);
+    }
+  }, [promptId, onRunPrompt]);
 
   const onCancelRun = useCallback(async () => {
     if (prompt._ui.cancellationToken) {
@@ -126,8 +174,12 @@ export default memo(function PromptContainer({
       </Card>
       <div className="sidePanel">
         <PromptActionBar
+          isExpanded={isExpanded}
+          missingRequiredFields={missingRequiredFields}
           prompt={prompt}
           promptSchema={promptSchema}
+          onSetExpandedButton={onSetExpandedButton}
+          onUpdateMissingRequiredFields={onUpdateMissingRequiredFields}
           onUpdateModelSettings={updateModelSettings}
           onUpdateParameters={updateParameters}
         />

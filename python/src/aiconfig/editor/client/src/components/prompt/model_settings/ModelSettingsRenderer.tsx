@@ -1,7 +1,7 @@
 import ModelSettingsSchemaRenderer from "./ModelSettingsSchemaRenderer";
 import { GenericPropertiesSchema } from "../../../utils/promptUtils";
 import { Flex, Text, createStyles } from "@mantine/core";
-import { JSONObject } from "aiconfig";
+import { JSONObject, JSONValue } from "aiconfig";
 import { memo, useState } from "react";
 import JSONRenderer from "../../JSONRenderer";
 import JSONEditorToggleButton from "../../JSONEditorToggleButton";
@@ -10,6 +10,10 @@ import { ErrorBoundary, useErrorBoundary } from "react-error-boundary";
 type Props = {
   settings?: JSONObject;
   schema?: GenericPropertiesSchema;
+  onUpdateMissingRequiredFields: (
+    fieldName: string,
+    fieldValue: JSONValue
+  ) => void;
   onUpdateModelSettings: (settings: Record<string, unknown>) => void;
 };
 
@@ -55,6 +59,7 @@ function SettingsErrorFallback({
 export default memo(function ModelSettingsRenderer({
   settings,
   schema,
+  onUpdateMissingRequiredFields,
   onUpdateModelSettings,
 }: Props) {
   const { classes } = useStyles();
@@ -96,6 +101,7 @@ export default memo(function ModelSettingsRenderer({
           <ModelSettingsSchemaRenderer
             settings={settings}
             schema={schema}
+            onUpdateMissingRequiredFields={onUpdateMissingRequiredFields}
             onUpdateModelSettings={onUpdateModelSettings}
           />
         </ErrorBoundary>

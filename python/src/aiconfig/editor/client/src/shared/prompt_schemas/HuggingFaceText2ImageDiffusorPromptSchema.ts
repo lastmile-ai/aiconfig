@@ -102,5 +102,6 @@ export const HuggingFaceText2ImageDiffusorPromptSchema: PromptSchema = {
         If not specified, the callback will be called at every step.`,
       },
     },
+    required: ["model", "width"],
   },
 };
