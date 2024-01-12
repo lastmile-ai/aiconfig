@@ -61,6 +61,7 @@ export class CatScratchEditorProvider
       enableScripts: true,
       localResourceRoots: [
         vscode.Uri.joinPath(this.context.extensionUri, "out"),
+        vscode.Uri.joinPath(this.context.extensionUri, "media"),
         vscode.Uri.joinPath(
           this.context.extensionUri,
           "..",
@@ -117,11 +118,13 @@ export class CatScratchEditorProvider
 
       switch (e.type) {
         case "add":
-          this.addNewScratch(document);
+          console.log("Adding new scratch!");
+          //this.addNewScratch(document);
           return;
 
         case "delete":
-          this.deleteScratch(document, e.id);
+          console.log("Deleting new scratch!");
+          //this.deleteScratch(document, e.id);
           return;
         case "open-raw":
           vscode.commands.executeCommand("workbench.action.reopenTextEditor");
@@ -147,10 +150,6 @@ export class CatScratchEditorProvider
     const styleVSCodeUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, "media", "vscode.css")
     );
-
-    // const styleMainUri = webview.asWebviewUri(
-    //   vscode.Uri.joinPath(this.context.extensionUri, "media", "catScratch.css")
-    // );
 
     // The CSS file from the React build output
     const stylesUri = getUri(
@@ -217,7 +216,7 @@ export class CatScratchEditorProvider
 	   <body>
 		 <noscript>You need to enable JavaScript to run this app.</noscript>
 		 <div id="root"></div>
-		 <script nonce="${nonce}" src="${scriptUri2}"></script>
+		 <script nonce="${nonce}" src="${scriptUri}"></script>
 	   </body>
 	 </html>
    `;

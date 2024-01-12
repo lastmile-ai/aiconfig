@@ -59,6 +59,7 @@
     "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
+    "@types/vscode-webview": "^1.57.4",
     "eslint": "^8",
     "eslint-config-next": "14.0.2",
     "eslint-plugin-react-hooks": "^4.6.0",
