@@ -67,9 +67,9 @@
         "model": {
           "name": "HuggingFaceTextTranslationTransformer",
           "settings": {
-            "model": "Helsinki-NLP/opus-mt-en-fr",
             "max_length": 100,
             "min_length": 50,
+            "model": "Helsinki-NLP/opus-mt-en-fr",
             "num_beams": 1
           }
         },
@@ -207,7 +207,7 @@
       "input": {
         "attachments": [
           {
-            "data": "./hi.mp3",
+            "data": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_11_20_34_32/3386/hi.mp3",
             "mime_type": "audio/mpeg"
           }
         ]
@@ -220,7 +220,17 @@
           }
         },
         "parameters": {}
-      }
+      },
+      "outputs": []
+    },
+    {
+      "name": "prompt_8",
+      "input": "",
+      "metadata": {
+        "model": "HuggingFaceTextGenerationTransformer",
+        "parameters": {}
+      },
+      "outputs": []
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"

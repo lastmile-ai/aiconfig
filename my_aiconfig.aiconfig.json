@@ -1,0 +1,21 @@
+{
+  "name": "a",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {}
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "prompt_1",
+      "input": "",
+      "metadata": {
+        "model": "gpt-4",
+        "parameters": {}
+      },
+      "outputs": []
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}
