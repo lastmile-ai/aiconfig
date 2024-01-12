@@ -165,7 +165,7 @@ export default function EditorContainer({
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
   const [aiconfigState, dispatch] = useReducer(
     aiconfigReducer,
-    aiConfigToClientConfig(initialAIConfig)
+    aiConfigToClientConfig(initialAIConfig) //runningPromptId initialize to undefined
   );
 
   const stateRef = useRef(aiconfigState);
