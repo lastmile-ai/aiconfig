@@ -10,7 +10,7 @@
 
 
 <link rel="search" type="application/opensearchdescription+xml" title="AIConfig" href="/opensearch.xml"><link rel="stylesheet" href="/assets/css/styles.d55df971.css">
-<script src="/assets/js/runtime~main.a17cf8e9.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.212a8815.js" defer="defer"></script>
 <script src="/assets/js/main.8ca534c3.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -41,7 +41,7 @@
 <p>AIConfig Editor allows you to visually create and edit the prompt chains and model parameters that are stored as AIConfigs. You can also chain prompts and use global and local variables in your prompts. Learn more about <a href="https://aiconfig.lastmileai.dev/docs/editor" target="_blank" rel="noopener noreferrer">AIConfig Editor</a>.</p>
 <ol>
 <li>Open your Terminal</li>
-<li>Run this command: <code>aiconfig edit --aiconfig-path travel.aiconfig.json</code></li>
+<li>Run this command: <code>aiconfig edit --aiconfig-path=travel.aiconfig.json</code></li>
 </ol>
 <p>This will open AIConfig Editor in your default browser at <a href="http://localhost:8080/" target="_blank" rel="noopener noreferrer">http://localhost:8080/</a> and create a new AIConfig JSON file <code>travel.aiconfig.json</code> in your current directory.</p>
 <p><img loading="lazy" src="https://github.com/lastmile-ai/aiconfig/assets/81494782/ae3188c7-2471-41d4-bb7f-9012284d9a88" alt="img_editor" class="img_ev3q"></p>
@@ -88,7 +88,7 @@
 <p>You can iterate and edit your aiconfig using the AIConfig Editor. Now that we have an aiconfig file artifact that encapsulates the generative AI parts of our application, the application code doesn&#x27;t need to change even as the aiconfig is updated.</p>
 <ol>
 <li>Open your Terminal</li>
-<li>Run this command: <code>aiconfig edit --aiconfig-path updated_travel.aiconfig.json</code></li>
+<li>Run this command: <code>aiconfig edit --aiconfig-path=updated_travel.aiconfig.json</code></li>
 </ol>
 <p>A new tab with the AIConfig Editor opens in your default browser at <a href="http://localhost:8080/" target="_blank" rel="noopener noreferrer">http://localhost:8080/</a> with the prompts, chaining logic, and settings from <code>updated_travel.aiconfig.json</code>. Your edits will auto-save every 15 seconds. You can also manually save with the Save button.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="next-steps">Next Steps<a href="#next-steps" class="hash-link" aria-label="Direct link to Next Steps" title="Direct link to Next Steps">​</a></h2>
