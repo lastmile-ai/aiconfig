@@ -169,7 +169,7 @@
         "model": {
           "name": "HuggingFaceText2ImageDiffusor",
           "settings": {
-            "model": "runwayml/stable-diffusion-v1-5",
+            "model": "",
             "num_images_per_prompt": 2
           }
         },

@@ -9,12 +9,17 @@ import { debounce } from "lodash";
 type Props = {
   schema: GenericPropertiesSchema;
   settings?: JSONObject;
+  onUpdateMissingRequiredFields: (
+    fieldName: string,
+    fieldValue: JSONValue
+  ) => void;
   onUpdateModelSettings: (settings: Record<string, unknown>) => void;
 };
 
 export default memo(function ModelSettingsSchemaRenderer({
   schema,
   settings,
+  onUpdateMissingRequiredFields,
   onUpdateModelSettings,
 }: Props) {
   const debouncedConfigUpdate = useMemo(
@@ -40,6 +45,7 @@ export default memo(function ModelSettingsSchemaRenderer({
       property={schema}
       isRequired={false}
       initialValue={settings}
+      onUpdateMissingRequiredFields={onUpdateMissingRequiredFields}
       setValue={setValue}
     />
   );

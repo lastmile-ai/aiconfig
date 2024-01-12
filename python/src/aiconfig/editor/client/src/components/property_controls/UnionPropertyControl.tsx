@@ -18,12 +18,24 @@ type Props = {
   propertyName: string;
   initialValue?: JSONValue; // TODO: Handle initial value, selecting correct tab to show
   isRequired?: boolean;
+  onUpdateMissingRequiredFields: (
+    fieldName: string,
+    fieldValue: JSONValue
+  ) => void;
   setValue: SetStateFn;
   renderProperty: (props: PropertyRendererProps) => JSX.Element;
 };
 
 export default memo(function UnionPropertyControl(props: Props) {
-  const { property, renderProperty, setValue, ...renderPropertyProps } = props;
+  const {
+    property,
+    propertyName,
+    isRequired,
+    onUpdateMissingRequiredFields,
+    renderProperty,
+    setValue,
+    ...renderPropertyProps
+  } = props;
 
   const segmentedTabs = useMemo(
     () =>
@@ -52,8 +64,18 @@ export default memo(function UnionPropertyControl(props: Props) {
         typeof value === "function" ? value(controlledData) : value;
       setControlledData((prev) => prev.set(activeTab, newValue));
       setValue(newValue);
+      if (isRequired) {
+        onUpdateMissingRequiredFields(propertyName, newValue);
+      }
     },
-    [activeTab, controlledData, setValue]
+    [
+      activeTab,
+      controlledData,
+      isRequired,
+      onUpdateMissingRequiredFields,
+      propertyName,
+      setValue,
+    ]
   );
 
   return (
@@ -67,8 +89,9 @@ export default memo(function UnionPropertyControl(props: Props) {
         {renderProperty({
           ...renderPropertyProps,
           property: property.types[parseInt(activeTab)],
-          setValue: setPropertyValue,
           propertyName: "",
+          onUpdateMissingRequiredFields,
+          setValue: setPropertyValue,
         })}
       </div>
     </Flex>
