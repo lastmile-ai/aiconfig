@@ -20,14 +20,14 @@ import { streamingApiChain } from "./utils/oboeHelpers";
 export default function Editor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
 
-  const loadConfig = useCallback(async () => {
-    const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
-    setAiConfig(res.aiconfig);
-  }, []);
+  // const loadConfig = useCallback(async () => {
+  //   const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
+  //   setAiConfig(res.aiconfig);
+  // }, []);
 
-  useEffect(() => {
-    loadConfig();
-  }, [loadConfig]);
+  // useEffect(() => {
+  //   loadConfig();
+  // }, [loadConfig]);
 
   const save = useCallback(async (aiconfig: AIConfig) => {
     const res = await ufetch.post(ROUTE_TABLE.SAVE, {
