@@ -13,13 +13,14 @@ import {
   AutocompleteItem,
   Select,
 } from "@mantine/core";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { uniqueId } from "lodash";
 import { IconHelp, IconPlus, IconTrash } from "@tabler/icons-react";
 import UnionPropertyControl, {
   UnionProperty,
 } from "./property_controls/UnionPropertyControl";
 import { JSONObject, JSONValue } from "aiconfig";
+import JSONEditor from "./JSONEditor";
 
 export type StateSetFromPrevFn = (prev: JSONValue) => void;
 export type SetStateFn = (val: StateSetFromPrevFn | JSONValue) => void;
@@ -89,8 +90,38 @@ export default function SettingsPropertyRenderer({
 
   // Used in the case the property is an array
   // TODO: Should initialize with values from settings if available
-  const [itemControls, setItemControls] = useState<JSX.Element[]>([]);
-  const itemValues = useRef(new Map<string, JSONValue>());
+  const [itemControls, setItemControls] = useState<JSX.Element[]>(() => {
+    
+    if (!Array.isArray(initialValue)){
+      return []
+    }
+
+    return initialValue.map((arrayItem) => {
+      const key = uniqueId();
+      return (
+        <Group key={key}>
+          <SettingsPropertyRenderer
+            propertyName=""
+            property={property.items}
+            initialValue={arrayItem}
+            setValue={newItem => {
+              itemValues.current.set(key, newItem);
+              setAndPropagateValue(Array.from(itemValues.current.values()));
+            }}
+         />
+         <ActionIcon onClick={() => removeItemFromList(key)}>
+           <IconTrash size={16} />
+         </ActionIcon>
+       </Group>
+      );
+    });
+
+  
+  
+  });
+  const itemValues = useRef(
+    Array.isArray(propertyValue) ? new Map(propertyValue.map(val => [uniqueId(), val])) : 
+    new Map<string, JSONValue>());
 
   const removeItemFromList = useCallback(
     async (key: string) => {
@@ -367,8 +398,22 @@ export default function SettingsPropertyRenderer({
             <Stack>{subpropertyControls}</Stack>
           </>
         );
+      } else {
+        propertyControl = (
+          <div style={{width: "100%"}}>
+          <Stack>
+            <PropertyLabel
+             propertyName={propertyName}
+             propertyDescription={propertyDescription}
+           />
+            <JSONEditor
+              content={initialValue as JSONObject}
+              onChangeContent={setAndPropagateValue}
+            />
+          </Stack>
+          </div>
+        );
       }
-
       break;
     }
     case "select": {
