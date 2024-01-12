@@ -2,8 +2,8 @@
 requires = ["setuptools", "wheel"]
 
 [project]
-name = "python-aiconfig"
-version = "1.1.12"
+name = "python-aiconfig-test"
+version = "1.1.25"
 authors = [
   { name="Sarmad Qadri", email="sarmad@lastmileai.dev" },
 ]
