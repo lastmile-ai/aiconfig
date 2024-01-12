@@ -1,5 +1,58 @@
 # Changelog
 
+## (2024-01-11) Python Version 1.1.12, NPM Version 1.1.5
+
+We built an AIConfig Editor which is like VSCode + Jupyter notebooks for AIConfig files! You can edit the config prompts, parameters, settings, and most importantly, run them for generating outputs. Source control your AIConfig files by clearing outputs and saving. It’s the most convenient way to work with Generative AI models through a local, user interface. See the [README](https://github.com/lastmile-ai/aiconfig/tree/v1.1.8/python/src/aiconfig/editor#readme) to learn more on how to use it!
+
+### Editor Capabilities (see linked PRs for screenshots and videos)
+
+- Add and delete prompts ([#682](https://github.com/lastmile-ai/aiconfig/pull/682), [#665](https://github.com/lastmile-ai/aiconfig/pull/665))
+- Select prompt model and model settings with easy-to-read descriptions ([#707](https://github.com/lastmile-ai/aiconfig/pull/707), [#760](https://github.com/lastmile-ai/aiconfig/pull/760))
+- Modify local and global parameters ([#673](https://github.com/lastmile-ai/aiconfig/pull/673))
+- Run prompts with streaming or non-streaming outputs ([#806](https://github.com/lastmile-ai/aiconfig/pull/806))
+- Cancel inference runs mid-execution ([#789](https://github.com/lastmile-ai/aiconfig/pull/789))
+- Modify name and description of AIConfig ([#682](https://github.com/lastmile-ai/aiconfig/pull/682))
+- Render input and outputs as text, image, or audio format ([#744](https://github.com/lastmile-ai/aiconfig/pull/744), [#834](https://github.com/lastmile-ai/aiconfig/pull/834))
+- View prompt input, output, model settings in both regular UI display or purely in raw JSON format ([#686](https://github.com/lastmile-ai/aiconfig/pull/686), [#656](https://github.com/lastmile-ai/aiconfig/pull/656), [#757](https://github.com/lastmile-ai/aiconfig/pull/757))
+- Copy and clear prompt output results ([#656](https://github.com/lastmile-ai/aiconfig/pull/656), [#791](https://github.com/lastmile-ai/aiconfig/pull/791))
+- Autosave every 15s, or press (CTRL/CMD) + S or Save button to do it manually ([#734](https://github.com/lastmile-ai/aiconfig/pull/734), [#735](https://github.com/lastmile-ai/aiconfig/pull/735))
+- Edit on existing AIConfig file or create a new one if not specified ([#697](https://github.com/lastmile-ai/aiconfig/pull/697))
+- Run multiple editor instances simultaneously ([#624](https://github.com/lastmile-ai/aiconfig/pull/624))
+- Error handling for malformed input + settings data, unexpected outputs, and heartbeat status when server has disconnected ([#799](https://github.com/lastmile-ai/aiconfig/pull/799), [#803](https://github.com/lastmile-ai/aiconfig/pull/803), [#762](https://github.com/lastmile-ai/aiconfig/pull/762))
+- Specify explicit model names to use for generic HuggingFace model parsers tasks ([#850](https://github.com/lastmile-ai/aiconfig/pull/850))
+
+### Features
+
+- **sdk:** Schematized prompt OutputData format to be of type string, `OutputDataWithStringValue`, or `OutputDataWithToolCallsValue` ([#636](https://github.com/lastmile-ai/aiconfig/pull/636)). Please note that [this can break existing SDK calls](https://github.com/lastmile-ai/aiconfig/pull/603#pullrequestreview-1796674430)
+- **extensions:** Created 5 new HuggingFace local transformers: text-to-speech, image-to-text, automatic speech recognition, text summarization, & text translation ([#793](https://github.com/lastmile-ai/aiconfig/pull/793), [#821](https://github.com/lastmile-ai/aiconfig/pull/821), [#780](https://github.com/lastmile-ai/aiconfig/pull/780), [#740](https://github.com/lastmile-ai/aiconfig/pull/740), [#753](https://github.com/lastmile-ai/aiconfig/pull/753))
+- **sdk:** Created Anyscale model parser and cookbook to demonstrate how to use it ([#730](https://github.com/lastmile-ai/aiconfig/pull/730), [#746](https://github.com/lastmile-ai/aiconfig/pull/746))
+- **python-sdk:** Explicitly set `model` in completion params for several model parsers ([#783](https://github.com/lastmile-ai/aiconfig/pull/783))
+- **extensions:** Refactored HuggingFace model parsers to use default model for pipeline transformer if `model` is not provided ([#863](https://github.com/lastmile-ai/aiconfig/pull/863), [#879](https://github.com/lastmile-ai/aiconfig/pull/879))
+- **python-sdk:** Made `get_api_key_from_environment` non-required and able to return nullable, wrapping it around Result-Ok ([#772](https://github.com/lastmile-ai/aiconfig/pull/772), [#787](https://github.com/lastmile-ai/aiconfig/pull/787))
+- **python-sdk:** Created `get_parameters` method ([#668](https://github.com/lastmile-ai/aiconfig/pull/668))
+- **python-sdk:** Added exception handling for `add_output` method ([#687](https://github.com/lastmile-ai/aiconfig/pull/687))
+- **sdk:** Changed run output type to be `list[Output]` instead of `Output` ([#617](https://github.com/lastmile-ai/aiconfig/pull/617), [#618](https://github.com/lastmile-ai/aiconfig/pull/618))
+- **extensions:** Refactored HuggingFace text to image model parser response data into a single object ([#805](https://github.com/lastmile-ai/aiconfig/pull/805))
+- **extensions:** Renamed `python-aiconfig-llama` to `aiconfig-extension-llama` ([#607](https://github.com/lastmile-ai/aiconfig/pull/607))
+
+### Bug Fixes / Tasks
+
+- **python-sdk:** Fixed `get_prompt_template()` issue for non-text prompt inputs ([#866](https://github.com/lastmile-ai/aiconfig/pull/866))
+- **python-sdk:** Fixed core HuggingFace library issue where response type was not a string ([#769](https://github.com/lastmile-ai/aiconfig/pull/769))
+- **python-sdk:** Fixed bug by adding `kwargs` to `ParameterizedModelParser` ([#882](https://github.com/lastmile-ai/aiconfig/pull/882))
+- **python-sdk:** Added automated tests for` add_output()` method ([#687](https://github.com/lastmile-ai/aiconfig/pull/687))
+- **python-sdk:** Updated `set_parameters()` to work if parameters haven’t been defined already ([#670](https://github.com/lastmile-ai/aiconfig/pull/670))
+- **python-sdk:** Removed `callback_manager` argument from run method ([#886](https://github.com/lastmile-ai/aiconfig/pull/886))
+- **extensions:** Removed extra `python` dir from `aiconfig-extension-llama-guard` ([#653](https://github.com/lastmile-ai/aiconfig/pull/653))
+- **python-sdk:** Removed unused model-ids from OpenAI model parser ([#729](https://github.com/lastmile-ai/aiconfig/pull/729))
+
+### Documentation
+
+- [new] AIConfig Editor README: https://github.com/lastmile-ai/aiconfig/tree/main/python/src/aiconfig/editor#readme
+- [new] Anyscale cookbook: https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Anyscale
+- [new] Gradio cookbook for HuggingFace extension model parsers: https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Gradio
+- [updated] AIConfig README: https://github.com/lastmile-ai/aiconfig/blob/main/README.md
+
 ## (2023-12-26) Python Version 1.1.8, NPM Version 1.1.2
 
 ### Features
@@ -17,7 +70,7 @@
 ### Bug Fixes / Tasks
 
 - Checked for null in system prompt ([#541](https://github.com/lastmile-ai/aiconfig/pull/541))
-- Converted protobuf to dict to fix pydantic BaseModel errors on Gemini (#558)([#558](https://github.com/lastmile-ai/aiconfig/pull/558))
+- Converted protobuf to dict to fix pydantic BaseModel errors on Gemini ([#558](https://github.com/lastmile-ai/aiconfig/pull/558))
 - Fixed issue where we were overwriting a single prompt output instead of creating a new one in batch execution ([#566](https://github.com/lastmile-ai/aiconfig/pull/566))
 - Unpinned `requests==2.30.0` dependency and using https instead of http in `load_from_workbook()` method ([#582](https://github.com/lastmile-ai/aiconfig/pull/582))
 - **typescript-sdk:** Created automated test for typescript `save()` API ([#198](https://github.com/lastmile-ai/aiconfig/pull/198))

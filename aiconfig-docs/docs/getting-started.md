@@ -56,20 +56,36 @@ $ yarn add aiconfig
 
 **Note:** You need to install the python AIConfig package to create and edit your configs using the AIConfig Editor. You can still use the AIConfig Node SDK to interact with your config in your application code.
 
-## Setup your OpenAI API Key
+## Setup your API Key(s)
 
-For this tutorial, you will need to have an OpenAI key that has access to GPT-4.
+You will need to specifiy API keys for the model providers (i.e. OpenAI, Google, HuggingFace) you plan to use. We recommend adding your API keys as environment variables so that they are accessible for all projects. The python library will automatically detect and use them without you having to write any code.
 
-1. Get your OpenAI API Key: https://platform.openai.com/account/api-keys
-2. Open Terminal
-3. Add this line, replace ‘your-api-key-here’ with your API key: `export OPENAI_API_KEY='your-api-key-here'`
+For this tutorial, you will need to have an OpenAI API key that has access to GPT-4. Setup help for other API keys is available [here](https://aiconfig.lastmileai.dev/docs/editor#env-api-keys).
+
+<details> 
+    <summary> Setup your OpenAI API Key as a environment variable (MacOS / Linux / Windows)</summary>
+    <div>
+        1. Get your OpenAI API Key: https://platform.openai.com/account/api-keys 
+        2. Open Terminal
+        3. Edit Bash Profile: Use the command `nano ~/.bash_profile` or `nano ~/.zshrc` (for newer MacOS versions) to open the profile file in a text editor.
+        4. Add Environment Variable: In the editor, add the line below, replacing *your-api-key-here* with your actual API key:
+        ```bash 
+        export OPENAI_API_KEY='your-api-key-here'
+        ```
+        5. *[Optional] add in environment variables for your other model providers (Google, HuggingFace, Anyscale, etc.).*
+        6. Save and Exit: Press `Ctrl+O` followed by `ENTER` to write the change. Then `Ctrl+X` to close the editor.
+        7. Load Your Profile: Use the command `source ~/.bash_profile` or `source ~/.zshrc` to load the updated profile.
+        8. Verification: Verify the setup by typing `echo $OPENAI_API_KEY` in the terminal. It should display your API key.
+    </div>
+
+</details>
 
 ## Open AIConfig Editor
 
-AIConfig Editor allows you to visually create and edit the prompt chains and model parameters that are stored as AIConfigs. You can also chain prompts and use global and local variables in your prompts.
+AIConfig Editor allows you to visually create and edit the prompt chains and model parameters that are stored as AIConfigs. You can also chain prompts and use global and local variables in your prompts. Learn more about [AIConfig Editor](https://aiconfig.lastmileai.dev/docs/editor).
 
 1. Open your Terminal
-2. Run this command: `aiconfig edit --aiconfig-path travel.aiconfig.json`
+2. Run this command: `aiconfig edit --aiconfig-path=travel.aiconfig.json`
 
 This will open AIConfig Editor in your default browser at http://localhost:8080/ and create a new AIConfig JSON file `travel.aiconfig.json` in your current directory.
 
@@ -504,7 +520,7 @@ travelWithGPT();
 You can iterate and edit your aiconfig using the AIConfig Editor. Now that we have an aiconfig file artifact that encapsulates the generative AI parts of our application, the application code doesn't need to change even as the aiconfig is updated.
 
 1. Open your Terminal
-2. Run this command: `aiconfig edit --aiconfig-path updated_travel.aiconfig.json`
+2. Run this command: `aiconfig edit --aiconfig-path=updated_travel.aiconfig.json`
 
 A new tab with the AIConfig Editor opens in your default browser at http://localhost:8080/ with the prompts, chaining logic, and settings from `updated_travel.aiconfig.json`. Your edits will auto-save every 15 seconds. You can also manually save with the Save button.
 

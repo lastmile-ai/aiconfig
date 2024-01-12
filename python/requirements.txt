@@ -6,7 +6,7 @@ flask[async]
 google-generativeai
 huggingface_hub
 hypothesis==6.91.0
-lastmile-utils==0.0.14
+lastmile-utils==0.0.20
 mock
 nest_asyncio
 nltk
@@ -21,3 +21,4 @@ python-dotenv
 pyyaml
 requests
 result
+ruamel.yaml

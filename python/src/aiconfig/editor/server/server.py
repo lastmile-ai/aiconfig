@@ -2,7 +2,6 @@ import asyncio
 import copy
 import ctypes
 import json
-import copy
 import logging
 import threading
 import time
@@ -15,6 +14,7 @@ import result
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.editor.server.queue_iterator import STOP_STREAMING_SIGNAL, QueueIterator
 from aiconfig.editor.server.server_utils import (
+    AIConfigRC,
     EditServerConfig,
     FlaskResponse,
     HttpResponseWithAIConfig,
@@ -57,7 +57,7 @@ app = Flask(__name__, static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
-def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
+def run_backend_server(edit_config: EditServerConfig, aiconfigrc_path: str) -> Result[str, str]:
     LOGGER.setLevel(edit_config.log_level)
     LOGGER.info("Edit config: %s", edit_config.model_dump_json())
     LOGGER.info(f"Starting server on http://localhost:{edit_config.server_port}")
@@ -68,7 +68,7 @@ def run_backend_server(edit_config: EditServerConfig) -> Result[str, str]:
         LOGGER.warning(f"Failed to open browser: {e}. Please open http://localhost:{port} manually.")
 
     app.server_state = ServerState()  # type: ignore
-    res_server_state_init = init_server_state(app, edit_config)
+    res_server_state_init = init_server_state(app, edit_config, aiconfigrc_path)
     match res_server_state_init:
         case Ok(_):
             LOGGER.info("Initialized server state")
@@ -156,6 +156,7 @@ def save() -> FlaskResponse:
         if aiconfig is None:
             return HttpResponseWithAIConfig(message="No AIConfig loaded", code=400, aiconfig=None).to_flask_format()
         else:
+            LOGGER.info(f"No path provided, saving to original path, {aiconfig.file_path}")
             path = aiconfig.file_path
 
     res_path_val = get_validated_path(path, allow_create=True)
@@ -283,11 +284,6 @@ def run() -> FlaskResponse:
         t = threading.Thread(target=run_async_config_in_thread)
         t.start()
 
-        # Create a deep copy of the state aiconfig so we can yield an AIConfig
-        # with streaming partial outputs in the meantime. This probably isn't
-        # necessary, but just getting unblocked for now
-        displaying_config = copy.deepcopy(aiconfig)
-
         # If model supports streaming, need to wait until streamer has at
         # least 1 item to display. If model does not support streaming,
         # need to wait until the aiconfig.run() thread is complete
@@ -337,11 +333,8 @@ def run() -> FlaskResponse:
                         "metadata": {},
                     }  # type: ignore
                 )
-
-                displaying_config.add_output(prompt_name, accumulated_output, overwrite=True)
-                aiconfig_json = displaying_config.model_dump(exclude=EXCLUDE_OPTIONS)
                 yield "["
-                yield json.dumps({"aiconfig": aiconfig_json})
+                yield json.dumps({"output_chunk": accumulated_output.to_json()})
                 yield "]"
 
         # Ensure that the run process is complete to yield final output
@@ -566,3 +559,34 @@ def clear_outputs() -> FlaskResponse:
 
     signature: dict[str, Type[Any]] = {}
     return run_aiconfig_operation_with_request_json(aiconfig, request_json, f"method_", _op, signature)
+
+
+@app.route("/api/get_aiconfigrc", methods=["GET"])
+def get_aiconfigrc() -> FlaskResponse:
+    state = get_server_state(app)
+
+    yaml_mapping: Result[AIConfigRC, str] = core_utils.read_text_file(state.aiconfigrc_path).and_then(AIConfigRC.from_yaml)
+    match yaml_mapping:
+        case Ok(yaml_mapping_ok):
+            return FlaskResponse((yaml_mapping_ok.model_dump(), 200))
+        case Err(e):
+            return FlaskResponse(({"message": f"Failed to load aiconfigrc: {e}"}, 400))
+
+
+@app.route("/api/set_aiconfigrc", methods=["POST"])
+def set_aiconfigrc() -> FlaskResponse:
+    state = get_server_state(app)
+    request_json = request.get_json()
+    # TODO:
+    # We might not need to implement this at all.
+    #
+    # If so:
+    # Assuming request_json["aiconfigrc"] is a yaml-formatted string
+    # (possibly with comments)
+    # Note that the file might already exist and have contents.
+    #
+    # here's how to write it to a file:
+    # from ruamel.yaml import YAML
+    # yaml = YAML()
+    # with open(state.aiconfigrc_path, "w") as f:
+    #     yaml.dump(request_json["aiconfigrc"], f)
