@@ -23,7 +23,7 @@
     ]
   },
   "dependencies": {
-    "@datadog/browser-logs": "^5.6.0",
+    "@datadog/browser-logs": "^5.7.0",
     "@emotion/react": "^11.11.1",
     "@mantine/carousel": "^6.0.7",
     "@mantine/core": "^6.0.7",
