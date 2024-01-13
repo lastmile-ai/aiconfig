@@ -348,7 +348,7 @@ def run() -> FlaskResponse:
 
             aiconfig_json = aiconfig.model_dump(exclude=EXCLUDE_OPTIONS) if aiconfig is not None else None
             yield "["
-            yield json.dumps({"aiconfig_complete": aiconfig_json})
+            yield json.dumps({"aiconfig": aiconfig_json})
             yield "]"
 
     try:
