@@ -674,6 +674,8 @@ export default function EditorContainer({
           cancellationToken
         );
 
+        // Keep this here in case any server implementations don't return
+        // aiconfig as a streaming format
         if (serverConfigResponse?.aiconfig) {
           dispatch({
             type: "CONSOLIDATE_AICONFIG",
