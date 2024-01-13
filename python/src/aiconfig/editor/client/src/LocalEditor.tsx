@@ -95,8 +95,12 @@ export default function Editor() {
           },
         },
         {
+          // If you change the `output_chunk` var below on L102,
+          // you will notice that streaming no longer works because there
+          // isn't a key that matches any of the json keys we pass back from
+          // server.py
           output_chunk: (data) => {
-            onStream({ type: "output_chunk", data: data as Output });
+            onStream({ type: "this_can_be_anything", data: data as Output });
           },
           aiconfig: (data) => {
             onStream({ type: "aiconfig", data: data as AIConfig });

@@ -334,6 +334,7 @@ def run() -> FlaskResponse:
                     }  # type: ignore
                 )
                 yield "["
+                # Below is where we set the "output_chunk" key in the JSON response
                 yield json.dumps({"output_chunk": accumulated_output.to_json()})
                 yield "]"
 

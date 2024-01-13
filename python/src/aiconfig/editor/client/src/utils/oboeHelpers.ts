@@ -44,6 +44,9 @@ export async function streamingApiChain<T>(
     let oboeInstance = oboe(headers);
     Object.keys(chain).forEach((on) => {
       const fn = chain[on];
+      // We need the `on` key to match what's passed from server.py,
+      // while the function callback (defined in LocalEditor) takes
+      // the data which matches that key in that JSON object
       oboeInstance = oboeInstance.node(on, fn);
     });
 
