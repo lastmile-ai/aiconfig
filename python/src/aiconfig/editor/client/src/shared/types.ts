@@ -21,6 +21,7 @@ export type ClientAIConfig = Omit<AIConfig, "prompts"> & {
   prompts: ClientPrompt[];
   _ui: {
     isDirty?: boolean;
+    runningPromptId?: string;
   };
 };
 
