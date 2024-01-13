@@ -5,17 +5,13 @@ import AIConfigEditor, {
   RunPromptStreamErrorEvent,
 } from "./components/AIConfigEditor";
 import { Flex, Loader, MantineProvider, Image } from "@mantine/core";
-import {
-  AIConfig,
-  InferenceSettings,
-  JSONObject,
-  Output,
-  Prompt,
-} from "aiconfig";
+import { AIConfig, InferenceSettings, JSONObject, Output, Prompt } from "aiconfig";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
 import { streamingApiChain } from "./utils/oboeHelpers";
+import { datadogLogs } from "@datadog/browser-logs";
+import { LogEvent, LogEventData } from "./shared/types";
 
 export default function Editor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
@@ -28,6 +24,29 @@ export default function Editor() {
   useEffect(() => {
     loadConfig();
   }, [loadConfig]);
+
+  const setupTelemetryIfAllowed = useCallback(async () => {
+    const res = await ufetch.get(ROUTE_TABLE.GET_AICONFIGRC, {}); // change this to the endpoint used to get the config
+
+    const enableTelemetry = res.allow_usage_data_sharing;
+    const isDev = (process.env.NODE_ENV ?? "development") === "development";
+
+    // disable telemetry in dev mode because hot reload will spam the logs. 
+    if (enableTelemetry && !isDev) {
+      datadogLogs.init({
+        clientToken: "pub356987caf022337989e492681d1944a8",
+        env: process.env.NODE_ENV ?? "development",
+        service: "aiconfig-editor",
+        site: "us5.datadoghq.com",
+        forwardErrorsToLogs: true,
+        sessionSampleRate: 100,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    setupTelemetryIfAllowed();
+  }, [setupTelemetryIfAllowed]);
 
   const save = useCallback(async (aiconfig: AIConfig) => {
     const res = await ufetch.post(ROUTE_TABLE.SAVE, {
@@ -174,6 +193,14 @@ export default function Editor() {
     return await ufetch.get(ROUTE_TABLE.SERVER_STATUS);
   }, []);
 
+  const logEvent = useCallback((event: LogEvent, data?: LogEventData) => {
+    try {
+      datadogLogs.logger.info(event, data);
+    } catch (e) {
+      // Ignore logger errors for now
+    }
+  }, []);
+
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
@@ -182,6 +209,7 @@ export default function Editor() {
       deletePrompt,
       getModels,
       getServerStatus,
+      logEvent,
       runPrompt,
       save,
       setConfigDescription,
@@ -197,6 +225,7 @@ export default function Editor() {
       deletePrompt,
       getModels,
       getServerStatus,
+      logEvent,
       runPrompt,
       save,
       setConfigDescription,
