@@ -65,7 +65,7 @@ type Props = {
 
 export type RunPromptStreamEvent =
   | {
-      type: "output_chunk";
+      type: "this_can_be_anything";
       data: Output;
     }
   | {
@@ -630,7 +630,7 @@ export default function EditorContainer({
         const serverConfigResponse = await runPromptCallback(
           promptName,
           (event) => {
-            if (event.type === "output_chunk") {
+            if (event.type === "this_can_be_anything") {
               dispatch({
                 type: "STREAM_OUTPUT_CHUNK",
                 id: promptId,
