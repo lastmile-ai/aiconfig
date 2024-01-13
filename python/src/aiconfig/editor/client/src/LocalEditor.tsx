@@ -101,9 +101,6 @@ export default function Editor() {
           aiconfig: (data) => {
             onStream({ type: "aiconfig", data: data as AIConfig });
           },
-          aiconfig_complete: (data) => {
-            onStream({ type: "aiconfig_complete", data: data as AIConfig });
-          },
           error: (data) => {
             onError({
               type: "error",
