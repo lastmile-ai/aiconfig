@@ -71,10 +71,6 @@ export type RunPromptStreamEvent =
   | {
       type: "aiconfig";
       data: AIConfig;
-    }
-  | {
-      type: "aiconfig_complete";
-      data: AIConfig;
     };
 
 export type RunPromptStreamErrorEvent = {
@@ -641,15 +637,7 @@ export default function EditorContainer({
                 type: "CONSOLIDATE_AICONFIG",
                 action: {
                   ...action,
-                  // Ensure we keep the prompt in a running state since this is an in-progress update
-                  isRunning: true,
                 },
-                config: event.data,
-              });
-            } else if (event.type === "aiconfig_complete") {
-              dispatch({
-                type: "CONSOLIDATE_AICONFIG",
-                action,
                 config: event.data,
               });
             }
