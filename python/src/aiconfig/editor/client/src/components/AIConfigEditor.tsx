@@ -690,9 +690,9 @@ export default function EditorContainer({
         // aiconfig as a streaming format
         if (serverConfigResponse?.aiconfig) {
           dispatch({
-            type: "CONSOLIDATE_AICONFIG",
-            action,
-            config: serverConfigResponse?.aiconfig,
+            type: "RUN_PROMPT_SUCCESS",
+            id: promptId,
+            config: serverConfigResponse.aiconfig,
           });
         }
       } catch (err: unknown) {
