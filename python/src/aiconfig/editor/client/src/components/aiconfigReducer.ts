@@ -16,6 +16,7 @@ export type MutateAIConfigAction =
   | SetDescriptionAction
   | SetNameAction
   | StreamOutputChunkAction
+  | StopStreamingAction
   | UpdatePromptInputAction
   | UpdatePromptNameAction
   | UpdatePromptModelAction
@@ -75,6 +76,11 @@ export type StreamOutputChunkAction = {
   type: "STREAM_OUTPUT_CHUNK";
   id: string;
   output: Output;
+};
+
+export type StopStreamingAction = {
+  type: "STOP_STREAMING";
+  id: string;
 };
 
 export type UpdatePromptInputAction = {
@@ -339,6 +345,27 @@ export default function aiconfigReducer(
         ...prompt,
         outputs: [action.output],
       }));
+    }
+    case "STOP_STREAMING": {
+      const finishedStreamingState = {
+        ...dirtyState,
+        _ui: {
+          ...dirtyState._ui,
+          runningPromptId: undefined,
+        },
+      };
+      return reduceReplacePrompt(
+        finishedStreamingState,
+        action.id,
+        (prompt) => ({
+          ...prompt,
+          _ui: {
+            ...prompt._ui,
+            cancellationToken: undefined,
+            isRunning: false,
+          },
+        })
+      );
     }
     case "UPDATE_PROMPT_INPUT": {
       return reduceReplaceInput(dirtyState, action.id, () => action.input);
