@@ -641,13 +641,12 @@ export default function EditorContainer({
                 output: event.data,
               });
             } else if (event.type === "aiconfig_chunk") {
-              // Next PR: Change this to aiconfig_stream to make it more obvious
-              // and make STREAM_AICONFIG it's own event so we don't need to pass
-              // the `isRunning` state to set. See Ryan's comments about this in
               dispatch({
                 type: "CONSOLIDATE_AICONFIG",
                 action: {
-                  ...action,
+                  type: "STREAM_AICONFIG_CHUNK",
+                  id: promptId,
+                  cancellationToken,
                   // Keep the prompt running state until the end of streaming
                   isRunning: true,
                 },
