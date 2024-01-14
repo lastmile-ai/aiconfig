@@ -62,6 +62,7 @@ import CopyButton from "./CopyButton";
 type Props = {
   aiconfig: AIConfig;
   callbacks: AIConfigCallbacks;
+  readOnly?: boolean;
 };
 
 export type RunPromptStreamEvent =
@@ -162,6 +163,7 @@ const useStyles = createStyles((theme) => ({
 export default function EditorContainer({
   aiconfig: initialAIConfig,
   callbacks,
+  readOnly = false,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
@@ -780,8 +782,9 @@ export default function EditorContainer({
   const contextValue = useMemo(
     () => ({
       getState,
+      readOnly,
     }),
-    [getState]
+    [getState, readOnly]
   );
 
   const isDirty = aiconfigState._ui.isDirty !== false;
