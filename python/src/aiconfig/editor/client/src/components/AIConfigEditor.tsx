@@ -71,7 +71,7 @@ export type RunPromptStreamEvent =
       data: Output;
     }
   | {
-      type: "aiconfig";
+      type: "aiconfig_chunk";
       data: AIConfig;
     }
   | {
@@ -640,7 +640,7 @@ export default function EditorContainer({
                 id: promptId,
                 output: event.data,
               });
-            } else if (event.type === "aiconfig") {
+            } else if (event.type === "aiconfig_chunk") {
               // Next PR: Change this to aiconfig_stream to make it more obvious
               // and make STREAM_AICONFIG it's own event so we don't need to pass
               // the `isRunning` state to set. See Ryan's comments about this in
