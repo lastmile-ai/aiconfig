@@ -45,10 +45,9 @@ class ParameterizedModelParser(ModelParser):
         aiconfig: AIConfig,
         options: Optional[InferenceOptions] = None,
         parameters: Dict = {},
-        **kwargs, #TODO: We should remove and make arguments explicit
+        run_with_dependencies: Optional[bool] = False,
     ) -> List[Output]:
-        # maybe use prompt metadata instead of kwargs?
-        if kwargs.get("run_with_dependencies", False):
+        if run_with_dependencies:
             return await self.run_with_dependencies(prompt, aiconfig, options, parameters)
         else:
             return await self.run_inference(prompt, aiconfig, options, parameters)
