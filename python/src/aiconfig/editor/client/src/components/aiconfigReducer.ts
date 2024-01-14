@@ -29,7 +29,6 @@ export type MutateAIConfigAction =
 export type ConsolidateAIConfigSubAction =
   | AddPromptAction
   | RunPromptAction
-  | StreamAIConfigChunkAction
   | UpdatePromptInputAction;
 
 export type ConsolidateAIConfigAction = {
@@ -82,9 +81,8 @@ export type SetNameAction = {
 
 export type StreamAIConfigChunkAction = {
   type: "STREAM_AICONFIG_CHUNK";
-  id: string;
+  config: AIConfig;
   cancellationToken?: string;
-  isRunning?: boolean;
 };
 
 export type StreamOutputChunkAction = {
@@ -201,20 +199,16 @@ function reduceConsolidateAIConfig(
         consolidatePrompt
       );
     }
+    // Next PR: Split "RUN_PROMPT" into two actions:
+    // 1) "RUN_PROMPT_START"
+    // 2) "RUN_PROMPT_SUCCESS"
+    // 3) (Already exists) "RUN_PROMPT_ERROR"
     case "RUN_PROMPT": {
-      // Note: If we are calling "RUN_PROMPT" directly as a dispatched event
-      // type, we automatically set the state there to `isRunning` for that
-      // prompt. That logic does not happen here, it happens in
-      // `aiconfigReducer`.
-      // If we are calling "RUN_PROMPT" indirectly via the action of a
-      // "CONSOLIDATE_AICONFIG" dispatch, we end up here. We need to check
-      // if we actually want to set the prompt state to `isRunning`
-      const isRunning = action.isRunning ?? false;
       const stateWithUpdatedRunningPromptId = {
         ...state,
         _ui: {
           ...state._ui,
-          runningPromptId: isRunning ? action.id : undefined,
+          runningPromptId: undefined,
         },
       };
       return reduceReplacePrompt(
@@ -231,44 +225,7 @@ function reduceConsolidateAIConfig(
             ...prompt,
             _ui: {
               ...prompt._ui,
-              isRunning,
-            },
-            outputs,
-          };
-        }
-      );
-    }
-    case "STREAM_AICONFIG_CHUNK": {
-      // Note: If we are calling "RUN_PROMPT" directly as a dispatched event
-      // type, we automatically set the state there to `isRunning` for that
-      // prompt. That logic does not happen here, it happens in
-      // `aiconfigReducer`.
-      // If we are calling "RUN_PROMPT" indirectly via the action of a
-      // "CONSOLIDATE_AICONFIG" dispatch, we end up here. We need to check
-      // if we actually want to set the prompt state to `isRunning`
-      const isRunning = action.isRunning ?? false;
-      const stateWithUpdatedRunningPromptId = {
-        ...state,
-        _ui: {
-          ...state._ui,
-          runningPromptId: isRunning ? action.id : undefined,
-        },
-      };
-      return reduceReplacePrompt(
-        stateWithUpdatedRunningPromptId,
-        action.id,
-        (prompt) => {
-          const responsePrompt = responseConfig.prompts.find(
-            (resPrompt) => resPrompt.name === prompt.name
-          );
-
-          const outputs = responsePrompt?.outputs ?? prompt.outputs;
-
-          return {
-            ...prompt,
-            _ui: {
-              ...prompt._ui,
-              isRunning,
+              isRunning: false,
             },
             outputs,
           };
@@ -393,21 +350,25 @@ export default function aiconfigReducer(
       };
     }
     case "STREAM_AICONFIG_CHUNK": {
-      const runningState = {
-        ...dirtyState,
-        _ui: {
-          ...dirtyState._ui,
-          runningPromptId: action.id,
-        },
-      };
-      return reduceReplacePrompt(runningState, action.id, (prompt) => ({
-        ...prompt,
-        _ui: {
-          ...prompt._ui,
-          cancellationToken: action.cancellationToken,
+      const replaceOutput = (statePrompt: ClientPrompt) => {
+        const responsePrompt = action.config.prompts.find(
+          (resPrompt) => resPrompt.name === statePrompt.name
+        );
+        return {
+          ...statePrompt,
+          outputs: responsePrompt?.outputs,
+          // Don't need to set these two below because we already call
+          // RUN_PROMPT earlier in `onRunPrompt` but just being robust
           isRunning: true,
-        },
-      }));
+          cancellationToken:
+            action.cancellationToken ?? statePrompt._ui.cancellationToken,
+        } as ClientPrompt;
+      };
+      return reduceReplacePrompt(
+        dirtyState,
+        dirtyState._ui.runningPromptId as string,
+        replaceOutput
+      );
     }
     case "STREAM_OUTPUT_CHUNK": {
       return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
