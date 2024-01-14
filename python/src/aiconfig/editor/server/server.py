@@ -350,6 +350,10 @@ def run() -> FlaskResponse:
             yield "["
             yield json.dumps({"aiconfig": aiconfig_json})
             yield "]"
+        
+        yield "["
+        yield json.dumps({"stop_streaming": None})
+        yield "]"
 
     try:
         LOGGER.info(f"Running `aiconfig.run()` command with request: {request_json}")
