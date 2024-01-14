@@ -40,25 +40,12 @@
           "name": "HuggingFaceImage2TextTransformer",
           "settings": {
             "max_new_tokens": 10,
-            "model": "Salesforce/blip-image-captioning-base"
+            "model": "Salesforce/blip-image-captioning-base",
+            "timeout": 20
           }
         },
         "parameters": {}
-      },
-      "outputs": [
-        {
-          "output_type": "execute_result",
-          "execution_count": 0,
-          "data": "a bear sitting on a rock eating honey",
-          "metadata": {}
-        },
-        {
-          "output_type": "execute_result",
-          "execution_count": 1,
-          "data": "a red fox in the woods",
-          "metadata": {}
-        }
-      ]
+      }
     },
     {
       "name": "translation",
@@ -74,26 +61,18 @@
           }
         },
         "parameters": {}
-      },
-      "outputs": [
-        {
-          "output_type": "execute_result",
-          "execution_count": 0,
-          "data": " Il \u00e9tait une fois, dans une for\u00eat luxuriante et vibrante, vivait une magnifique cr\u00e9ature connue sous le nom de Foxe Brun. Ce renard \u00e9tait diff\u00e9rent des autres, poss\u00e9dant une vitesse et une agilit\u00e9 incroyables qui amenaient tous les animaux dans la for\u00eat. Avec sa fourrure aussi dor\u00e9e que le soleil et ses yeux aussi aiguis\u00e9s que les \u00e9meraudes, le Foxe Brun Brun \u00e9tait admir\u00e9 par tout le monde, du plus petit colibri au",
-          "metadata": {}
-        }
-      ]
+      }
     },
     {
-      "name": "translation_with_parameters",
+      "name": "Cool translation",
       "input": "Tell the tale of {{topic}}",
       "metadata": {
         "model": {
           "name": "HuggingFaceTextTranslationTransformer",
           "settings": {
-            "model": "Helsinki-NLP/opus-mt-en-fr",
             "max_length": 100,
             "min_length": 50,
+            "model": "Helsinki-NLP/opus-mt-en-fr",
             "num_beams": 1
           }
         },
