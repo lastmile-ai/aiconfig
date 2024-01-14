@@ -670,8 +670,8 @@ export default function EditorContainer({
 
                 showNotification({
                   title: `Execution interrupted for prompt${
-                    promptName ? ` ${promptName}` : ""
-                  }. Resetting to previous state.`,
+                    promptName ? ` '${promptName}'` : ""
+                  }. Resetting output to previous state.`,
                   message: event.data.message,
                   color: "yellow",
                 });
