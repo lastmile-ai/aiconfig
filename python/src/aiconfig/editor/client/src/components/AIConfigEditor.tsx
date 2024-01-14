@@ -591,13 +591,13 @@ export default function EditorContainer({
   const onRunPrompt = useCallback(
     async (promptId: string) => {
       const cancellationToken = uuidv4();
-      const action: AIConfigReducerAction = {
-        type: "RUN_PROMPT",
+
+      dispatch({
+        // This sets the isRunning and runningPromptId flags
+        type: "RUN_PROMPT_START",
         id: promptId,
         cancellationToken,
-      };
-
-      dispatch(action);
+      });
 
       const onPromptError = (message: string | null) => {
         dispatch({
