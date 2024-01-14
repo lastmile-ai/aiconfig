@@ -31,6 +31,8 @@ import { v4 as uuidv4 } from "uuid";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import {
   ClientPrompt,
+  LogEvent,
+  LogEventData,
   aiConfigToClientConfig,
   clientConfigToAIConfig,
   clientPromptToAIConfigPrompt,
@@ -98,6 +100,7 @@ export type AIConfigCallbacks = {
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
+  logEvent?: (event: LogEvent, data?: LogEventData) => void;
   runPrompt: (
     promptName: string,
     onStream: RunPromptStreamCallback,
@@ -166,6 +169,8 @@ export default function EditorContainer({
 
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
+
+  const logEventCallback = callbacks.logEvent;
 
   const saveCallback = callbacks.save;
   const onSave = useCallback(async () => {
@@ -515,6 +520,7 @@ export default function EditorContainer({
       };
 
       dispatch(action);
+      logEventCallback?.("ADD_PROMPT", { model, promptIndex });
 
       try {
         const serverConfigRes = await addPromptCallback(
@@ -536,7 +542,7 @@ export default function EditorContainer({
         });
       }
     },
-    [addPromptCallback, dispatch]
+    [addPromptCallback, logEventCallback]
   );
 
   const deletePromptCallback = callbacks.deletePrompt;
@@ -761,8 +767,9 @@ export default function EditorContainer({
   const contextValue = useMemo(
     () => ({
       getState,
+      logEvent: logEventCallback,
     }),
-    [getState]
+    [getState, logEventCallback]
   );
 
   const isDirty = aiconfigState._ui.isDirty !== false;
@@ -870,7 +877,10 @@ export default function EditorContainer({
               <Button
                 leftIcon={<IconDeviceFloppy />}
                 loading={isSaving}
-                onClick={onSave}
+                onClick={() => {
+                  onSave();
+                  logEventCallback?.("SAVE_BUTTON_CLICKED");
+                }}
                 disabled={!isDirty}
                 size="xs"
                 variant="gradient"
