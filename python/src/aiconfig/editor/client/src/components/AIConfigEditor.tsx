@@ -170,7 +170,7 @@ export default function EditorContainer({
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
 
-  const logEvent = callbacks.logEvent;
+  const logEventCallback = callbacks.logEvent;
 
   const saveCallback = callbacks.save;
   const onSave = useCallback(async () => {
@@ -520,7 +520,7 @@ export default function EditorContainer({
       };
 
       dispatch(action);
-      logEvent?.("ADD_PROMPT", { model, promptIndex });
+      logEventCallback?.("ADD_PROMPT", { model, promptIndex });
 
       try {
         const serverConfigRes = await addPromptCallback(
@@ -542,7 +542,7 @@ export default function EditorContainer({
         });
       }
     },
-    [addPromptCallback, logEvent]
+    [addPromptCallback, logEventCallback]
   );
 
   const deletePromptCallback = callbacks.deletePrompt;
@@ -767,9 +767,9 @@ export default function EditorContainer({
   const contextValue = useMemo(
     () => ({
       getState,
-      logEvent,
+      logEvent: logEventCallback,
     }),
-    [getState, logEvent]
+    [getState, logEventCallback]
   );
 
   const isDirty = aiconfigState._ui.isDirty !== false;
@@ -879,7 +879,7 @@ export default function EditorContainer({
                 loading={isSaving}
                 onClick={() => {
                   onSave();
-                  logEvent?.("SAVE_BUTTON_CLICKED");
+                  logEventCallback?.("SAVE_BUTTON_CLICKED");
                 }}
                 disabled={!isDirty}
                 size="xs"
