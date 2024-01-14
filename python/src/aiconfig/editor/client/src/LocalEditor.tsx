@@ -17,7 +17,11 @@ import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
 import { streamingApiChain } from "./utils/oboeHelpers";
 
-export default function Editor() {
+type Props = {
+  readOnly?: boolean;
+};
+
+export default function Editor({ readOnly = false }: Props) {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
 
   const loadConfig = useCallback(async () => {
@@ -327,6 +331,7 @@ export default function Editor() {
 
             ".parametersContainer": {
               maxWidth: "1250px",
+              width: "100%",
               maxHeight: "-webkit-fill-available",
               margin: "16px auto",
               padding: "0",
@@ -396,7 +401,11 @@ export default function Editor() {
             <Loader size="xl" />
           </Flex>
         ) : (
-          <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} />
+          <AIConfigEditor
+            aiconfig={aiconfig}
+            callbacks={callbacks}
+            readOnly={readOnly}
+          />
         )}
       </MantineProvider>
     </div>
