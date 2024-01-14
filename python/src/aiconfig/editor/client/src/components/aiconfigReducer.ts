@@ -24,9 +24,15 @@ export type MutateAIConfigAction =
   | UpdatePromptParametersAction
   | UpdateGlobalParametersAction;
 
+// Actions that appear when called via ConsolidateAIConfigAction
+export type ConsolidateAIConfigSubAction =
+  | AddPromptAction
+  | RunPromptAction
+  | UpdatePromptInputAction;
+
 export type ConsolidateAIConfigAction = {
   type: "CONSOLIDATE_AICONFIG";
-  action: MutateAIConfigAction;
+  action: ConsolidateAIConfigSubAction;
   config: AIConfig;
 };
 
@@ -159,7 +165,7 @@ function reduceInsertPromptAtIndex(
 
 function reduceConsolidateAIConfig(
   state: ClientAIConfig,
-  action: MutateAIConfigAction,
+  action: ConsolidateAIConfigSubAction,
   responseConfig: AIConfig
 ): ClientAIConfig {
   // Make sure prompt structure is properly updated. Client input and metadata takes precedence
