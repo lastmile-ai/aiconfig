@@ -128,8 +128,8 @@ export default function Editor() {
           output_chunk: (data) => {
             onStream({ type: "output_chunk", data: data as Output });
           },
-          aiconfig: (data) => {
-            onStream({ type: "aiconfig", data: data as AIConfig });
+          aiconfig_chunk: (data) => {
+            onStream({ type: "aiconfig_chunk", data: data as AIConfig });
           },
           stop_streaming: (_data) => {
             onStream({ type: "stop_streaming", data: null });
