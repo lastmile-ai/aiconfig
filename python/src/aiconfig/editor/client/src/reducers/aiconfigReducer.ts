@@ -34,6 +34,19 @@ function reduceInsertPromptAtIndex(
   };
 }
 
+function setRunningPromptId(
+  state: ClientAIConfig,
+  runningPromptId: string | undefined
+): ClientAIConfig {
+  return {
+    ...state,
+    _ui: {
+      ...state._ui,
+      runningPromptId,
+    },
+  };
+}
+
 function reduceConsolidateAIConfig(
   state: ClientAIConfig,
   action: ConsolidateAIConfigSubAction,
@@ -118,122 +131,6 @@ export default function aiconfigReducer(
         ),
       };
     }
-    case "RUN_PROMPT_START": {
-      const runningState = {
-        ...dirtyState,
-        _ui: {
-          ...dirtyState._ui,
-          runningPromptId: action.id,
-        },
-      };
-      return reduceReplacePrompt(runningState, action.id, (prompt) => ({
-        ...prompt,
-        _ui: {
-          ...prompt._ui,
-          cancellationToken: action.cancellationToken,
-          isRunning: true,
-        },
-      }));
-    }
-    case "RUN_PROMPT_CANCEL": {
-      const dirtyStateWithoutRunningPromptId = {
-        ...state,
-        _ui: {
-          ...state._ui,
-          runningPromptId: undefined,
-        },
-      };
-
-      // TODO: We'll have to update potentially all outputs when we support
-      // run_with_dependencies, because other prompt outputs may have been
-      // updated during this time
-      const replaceOutput = (statePrompt: ClientPrompt) => {
-        const responsePrompt = action.config.prompts.find(
-          (resPrompt) => resPrompt.name === statePrompt.name
-        );
-        return {
-          ...statePrompt,
-          outputs: responsePrompt?.outputs,
-          _ui: {
-            ...statePrompt._ui,
-            isRunning: false,
-            cancellationToken: undefined,
-          },
-        } as ClientPrompt;
-      };
-
-      return reduceReplacePrompt(
-        dirtyStateWithoutRunningPromptId,
-        action.id,
-        replaceOutput
-      );
-    }
-    case "RUN_PROMPT_ERROR": {
-      const nonRunningState = {
-        ...dirtyState,
-        _ui: {
-          ...dirtyState._ui,
-          runningPromptId: undefined,
-        },
-      };
-      return reduceReplacePrompt(nonRunningState, action.id, (prompt) => ({
-        ...prompt,
-        _ui: {
-          ...prompt._ui,
-          isRunning: false,
-        },
-        outputs: [
-          {
-            output_type: "error",
-            ename: "Error",
-            evalue: action.message ?? "Error running prompt",
-            traceback: [],
-          },
-        ],
-      }));
-    }
-    case "RUN_PROMPT_SUCCESS": {
-      const dirtyStateWithoutRunningPromptId = {
-        ...state,
-        _ui: {
-          ...state._ui,
-          runningPromptId: undefined,
-        },
-      };
-
-      // TODO: We'll have to update potentially all outputs when we support
-      // run_with_dependencies, because other prompt outputs may have been
-      // updated during this time
-      const replaceOutput = (statePrompt: ClientPrompt) => {
-        const responsePrompt = action.config.prompts.find(
-          (resPrompt) => resPrompt.name === statePrompt.name
-        );
-        return {
-          ...statePrompt,
-          outputs: responsePrompt?.outputs,
-          _ui: {
-            ...statePrompt._ui,
-            isRunning: false,
-            cancellationToken: undefined,
-          },
-        } as ClientPrompt;
-      };
-
-      return reduceReplacePrompt(
-        dirtyStateWithoutRunningPromptId,
-        action.id,
-        replaceOutput
-      );
-    }
-    case "SAVE_CONFIG_SUCCESS": {
-      return {
-        ...state,
-        _ui: {
-          ...state._ui,
-          isDirty: false,
-        },
-      };
-    }
     case "SET_DESCRIPTION": {
       return {
         ...dirtyState,
@@ -245,51 +142,6 @@ export default function aiconfigReducer(
         ...dirtyState,
         name: action.name,
       };
-    }
-    case "STREAM_AICONFIG_CHUNK": {
-      const replaceOutput = (statePrompt: ClientPrompt) => {
-        const responsePrompt = action.config.prompts.find(
-          (resPrompt) => resPrompt.name === statePrompt.name
-        );
-        return {
-          // Note: Don't need to set `isRunning` or `cancellationToken`
-          // because we already call RUN_PROMPT earlier in `onRunPrompt`
-          ...statePrompt,
-          outputs: responsePrompt?.outputs,
-        } as ClientPrompt;
-      };
-      return reduceReplacePrompt(
-        dirtyState,
-        dirtyState._ui.runningPromptId as string,
-        replaceOutput
-      );
-    }
-    case "STREAM_OUTPUT_CHUNK": {
-      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
-        ...prompt,
-        outputs: [action.output],
-      }));
-    }
-    case "STOP_STREAMING": {
-      const finishedStreamingState = {
-        ...dirtyState,
-        _ui: {
-          ...dirtyState._ui,
-          runningPromptId: undefined,
-        },
-      };
-      return reduceReplacePrompt(
-        finishedStreamingState,
-        action.id,
-        (prompt) => ({
-          ...prompt,
-          _ui: {
-            ...prompt._ui,
-            cancellationToken: undefined,
-            isRunning: false,
-          },
-        })
-      );
     }
     case "UPDATE_PROMPT_INPUT": {
       return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
@@ -362,6 +214,129 @@ export default function aiconfigReducer(
         metadata: {
           ...state.metadata,
           parameters: action.parameters,
+        },
+      };
+    }
+    case "RUN_PROMPT_START": {
+      const runningState = setRunningPromptId(dirtyState, action.promptId);
+      return reduceReplacePrompt(runningState, action.promptId, (prompt) => ({
+        ...prompt,
+        _ui: {
+          ...prompt._ui,
+          isRunning: true,
+          cancellationToken: action.cancellationToken,
+        },
+      }));
+    }
+    case "RUN_PROMPT_CANCEL": {
+      const nonRunningState = setRunningPromptId(dirtyState, undefined);
+
+      // TODO: We'll have to update potentially all outputs when we support
+      // run_with_dependencies, because other prompt outputs may have been
+      // updated during this time
+      const replaceOutput = (statePrompt: ClientPrompt) => {
+        const responsePrompt = action.config.prompts.find(
+          (resPrompt) => resPrompt.name === statePrompt.name
+        );
+        return {
+          ...statePrompt,
+          outputs: responsePrompt?.outputs,
+          _ui: {
+            ...statePrompt._ui,
+            isRunning: false,
+            cancellationToken: undefined,
+          },
+        } as ClientPrompt;
+      };
+
+      return reduceReplacePrompt(
+        nonRunningState,
+        action.promptId,
+        replaceOutput
+      );
+    }
+    case "RUN_PROMPT_ERROR": {
+      const nonRunningState = setRunningPromptId(dirtyState, undefined);
+      return reduceReplacePrompt(
+        nonRunningState,
+        action.promptId,
+        (prompt) => ({
+          ...prompt,
+          outputs: [
+            {
+              output_type: "error",
+              ename: "Error",
+              evalue: action.message ?? "Error running prompt",
+              traceback: [],
+            },
+          ],
+          _ui: {
+            ...prompt._ui,
+            isRunning: false,
+            cancellationToken: undefined,
+          },
+        })
+      );
+    }
+    case "RUN_PROMPT_SUCCESS": {
+      const nonRunningState = setRunningPromptId(dirtyState, undefined);
+
+      // TODO: We'll have to update potentially all outputs when we support
+      // run_with_dependencies, because other prompt outputs may have been
+      // updated during this time
+      const replaceOutputAndResetRunningFlags = (statePrompt: ClientPrompt) => {
+        // If AIConfig is not passed in from response (ex: "stop_streaming"),
+        // then we don't need to update output and responsePrompt is undefined
+        const responsePrompt = action.config?.prompts.find(
+          (resPrompt) => resPrompt.name === statePrompt.name
+        );
+        return {
+          ...statePrompt,
+          outputs: responsePrompt?.outputs ?? statePrompt.outputs,
+          _ui: {
+            ...statePrompt._ui,
+            isRunning: false,
+            cancellationToken: undefined,
+          },
+        } as ClientPrompt;
+      };
+
+      return reduceReplacePrompt(
+        nonRunningState,
+        action.promptId,
+        replaceOutputAndResetRunningFlags
+      );
+    }
+    case "STREAM_AICONFIG_CHUNK": {
+      const replaceOutput = (statePrompt: ClientPrompt) => {
+        const responsePrompt = action.config.prompts.find(
+          (resPrompt) => resPrompt.name === statePrompt.name
+        );
+        return {
+          // Note: Don't need to set `isRunning` or `cancellationToken`
+          // because we already call RUN_PROMPT earlier in `onRunPrompt`
+          ...statePrompt,
+          outputs: responsePrompt?.outputs,
+        } as ClientPrompt;
+      };
+      return reduceReplacePrompt(
+        dirtyState,
+        dirtyState._ui.runningPromptId as string,
+        replaceOutput
+      );
+    }
+    case "STREAM_OUTPUT_CHUNK": {
+      return reduceReplacePrompt(dirtyState, action.promptId, (prompt) => ({
+        ...prompt,
+        outputs: [action.output],
+      }));
+    }
+    case "SAVE_CONFIG_SUCCESS": {
+      return {
+        ...state,
+        _ui: {
+          ...state._ui,
+          isDirty: false,
         },
       };
     }
