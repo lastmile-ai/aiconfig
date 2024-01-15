@@ -28,7 +28,8 @@ import {
   useState,
 } from "react";
 import { v4 as uuidv4 } from "uuid";
-import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
+import aiconfigReducer from "../reducers/aiconfigReducer";
+import type { AIConfigReducerAction } from "../reducers/actions";
 import {
   ClientPrompt,
   LogEvent,
