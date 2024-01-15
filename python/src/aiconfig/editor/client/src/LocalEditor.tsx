@@ -125,6 +125,9 @@ export default function Editor() {
           aiconfig: (data) => {
             onStream({ type: "aiconfig", data: data as AIConfig });
           },
+          stop_streaming: (_data) => {
+            onStream({ type: "stop_streaming", data: null });
+          },
           error: (data) => {
             onError({
               type: "error",
