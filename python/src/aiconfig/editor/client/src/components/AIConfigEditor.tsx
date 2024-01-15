@@ -28,7 +28,8 @@ import {
   useState,
 } from "react";
 import { v4 as uuidv4 } from "uuid";
-import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
+import aiconfigReducer from "../reducers/aiconfigReducer";
+import type { AIConfigReducerAction } from "../reducers/actions";
 import {
   ClientPrompt,
   LogEvent,
@@ -72,7 +73,7 @@ export type RunPromptStreamEvent =
       data: Output;
     }
   | {
-      type: "aiconfig";
+      type: "aiconfig_chunk";
       data: AIConfig;
     }
   | {
@@ -599,18 +600,18 @@ export default function EditorContainer({
   const onRunPrompt = useCallback(
     async (promptId: string) => {
       const cancellationToken = uuidv4();
-      const action: AIConfigReducerAction = {
-        type: "RUN_PROMPT",
-        id: promptId,
-        cancellationToken,
-      };
 
-      dispatch(action);
+      dispatch({
+        // This sets the isRunning and runningPromptId flags
+        type: "RUN_PROMPT_START",
+        promptId,
+        cancellationToken,
+      });
 
       const onPromptError = (message: string | null) => {
         dispatch({
           type: "RUN_PROMPT_ERROR",
-          id: promptId,
+          promptId,
           message: message ?? undefined,
         });
 
@@ -641,20 +642,12 @@ export default function EditorContainer({
             if (event.type === "output_chunk") {
               dispatch({
                 type: "STREAM_OUTPUT_CHUNK",
-                id: promptId,
+                promptId,
                 output: event.data,
               });
-            } else if (event.type === "aiconfig") {
-              // Next PR: Change this to aiconfig_stream to make it more obvious
-              // and make STREAM_AICONFIG it's own event so we don't need to pass
-              // the `isRunning` state to set. See Ryan's comments about this in
+            } else if (event.type === "aiconfig_chunk") {
               dispatch({
-                type: "CONSOLIDATE_AICONFIG",
-                action: {
-                  ...action,
-                  // Keep the prompt running state until the end of streaming
-                  isRunning: true,
-                },
+                type: "STREAM_AICONFIG_CHUNK",
                 config: event.data,
               });
             } else if (event.type === "stop_streaming") {
@@ -662,8 +655,8 @@ export default function EditorContainer({
               // that the prompt is done running and we're ready
               // to reset the ClientAIConfig to a non-running state
               dispatch({
-                type: "STOP_STREAMING",
-                id: promptId,
+                type: "RUN_PROMPT_SUCCESS",
+                promptId,
               });
             }
           },
@@ -676,8 +669,9 @@ export default function EditorContainer({
                 // This is a cancellation
                 // Reset the aiconfig to the state before we started running the prompt
                 dispatch({
-                  type: "CONSOLIDATE_AICONFIG",
-                  action,
+                  type: "RUN_PROMPT_CANCEL",
+                  promptId,
+                  // Returned config output is reset to before running RUN_PROMPT
                   config: event.data.data,
                 });
 
@@ -685,8 +679,8 @@ export default function EditorContainer({
 
                 showNotification({
                   title: `Execution interrupted for prompt${
-                    promptName ? ` ${promptName}` : ""
-                  }. Resetting to previous state.`,
+                    promptName ? ` '${promptName}'` : ""
+                  }. Resetting output to previous state.`,
                   message: event.data.message,
                   color: "yellow",
                 });
@@ -703,9 +697,9 @@ export default function EditorContainer({
         // aiconfig as a streaming format
         if (serverConfigResponse?.aiconfig) {
           dispatch({
-            type: "CONSOLIDATE_AICONFIG",
-            action,
-            config: serverConfigResponse?.aiconfig,
+            type: "RUN_PROMPT_SUCCESS",
+            promptId,
+            config: serverConfigResponse.aiconfig,
           });
         }
       } catch (err: unknown) {
