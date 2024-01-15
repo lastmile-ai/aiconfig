@@ -32,6 +32,8 @@ import aiconfigReducer from "../reducers/aiconfigReducer";
 import type { AIConfigReducerAction } from "../reducers/actions";
 import {
   ClientPrompt,
+  LogEvent,
+  LogEventData,
   aiConfigToClientConfig,
   clientConfigToAIConfig,
   clientPromptToAIConfigPrompt,
@@ -45,7 +47,7 @@ import {
 import { debounce, uniqueId } from "lodash";
 import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
-import AIConfigContext from "./AIConfigContext";
+import AIConfigContext from "../contexts/AIConfigContext";
 import ConfigNameDescription from "./ConfigNameDescription";
 import {
   AUTOSAVE_INTERVAL_MS,
@@ -62,6 +64,7 @@ import CopyButton from "./CopyButton";
 type Props = {
   aiconfig: AIConfig;
   callbacks: AIConfigCallbacks;
+  readOnly?: boolean;
 };
 
 export type RunPromptStreamEvent =
@@ -103,6 +106,7 @@ export type AIConfigCallbacks = {
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
+  logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
   runPrompt: (
     promptName: string,
     onStream: RunPromptStreamCallback,
@@ -161,6 +165,7 @@ const useStyles = createStyles((theme) => ({
 export default function EditorContainer({
   aiconfig: initialAIConfig,
   callbacks,
+  readOnly = false,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
@@ -171,6 +176,8 @@ export default function EditorContainer({
 
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
+
+  const logEventHandler = callbacks.logEventHandler;
 
   const saveCallback = callbacks.save;
   const onSave = useCallback(async () => {
@@ -520,6 +527,7 @@ export default function EditorContainer({
       };
 
       dispatch(action);
+      logEventHandler?.("ADD_PROMPT", { model, promptIndex });
 
       try {
         const serverConfigRes = await addPromptCallback(
@@ -541,7 +549,7 @@ export default function EditorContainer({
         });
       }
     },
-    [addPromptCallback, dispatch]
+    [addPromptCallback, logEventHandler]
   );
 
   const deletePromptCallback = callbacks.deletePrompt;
@@ -772,8 +780,10 @@ export default function EditorContainer({
   const contextValue = useMemo(
     () => ({
       getState,
+      logEventHandler,
+      readOnly,
     }),
-    [getState]
+    [getState, logEventHandler, readOnly]
   );
 
   const isDirty = aiconfigState._ui.isDirty !== false;
@@ -881,7 +891,10 @@ export default function EditorContainer({
               <Button
                 leftIcon={<IconDeviceFloppy />}
                 loading={isSaving}
-                onClick={onSave}
+                onClick={() => {
+                  onSave();
+                  logEventHandler?.("SAVE_BUTTON_CLICKED");
+                }}
                 disabled={!isDirty}
                 size="xs"
                 variant="gradient"
