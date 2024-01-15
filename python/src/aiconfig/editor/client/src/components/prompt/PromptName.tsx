@@ -1,6 +1,6 @@
 import { TextInput } from "@mantine/core";
 import { ChangeEvent, memo, useContext, useState } from "react";
-import AIConfigContext from "../AIConfigContext";
+import AIConfigContext from "../../contexts/AIConfigContext";
 
 type Props = {
   promptId: string;
