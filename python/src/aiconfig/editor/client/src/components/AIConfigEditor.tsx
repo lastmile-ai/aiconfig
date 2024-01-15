@@ -46,7 +46,7 @@ import {
 import { debounce, uniqueId } from "lodash";
 import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
-import AIConfigContext from "./AIConfigContext";
+import AIConfigContext from "../contexts/AIConfigContext";
 import ConfigNameDescription from "./ConfigNameDescription";
 import {
   AUTOSAVE_INTERVAL_MS,
@@ -63,6 +63,7 @@ import CopyButton from "./CopyButton";
 type Props = {
   aiconfig: AIConfig;
   callbacks: AIConfigCallbacks;
+  readOnly?: boolean;
 };
 
 export type RunPromptStreamEvent =
@@ -73,6 +74,10 @@ export type RunPromptStreamEvent =
   | {
       type: "aiconfig";
       data: AIConfig;
+    }
+  | {
+      type: "stop_streaming";
+      data: null;
     };
 
 export type RunPromptStreamErrorEvent = {
@@ -159,6 +164,7 @@ const useStyles = createStyles((theme) => ({
 export default function EditorContainer({
   aiconfig: initialAIConfig,
   callbacks,
+  readOnly = false,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
@@ -639,12 +645,25 @@ export default function EditorContainer({
                 output: event.data,
               });
             } else if (event.type === "aiconfig") {
+              // Next PR: Change this to aiconfig_stream to make it more obvious
+              // and make STREAM_AICONFIG it's own event so we don't need to pass
+              // the `isRunning` state to set. See Ryan's comments about this in
               dispatch({
                 type: "CONSOLIDATE_AICONFIG",
                 action: {
                   ...action,
+                  // Keep the prompt running state until the end of streaming
+                  isRunning: true,
                 },
                 config: event.data,
+              });
+            } else if (event.type === "stop_streaming") {
+              // Pass this event at the end of streaming to signal
+              // that the prompt is done running and we're ready
+              // to reset the ClientAIConfig to a non-running state
+              dispatch({
+                type: "STOP_STREAMING",
+                id: promptId,
               });
             }
           },
@@ -768,8 +787,9 @@ export default function EditorContainer({
     () => ({
       getState,
       logEvent: logEventCallback,
+      readOnly,
     }),
-    [getState, logEventCallback]
+    [getState, logEventCallback, readOnly]
   );
 
   const isDirty = aiconfigState._ui.isDirty !== false;

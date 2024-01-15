@@ -5,7 +5,13 @@ import AIConfigEditor, {
   RunPromptStreamErrorEvent,
 } from "./components/AIConfigEditor";
 import { Flex, Loader, MantineProvider, Image } from "@mantine/core";
-import { AIConfig, InferenceSettings, JSONObject, Output, Prompt } from "aiconfig";
+import {
+  AIConfig,
+  InferenceSettings,
+  JSONObject,
+  Output,
+  Prompt,
+} from "aiconfig";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
@@ -27,12 +33,12 @@ export default function Editor() {
 
   const setupTelemetryIfAllowed = useCallback(async () => {
     const isDev = (process.env.NODE_ENV ?? "development") === "development";
-  
-    // Don't enable telemetry in dev mode because hot reload will spam the logs. 
+
+    // Don't enable telemetry in dev mode because hot reload will spam the logs.
     if (isDev) {
       return;
     }
-  
+
     const res = await ufetch.get(ROUTE_TABLE.GET_AICONFIGRC, {});
 
     const enableTelemetry = res.allow_usage_data_sharing;
@@ -124,6 +130,9 @@ export default function Editor() {
           },
           aiconfig: (data) => {
             onStream({ type: "aiconfig", data: data as AIConfig });
+          },
+          stop_streaming: (_data) => {
+            onStream({ type: "stop_streaming", data: null });
           },
           error: (data) => {
             onError({
