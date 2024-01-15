@@ -12,7 +12,7 @@ export type MutateAIConfigAction =
   | AddPromptAction
   | ClearOutputsAction
   | DeletePromptAction
-  | RunPromptAction
+  | RunPromptStartAction
   | RunPromptCancelAction
   | RunPromptSuccessAction
   | SetDescriptionAction
@@ -30,7 +30,6 @@ export type MutateAIConfigAction =
 // Actions that appear when called via ConsolidateAIConfigAction
 export type ConsolidateAIConfigSubAction =
   | AddPromptAction
-  | RunPromptAction
   | UpdatePromptInputAction;
 
 export type ConsolidateAIConfigAction = {
@@ -54,8 +53,8 @@ export type DeletePromptAction = {
   id: string;
 };
 
-export type RunPromptAction = {
-  type: "RUN_PROMPT";
+export type RunPromptStartAction = {
+  type: "RUN_PROMPT_START";
   id: string;
   cancellationToken?: string;
   isRunning?: boolean;
@@ -214,39 +213,6 @@ function reduceConsolidateAIConfig(
         consolidatePrompt
       );
     }
-    // Next PR: Split "RUN_PROMPT" into two actions:
-    // 1) "RUN_PROMPT_START"
-    // 2) "RUN_PROMPT_SUCCESS"
-    // 3) (Already exists) "RUN_PROMPT_ERROR"
-    case "RUN_PROMPT": {
-      const stateWithUpdatedRunningPromptId = {
-        ...state,
-        _ui: {
-          ...state._ui,
-          runningPromptId: undefined,
-        },
-      };
-      return reduceReplacePrompt(
-        stateWithUpdatedRunningPromptId,
-        action.id,
-        (prompt) => {
-          const responsePrompt = responseConfig.prompts.find(
-            (resPrompt) => resPrompt.name === prompt.name
-          );
-
-          const outputs = responsePrompt?.outputs ?? prompt.outputs;
-
-          return {
-            ...prompt,
-            _ui: {
-              ...prompt._ui,
-              isRunning: false,
-            },
-            outputs,
-          };
-        }
-      );
-    }
     case "UPDATE_PROMPT_INPUT": {
       return reduceReplacePrompt(state, action.id, consolidatePrompt);
     }
@@ -302,7 +268,7 @@ export default function aiconfigReducer(
         ),
       };
     }
-    case "RUN_PROMPT": {
+    case "RUN_PROMPT_START": {
       const runningState = {
         ...dirtyState,
         _ui: {
