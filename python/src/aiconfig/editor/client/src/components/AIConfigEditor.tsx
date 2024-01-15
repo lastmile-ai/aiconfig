@@ -104,7 +104,7 @@ export type AIConfigCallbacks = {
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
-  logEvent?: (event: LogEvent, data?: LogEventData) => void;
+  logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
   runPrompt: (
     promptName: string,
     onStream: RunPromptStreamCallback,
@@ -174,7 +174,7 @@ export default function EditorContainer({
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
 
-  const logEventCallback = callbacks.logEvent;
+  const logEventHandler = callbacks.logEventHandler;
 
   const saveCallback = callbacks.save;
   const onSave = useCallback(async () => {
@@ -524,7 +524,7 @@ export default function EditorContainer({
       };
 
       dispatch(action);
-      logEventCallback?.("ADD_PROMPT", { model, promptIndex });
+      logEventHandler?.("ADD_PROMPT", { model, promptIndex });
 
       try {
         const serverConfigRes = await addPromptCallback(
@@ -546,7 +546,7 @@ export default function EditorContainer({
         });
       }
     },
-    [addPromptCallback, logEventCallback]
+    [addPromptCallback, logEventHandler]
   );
 
   const deletePromptCallback = callbacks.deletePrompt;
@@ -784,9 +784,9 @@ export default function EditorContainer({
   const contextValue = useMemo(
     () => ({
       getState,
-      logEvent: logEventCallback,
+      logEventHandler,
     }),
-    [getState, logEventCallback]
+    [getState, logEventHandler]
   );
 
   const isDirty = aiconfigState._ui.isDirty !== false;
@@ -896,7 +896,7 @@ export default function EditorContainer({
                 loading={isSaving}
                 onClick={() => {
                   onSave();
-                  logEventCallback?.("SAVE_BUTTON_CLICKED");
+                  logEventHandler?.("SAVE_BUTTON_CLICKED");
                 }}
                 disabled={!isDirty}
                 size="xs"
