@@ -646,15 +646,9 @@ export default function EditorContainer({
               });
             } else if (event.type === "aiconfig_chunk") {
               dispatch({
-                type: "CONSOLIDATE_AICONFIG",
-                action: {
-                  type: "STREAM_AICONFIG_CHUNK",
-                  id: promptId,
-                  cancellationToken,
-                  // Keep the prompt running state until the end of streaming
-                  isRunning: true,
-                },
+                type: "STREAM_AICONFIG_CHUNK",
                 config: event.data,
+                cancellationToken,
               });
             } else if (event.type === "stop_streaming") {
               // Pass this event at the end of streaming to signal
