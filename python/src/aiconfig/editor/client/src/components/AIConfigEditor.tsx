@@ -604,14 +604,14 @@ export default function EditorContainer({
       dispatch({
         // This sets the isRunning and runningPromptId flags
         type: "RUN_PROMPT_START",
-        id: promptId,
+        promptId,
         cancellationToken,
       });
 
       const onPromptError = (message: string | null) => {
         dispatch({
           type: "RUN_PROMPT_ERROR",
-          id: promptId,
+          promptId,
           message: message ?? undefined,
         });
 
@@ -642,22 +642,21 @@ export default function EditorContainer({
             if (event.type === "output_chunk") {
               dispatch({
                 type: "STREAM_OUTPUT_CHUNK",
-                id: promptId,
+                promptId,
                 output: event.data,
               });
             } else if (event.type === "aiconfig_chunk") {
               dispatch({
                 type: "STREAM_AICONFIG_CHUNK",
                 config: event.data,
-                cancellationToken,
               });
             } else if (event.type === "stop_streaming") {
               // Pass this event at the end of streaming to signal
               // that the prompt is done running and we're ready
               // to reset the ClientAIConfig to a non-running state
               dispatch({
-                type: "STOP_STREAMING",
-                id: promptId,
+                type: "RUN_PROMPT_SUCCESS",
+                promptId,
               });
             }
           },
@@ -671,8 +670,7 @@ export default function EditorContainer({
                 // Reset the aiconfig to the state before we started running the prompt
                 dispatch({
                   type: "RUN_PROMPT_CANCEL",
-                  id: promptId,
-                  cancellationToken,
+                  promptId,
                   // Returned config output is reset to before running RUN_PROMPT
                   config: event.data.data,
                 });
@@ -700,7 +698,7 @@ export default function EditorContainer({
         if (serverConfigResponse?.aiconfig) {
           dispatch({
             type: "RUN_PROMPT_SUCCESS",
-            id: promptId,
+            promptId,
             config: serverConfigResponse.aiconfig,
           });
         }
