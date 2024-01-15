@@ -72,11 +72,22 @@ export type SchemaVersion =
   | "v1"
   | "latest";
 
+/**
+ * This represents the input data that is storied as a string, but we use
+ * both the `kind` field here and the `mime_type` to convert
+ * the string into the input format we want.
+ */
+type AttachmentDataWithStringValue = {
+  kind: "file_uri" | "base64";
+  value: string;
+};
+
+
 export type Attachment = {
   /**
    * The data representing the attachment
    */
-  data: JSONValue;
+  data: JSONValue | AttachmentDataWithStringValue;
 
   /**
    * The MIME type of the result. If not specified, the MIME type will be
