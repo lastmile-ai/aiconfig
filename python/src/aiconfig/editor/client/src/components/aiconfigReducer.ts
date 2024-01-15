@@ -14,6 +14,7 @@ export type MutateAIConfigAction =
   | DeletePromptAction
   | RunPromptAction
   | RunPromptCancelAction
+  | RunPromptSuccessAction
   | SetDescriptionAction
   | SetNameAction
   | StreamAIConfigChunkAction
@@ -71,6 +72,12 @@ export type RunPromptErrorAction = {
   type: "RUN_PROMPT_ERROR";
   id: string;
   message?: string;
+};
+
+export type RunPromptSuccessAction = {
+  type: "RUN_PROMPT_SUCCESS";
+  id: string;
+  config: AIConfig;
 };
 
 export type SaveConfigSuccessAction = {
@@ -368,6 +375,39 @@ export default function aiconfigReducer(
           },
         ],
       }));
+    }
+    case "RUN_PROMPT_SUCCESS": {
+      const dirtyStateWithoutRunningPromptId = {
+        ...state,
+        _ui: {
+          ...state._ui,
+          runningPromptId: undefined,
+        },
+      };
+
+      // TODO: We'll have to update potentially all outputs when we support
+      // run_with_dependencies, because other prompt outputs may have been
+      // updated during this time
+      const replaceOutput = (statePrompt: ClientPrompt) => {
+        const responsePrompt = action.config.prompts.find(
+          (resPrompt) => resPrompt.name === statePrompt.name
+        );
+        return {
+          ...statePrompt,
+          outputs: responsePrompt?.outputs,
+          _ui: {
+            ...statePrompt._ui,
+            isRunning: false,
+            cancellationToken: undefined,
+          },
+        } as ClientPrompt;
+      };
+
+      return reduceReplacePrompt(
+        dirtyStateWithoutRunningPromptId,
+        action.id,
+        replaceOutput
+      );
     }
     case "SAVE_CONFIG_SUCCESS": {
       return {
