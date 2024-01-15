@@ -61,7 +61,7 @@ export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
 
   return (
     <Menu
-      position="bottom-start"
+      position="bottom"
       // Manually maintain open state to support ... expand button
       closeOnItemClick={false}
       opened={isOpen}
@@ -69,7 +69,7 @@ export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
     >
       <Menu.Target>
         <Tooltip label="Add prompt">
-          <ActionIcon>
+          <ActionIcon w="100%">
             <IconPlus size={20} />
           </ActionIcon>
         </Tooltip>
