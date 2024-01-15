@@ -204,13 +204,16 @@ export default function Editor() {
     return await ufetch.get(ROUTE_TABLE.SERVER_STATUS);
   }, []);
 
-  const logEvent = useCallback((event: LogEvent, data?: LogEventData) => {
-    try {
-      datadogLogs.logger.info(event, data);
-    } catch (e) {
-      // Ignore logger errors for now
-    }
-  }, []);
+  const logEventHandler = useCallback(
+    (event: LogEvent, data?: LogEventData) => {
+      try {
+        datadogLogs.logger.info(event, data);
+      } catch (e) {
+        // Ignore logger errors for now
+      }
+    },
+    []
+  );
 
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
@@ -220,7 +223,7 @@ export default function Editor() {
       deletePrompt,
       getModels,
       getServerStatus,
-      logEvent,
+      logEventHandler,
       runPrompt,
       save,
       setConfigDescription,
@@ -236,7 +239,7 @@ export default function Editor() {
       deletePrompt,
       getModels,
       getServerStatus,
-      logEvent,
+      logEventHandler,
       runPrompt,
       save,
       setConfigDescription,
