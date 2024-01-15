@@ -1,149 +1,10 @@
+import { AIConfig } from "aiconfig";
 import { ClientAIConfig, ClientPrompt } from "../shared/types";
 import { getPromptModelName } from "../utils/promptUtils";
-import { AIConfig, JSONObject, Output, PromptInput } from "aiconfig";
-
-export type AIConfigReducerAction =
-  | MutateAIConfigAction
-  | ConsolidateAIConfigAction
-  | RunPromptErrorAction
-  | SaveConfigSuccessAction;
-
-export type MutateAIConfigAction =
-  | AddPromptAction
-  | ClearOutputsAction
-  | DeletePromptAction
-  | RunPromptStartAction
-  | RunPromptCancelAction
-  | RunPromptSuccessAction
-  | SetDescriptionAction
-  | SetNameAction
-  | StreamAIConfigChunkAction
-  | StreamOutputChunkAction
-  | StopStreamingAction
-  | UpdatePromptInputAction
-  | UpdatePromptNameAction
-  | UpdatePromptModelAction
-  | UpdatePromptModelSettingsAction
-  | UpdatePromptParametersAction
-  | UpdateGlobalParametersAction;
-
-// Actions that appear when called via ConsolidateAIConfigAction
-export type ConsolidateAIConfigSubAction =
-  | AddPromptAction
-  | UpdatePromptInputAction;
-
-export type ConsolidateAIConfigAction = {
-  type: "CONSOLIDATE_AICONFIG";
-  action: ConsolidateAIConfigSubAction;
-  config: AIConfig;
-};
-
-export type AddPromptAction = {
-  type: "ADD_PROMPT_AT_INDEX";
-  index: number;
-  prompt: ClientPrompt;
-};
-
-export type ClearOutputsAction = {
-  type: "CLEAR_OUTPUTS";
-};
-
-export type DeletePromptAction = {
-  type: "DELETE_PROMPT";
-  id: string;
-};
-
-export type RunPromptStartAction = {
-  type: "RUN_PROMPT_START";
-  id: string;
-  cancellationToken?: string;
-  isRunning?: boolean;
-};
-
-export type RunPromptCancelAction = {
-  type: "RUN_PROMPT_CANCEL";
-  id: string;
-  config: AIConfig;
-  cancellationToken?: string;
-};
-
-export type RunPromptErrorAction = {
-  type: "RUN_PROMPT_ERROR";
-  id: string;
-  message?: string;
-};
-
-export type RunPromptSuccessAction = {
-  type: "RUN_PROMPT_SUCCESS";
-  id: string;
-  config: AIConfig;
-};
-
-export type SaveConfigSuccessAction = {
-  type: "SAVE_CONFIG_SUCCESS";
-};
-
-export type SetDescriptionAction = {
-  type: "SET_DESCRIPTION";
-  description: string;
-};
-
-export type SetNameAction = {
-  type: "SET_NAME";
-  name: string;
-};
-
-export type StreamAIConfigChunkAction = {
-  type: "STREAM_AICONFIG_CHUNK";
-  config: AIConfig;
-  cancellationToken?: string;
-};
-
-export type StreamOutputChunkAction = {
-  type: "STREAM_OUTPUT_CHUNK";
-  id: string;
-  output: Output;
-};
-
-export type StopStreamingAction = {
-  type: "STOP_STREAMING";
-  id: string;
-};
-
-export type UpdatePromptInputAction = {
-  type: "UPDATE_PROMPT_INPUT";
-  id: string;
-  input: PromptInput;
-};
-
-export type UpdatePromptNameAction = {
-  type: "UPDATE_PROMPT_NAME";
-  id: string;
-  name: string;
-};
-
-export type UpdatePromptModelAction = {
-  type: "UPDATE_PROMPT_MODEL";
-  id: string;
-  modelName?: string;
-};
-
-export type UpdatePromptModelSettingsAction = {
-  type: "UPDATE_PROMPT_MODEL_SETTINGS";
-  id: string;
-  modelSettings: JSONObject;
-};
-
-export type UpdatePromptParametersAction = {
-  type: "UPDATE_PROMPT_PARAMETERS";
-  id: string;
-  parameters: JSONObject;
-};
-
-export type UpdateGlobalParametersAction = {
-  type: "UPDATE_GLOBAL_PARAMETERS";
-  parameters: JSONObject;
-};
+import type {
+  AIConfigReducerAction,
+  ConsolidateAIConfigSubAction,
+} from "./actions";
 
 function reduceReplacePrompt(
   state: ClientAIConfig,
@@ -156,17 +17,6 @@ function reduceReplacePrompt(
       prompt._ui.id === id ? replacerFn(prompt) : prompt
     ),
   };
-}
-
-function reduceReplaceInput(
-  state: ClientAIConfig,
-  id: string,
-  replacerFn: (input: PromptInput) => PromptInput
-): ClientAIConfig {
-  return reduceReplacePrompt(state, id, (prompt) => ({
-    ...prompt,
-    input: replacerFn(prompt.input),
-  }));
 }
 
 function reduceInsertPromptAtIndex(
@@ -442,7 +292,10 @@ export default function aiconfigReducer(
       );
     }
     case "UPDATE_PROMPT_INPUT": {
-      return reduceReplaceInput(dirtyState, action.id, () => action.input);
+      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
+        ...prompt,
+        input: action.input,
+      }));
     }
     case "UPDATE_PROMPT_NAME": {
       // Validate that no prompt has a name that conflicts with this one:
