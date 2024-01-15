@@ -669,8 +669,10 @@ export default function EditorContainer({
                 // This is a cancellation
                 // Reset the aiconfig to the state before we started running the prompt
                 dispatch({
-                  type: "CONSOLIDATE_AICONFIG",
-                  action,
+                  type: "RUN_PROMPT_CANCEL",
+                  id: promptId,
+                  cancellationToken,
+                  // Returned config output is reset to before running RUN_PROMPT
                   config: event.data.data,
                 });
 
