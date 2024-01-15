@@ -1289,17 +1289,17 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@datadog/browser-core@5.6.0":
-  version "5.6.0"
-  resolved "https://registry.yarnpkg.com/@datadog/browser-core/-/browser-core-5.6.0.tgz#f7a0d809afede4520bb4786886b4648c0e1b890d"
-  integrity sha512-z6CvlJyEFbYNw2ZawY9fDHQjdl71yp0OcchvB/S4SGKdQVLPUd48Y528gv132VDnY2g0UipE9JK59wnAamyS9w==
+"@datadog/browser-core@5.7.0":
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/@datadog/browser-core/-/browser-core-5.7.0.tgz#ae8cd791626e928a82dfdfb3ccea88778323ddb8"
+  integrity sha512-rNUe3s5XD+9UUe/muYuh/UJzb0YXTRwSP1VevMRZmEpNgkBhurWjqjm3LQphYXMYsmQIgvqDPWm05Z+jOxTzRw==
 
-"@datadog/browser-logs@^5.6.0":
-  version "5.6.0"
-  resolved "https://registry.yarnpkg.com/@datadog/browser-logs/-/browser-logs-5.6.0.tgz#2b4b62d87a315560e87d46f84504012f7b7bdecd"
-  integrity sha512-NyqkG+UfAgz86CbEbSrAlDR5GvjJHAUwaI38xo9JR+9O5KJkwMgRnvQBtmdmpjjm723yyWeDcTd+ZIdvgIP61g==
+"@datadog/browser-logs@^5.7.0":
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/@datadog/browser-logs/-/browser-logs-5.7.0.tgz#6ae1cc4e1ec6634af9f52cf969da14400a4c3dec"
+  integrity sha512-pep6LkM2mBq+q3HEO72/qCIDImWKo+PuO3nHQLC2Ew+H5A1qWReWV6MfFQ5k3J9z0QR/nPhEewN7kaC1i0OvUg==
   dependencies:
-    "@datadog/browser-core" "5.6.0"
+    "@datadog/browser-core" "5.7.0"
 
 "@emotion/babel-plugin@^11.11.0":
   version "11.11.0"
@@ -3167,7 +3167,7 @@ agentkeepalive@^4.2.1:
     humanize-ms "^1.2.1"
 
 aiconfig@../../../../../typescript:
-  version "1.1.3"
+  version "1.1.5"
   dependencies:
     "@google-ai/generativelanguage" "^1.1.0"
     "@huggingface/inference" "^2.6.4"
