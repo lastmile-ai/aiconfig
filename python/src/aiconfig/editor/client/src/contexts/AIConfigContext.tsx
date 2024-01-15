@@ -7,7 +7,7 @@ import { ClientAIConfig, LogEvent, LogEventData } from "../shared/types";
  */
 const AIConfigContext = createContext<{
   getState: () => ClientAIConfig;
-  logEvent?: (event: LogEvent, data?: LogEventData) => void;
+  logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
   readOnly?: boolean;
 }>({
   getState: () => ({ prompts: [], _ui: { isDirty: false } }),
