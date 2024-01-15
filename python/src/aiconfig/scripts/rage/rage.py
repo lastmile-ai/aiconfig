@@ -94,10 +94,10 @@ def _create_issue_draft() -> Result[None, str]:
         * With markdown
         * Cool, huh?
 
-        [TODO: detailed description]
-        [TODO: steps to reproduce (what were you doing, what did you expect to happen, what happened instead?)]
-        [TODO: server log contents ({server_log_str})]
-        [TODO: aiconfig log contents ({aiconfig_log_str})]]
+        [add detailed description here]
+        [provide steps to reproduce (what were you doing, what did you expect to happen, what happened instead?)]
+        [paste server log contents ({server_log_str})]
+        [paste aiconfig log contents ({aiconfig_log_str})]]
 
         =====================
         OS: {platform.system()} {platform.release()}
