@@ -1,6 +1,7 @@
 import { Button, Flex, Loader, Tooltip } from "@mantine/core";
 import { IconPlayerPlayFilled, IconPlayerStop } from "@tabler/icons-react";
-import { memo } from "react";
+import { memo, useCallback, useContext, useMemo } from "react";
+import AIConfigContext from "../../contexts/AIConfigContext";
 
 type Props = {
   cancel: () => Promise<void>;
@@ -15,39 +16,49 @@ export default memo(function RunPromptButton({
   isRunning = false,
   disabled = false,
 }: Props) {
-  const onClick = async () => {
+  const { readOnly } = useContext(AIConfigContext);
+  const disabledOrReadOnly = disabled || readOnly;
+
+  const onClick = useCallback(async () => {
     if (isRunning) {
       return await cancel();
     } else {
       return await runPrompt();
     }
-  };
-  const button = (
-    <Button
-      onClick={onClick}
-      disabled={disabled}
-      p="xs"
-      size="xs"
-      className="runPromptButton"
-    >
-      {isRunning ? (
-        <Flex align="center" justify="center">
-          <Loader style={{ position: "absolute" }} size="xs" color="white" />
-          <IconPlayerStop fill="white" size={14} />
-        </Flex>
-      ) : (
-        <>
-          <IconPlayerPlayFilled size="16" />
-        </>
-      )}
-    </Button>
-  );
+  }, [cancel, runPrompt, isRunning]);
 
-  return !disabled ? (
-    button
-  ) : (
-    <Tooltip label="Can't run while another prompt is running" withArrow>
-      <div>{button}</div>
-    </Tooltip>
-  );
+  const button = useMemo(() => {
+    return (
+      <Button
+        onClick={onClick}
+        disabled={disabledOrReadOnly}
+        p="xs"
+        size="xs"
+        className="runPromptButton"
+      >
+        {isRunning ? (
+          <Flex align="center" justify="center">
+            <Loader style={{ position: "absolute" }} size="xs" color="white" />
+            <IconPlayerStop fill="white" size={14} />
+          </Flex>
+        ) : (
+          <>
+            <IconPlayerPlayFilled size="16" />
+          </>
+        )}
+      </Button>
+    );
+  }, [disabledOrReadOnly, onClick, isRunning]);
+
+  const disabledButton = useMemo(() => {
+    return readOnly ? (
+      button
+    ) : (
+      <Tooltip label={"Can't run while another prompt is running"} withArrow>
+        <div>{button}</div>
+      </Tooltip>
+    );
+  }, [button, readOnly]);
+
+  return disabledOrReadOnly ? disabledButton : button;
 });

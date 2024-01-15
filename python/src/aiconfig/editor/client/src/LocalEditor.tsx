@@ -13,7 +13,11 @@ import { streamingApiChain } from "./utils/oboeHelpers";
 import { datadogLogs } from "@datadog/browser-logs";
 import { LogEvent, LogEventData } from "./shared/types";
 
-export default function Editor() {
+type Props = {
+  readOnly?: boolean;
+};
+
+export default function Editor({ readOnly = false }: Props) {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
 
   const loadConfig = useCallback(async () => {
@@ -433,7 +437,11 @@ export default function Editor() {
             <Loader size="xl" />
           </Flex>
         ) : (
-          <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} />
+          <AIConfigEditor
+            aiconfig={aiconfig}
+            callbacks={callbacks}
+            readOnly={readOnly}
+          />
         )}
       </MantineProvider>
     </div>
