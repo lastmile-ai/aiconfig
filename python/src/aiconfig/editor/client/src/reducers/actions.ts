@@ -24,12 +24,11 @@ export type MutateAIConfigAction =
 // Action that can occur when user runs a prompt
 export type RunPromptAction =
   | RunPromptStartAction
-  | RunPromptCancelAction
-  | RunPromptErrorAction
-  | RunPromptSuccessAction
   | StreamAIConfigChunkAction
   | StreamOutputChunkAction
-  | StopStreamingAction;
+  | RunPromptCancelAction
+  | RunPromptErrorAction
+  | RunPromptSuccessAction;
 
 // Actions that appear when called via ConsolidateAIConfigAction
 export type ConsolidateAIConfigSubAction =
@@ -106,45 +105,38 @@ export type UpdateGlobalParametersAction = {
 // Run Prompt Actions
 export type RunPromptStartAction = {
   type: "RUN_PROMPT_START";
-  id: string;
-  cancellationToken?: string;
+  promptId: string;
   isRunning?: boolean;
+  cancellationToken?: string;
 };
 
 export type RunPromptCancelAction = {
   type: "RUN_PROMPT_CANCEL";
-  id: string;
+  promptId: string;
   config: AIConfig;
-  cancellationToken?: string;
 };
 
 export type RunPromptErrorAction = {
   type: "RUN_PROMPT_ERROR";
-  id: string;
+  promptId: string;
   message?: string;
 };
 
 export type RunPromptSuccessAction = {
   type: "RUN_PROMPT_SUCCESS";
-  id: string;
-  config: AIConfig;
+  promptId: string;
+  config?: AIConfig;
 };
 
 export type StreamAIConfigChunkAction = {
   type: "STREAM_AICONFIG_CHUNK";
   config: AIConfig;
-  cancellationToken?: string;
 };
 
 export type StreamOutputChunkAction = {
   type: "STREAM_OUTPUT_CHUNK";
-  id: string;
+  promptId: string;
   output: Output;
-};
-
-export type StopStreamingAction = {
-  type: "STOP_STREAMING";
-  id: string;
 };
 
 // Save Action --> In future, probably group this with other non-mutate
