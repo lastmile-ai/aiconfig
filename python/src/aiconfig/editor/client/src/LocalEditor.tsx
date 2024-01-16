@@ -31,34 +31,6 @@ export default function Editor() {
     loadConfig();
   }, [loadConfig]);
 
-  const setupTelemetryIfAllowed = useCallback(async () => {
-    const isDev = (process.env.NODE_ENV ?? "development") === "development";
-
-    // Don't enable telemetry in dev mode because hot reload will spam the logs.
-    if (isDev) {
-      return;
-    }
-
-    const res = await ufetch.get(ROUTE_TABLE.GET_AICONFIGRC, {});
-
-    const enableTelemetry = res.allow_usage_data_sharing;
-
-    if (enableTelemetry) {
-      datadogLogs.init({
-        clientToken: "pub356987caf022337989e492681d1944a8",
-        env: process.env.NODE_ENV ?? "development",
-        service: "aiconfig-editor",
-        site: "us5.datadoghq.com",
-        forwardErrorsToLogs: true,
-        sessionSampleRate: 100,
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    setupTelemetryIfAllowed();
-  }, [setupTelemetryIfAllowed]);
-
   const save = useCallback(async (aiconfig: AIConfig) => {
     const res = await ufetch.post(ROUTE_TABLE.SAVE, {
       // path: file path,
@@ -442,7 +414,7 @@ export default function Editor() {
             <Loader size="xl" />
           </Flex>
         ) : (
-          <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} />
+          <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} platform="Local Editor"/>
         )}
       </MantineProvider>
     </div>
