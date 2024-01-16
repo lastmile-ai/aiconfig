@@ -11,7 +11,7 @@ import useLoadModels from "../../hooks/useLoadModels";
 
 type Props = {
   addPrompt: (prompt: string) => void;
-  getModels: (search: string) => Promise<string[]>;
+  getModels?: (search: string) => Promise<string[]>;
 };
 
 function ModelMenuItems({
