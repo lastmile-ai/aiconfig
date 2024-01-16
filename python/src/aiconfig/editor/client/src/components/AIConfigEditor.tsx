@@ -61,11 +61,15 @@ import {
 } from "../utils/promptUtils";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
+import { ufetch } from "ufetch";
+import { ROUTE_TABLE } from "../utils/api";
+import { datadogLogs } from "@datadog/browser-logs";
 
 type Props = {
   aiconfig: AIConfig;
   callbacks?: AIConfigCallbacks;
   readOnly?: boolean;
+  mode: string
 };
 
 export type RunPromptStreamEvent =
@@ -168,6 +172,7 @@ export default function EditorContainer({
   aiconfig: initialAIConfig,
   callbacks,
   readOnly = false,
+  mode
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
@@ -178,6 +183,39 @@ export default function EditorContainer({
 
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
+
+  // Setup Datadog Logging Here. This was copy pasted from LocalEditor where it was
+  const setupTelemetryIfAllowed = useCallback(async () => {
+    const isDev = (process.env.NODE_ENV ?? "development") === "development";
+    // Don't enable telemetry in dev mode because hot reload will spam the logs.
+    if (isDev) {
+      return;
+    }
+
+    const res = await ufetch.get(ROUTE_TABLE.GET_AICONFIGRC, {});
+
+    const enableTelemetry = res.allow_usage_data_sharing;
+
+    if (enableTelemetry) {
+      datadogLogs.init({
+        clientToken: "pub356987caf022337989e492681d1944a8",
+        env: process.env.NODE_ENV ?? "development",
+        service: "aiconfig-editor",
+        site: "us5.datadoghq.com",
+        forwardErrorsToLogs: true,
+        sessionSampleRate: 100,
+      });
+
+      // Propogate Mode to all logs inside LogEventHandler
+      datadogLogs.setGlobalContext({ mode })
+
+    }
+  }, []);
+
+  useEffect(() => {
+    setupTelemetryIfAllowed();
+  }, [setupTelemetryIfAllowed]);
+  
 
   const logEventHandler = callbacks?.logEventHandler;
 
