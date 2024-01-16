@@ -878,32 +878,37 @@ export default function EditorContainer({
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
           <Group>
-            <Button
-              loading={undefined}
-              onClick={onClearOutputs}
-              size="xs"
-              variant="gradient"
-            >
-              Clear Outputs
-            </Button>
-
-            <Tooltip
-              label={isDirty ? "Save changes to config" : "No unsaved changes"}
-            >
+            {!readOnly && (
               <Button
-                leftIcon={<IconDeviceFloppy />}
-                loading={isSaving}
-                onClick={() => {
-                  onSave();
-                  logEventHandler?.("SAVE_BUTTON_CLICKED");
-                }}
-                disabled={!isDirty}
+                loading={undefined}
+                onClick={onClearOutputs}
                 size="xs"
                 variant="gradient"
               >
-                Save
+                Clear Outputs
               </Button>
-            </Tooltip>
+            )}
+            {!readOnly && (
+              <Tooltip
+                label={
+                  isDirty ? "Save changes to config" : "No unsaved changes"
+                }
+              >
+                <Button
+                  leftIcon={<IconDeviceFloppy />}
+                  loading={isSaving}
+                  onClick={() => {
+                    onSave();
+                    logEventHandler?.("SAVE_BUTTON_CLICKED");
+                  }}
+                  disabled={!isDirty}
+                  size="xs"
+                  variant="gradient"
+                >
+                  Save
+                </Button>
+              </Tooltip>
+            )}
           </Group>
         </Flex>
         <ConfigNameDescription
