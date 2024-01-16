@@ -169,11 +169,11 @@ The AIConfig Editor is highly customizable and allows for custom models to be in
 
 ## Telemetry {#telemetry}
 
-AIConfig Editor collects telemetry data, which helpsd us understand how to improve the product. The telemetry helps us debug issues and prioritize new features.
+AIConfig Editor collects telemetry data, which helps us understand how to improve the product. The telemetry helps us debug issues and prioritize new features.
 
 **Disabling telemetry**
 
-If you don't want to send any telemetry back to us to help the team build a better product, you can set `allow_usage_data_sharing` to `false` in the `.aiconfigrc` configuration file.
+If you don't want to send any telemetry back to us to help the team build a better product, you can set `allow_usage_data_sharing` to `false` in the `$HOME/.aiconfigrc` configuration file.
 
 ## More Resources
 
