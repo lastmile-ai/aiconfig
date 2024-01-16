@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
-import { CatScratchEditorProvider } from "./aiConfigEditor";
+import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { HelloWorldPanel } from "./panels/HelloWorldPanel";
 
 // This method is called when your extension is activated
@@ -37,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Register our custom editor providers
-  context.subscriptions.push(CatScratchEditorProvider.register(context));
+  context.subscriptions.push(AIConfigEditorProvider.register(context));
 
   context.subscriptions.push(disposable);
   context.subscriptions.push(cmd);

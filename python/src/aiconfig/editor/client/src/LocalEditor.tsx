@@ -626,11 +626,7 @@ export default function Editor() {
 
   return (
     <div className="editorBackground">
-      <MantineProvider
-        withGlobalStyles
-        withNormalizeCSS
-        theme={localEditorTheme}
-      >
+      <MantineProvider withGlobalStyles withNormalizeCSS theme={gradioTheme}>
         {!aiconfig ? (
           <Flex justify="center" mt="xl">
             <Loader size="xl" />

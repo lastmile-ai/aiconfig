@@ -16,13 +16,11 @@ import * as fs from "fs";
  * - Loading scripts and styles in a custom editor.
  * - Synchronizing changes between a text document and a custom editor.
  */
-export class CatScratchEditorProvider
-  implements vscode.CustomTextEditorProvider
-{
+export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
   public static register(context: vscode.ExtensionContext): vscode.Disposable {
-    const provider = new CatScratchEditorProvider(context);
+    const provider = new AIConfigEditorProvider(context);
     const providerRegistration = vscode.window.registerCustomEditorProvider(
-      CatScratchEditorProvider.viewType,
+      AIConfigEditorProvider.viewType,
       provider
     );
     return providerRegistration;
@@ -263,9 +261,9 @@ export class CatScratchEditorProvider
   private addNewScratch(document: vscode.TextDocument) {
     const json = this.getDocumentAsJson(document);
     const character =
-      CatScratchEditorProvider.scratchCharacters[
+      AIConfigEditorProvider.scratchCharacters[
         Math.floor(
-          Math.random() * CatScratchEditorProvider.scratchCharacters.length
+          Math.random() * AIConfigEditorProvider.scratchCharacters.length
         )
       ];
     json.scratches = [
