@@ -47,10 +47,10 @@ import {
 } from "../utils/aiconfigStateUtils";
 import { debounce, uniqueId } from "lodash";
 import PromptMenuButton from "./prompt/PromptMenuButton";
-import GlobalParametersContainer from "./GlobalParametersContainer";
+import GlobalParametersContainer from "./global/GlobalParametersContainer";
 import AIConfigContext from "../contexts/AIConfigContext";
-import ClearOutputsButton from "./ClearOutputsButton";
-import ConfigNameDescription from "./ConfigNameDescription";
+import ClearOutputsButton from "./global/ClearOutputsButton";
+import ConfigNameDescription from "./global/ConfigNameDescription";
 import {
   AUTOSAVE_INTERVAL_MS,
   DEBOUNCE_MS,

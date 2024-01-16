@@ -1,7 +1,7 @@
 import { Container, Accordion, Text } from "@mantine/core";
 import { JSONObject } from "aiconfig";
 import { memo, useState } from "react";
-import ParametersRenderer from "./ParametersRenderer";
+import ParametersRenderer from "../ParametersRenderer";
 
 type Props = {
   initialValue: JSONObject;
