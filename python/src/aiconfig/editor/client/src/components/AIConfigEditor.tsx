@@ -911,12 +911,14 @@ export default function EditorContainer({
         onUpdateParameters={onUpdateGlobalParameters}
       />
       <Container maw="80rem" className={classes.promptsContainer}>
-        <div className={classes.addPromptRow}>
-          <AddPromptButton
-            getModels={callbacks.getModels}
-            addPrompt={(model: string) => onAddPrompt(0, model)}
-          />
-        </div>
+        {!readOnly && (
+          <div className={classes.addPromptRow}>
+            <AddPromptButton
+              getModels={callbacks.getModels}
+              addPrompt={(model: string) => onAddPrompt(0, model)}
+            />
+          </div>
+        )}
         {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
           const isAnotherPromptRunning =
             runningPromptId !== undefined && runningPromptId !== prompt._ui.id;
@@ -941,17 +943,19 @@ export default function EditorContainer({
                   isRunButtonDisabled={isAnotherPromptRunning}
                 />
               </Flex>
-              <div className={classes.addPromptRow}>
-                <AddPromptButton
-                  getModels={callbacks.getModels}
-                  addPrompt={(model: string) =>
-                    onAddPrompt(
-                      i + 1 /* insert below current prompt index */,
-                      model
-                    )
-                  }
-                />
-              </div>
+              {!readOnly && (
+                <div className={classes.addPromptRow}>
+                  <AddPromptButton
+                    getModels={callbacks.getModels}
+                    addPrompt={(model: string) =>
+                      onAddPrompt(
+                        i + 1 /* insert below current prompt index */,
+                        model
+                      )
+                    }
+                  />
+                </div>
+              )}
             </Stack>
           );
         })}
