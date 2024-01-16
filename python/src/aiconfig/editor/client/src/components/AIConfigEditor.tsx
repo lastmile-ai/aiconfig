@@ -679,6 +679,8 @@ export default function EditorContainer({
       });
 
       const onPromptError = (message: string | null) => {
+        logEventHandler?.("RUN_PROMPT_ERROR");
+
         dispatch({
           type: "RUN_PROMPT_ERROR",
           promptId,
@@ -721,6 +723,7 @@ export default function EditorContainer({
                 config: event.data,
               });
             } else if (event.type === "stop_streaming") {
+              logEventHandler?.("RUN_PROMPT_SUCCESS");
               // Pass this event at the end of streaming to signal
               // that the prompt is done running and we're ready
               // to reset the ClientAIConfig to a non-running state
