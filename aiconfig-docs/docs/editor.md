@@ -19,6 +19,7 @@ This guide covers the core features of AIConfig Editor and demonstrates how to:
 - [Chain prompts](#chain-prompts)
 - [Create prompt templates](#prompt-templates)
 - [Add custom model parsers](#custom-model-parsers)
+- [Telemetry](#telemetry)
 - [FAQ](#faq)
 
 Want to get started quickly? Check out our [Getting Started Tutorial](./getting-started).
@@ -165,6 +166,14 @@ The AIConfig Editor is highly customizable and allows for custom models to be in
 - audio-to-text
 - text-summarization
 - and much more!
+
+## Telemetry {#telemetry}
+
+AIConfig Editor collects telemetry data, which helpsd us understand how to improve the product. The telemetry helps us debug issues and prioritize new features.
+
+**Disabling telemetry**
+
+If you don't want to send any telemetry back to us to help the team build a better product, you can set `allow_usage_data_sharing` to `false` in the `.aiconfigrc` configuration file.
 
 ## More Resources
 
