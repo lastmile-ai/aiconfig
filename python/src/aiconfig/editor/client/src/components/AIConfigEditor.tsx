@@ -878,15 +878,16 @@ export default function EditorContainer({
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
           <Group>
-            <Button
-              loading={undefined}
-              onClick={onClearOutputs}
-              size="xs"
-              variant="gradient"
-            >
-              Clear Outputs
-            </Button>
-
+            {!readOnly && (
+              <Button
+                loading={undefined}
+                onClick={onClearOutputs}
+                size="xs"
+                variant="gradient"
+              >
+                Clear Outputs
+              </Button>
+            )}
             <Tooltip
               label={isDirty ? "Save changes to config" : "No unsaved changes"}
             >
