@@ -1,7 +1,7 @@
 import { Button } from "@mantine/core";
 import { memo, useContext } from "react";
 
-import AIConfigContext from "../contexts/AIConfigContext";
+import AIConfigContext from "../../contexts/AIConfigContext";
 
 type Props = {
   onClearOutputs: () => void;
