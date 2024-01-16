@@ -7,7 +7,7 @@ import { IconX } from "@tabler/icons-react";
 
 type Props = {
   prompt: Prompt;
-  getModels: (search: string) => Promise<string[]>;
+  getModels?: (search: string) => Promise<string[]>;
   onSetModel: (model?: string) => void;
   defaultConfigModelName?: string;
 };

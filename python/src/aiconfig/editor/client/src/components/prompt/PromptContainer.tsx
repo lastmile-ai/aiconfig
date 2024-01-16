@@ -12,8 +12,8 @@ import ModelSelector from "./ModelSelector";
 
 type Props = {
   prompt: ClientPrompt;
-  cancel: (cancellationToken: string) => Promise<void>;
-  getModels: (search: string) => Promise<string[]>;
+  cancel?: (cancellationToken: string) => Promise<void>;
+  getModels?: (search: string) => Promise<string[]>;
   onChangePromptInput: (
     promptId: string,
     newPromptInput: AIConfigPromptInput
@@ -74,6 +74,9 @@ export default memo(function PromptContainer({
   );
 
   const onCancelRun = useCallback(async () => {
+    if (!cancel) {
+      return;
+    }
     if (prompt._ui.cancellationToken) {
       return await cancel(prompt._ui.cancellationToken);
     } else {

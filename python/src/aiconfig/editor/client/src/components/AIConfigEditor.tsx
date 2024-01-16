@@ -64,7 +64,7 @@ import CopyButton from "./CopyButton";
 
 type Props = {
   aiconfig: AIConfig;
-  callbacks: AIConfigCallbacks;
+  callbacks?: AIConfigCallbacks;
   readOnly?: boolean;
 };
 
@@ -179,10 +179,13 @@ export default function EditorContainer({
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
 
-  const logEventHandler = callbacks.logEventHandler;
+  const logEventHandler = callbacks?.logEventHandler;
 
-  const saveCallback = callbacks.save;
+  const saveCallback = callbacks?.save;
   const onSave = useCallback(async () => {
+    if (!saveCallback) {
+      return;
+    }
     setIsSaving(true);
     try {
       await saveCallback(clientConfigToAIConfig(stateRef.current));
@@ -201,35 +204,42 @@ export default function EditorContainer({
     }
   }, [saveCallback]);
 
-  const updatePromptCallback = callbacks.updatePrompt;
-  const debouncedUpdatePrompt = useMemo(
-    () =>
-      debounce(
-        async (
-          promptName: string,
-          newPrompt: Prompt,
-          onSuccess: (aiconfigRes: AIConfig) => void,
-          onError: (err: unknown) => void
-        ) => {
-          try {
-            const serverConfigRes = await updatePromptCallback(
-              promptName,
-              newPrompt
-            );
-            if (serverConfigRes?.aiconfig) {
-              onSuccess(serverConfigRes.aiconfig);
-            }
-          } catch (err: unknown) {
-            onError(err);
+  const updatePromptCallback = callbacks?.updatePrompt;
+  const debouncedUpdatePrompt = useMemo(() => {
+    if (!updatePromptCallback) {
+      return;
+    }
+    return debounce(
+      async (
+        promptName: string,
+        newPrompt: Prompt,
+        onSuccess: (aiconfigRes: AIConfig) => void,
+        onError: (err: unknown) => void
+      ) => {
+        try {
+          const serverConfigRes = await updatePromptCallback(
+            promptName,
+            newPrompt
+          );
+          if (serverConfigRes?.aiconfig) {
+            onSuccess(serverConfigRes.aiconfig);
           }
-        },
-        DEBOUNCE_MS
-      ),
-    [updatePromptCallback]
-  );
+        } catch (err: unknown) {
+          onError(err);
+        }
+      },
+      DEBOUNCE_MS
+    );
+  }, [updatePromptCallback]);
 
   const onChangePromptInput = useCallback(
     async (promptId: string, newPromptInput: PromptInput) => {
+      if (!debouncedUpdatePrompt) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       const action: AIConfigReducerAction = {
         type: "UPDATE_PROMPT_INPUT",
         id: promptId,
@@ -277,6 +287,12 @@ export default function EditorContainer({
 
   const onChangePromptName = useCallback(
     async (promptId: string, newName: string) => {
+      if (!debouncedUpdatePrompt) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
@@ -317,31 +333,39 @@ export default function EditorContainer({
     [debouncedUpdatePrompt]
   );
 
-  const updateModelCallback = callbacks.updateModel;
-  const debouncedUpdateModel = useMemo(
-    () =>
-      debounce(
-        async (
-          value: {
-            modelName?: string;
-            settings?: InferenceSettings;
-            promptName?: string;
-          },
-          onError: (err: unknown) => void
-        ) => {
-          try {
-            await updateModelCallback(value);
-          } catch (err: unknown) {
-            onError(err);
-          }
+  const updateModelCallback = callbacks?.updateModel;
+  const debouncedUpdateModel = useMemo(() => {
+    if (!updateModelCallback) {
+      return;
+    }
+
+    return debounce(
+      async (
+        value: {
+          modelName?: string;
+          settings?: InferenceSettings;
+          promptName?: string;
         },
-        DEBOUNCE_MS
-      ),
-    [updateModelCallback]
-  );
+        onError: (err: unknown) => void
+      ) => {
+        try {
+          await updateModelCallback(value);
+        } catch (err: unknown) {
+          onError(err);
+        }
+      },
+      DEBOUNCE_MS
+    );
+  }, [updateModelCallback]);
 
   const onUpdatePromptModelSettings = useCallback(
     async (promptId: string, newModelSettings: JSONObject) => {
+      if (!debouncedUpdateModel) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "UPDATE_PROMPT_MODEL_SETTINGS",
         id: promptId,
@@ -386,6 +410,12 @@ export default function EditorContainer({
 
   const onUpdatePromptModel = useCallback(
     async (promptId: string, newModel?: string) => {
+      if (!debouncedUpdateModel) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "UPDATE_PROMPT_MODEL",
         id: promptId,
@@ -421,28 +451,36 @@ export default function EditorContainer({
     [dispatch, debouncedUpdateModel]
   );
 
-  const setParametersCallback = callbacks.setParameters;
-  const debouncedSetParameters = useMemo(
-    () =>
-      debounce(
-        async (
-          parameters: JSONObject,
-          promptName?: string,
-          onError?: (err: unknown) => void
-        ) => {
-          try {
-            await setParametersCallback(parameters, promptName);
-          } catch (err: unknown) {
-            onError?.(err);
-          }
-        },
-        DEBOUNCE_MS
-      ),
-    [setParametersCallback]
-  );
+  const setParametersCallback = callbacks?.setParameters;
+  const debouncedSetParameters = useMemo(() => {
+    if (!setParametersCallback) {
+      return;
+    }
+
+    return debounce(
+      async (
+        parameters: JSONObject,
+        promptName?: string,
+        onError?: (err: unknown) => void
+      ) => {
+        try {
+          await setParametersCallback(parameters, promptName);
+        } catch (err: unknown) {
+          onError?.(err);
+        }
+      },
+      DEBOUNCE_MS
+    );
+  }, [setParametersCallback]);
 
   const onUpdateGlobalParameters = useCallback(
     async (newParameters: JSONObject) => {
+      if (!debouncedSetParameters) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "UPDATE_GLOBAL_PARAMETERS",
         parameters: newParameters,
@@ -472,6 +510,12 @@ export default function EditorContainer({
 
   const onUpdatePromptParameters = useCallback(
     async (promptId: string, newParameters: JSONObject) => {
+      if (!debouncedSetParameters) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "UPDATE_PROMPT_PARAMETERS",
         id: promptId,
@@ -502,9 +546,15 @@ export default function EditorContainer({
     [debouncedSetParameters, dispatch]
   );
 
-  const addPromptCallback = callbacks.addPrompt;
+  const addPromptCallback = callbacks?.addPrompt;
   const onAddPrompt = useCallback(
     async (promptIndex: number, model: string) => {
+      if (!addPromptCallback) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       const promptName = getDefaultNewPromptName(
         stateRef.current as unknown as AIConfig
       );
@@ -554,9 +604,15 @@ export default function EditorContainer({
     [addPromptCallback, logEventHandler]
   );
 
-  const deletePromptCallback = callbacks.deletePrompt;
+  const deletePromptCallback = callbacks?.deletePrompt;
   const onDeletePrompt = useCallback(
     async (promptId: string) => {
+      if (!deletePromptCallback) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "DELETE_PROMPT",
         id: promptId,
@@ -580,8 +636,14 @@ export default function EditorContainer({
     [deletePromptCallback, dispatch]
   );
 
-  const clearOutputsCallback = callbacks.clearOutputs;
+  const clearOutputsCallback = callbacks?.clearOutputs;
   const onClearOutputs = useCallback(async () => {
+    if (!clearOutputsCallback) {
+      // Just no-op if no callback specified. We could technically perform
+      // client-side updates but that might be confusing
+      return;
+    }
+
     dispatch({
       type: "CLEAR_OUTPUTS",
     });
@@ -597,10 +659,16 @@ export default function EditorContainer({
     }
   }, [clearOutputsCallback, dispatch]);
 
-  const runPromptCallback = callbacks.runPrompt;
+  const runPromptCallback = callbacks?.runPrompt;
 
   const onRunPrompt = useCallback(
     async (promptId: string) => {
+      if (!runPromptCallback) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       const cancellationToken = uuidv4();
 
       dispatch({
@@ -712,21 +780,29 @@ export default function EditorContainer({
     [runPromptCallback]
   );
 
-  const setNameCallback = callbacks.setConfigName;
-  const debouncedSetName = useMemo(
-    () =>
-      debounce(async (name: string, onError: (err: unknown) => void) => {
-        try {
-          await setNameCallback(name);
-        } catch (err: unknown) {
-          onError(err);
-        }
-      }, DEBOUNCE_MS),
-    [setNameCallback]
-  );
+  const setNameCallback = callbacks?.setConfigName;
+  const debouncedSetName = useMemo(() => {
+    if (!setNameCallback) {
+      return;
+    }
+
+    return debounce(async (name: string, onError: (err: unknown) => void) => {
+      try {
+        await setNameCallback(name);
+      } catch (err: unknown) {
+        onError(err);
+      }
+    }, DEBOUNCE_MS);
+  }, [setNameCallback]);
 
   const onSetName = useCallback(
     async (name: string) => {
+      if (!debouncedSetName) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "SET_NAME",
         name,
@@ -744,21 +820,32 @@ export default function EditorContainer({
     [debouncedSetName]
   );
 
-  const setDescriptionCallback = callbacks.setConfigDescription;
-  const debouncedSetDescription = useMemo(
-    () =>
-      debounce(async (description: string, onError: (err: unknown) => void) => {
+  const setDescriptionCallback = callbacks?.setConfigDescription;
+  const debouncedSetDescription = useMemo(() => {
+    if (!setDescriptionCallback) {
+      return;
+    }
+
+    return debounce(
+      async (description: string, onError: (err: unknown) => void) => {
         try {
           await setDescriptionCallback(description);
         } catch (err: unknown) {
           onError(err);
         }
-      }, DEBOUNCE_MS),
-    [setDescriptionCallback]
-  );
+      },
+      DEBOUNCE_MS
+    );
+  }, [setDescriptionCallback]);
 
   const onSetDescription = useCallback(
     async (description: string) => {
+      if (!debouncedSetDescription) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "SET_DESCRIPTION",
         description,
@@ -823,7 +910,7 @@ export default function EditorContainer({
 
   // Server heartbeat, check every 3s to show error if server is down
   // Don't poll if server status is in an error state since it won't automatically recover
-  const getServerStatusCallback = callbacks.getServerStatus;
+  const getServerStatusCallback = callbacks?.getServerStatus;
   useEffect(() => {
     if (!getServerStatusCallback || serverStatus !== "OK") {
       return;
@@ -926,7 +1013,7 @@ export default function EditorContainer({
         {!readOnly && (
           <div className={classes.addPromptRow}>
             <AddPromptButton
-              getModels={callbacks.getModels}
+              getModels={callbacks?.getModels}
               addPrompt={(model: string) => onAddPrompt(0, model)}
             />
           </div>
@@ -943,10 +1030,10 @@ export default function EditorContainer({
                 />
                 <PromptContainer
                   prompt={prompt}
-                  getModels={callbacks.getModels}
+                  getModels={callbacks?.getModels}
                   onChangePromptInput={onChangePromptInput}
                   onChangePromptName={onChangePromptName}
-                  cancel={callbacks.cancel}
+                  cancel={callbacks?.cancel}
                   onRunPrompt={onRunPrompt}
                   onUpdateModel={onUpdatePromptModel}
                   onUpdateModelSettings={onUpdatePromptModelSettings}
@@ -958,7 +1045,7 @@ export default function EditorContainer({
               {!readOnly && (
                 <div className={classes.addPromptRow}>
                   <AddPromptButton
-                    getModels={callbacks.getModels}
+                    getModels={callbacks?.getModels}
                     addPrompt={(model: string) =>
                       onAddPrompt(
                         i + 1 /* insert below current prompt index */,

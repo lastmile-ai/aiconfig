@@ -3,12 +3,15 @@ import { showNotification } from "@mantine/notifications";
 
 export default function useLoadModels(
   modelSearch: string,
-  getModels: (search: string) => Promise<string[]>
+  getModels?: (search: string) => Promise<string[]>
 ) {
   const [models, setModels] = useState<string[]>([]);
 
   const loadModels = useCallback(
     async (modelSearch: string) => {
+      if (!getModels) {
+        return;
+      }
       try {
         const models = await getModels(modelSearch);
         setModels(models);
