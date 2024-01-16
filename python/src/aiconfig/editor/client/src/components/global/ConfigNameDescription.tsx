@@ -7,7 +7,8 @@ import {
   Title,
 } from "@mantine/core";
 import { useClickOutside } from "@mantine/hooks";
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useCallback, useContext, useRef, useState } from "react";
+import AIConfigContext from "../../contexts/AIConfigContext";
 
 type Props = {
   name?: string;
@@ -47,6 +48,7 @@ export default memo(function ConfigNameDescription({
   setDescription,
   setName,
 }: Props) {
+  const { readOnly } = useContext(AIConfigContext);
   const { classes } = useStyles();
 
   const [isEditing, setIsEditing] = useState(!name);
@@ -75,6 +77,9 @@ export default memo(function ConfigNameDescription({
 
   const onClickEdit = useCallback(
     (event: React.MouseEvent<HTMLHeadingElement | HTMLDivElement>) => {
+      if (readOnly) {
+        return;
+      }
       setIsEditing(true);
       if (event.target === nameDisplayRef.current) {
         setInitialFocus("name");
@@ -118,7 +123,7 @@ export default memo(function ConfigNameDescription({
           <Title
             ref={nameDisplayRef}
             onClick={onClickEdit}
-            className={classes.hoverContainer}
+            className={!readOnly ? classes.hoverContainer : undefined}
           >
             {name}
           </Title>
@@ -126,7 +131,7 @@ export default memo(function ConfigNameDescription({
             ref={descriptionDisplayRef}
             onClick={onClickEdit}
             style={{ whiteSpace: "pre-wrap" }}
-            className={classes.hoverContainer}
+            className={!readOnly ? classes.hoverContainer : undefined}
           >
             {description}
           </Text>
