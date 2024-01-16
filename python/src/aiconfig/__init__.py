@@ -17,6 +17,7 @@ from .schema import (
     AIConfig,
     ConfigMetadata,
     ExecuteResult,
+    AttachmentDataWithStringValue,
     JSONObject,
     ModelMetadata,
     Output,

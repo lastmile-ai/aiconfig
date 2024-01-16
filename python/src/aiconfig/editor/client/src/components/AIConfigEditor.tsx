@@ -9,6 +9,7 @@ import {
   Tooltip,
   Alert,
   Group,
+  rem,
 } from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
 import {
@@ -134,10 +135,11 @@ type RequestCallbackError = { message?: string };
 
 const useStyles = createStyles((theme) => ({
   addPromptRow: {
-    borderRadius: "4px",
-    display: "inline-block",
-    bottom: -24,
-    left: -40,
+    borderRadius: rem(4),
+    display: "flex",
+    justifyContent: "center",
+    align: "center",
+    width: "100%",
     "&:hover": {
       backgroundColor:
         theme.colorScheme === "light"
@@ -165,7 +167,7 @@ const useStyles = createStyles((theme) => ({
 export default function EditorContainer({
   aiconfig: initialAIConfig,
   callbacks,
-  readOnly = false,
+  readOnly = true,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
