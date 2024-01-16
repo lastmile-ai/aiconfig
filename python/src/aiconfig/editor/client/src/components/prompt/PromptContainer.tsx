@@ -12,8 +12,8 @@ import ModelSelector from "./ModelSelector";
 
 type Props = {
   prompt: ClientPrompt;
-  cancel: (cancellationToken: string) => Promise<void>;
-  getModels: (search: string) => Promise<string[]>;
+  cancel?: (cancellationToken: string) => Promise<void>;
+  getModels?: (search: string) => Promise<string[]>;
   onChangePromptInput: (
     promptId: string,
     newPromptInput: AIConfigPromptInput
@@ -30,6 +30,7 @@ type Props = {
     newParameters: Record<string, unknown>
   ) => void;
   defaultConfigModelName?: string;
+  isRunButtonDisabled?: boolean;
 };
 
 export default memo(function PromptContainer({
@@ -43,6 +44,7 @@ export default memo(function PromptContainer({
   onUpdateModel,
   onUpdateModelSettings,
   onUpdateParameters,
+  isRunButtonDisabled = false,
 }: Props) {
   const promptId = prompt._ui.id;
   const onChangeInput = useCallback(
@@ -72,6 +74,9 @@ export default memo(function PromptContainer({
   );
 
   const onCancelRun = useCallback(async () => {
+    if (!cancel) {
+      return;
+    }
     if (prompt._ui.cancellationToken) {
       return await cancel(prompt._ui.cancellationToken);
     } else {
@@ -119,6 +124,7 @@ export default memo(function PromptContainer({
             onCancelRun={onCancelRun}
             onRunPrompt={runPrompt}
             isRunning={prompt._ui.isRunning}
+            isRunButtonDisabled={isRunButtonDisabled}
           />
           <PromptOutputBar />
           {prompt.outputs && <PromptOutputsRenderer outputs={prompt.outputs} />}
