@@ -1,4 +1,3 @@
-import PromptContainer from "./prompt/PromptContainer";
 import {
   Container,
   Button,
@@ -12,6 +11,7 @@ import {
   rem,
 } from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
+import { IconDeviceFloppy } from "@tabler/icons-react";
 import {
   AIConfig,
   InferenceSettings,
@@ -20,6 +20,7 @@ import {
   Prompt,
   PromptInput,
 } from "aiconfig";
+import { debounce, uniqueId } from "lodash";
 import {
   useCallback,
   useEffect,
@@ -29,6 +30,7 @@ import {
   useState,
 } from "react";
 import { v4 as uuidv4 } from "uuid";
+import AIConfigContext from "../contexts/AIConfigContext";
 import aiconfigReducer from "../reducers/aiconfigReducer";
 import type { AIConfigReducerAction } from "../reducers/actions";
 import {
@@ -39,18 +41,11 @@ import {
   clientConfigToAIConfig,
   clientPromptToAIConfigPrompt,
 } from "../shared/types";
-import AddPromptButton from "./prompt/AddPromptButton";
 import {
   getDefaultNewPromptName,
   getModelSettingsStream,
   getPrompt,
 } from "../utils/aiconfigStateUtils";
-import { debounce, uniqueId } from "lodash";
-import PromptMenuButton from "./prompt/PromptMenuButton";
-import GlobalParametersContainer from "./global/GlobalParametersContainer";
-import AIConfigContext from "../contexts/AIConfigContext";
-import ClearOutputsButton from "./global/ClearOutputsButton";
-import ConfigNameDescription from "./global/ConfigNameDescription";
 import {
   AUTOSAVE_INTERVAL_MS,
   DEBOUNCE_MS,
@@ -60,7 +55,12 @@ import {
   getDefaultPromptInputForModel,
   getPromptModelName,
 } from "../utils/promptUtils";
-import { IconDeviceFloppy } from "@tabler/icons-react";
+import GlobalParametersContainer from "./global/GlobalParametersContainer";
+import ClearOutputsButton from "./global/ClearOutputsButton";
+import ConfigNameDescription from "./global/ConfigNameDescription";
+import AddPromptButton from "./prompt/AddPromptButton";
+import PromptContainer from "./prompt/PromptContainer";
+import PromptMenuButton from "./prompt/PromptMenuButton";
 import CopyButton from "./CopyButton";
 
 type Props = {
