@@ -6,7 +6,8 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { IconPlus, IconSearch, IconTextCaption } from "@tabler/icons-react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useContext, useState } from "react";
+import AIConfigContext from "../../contexts/AIConfigContext";
 import useLoadModels from "../../hooks/useLoadModels";
 
 type Props = {
@@ -46,6 +47,8 @@ function ModelMenuItems({
 }
 
 export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
+  const { readOnly } = useContext(AIConfigContext);
+
   const [modelSearch, setModelSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -58,6 +61,10 @@ export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
   );
 
   const models = useLoadModels(modelSearch, getModels);
+
+  if (readOnly) {
+    return <></>;
+  }
 
   return (
     <Menu
