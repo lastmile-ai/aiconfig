@@ -61,6 +61,7 @@ import {
 } from "../utils/promptUtils";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
+import { log } from "console";
 
 type Props = {
   aiconfig: AIConfig;
@@ -671,6 +672,8 @@ export default function EditorContainer({
 
       const cancellationToken = uuidv4();
 
+      logEventHandler?.("RUN_PROMPT_START");
+
       dispatch({
         // This sets the isRunning and runningPromptId flags
         type: "RUN_PROMPT_START",
@@ -679,6 +682,8 @@ export default function EditorContainer({
       });
 
       const onPromptError = (message: string | null) => {
+        logEventHandler?.("RUN_PROMPT_ERROR");
+
         dispatch({
           type: "RUN_PROMPT_ERROR",
           promptId,
@@ -721,6 +726,7 @@ export default function EditorContainer({
                 config: event.data,
               });
             } else if (event.type === "stop_streaming") {
+              logEventHandler?.("RUN_PROMPT_SUCCESS");
               // Pass this event at the end of streaming to signal
               // that the prompt is done running and we're ready
               // to reset the ClientAIConfig to a non-running state
@@ -738,6 +744,7 @@ export default function EditorContainer({
               if (event.data.code === 499) {
                 // This is a cancellation
                 // Reset the aiconfig to the state before we started running the prompt
+                logEventHandler?.("RUN_PROMPT_CANCELED");
                 dispatch({
                   type: "RUN_PROMPT_CANCEL",
                   promptId,
@@ -766,6 +773,8 @@ export default function EditorContainer({
         // Keep this here in case any server implementations don't return
         // aiconfig as a streaming format
         if (serverConfigResponse?.aiconfig) {
+          // Do we need to log here
+          logEventHandler?.("RUN_PROMPT_SUCCESS");
           dispatch({
             type: "RUN_PROMPT_SUCCESS",
             promptId,
