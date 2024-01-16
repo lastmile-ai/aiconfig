@@ -1,5 +1,5 @@
 import { memo } from "react";
-import type { Attachment as InputAttachment, JSONObject } from "aiconfig";
+import type { Attachment as InputAttachment, JSONObject, AttachmentDataWithStringValue } from "aiconfig";
 import { PromptInputObjectAttachmentsSchema } from "../../../../utils/promptUtils";
 import { ActionIcon, Container, Flex, Tooltip } from "@mantine/core";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
@@ -41,7 +41,7 @@ export default memo(function AttachmentContainer({
       </Flex>
       <MimeTypeRenderer
         mimeType={attachment.mime_type}
-        content={attachment.data as string}
+        content={(attachment.data as AttachmentDataWithStringValue).value as string}
       />
       {schema.items.properties?.metadata && (
         <AttachmentMetadata
