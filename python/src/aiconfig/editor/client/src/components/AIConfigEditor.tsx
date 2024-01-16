@@ -49,6 +49,7 @@ import { debounce, uniqueId } from "lodash";
 import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
 import AIConfigContext from "../contexts/AIConfigContext";
+import ClearOutputsButton from "./ClearOutputsButton";
 import ConfigNameDescription from "./ConfigNameDescription";
 import {
   AUTOSAVE_INTERVAL_MS,
@@ -878,15 +879,7 @@ export default function EditorContainer({
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
           <Group>
-            <Button
-              loading={undefined}
-              onClick={onClearOutputs}
-              size="xs"
-              variant="gradient"
-            >
-              Clear Outputs
-            </Button>
-
+            <ClearOutputsButton onClearOutputs={onClearOutputs} />
             <Tooltip
               label={isDirty ? "Save changes to config" : "No unsaved changes"}
             >
