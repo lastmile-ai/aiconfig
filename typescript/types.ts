@@ -77,7 +77,7 @@ export type SchemaVersion =
  * both the `kind` field here and the `mime_type` in Attachment to convert
  * the string into the input format we want.
  */
-type AttachmentDataWithStringValue = {
+export type AttachmentDataWithStringValue = {
   kind: "file_uri" | "base64";
   value: string;
 };

@@ -9,6 +9,7 @@ import {
   Tooltip,
   Alert,
   Group,
+  rem,
 } from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
 import {
@@ -106,7 +107,7 @@ export type AIConfigCallbacks = {
   deletePrompt: (promptName: string) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
-  logEvent?: (event: LogEvent, data?: LogEventData) => void;
+  logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
   runPrompt: (
     promptName: string,
     onStream: RunPromptStreamCallback,
@@ -134,10 +135,11 @@ type RequestCallbackError = { message?: string };
 
 const useStyles = createStyles((theme) => ({
   addPromptRow: {
-    borderRadius: "4px",
-    display: "inline-block",
-    bottom: -24,
-    left: -40,
+    borderRadius: rem(4),
+    display: "flex",
+    justifyContent: "center",
+    align: "center",
+    width: "100%",
     "&:hover": {
       backgroundColor:
         theme.colorScheme === "light"
@@ -177,7 +179,7 @@ export default function EditorContainer({
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
 
-  const logEventCallback = callbacks.logEvent;
+  const logEventHandler = callbacks.logEventHandler;
 
   const saveCallback = callbacks.save;
   const onSave = useCallback(async () => {
@@ -527,7 +529,7 @@ export default function EditorContainer({
       };
 
       dispatch(action);
-      logEventCallback?.("ADD_PROMPT", { model, promptIndex });
+      logEventHandler?.("ADD_PROMPT", { model, promptIndex });
 
       try {
         const serverConfigRes = await addPromptCallback(
@@ -549,7 +551,7 @@ export default function EditorContainer({
         });
       }
     },
-    [addPromptCallback, logEventCallback]
+    [addPromptCallback, logEventHandler]
   );
 
   const deletePromptCallback = callbacks.deletePrompt;
@@ -780,10 +782,10 @@ export default function EditorContainer({
   const contextValue = useMemo(
     () => ({
       getState,
-      logEvent: logEventCallback,
+      logEventHandler,
       readOnly,
     }),
-    [getState, logEventCallback, readOnly]
+    [getState, logEventHandler, readOnly]
   );
 
   const isDirty = aiconfigState._ui.isDirty !== false;
@@ -876,32 +878,37 @@ export default function EditorContainer({
       <Container maw="80rem">
         <Flex justify="flex-end" mt="md" mb="xs">
           <Group>
-            <Button
-              loading={undefined}
-              onClick={onClearOutputs}
-              size="xs"
-              variant="gradient"
-            >
-              Clear Outputs
-            </Button>
-
-            <Tooltip
-              label={isDirty ? "Save changes to config" : "No unsaved changes"}
-            >
+            {!readOnly && (
               <Button
-                leftIcon={<IconDeviceFloppy />}
-                loading={isSaving}
-                onClick={() => {
-                  onSave();
-                  logEventCallback?.("SAVE_BUTTON_CLICKED");
-                }}
-                disabled={!isDirty}
+                loading={undefined}
+                onClick={onClearOutputs}
                 size="xs"
                 variant="gradient"
               >
-                Save
+                Clear Outputs
               </Button>
-            </Tooltip>
+            )}
+            {!readOnly && (
+              <Tooltip
+                label={
+                  isDirty ? "Save changes to config" : "No unsaved changes"
+                }
+              >
+                <Button
+                  leftIcon={<IconDeviceFloppy />}
+                  loading={isSaving}
+                  onClick={() => {
+                    onSave();
+                    logEventHandler?.("SAVE_BUTTON_CLICKED");
+                  }}
+                  disabled={!isDirty}
+                  size="xs"
+                  variant="gradient"
+                >
+                  Save
+                </Button>
+              </Tooltip>
+            )}
           </Group>
         </Flex>
         <ConfigNameDescription
@@ -916,12 +923,14 @@ export default function EditorContainer({
         onUpdateParameters={onUpdateGlobalParameters}
       />
       <Container maw="80rem" className={classes.promptsContainer}>
-        <div className={classes.addPromptRow}>
-          <AddPromptButton
-            getModels={callbacks.getModels}
-            addPrompt={(model: string) => onAddPrompt(0, model)}
-          />
-        </div>
+        {!readOnly && (
+          <div className={classes.addPromptRow}>
+            <AddPromptButton
+              getModels={callbacks.getModels}
+              addPrompt={(model: string) => onAddPrompt(0, model)}
+            />
+          </div>
+        )}
         {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
           const isAnotherPromptRunning =
             runningPromptId !== undefined && runningPromptId !== prompt._ui.id;
@@ -946,17 +955,19 @@ export default function EditorContainer({
                   isRunButtonDisabled={isAnotherPromptRunning}
                 />
               </Flex>
-              <div className={classes.addPromptRow}>
-                <AddPromptButton
-                  getModels={callbacks.getModels}
-                  addPrompt={(model: string) =>
-                    onAddPrompt(
-                      i + 1 /* insert below current prompt index */,
-                      model
-                    )
-                  }
-                />
-              </div>
+              {!readOnly && (
+                <div className={classes.addPromptRow}>
+                  <AddPromptButton
+                    getModels={callbacks.getModels}
+                    addPrompt={(model: string) =>
+                      onAddPrompt(
+                        i + 1 /* insert below current prompt index */,
+                        model
+                      )
+                    }
+                  />
+                </div>
+              )}
             </Stack>
           );
         })}
