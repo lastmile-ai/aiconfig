@@ -168,7 +168,7 @@ const useStyles = createStyles((theme) => ({
 export default function EditorContainer({
   aiconfig: initialAIConfig,
   callbacks,
-  readOnly = false,
+  readOnly = true,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");

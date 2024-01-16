@@ -19,7 +19,7 @@
       "facebook/mms-tts-eng": "HuggingFaceText2SpeechTransformer"
     }
   },
-  "description": "Welcome to the first Hugging Face AIConfig! Let's showcase the many capabilities of Hugging Face models, all in one place.",
+  "description": "Welcome to the first Hugging Face AIConfig! Let's showcase the many capabilities of Hugging Face models, all in one place. ok cool",
   "prompts": [
     {
       "name": "image_caption",
