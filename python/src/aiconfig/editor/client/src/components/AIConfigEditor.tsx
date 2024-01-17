@@ -9,7 +9,6 @@ import {
   Tooltip,
   Alert,
   Group,
-  rem,
 } from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
 import {
@@ -137,28 +136,6 @@ export type AIConfigCallbacks = {
 type RequestCallbackError = { message?: string };
 
 const useStyles = createStyles((theme) => ({
-  addPromptRow: {
-    borderRadius: rem(4),
-    display: "flex",
-    justifyContent: "center",
-    align: "center",
-    width: "100%",
-    "&:hover": {
-      backgroundColor:
-        theme.colorScheme === "light"
-          ? theme.colors.gray[1]
-          : "rgba(255, 255, 255, 0.1)",
-    },
-    [theme.fn.smallerThan("sm")]: {
-      marginLeft: "0",
-      display: "block",
-      position: "static",
-      bottom: -10,
-      left: 0,
-      height: 28,
-      margin: "10px 0",
-    },
-  },
   promptsContainer: {
     [theme.fn.smallerThan("sm")]: {
       padding: "0 0 200px 0",
@@ -1019,12 +996,10 @@ export default function AIConfigEditor({
           />
           <Container maw="80rem" className={classes.promptsContainer}>
             {!readOnly && (
-              <div className={classes.addPromptRow}>
-                <AddPromptButton
-                  getModels={callbacks?.getModels}
-                  addPrompt={(model: string) => onAddPrompt(0, model)}
-                />
-              </div>
+              <AddPromptButton
+                getModels={callbacks?.getModels}
+                addPrompt={(model: string) => onAddPrompt(0, model)}
+              />
             )}
             {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
               const isAnotherPromptRunning =
@@ -1054,17 +1029,15 @@ export default function AIConfigEditor({
                     />
                   </Flex>
                   {!readOnly && (
-                    <div className={classes.addPromptRow}>
-                      <AddPromptButton
-                        getModels={callbacks?.getModels}
-                        addPrompt={(model: string) =>
-                          onAddPrompt(
-                            i + 1 /* insert below current prompt index */,
-                            model
-                          )
-                        }
-                      />
-                    </div>
+                    <AddPromptButton
+                      getModels={callbacks?.getModels}
+                      addPrompt={(model: string) =>
+                        onAddPrompt(
+                          i + 1 /* insert below current prompt index */,
+                          model
+                        )
+                      }
+                    />
                   )}
                 </Stack>
               );
