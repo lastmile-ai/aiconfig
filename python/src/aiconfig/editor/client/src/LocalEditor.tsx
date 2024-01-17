@@ -37,6 +37,9 @@ const useStyles = createStyles(() => ({
   },
 }));
 
+
+const MODE = "local";
+
 export default function LocalEditor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
   const { classes } = useStyles();
@@ -71,6 +74,8 @@ export default function LocalEditor() {
         forwardErrorsToLogs: true,
         sessionSampleRate: 100,
       });
+
+      datadogLogs.setGlobalContextProperty('mode', MODE);
     }
   }, []);
 
@@ -287,7 +292,7 @@ export default function LocalEditor() {
         <AIConfigEditor
           aiconfig={aiconfig}
           callbacks={callbacks}
-          mode="local"
+          mode={MODE}
         />
       )}
     </div>
