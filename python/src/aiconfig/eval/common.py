@@ -5,7 +5,7 @@ from typing import Any, Generic, NewType, Protocol, Type, TypeVar
 
 import lastmile_utils.lib.core.api as core_utils
 import result
-from aiconfig.eval import common
+from aiconfig.Config import AIConfigRuntime
 from pydantic import BaseModel
 from result import Result
 
@@ -38,7 +38,7 @@ T_MetricValue = TypeVar("T_MetricValue", int, float, str, bool, CustomMetricValu
 
 class CompletionTextToSerializedJSON(Protocol):
     @abstractmethod
-    def __call__(self, output_datum: str) -> Result[common.SerializedJSON, str]:
+    def __call__(self, output_datum: str) -> Result[SerializedJSON, str]:
         pass
 
 
@@ -81,7 +81,9 @@ class EvaluationMetricMetadata(core_utils.Record, Generic[T_Evaluable, T_MetricV
     @property
     def id(self) -> str:
         return core_utils.hash_id(
-            f"{self.name}{self.description}{self.best_value}{self.worst_value}params={self._serialize_extra_metadata()}".encode("utf-8")
+            f"{self.name}{self.description}{self.best_value}{self.worst_value}params={self._serialize_extra_metadata()}".encode(
+                "utf-8"
+            )
         )
 
     def _serialize_extra_metadata(self) -> str:
@@ -163,10 +165,20 @@ class TextRatingsData(core_utils.Record):
 def get_llm_structured_response(
     input_text: str,
     chat_completion_create: CompletionTextToSerializedJSON,
-    basemodel_type: Type[common.T_BaseModel],
-) -> Result[common.T_BaseModel, str]:
+    basemodel_type: Type[T_BaseModel],
+) -> Result[T_BaseModel, str]:
     return result.do(
         core_utils.safe_model_validate_json(response_ok, basemodel_type)
         # get the serialized JSON response
         for response_ok in chat_completion_create(input_text)
     )
+
+
+@core_utils.exception_to_err_with_traceback_async
+async def run_aiconfig_get_output_text(
+    aiconfig: AIConfigRuntime,
+    prompt_name: str,
+    params: dict[Any, Any],
+    run_with_dependencies: bool,
+):
+    return await aiconfig.run_and_get_output_text(prompt_name, params, run_with_dependencies=run_with_dependencies)  # type: ignore
