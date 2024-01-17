@@ -32,6 +32,7 @@ import { v4 as uuidv4 } from "uuid";
 import aiconfigReducer from "../reducers/aiconfigReducer";
 import type { AIConfigReducerAction } from "../reducers/actions";
 import {
+  AIConfigEditorMode,
   ClientPrompt,
   LogEvent,
   LogEventData,
@@ -61,10 +62,12 @@ import {
 } from "../utils/promptUtils";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
+import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
 
 type Props = {
   aiconfig: AIConfig;
   callbacks?: AIConfigCallbacks;
+  mode?: AIConfigEditorMode;
   readOnly?: boolean;
 };
 
@@ -164,9 +167,10 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
-export default function EditorContainer({
+export default function AIConfigEditor({
   aiconfig: initialAIConfig,
   callbacks,
+  mode = "local",
   readOnly = false,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
@@ -931,129 +935,143 @@ export default function EditorContainer({
   const runningPromptId: string | undefined = aiconfigState._ui.runningPromptId;
 
   return (
-    <AIConfigContext.Provider value={contextValue}>
-      <Notifications />
-      {serverStatus !== "OK" && (
-        <>
-          {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
-          <div style={{ height: "100px" }} />
-          <Alert
-            color="red"
-            title="Server Connection Error"
-            w="100%"
-            style={{ position: "fixed", top: 0, zIndex: 999 }}
-          >
-            <Text>
-              There is a problem with the editor server connection. Please copy
-              important changes somewhere safe and then try reloading the page
-              or restarting the editor.
-            </Text>
-            <Flex align="center">
-              <CopyButton
-                value={JSON.stringify(
-                  clientConfigToAIConfig(aiconfigState),
-                  null,
-                  2
-                )}
-                contentLabel="AIConfig JSON"
-              />
-              <Text color="dimmed">Click to copy current AIConfig JSON</Text>
-            </Flex>
-          </Alert>
-        </>
-      )}
-      <Container maw="80rem">
-        <Flex justify="flex-end" mt="md" mb="xs">
-          <Group>
-            <Button
-              loading={undefined}
-              onClick={onClearOutputs}
-              size="xs"
-              variant="gradient"
-            >
-              Clear Outputs
-            </Button>
-
-            <Tooltip
-              label={isDirty ? "Save changes to config" : "No unsaved changes"}
-            >
-              <Button
-                leftIcon={<IconDeviceFloppy />}
-                loading={isSaving}
-                onClick={() => {
-                  onSave();
-                  logEventHandler?.("SAVE_BUTTON_CLICKED");
-                }}
-                disabled={!isDirty}
-                size="xs"
-                variant="gradient"
+    <AIConfigEditorThemeProvider mode={mode}>
+      <AIConfigContext.Provider value={contextValue}>
+        <Notifications />
+        <div className="editorBackground">
+          {serverStatus !== "OK" && (
+            <>
+              {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
+              <div style={{ height: "100px" }} />
+              <Alert
+                color="red"
+                title="Server Connection Error"
+                w="100%"
+                style={{ position: "fixed", top: 0, zIndex: 999 }}
               >
-                Save
-              </Button>
-            </Tooltip>
-          </Group>
-        </Flex>
-        <ConfigNameDescription
-          name={aiconfigState.name}
-          description={aiconfigState.description}
-          setDescription={onSetDescription}
-          setName={onSetName}
-        />
-      </Container>
-      <GlobalParametersContainer
-        initialValue={aiconfigState?.metadata?.parameters ?? {}}
-        onUpdateParameters={onUpdateGlobalParameters}
-      />
-      <Container maw="80rem" className={classes.promptsContainer}>
-        {!readOnly && (
-          <div className={classes.addPromptRow}>
-            <AddPromptButton
-              getModels={callbacks?.getModels}
-              addPrompt={(model: string) => onAddPrompt(0, model)}
-            />
-          </div>
-        )}
-        {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
-          const isAnotherPromptRunning =
-            runningPromptId !== undefined && runningPromptId !== prompt._ui.id;
-          return (
-            <Stack key={prompt._ui.id}>
-              <Flex mt="md">
-                <PromptMenuButton
-                  promptId={prompt._ui.id}
-                  onDeletePrompt={() => onDeletePrompt(prompt._ui.id)}
-                />
-                <PromptContainer
-                  prompt={prompt}
-                  getModels={callbacks?.getModels}
-                  onChangePromptInput={onChangePromptInput}
-                  onChangePromptName={onChangePromptName}
-                  cancel={callbacks?.cancel}
-                  onRunPrompt={onRunPrompt}
-                  onUpdateModel={onUpdatePromptModel}
-                  onUpdateModelSettings={onUpdatePromptModelSettings}
-                  onUpdateParameters={onUpdatePromptParameters}
-                  defaultConfigModelName={aiconfigState.metadata.default_model}
-                  isRunButtonDisabled={isAnotherPromptRunning}
-                />
-              </Flex>
-              {!readOnly && (
-                <div className={classes.addPromptRow}>
-                  <AddPromptButton
-                    getModels={callbacks?.getModels}
-                    addPrompt={(model: string) =>
-                      onAddPrompt(
-                        i + 1 /* insert below current prompt index */,
-                        model
-                      )
-                    }
+                <Text>
+                  There is a problem with the editor server connection. Please
+                  copy important changes somewhere safe and then try reloading
+                  the page or restarting the editor.
+                </Text>
+                <Flex align="center">
+                  <CopyButton
+                    value={JSON.stringify(
+                      clientConfigToAIConfig(aiconfigState),
+                      null,
+                      2
+                    )}
+                    contentLabel="AIConfig JSON"
                   />
-                </div>
-              )}
-            </Stack>
-          );
-        })}
-      </Container>
-    </AIConfigContext.Provider>
+                  <Text color="dimmed">
+                    Click to copy current AIConfig JSON
+                  </Text>
+                </Flex>
+              </Alert>
+            </>
+          )}
+          <Container maw="80rem">
+            <Flex justify="flex-end" mt="md" mb="xs">
+              <Group>
+                {!readOnly && (
+                  <Button
+                    loading={undefined}
+                    onClick={onClearOutputs}
+                    size="xs"
+                    variant="gradient"
+                  >
+                    Clear Outputs
+                  </Button>
+                )}
+                {!readOnly && (
+                  <Tooltip
+                    label={
+                      isDirty ? "Save changes to config" : "No unsaved changes"
+                    }
+                  >
+                    <Button
+                      leftIcon={<IconDeviceFloppy />}
+                      loading={isSaving}
+                      onClick={() => {
+                        onSave();
+                        logEventHandler?.("SAVE_BUTTON_CLICKED");
+                      }}
+                      disabled={!isDirty}
+                      size="xs"
+                      variant="gradient"
+                    >
+                      Save
+                    </Button>
+                  </Tooltip>
+                )}
+              </Group>
+            </Flex>
+            <ConfigNameDescription
+              name={aiconfigState.name}
+              description={aiconfigState.description}
+              setDescription={onSetDescription}
+              setName={onSetName}
+            />
+          </Container>
+          <GlobalParametersContainer
+            initialValue={aiconfigState?.metadata?.parameters ?? {}}
+            onUpdateParameters={onUpdateGlobalParameters}
+          />
+          <Container maw="80rem" className={classes.promptsContainer}>
+            {!readOnly && (
+              <div className={classes.addPromptRow}>
+                <AddPromptButton
+                  getModels={callbacks?.getModels}
+                  addPrompt={(model: string) => onAddPrompt(0, model)}
+                />
+              </div>
+            )}
+            {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
+              const isAnotherPromptRunning =
+                runningPromptId !== undefined &&
+                runningPromptId !== prompt._ui.id;
+              return (
+                <Stack key={prompt._ui.id}>
+                  <Flex mt="md">
+                    <PromptMenuButton
+                      promptId={prompt._ui.id}
+                      onDeletePrompt={() => onDeletePrompt(prompt._ui.id)}
+                    />
+                    <PromptContainer
+                      prompt={prompt}
+                      getModels={callbacks?.getModels}
+                      onChangePromptInput={onChangePromptInput}
+                      onChangePromptName={onChangePromptName}
+                      cancel={callbacks?.cancel}
+                      onRunPrompt={onRunPrompt}
+                      onUpdateModel={onUpdatePromptModel}
+                      onUpdateModelSettings={onUpdatePromptModelSettings}
+                      onUpdateParameters={onUpdatePromptParameters}
+                      defaultConfigModelName={
+                        aiconfigState.metadata.default_model
+                      }
+                      isRunButtonDisabled={isAnotherPromptRunning}
+                    />
+                  </Flex>
+                  {!readOnly && (
+                    <div className={classes.addPromptRow}>
+                      <AddPromptButton
+                        getModels={callbacks?.getModels}
+                        addPrompt={(model: string) =>
+                          onAddPrompt(
+                            i + 1 /* insert below current prompt index */,
+                            model
+                          )
+                        }
+                      />
+                    </div>
+                  )}
+                </Stack>
+              );
+            })}
+          </Container>
+        </div>
+      </AIConfigContext.Provider>
+    </AIConfigEditorThemeProvider>
   );
 }
