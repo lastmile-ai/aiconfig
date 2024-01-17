@@ -1,9 +1,6 @@
-import PromptContainer from "./prompt/PromptContainer";
 import {
   Container,
   Button,
-  createStyles,
-  Stack,
   Flex,
   Text,
   Tooltip,
@@ -32,21 +29,18 @@ import aiconfigReducer from "../reducers/aiconfigReducer";
 import type { AIConfigReducerAction } from "../reducers/actions";
 import {
   AIConfigEditorMode,
-  ClientPrompt,
   LogEvent,
   LogEventData,
   aiConfigToClientConfig,
   clientConfigToAIConfig,
   clientPromptToAIConfigPrompt,
 } from "../shared/types";
-import AddPromptButton from "./prompt/AddPromptButton";
 import {
   getDefaultNewPromptName,
   getModelSettingsStream,
   getPrompt,
 } from "../utils/aiconfigStateUtils";
 import { debounce, uniqueId } from "lodash";
-import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
 import AIConfigContext from "../contexts/AIConfigContext";
 import ConfigNameDescription from "./ConfigNameDescription";
@@ -62,6 +56,7 @@ import {
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
 import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
+import PromptsContainer from "./prompt/PromptsContainer";
 
 type Props = {
   aiconfig: AIConfig;
@@ -134,15 +129,6 @@ export type AIConfigCallbacks = {
 };
 
 type RequestCallbackError = { message?: string };
-
-const useStyles = createStyles((theme) => ({
-  promptsContainer: {
-    [theme.fn.smallerThan("sm")]: {
-      padding: "0 0 200px 0",
-    },
-    paddingBottom: 400,
-  },
-}));
 
 export default function AIConfigEditor({
   aiconfig: initialAIConfig,
@@ -844,8 +830,6 @@ export default function AIConfigEditor({
     [debouncedSetDescription]
   );
 
-  const { classes } = useStyles();
-
   const getState = useCallback(() => stateRef.current, []);
   const contextValue = useMemo(
     () => ({
@@ -994,55 +978,21 @@ export default function AIConfigEditor({
             initialValue={aiconfigState?.metadata?.parameters ?? {}}
             onUpdateParameters={onUpdateGlobalParameters}
           />
-          <Container maw="80rem" className={classes.promptsContainer}>
-            {!readOnly && (
-              <AddPromptButton
-                getModels={callbacks?.getModels}
-                addPrompt={(model: string) => onAddPrompt(0, model)}
-              />
-            )}
-            {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
-              const isAnotherPromptRunning =
-                runningPromptId !== undefined &&
-                runningPromptId !== prompt._ui.id;
-              return (
-                <Stack key={prompt._ui.id}>
-                  <Flex mt="md">
-                    <PromptMenuButton
-                      promptId={prompt._ui.id}
-                      onDeletePrompt={() => onDeletePrompt(prompt._ui.id)}
-                    />
-                    <PromptContainer
-                      prompt={prompt}
-                      getModels={callbacks?.getModels}
-                      onChangePromptInput={onChangePromptInput}
-                      onChangePromptName={onChangePromptName}
-                      cancel={callbacks?.cancel}
-                      onRunPrompt={onRunPrompt}
-                      onUpdateModel={onUpdatePromptModel}
-                      onUpdateModelSettings={onUpdatePromptModelSettings}
-                      onUpdateParameters={onUpdatePromptParameters}
-                      defaultConfigModelName={
-                        aiconfigState.metadata.default_model
-                      }
-                      isRunButtonDisabled={isAnotherPromptRunning}
-                    />
-                  </Flex>
-                  {!readOnly && (
-                    <AddPromptButton
-                      getModels={callbacks?.getModels}
-                      addPrompt={(model: string) =>
-                        onAddPrompt(
-                          i + 1 /* insert below current prompt index */,
-                          model
-                        )
-                      }
-                    />
-                  )}
-                </Stack>
-              );
-            })}
-          </Container>
+          <PromptsContainer
+            cancelRunPrompt={callbacks?.cancel}
+            defaultModel={aiconfigState.metadata.default_model}
+            getModels={callbacks?.getModels}
+            onAddPrompt={onAddPrompt}
+            onChangePromptInput={onChangePromptInput}
+            onChangePromptName={onChangePromptName}
+            onDeletePrompt={onDeletePrompt}
+            onRunPrompt={onRunPrompt}
+            onUpdatePromptModel={onUpdatePromptModel}
+            onUpdatePromptModelSettings={onUpdatePromptModelSettings}
+            onUpdatePromptParameters={onUpdatePromptParameters}
+            prompts={aiconfigState.prompts}
+            runningPromptId={runningPromptId}
+          />
         </div>
       </AIConfigContext.Provider>
     </AIConfigEditorThemeProvider>
