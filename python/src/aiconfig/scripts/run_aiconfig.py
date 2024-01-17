@@ -3,9 +3,10 @@ import logging
 import sys
 
 import lastmile_utils.lib.core.api as core_utils
+import result
 from aiconfig.Config import AIConfigRuntime
-from aiconfig.eval.lib import run_aiconfig_helper
-from result import Ok, Result
+from aiconfig.eval.lib import TextBasedInputDatum, run_aiconfig_on_text_based_input
+from result import Result
 
 logging.basicConfig(format=core_utils.LOGGER_FMT)
 LOGGER = logging.getLogger(__name__)
@@ -16,24 +17,27 @@ class Settings(core_utils.Record):
     aiconfig_path: str
 
 
+@core_utils.exception_to_err_with_traceback
+def _load_aiconfig(settings: Settings):
+    return AIConfigRuntime.load(settings.aiconfig_path)
+
+
 async def main():
     settings_path = sys.argv[1]
     res_settings = _load_settings(settings_path)
 
     question = sys.argv[2]
 
-    def _load_aiconfig(settings: Settings) -> Result[AIConfigRuntime, str]:
-        try:
-            return Ok(AIConfigRuntime.load(settings.aiconfig_path))  # type: ignore[no-untyped-call]
-        except ValueError as e:
-            return core_utils.ErrWithTraceback(e)
-
-    # TODO: Need do_async for a different reason: the async expression can't be defined
-    # before the do because it's a function of the stuff unwrapped in the do.
-    settings = res_settings.unwrap()
-    res_aiconfig = _load_aiconfig(settings)
-    aiconfig = res_aiconfig.unwrap()
-    final_value = await run_aiconfig_helper(runtime=aiconfig, prompt_name=settings.prompt_name, question=question)
+    final_value = await result.do_async(
+        await run_aiconfig_on_text_based_input(
+            #
+            runtime=aiconfig_ok,
+            prompt_name=settings_ok.prompt_name,
+            params=TextBasedInputDatum(question),
+        )
+        for settings_ok in res_settings
+        for aiconfig_ok in _load_aiconfig(settings_ok)
+    )
 
     print(final_value.unwrap_or_else(str))
 

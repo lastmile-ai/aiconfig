@@ -9,7 +9,7 @@ import lastmile_utils.lib.core.api as core_utils
 import pandas as pd
 import pytest
 from aiconfig.eval.api import TestSuiteWithInputsSettings, metrics, run_test_suite_outputs_only, run_test_suite_with_inputs
-from aiconfig.eval.lib import MetricList, TestSuiteGeneralSettings, TestSuiteWithInputsSpec, run_test_suite_helper
+from aiconfig.eval.lib import MetricList, TestSuiteGeneralSettings, TestSuiteWithInputsSpec, run_test_suite_helper, text_eval_res_to_df
 from result import Err, Ok
 
 from . import mocks
@@ -154,7 +154,9 @@ async def test_run_test_suite_with_inputs(data: st.DataObject):
         )
     )
 
-    match out:
+    df_out = out.map(text_eval_res_to_df)
+
+    match df_out:
         case Ok(df):
             assert isinstance(df, pd.DataFrame)
             assert df.shape[0] == (len(user_test_suite_with_inputs))
