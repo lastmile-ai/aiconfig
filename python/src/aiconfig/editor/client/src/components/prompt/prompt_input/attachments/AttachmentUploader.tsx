@@ -115,7 +115,7 @@ Props) {
 
       const attachments: Attachment[] = uploads.map((upload) => {
         return {
-          data: upload.url,
+          data: {value: upload.url, kind: "file_uri"},
           mime_type: upload.mimeType,
         };
       });
