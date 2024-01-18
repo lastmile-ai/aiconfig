@@ -131,7 +131,7 @@ export type AIConfigCallbacks = {
 type RequestCallbackError = { message?: string };
 
 export default function AIConfigEditor({
-  aiconfig: initialAIConfig,
+  aiconfig: providedAIConfig,
   callbacks,
   mode,
   readOnly = false,
@@ -140,8 +140,20 @@ export default function AIConfigEditor({
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
   const [aiconfigState, dispatch] = useReducer(
     aiconfigReducer,
-    aiConfigToClientConfig(initialAIConfig)
+    aiConfigToClientConfig(providedAIConfig)
   );
+
+  const [prevProvidedConfig, setPrevProvidedConfig] =
+    useState<AIConfig>(providedAIConfig);
+  // After initializing the aiconfigState, we should also support updating the
+  // state if the provided AIConfig changes externally
+  if (prevProvidedConfig !== providedAIConfig) {
+    setPrevProvidedConfig(providedAIConfig);
+    dispatch({
+      type: "PROVIDED_AICONFIG_UPDATE",
+      config: providedAIConfig,
+    });
+  }
 
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;

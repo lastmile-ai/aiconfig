@@ -1,4 +1,4 @@
-import { AIConfig } from "aiconfig";
+import { AIConfig, Prompt } from "aiconfig";
 import { ClientAIConfig, ClientPrompt } from "../shared/types";
 import { getPromptModelName } from "../utils/promptUtils";
 import type {
@@ -47,25 +47,46 @@ function setRunningPromptId(
   };
 }
 
+/**
+ * Consolidate existing state and external prompt into a single prompt.
+ * Existing client input and metadata takes precedence since it may have been updated
+ * by the user while the external process was happening (e.g. request was in flight).
+ * External outputs will always be used since they can only be updated by external source.
+ * @param statePrompt ClientPrompt that exists in client state
+ * @param externalPrompt ClientPrompt obtained from external source (e.g. server response)
+ * @returns Consolidated ClientPrompt
+ */
+function reduceConsolidatePrompt(
+  statePrompt: ClientPrompt,
+  externalPrompt: Prompt
+): ClientPrompt {
+  return {
+    ...externalPrompt,
+    ...statePrompt,
+    metadata: {
+      ...externalPrompt.metadata,
+      ...statePrompt.metadata,
+    },
+    outputs: externalPrompt.outputs,
+    _ui: statePrompt._ui,
+  };
+}
+
 function reduceConsolidateAIConfig(
   state: ClientAIConfig,
   action: ConsolidateAIConfigSubAction,
   responseConfig: AIConfig
 ): ClientAIConfig {
-  // Make sure prompt structure is properly updated. Client input and metadata takes precedence
-  // since it may have been updated by the user while the request was in flight
   const consolidatePrompt = (statePrompt: ClientPrompt) => {
     const responsePrompt = responseConfig.prompts.find(
       (resPrompt) => resPrompt.name === statePrompt.name
     );
-    return {
-      ...responsePrompt,
-      ...statePrompt,
-      metadata: {
-        ...responsePrompt?.metadata,
-        ...statePrompt.metadata,
-      },
-    } as ClientPrompt;
+
+    if (!responsePrompt) {
+      return statePrompt;
+    }
+
+    return reduceConsolidatePrompt(statePrompt, responsePrompt);
   };
 
   switch (action.type) {
@@ -129,6 +150,24 @@ export default function aiconfigReducer(
         prompts: dirtyState.prompts.filter(
           (prompt) => prompt._ui.id !== action.id
         ),
+      };
+    }
+    case "PROVIDED_AICONFIG_UPDATE": {
+      const updatedPrompts = state.prompts.map((statePrompt) => {
+        const externalPrompt = action.config.prompts.find(
+          (p) => p.name === statePrompt.name
+        );
+        if (!externalPrompt) {
+          return statePrompt;
+        }
+
+        return reduceConsolidatePrompt(statePrompt, externalPrompt);
+      });
+
+      return {
+        ...dirtyState,
+        ...action.config,
+        prompts: updatedPrompts,
       };
     }
     case "SET_DESCRIPTION": {
