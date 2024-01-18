@@ -119,7 +119,7 @@ Each cell in AIConfig Editor is used to prompt generative AI models and output r
 | **Prompt Name**                  | The name of the prompt cell which can be referenced in other cells for chaining.                                                                              |
 | **Model**                        | The model you are prompting in this cell. Use the dropdown to see the available default models to AIConfig Editor.                                            |
 | **Settings**                     | The settings and parameters specific to the model (i.e. system prompt, temperature). These settings will vary depending on the model selected.                |
-| **Local Variables (Parameters)** | These are variables that you set to be used in the prompt via handlebars syntax. Local variables are local to the cell and cannot be accessed in other cells. |
+| **Local Parameters**             | These are parameters (variables) that you set to be used in the prompt via handlebars syntax. Local parameters are local to the cell and cannot be accessed in other cells. |
 
 Click ▶️ at the right of the cell to execute the prompt and see the model response.
 
