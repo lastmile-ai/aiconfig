@@ -1,9 +1,12 @@
-import AIConfigEditor, {
+import {
+  AIConfigEditor,
   AIConfigCallbacks,
+  LogEvent,
+  LogEventData,
   RunPromptStreamCallback,
   RunPromptStreamErrorCallback,
   RunPromptStreamErrorEvent,
-} from "./components/AIConfigEditor";
+} from "@lastmileai/aiconfig-editor";
 import { Flex, Loader, Image, createStyles } from "@mantine/core";
 import {
   AIConfig,
@@ -17,7 +20,6 @@ import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
 import { streamingApiChain } from "./utils/oboeHelpers";
 import { datadogLogs } from "@datadog/browser-logs";
-import { LogEvent, LogEventData } from "./shared/types";
 
 const useStyles = createStyles(() => ({
   editorBackground: {

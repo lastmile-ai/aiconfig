@@ -1780,6 +1780,29 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@lastmileai/aiconfig-editor@./aiconfig-editor":
+  version "0.1.4"
+  dependencies:
+    "@emotion/react" "^11.11.1"
+    "@mantine/carousel" "^6.0.7"
+    "@mantine/core" "^6.0.7"
+    "@mantine/dates" "^6.0.16"
+    "@mantine/dropzone" "^6.0.7"
+    "@mantine/form" "^6.0.7"
+    "@mantine/hooks" "^6.0.7"
+    "@mantine/modals" "^6.0.7"
+    "@mantine/notifications" "^6.0.7"
+    "@mantine/prism" "^6.0.7"
+    "@monaco-editor/react" "^4.6.0"
+    "@tabler/icons-react" "^2.44.0"
+    aiconfig "^1.1.3"
+    lodash "^4.17.21"
+    node-fetch "^3.3.2"
+    react-error-boundary "^4.0.12"
+    react-markdown "^8.0.6"
+    remark-gfm "^3.0.1"
+    uuid "^9.0.1"
+
 "@leichtgewicht/ip-codec@^2.0.1":
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.4.tgz#b2ac626d6cb9c8718ab459166d4bb405b8ffa78b"
@@ -2478,11 +2501,6 @@
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==
 
-"@types/lodash@^4.14.202":
-  version "4.14.202"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.202.tgz#f09dbd2fb082d507178b2f2a5c7e74bd72ff98f8"
-  integrity sha512-OvlIYQK9tNneDlS0VN54LLd5uiPCBOp7gS5Z0f1mjoJYBrtStzgmJBxONW3U6OZqdtNzZPmn9BS/7WI7BFFcFQ==
-
 "@types/long@^4.0.0":
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/@types/long/-/long-4.0.2.tgz#b74129719fc8d11c01868010082d483b7545591a"
@@ -2684,11 +2702,6 @@
   version "2.0.10"
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.10.tgz#04ffa7f406ab628f7f7e97ca23e290cd8ab15efc"
   integrity sha512-IfYcSBWE3hLpBg8+X2SEa8LVkJdJEkT2Ese2aaLs3ptGdVtABxndrMaxuFlQ1qdFf9Q5rDvDpxI3WwgvKFAsQA==
-
-"@types/uuid@^9.0.7":
-  version "9.0.7"
-  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-9.0.7.tgz#b14cebc75455eeeb160d5fe23c2fcc0c64f724d8"
-  integrity sha512-WUtIVRUZ9i5dYXefDEAI7sh9/O7jGvHg7Df/5O/gtH3Yabe5odI3UWopVR1qbPXQtvOxWu3mM4XxlYeZtMWF4g==
 
 "@types/ws@^8.5.5":
   version "8.5.10"
@@ -3166,8 +3179,50 @@ agentkeepalive@^4.2.1:
   dependencies:
     humanize-ms "^1.2.1"
 
+aiconfig-editor@./aiconfig-editor:
+  version "0.1.4"
+  dependencies:
+    "@emotion/react" "^11.11.1"
+    "@mantine/carousel" "^6.0.7"
+    "@mantine/core" "^6.0.7"
+    "@mantine/dates" "^6.0.16"
+    "@mantine/dropzone" "^6.0.7"
+    "@mantine/form" "^6.0.7"
+    "@mantine/hooks" "^6.0.7"
+    "@mantine/modals" "^6.0.7"
+    "@mantine/notifications" "^6.0.7"
+    "@mantine/prism" "^6.0.7"
+    "@monaco-editor/react" "^4.6.0"
+    "@tabler/icons-react" "^2.44.0"
+    aiconfig "^1.1.3"
+    lodash "^4.17.21"
+    node-fetch "^3.3.2"
+    react-error-boundary "^4.0.12"
+    react-markdown "^8.0.6"
+    remark-gfm "^3.0.1"
+    uuid "^9.0.1"
+
 aiconfig@../../../../../typescript:
   version "1.1.5"
+  dependencies:
+    "@google-ai/generativelanguage" "^1.1.0"
+    "@huggingface/inference" "^2.6.4"
+    axios "^1.5.1"
+    google-auth-library "^9.1.0"
+    gpt-3-encoder "^1.1.4"
+    handlebars "^4.7.8"
+    js-yaml "^4.1.0"
+    lodash "^4.17.21"
+    node-fetch "^3.3.2"
+    openai "4.11.1"
+    typescript-json-schema "^0.60.0"
+    uuid "^9.0.1"
+    winston "^3.11.0"
+
+aiconfig@^1.1.3:
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/aiconfig/-/aiconfig-1.1.5.tgz#9bc9a608f0b6e4dfda2fefc4da4a97feb0ea45d7"
+  integrity sha512-b/UbUE504w+5wc90JhvJd/f0lnolbwkcVcK2VuP2+mv1ryBmNW71AxDanf1v+sh8iuRkhPH7pShkUcvncVUxSA==
   dependencies:
     "@google-ai/generativelanguage" "^1.1.0"
     "@huggingface/inference" "^2.6.4"
@@ -9319,6 +9374,18 @@ react-app-polyfill@^3.0.0:
     regenerator-runtime "^0.13.9"
     whatwg-fetch "^3.6.2"
 
+react-app-rewire-alias@^1.1.7:
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/react-app-rewire-alias/-/react-app-rewire-alias-1.1.7.tgz#c308a1cb5337cfdda92a60f6f157093c5237df5b"
+  integrity sha512-vn4xU3E/wzh2/fGxda9ZQ6CtW2XdZB/WxAgNOdNPyUcX3hA3mh+kCRGwo19gSjzeTPpoZQwZRblHabLr6mwOTw==
+
+react-app-rewired@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/react-app-rewired/-/react-app-rewired-2.2.1.tgz#84901ee1e3f26add0377ebec0b41bcdfce9fc211"
+  integrity sha512-uFQWTErXeLDrMzOJHKp0h8P1z0LV9HzPGsJ6adOtGlA/B9WfT6Shh4j2tLTTGlXOfiVx6w6iWpp7SOC5pvk+gA==
+  dependencies:
+    semver "^5.6.0"
+
 react-dev-utils@^12.0.1:
   version "12.0.1"
   resolved "https://registry.yarnpkg.com/react-dev-utils/-/react-dev-utils-12.0.1.tgz#ba92edb4a1f379bd46ccd6bcd4e7bc398df33e73"
@@ -9939,6 +10006,11 @@ selfsigned@^2.1.1:
   dependencies:
     "@types/node-forge" "^1.3.0"
     node-forge "^1"
+
+semver@^5.6.0:
+  version "5.7.2"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-5.7.2.tgz#48d55db737c3287cd4835e17fa13feace1c41ef8"
+  integrity sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==
 
 semver@^6.0.0, semver@^6.3.0, semver@^6.3.1:
   version "6.3.1"

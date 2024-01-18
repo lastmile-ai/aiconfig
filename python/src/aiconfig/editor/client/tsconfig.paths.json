@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "aiconfig-editor/*": ["aiconfig-editor/src/*"],
+      "@lastmileai/aiconfig-editor/*": ["aiconfig-editor/src/*"]
+    }
+  }
+}
