@@ -293,6 +293,7 @@ export default function LocalEditor() {
           aiconfig={aiconfig}
           callbacks={callbacks}
           mode={MODE}
+          readOnly={false}
         />
       )}
     </div>
