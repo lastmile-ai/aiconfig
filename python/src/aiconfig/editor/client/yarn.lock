@@ -2478,11 +2478,6 @@
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==
 
-"@types/lodash@^4.14.202":
-  version "4.14.202"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.202.tgz#f09dbd2fb082d507178b2f2a5c7e74bd72ff98f8"
-  integrity sha512-OvlIYQK9tNneDlS0VN54LLd5uiPCBOp7gS5Z0f1mjoJYBrtStzgmJBxONW3U6OZqdtNzZPmn9BS/7WI7BFFcFQ==
-
 "@types/long@^4.0.0":
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/@types/long/-/long-4.0.2.tgz#b74129719fc8d11c01868010082d483b7545591a"
@@ -2684,11 +2679,6 @@
   version "2.0.10"
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.10.tgz#04ffa7f406ab628f7f7e97ca23e290cd8ab15efc"
   integrity sha512-IfYcSBWE3hLpBg8+X2SEa8LVkJdJEkT2Ese2aaLs3ptGdVtABxndrMaxuFlQ1qdFf9Q5rDvDpxI3WwgvKFAsQA==
-
-"@types/uuid@^9.0.7":
-  version "9.0.7"
-  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-9.0.7.tgz#b14cebc75455eeeb160d5fe23c2fcc0c64f724d8"
-  integrity sha512-WUtIVRUZ9i5dYXefDEAI7sh9/O7jGvHg7Df/5O/gtH3Yabe5odI3UWopVR1qbPXQtvOxWu3mM4XxlYeZtMWF4g==
 
 "@types/ws@^8.5.5":
   version "8.5.10"
@@ -3166,7 +3156,30 @@ agentkeepalive@^4.2.1:
   dependencies:
     humanize-ms "^1.2.1"
 
-aiconfig@../../../../../typescript:
+aiconfig-editor@./aiconfig-editor:
+  version "0.1.4"
+  dependencies:
+    "@emotion/react" "^11.11.1"
+    "@mantine/carousel" "^6.0.7"
+    "@mantine/core" "^6.0.7"
+    "@mantine/dates" "^6.0.16"
+    "@mantine/dropzone" "^6.0.7"
+    "@mantine/form" "^6.0.7"
+    "@mantine/hooks" "^6.0.7"
+    "@mantine/modals" "^6.0.7"
+    "@mantine/notifications" "^6.0.7"
+    "@mantine/prism" "^6.0.7"
+    "@monaco-editor/react" "^4.6.0"
+    "@tabler/icons-react" "^2.44.0"
+    aiconfig "^1.1.3"
+    lodash "^4.17.21"
+    node-fetch "^3.3.2"
+    react-error-boundary "^4.0.12"
+    react-markdown "^8.0.6"
+    remark-gfm "^3.0.1"
+    uuid "^9.0.1"
+
+aiconfig@../../../../../typescript, aiconfig@^1.1.3:
   version "1.1.5"
   dependencies:
     "@google-ai/generativelanguage" "^1.1.0"
