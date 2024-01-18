@@ -63,7 +63,14 @@ export function aiConfigToClientConfig(aiconfig: AIConfig): ClientAIConfig {
   };
 }
 
-export type LogEvent = "ADD_PROMPT" | "SAVE_BUTTON_CLICKED";
+export type LogEvent = 
+  | "ADD_PROMPT"
+  | "SAVE_BUTTON_CLICKED" 
+  | "RUN_PROMPT_START"
+  | "RUN_PROMPT_CANCELED" 
+  | "RUN_PROMPT_ERROR" 
+  | "RUN_PROMPT_SUCCESS";
+
 // TODO: schematize this
 export type LogEventData = JSONObject;
 

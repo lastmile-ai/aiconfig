@@ -644,6 +644,7 @@ export default function AIConfigEditor({
         promptId,
         cancellationToken,
       });
+      logEventHandler?.("RUN_PROMPT_START");
 
       const onPromptError = (message: string | null) => {
         dispatch({
@@ -651,6 +652,7 @@ export default function AIConfigEditor({
           promptId,
           message: message ?? undefined,
         });
+        logEventHandler?.("RUN_PROMPT_ERROR");
 
         const promptName = getPrompt(stateRef.current, promptId)?.name;
 
@@ -695,6 +697,7 @@ export default function AIConfigEditor({
                 type: "RUN_PROMPT_SUCCESS",
                 promptId,
               });
+              logEventHandler?.("RUN_PROMPT_SUCCESS");
             }
           },
           (event) => {
@@ -711,6 +714,7 @@ export default function AIConfigEditor({
                   // Returned config output is reset to before running RUN_PROMPT
                   config: event.data.data,
                 });
+                logEventHandler?.("RUN_PROMPT_CANCELED");
 
                 const promptName = getPrompt(stateRef.current, promptId)?.name;
 
@@ -733,11 +737,13 @@ export default function AIConfigEditor({
         // Keep this here in case any server implementations don't return
         // aiconfig as a streaming format
         if (serverConfigResponse?.aiconfig) {
+          // Do we need to log here
           dispatch({
             type: "RUN_PROMPT_SUCCESS",
             promptId,
             config: serverConfigResponse.aiconfig,
           });
+          logEventHandler?.("RUN_PROMPT_SUCCESS");
         }
       } catch (err: unknown) {
         const message = (err as RequestCallbackError).message ?? null;
