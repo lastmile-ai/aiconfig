@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import { IconTrash, IconPlus } from "@tabler/icons-react";
 import { debounce, uniqueId } from "lodash";
-import { useState, useCallback, memo, useMemo, useContext } from "react";
+import { memo, useCallback, useContext, useMemo, useState } from 'react';
 import { JSONValue, JSONObject } from "aiconfig";
 import AIConfigContext from "../contexts/AIConfigContext";
 
