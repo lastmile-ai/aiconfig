@@ -79,6 +79,15 @@ OutputDataWithValue = Union[
     OutputDataWithToolCallsValue,
 ]
 
+class AttachmentDataWithStringValue(BaseModel):
+    """
+    This represents the attachment data that is stored as a string, but we use
+    both the `kind` field here and the `mime_type` in Attachment to convert
+    the string into the input format we want.
+    """
+
+    kind: Literal["file_uri", "base64"]
+    value: str
 
 class ExecuteResult(BaseModel):
     """
@@ -152,7 +161,7 @@ class Attachment(BaseModel):
     """
 
     # The data representing the attachment
-    data: Any
+    data: Union[AttachmentDataWithStringValue, str, Any]
     # The MIME type of the result. If not specified, the MIME type will be assumed to be text/plain
     mime_type: Optional[str] = None
     # Output metadata

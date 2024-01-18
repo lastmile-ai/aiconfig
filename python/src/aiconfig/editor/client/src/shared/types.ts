@@ -1,4 +1,4 @@
-import { AIConfig, Prompt } from "aiconfig";
+import { AIConfig, JSONObject, Prompt } from "aiconfig";
 import { uniqueId } from "lodash";
 
 export type EditorFile = {
@@ -21,6 +21,7 @@ export type ClientAIConfig = Omit<AIConfig, "prompts"> & {
   prompts: ClientPrompt[];
   _ui: {
     isDirty?: boolean;
+    runningPromptId?: string;
   };
 };
 
@@ -61,3 +62,16 @@ export function aiConfigToClientConfig(aiconfig: AIConfig): ClientAIConfig {
     },
   };
 }
+
+export type LogEvent = 
+  | "ADD_PROMPT"
+  | "SAVE_BUTTON_CLICKED" 
+  | "RUN_PROMPT_START"
+  | "RUN_PROMPT_CANCELED" 
+  | "RUN_PROMPT_ERROR" 
+  | "RUN_PROMPT_SUCCESS";
+
+// TODO: schematize this
+export type LogEventData = JSONObject;
+
+export type AIConfigEditorMode = "local" | "gradio" | "vscode";

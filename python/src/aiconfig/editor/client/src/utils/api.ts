@@ -14,6 +14,7 @@ export const ROUTE_TABLE = {
   CANCEL: urlJoin(API_ENDPOINT, "/cancel"),
   CLEAR_OUTPUTS: urlJoin(API_ENDPOINT, "/clear_outputs"),
   DELETE_PROMPT: urlJoin(API_ENDPOINT, "/delete_prompt"),
+  GET_AICONFIGRC: urlJoin(API_ENDPOINT, "/get_aiconfigrc"),
   SAVE: urlJoin(API_ENDPOINT, "/save"),
   SET_DESCRIPTION: urlJoin(API_ENDPOINT, "/set_description"),
   SERVER_STATUS: urlJoin(API_ENDPOINT, "/server_status"),

@@ -348,8 +348,12 @@ def run() -> FlaskResponse:
 
             aiconfig_json = aiconfig.model_dump(exclude=EXCLUDE_OPTIONS) if aiconfig is not None else None
             yield "["
-            yield json.dumps({"aiconfig_complete": aiconfig_json})
+            yield json.dumps({"aiconfig_chunk": aiconfig_json})
             yield "]"
+        
+        yield "["
+        yield json.dumps({"stop_streaming": None})
+        yield "]"
 
     try:
         LOGGER.info(f"Running `aiconfig.run()` command with request: {request_json}")

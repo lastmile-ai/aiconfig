@@ -13,6 +13,8 @@ from aiconfig.editor.server.server import run_backend_server
 from aiconfig.editor.server.server_utils import DEFAULT_AICONFIGRC, EditServerConfig, ServerMode
 from result import Err, Ok, Result
 
+import aiconfig.scripts.rage.rage as rage
+
 
 class AIConfigCLIConfig(core_utils.Record):
     log_level: str | int = "WARNING"
@@ -36,7 +38,7 @@ async def main_with_args(argv: list[str]) -> int:
 
 def run_subcommand(argv: list[str]) -> Result[str, str]:
     LOGGER.info("Running subcommand")
-    subparser_record_types = {"edit": EditServerConfig}
+    subparser_record_types = {"edit": EditServerConfig, "rage": rage.RageConfig}
     main_parser = core_utils.argparsify(AIConfigCLIConfig, subparser_record_types=subparser_record_types)
 
     # Try to parse the CLI args into a config.
@@ -57,6 +59,14 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
         LOGGER.debug(f"{edit_config.is_ok()=}")
         out = _run_editor_servers_with_configs(edit_config, cli_config)
         return out
+    elif subparser_name == "rage":
+        res_rage_config = core_utils.parse_args(main_parser, argv[1:], rage.RageConfig)
+        res_rage = res_rage_config.and_then(rage.rage)
+        match res_rage:
+            case Ok(msg):
+                return Ok(f"Rage complete: {msg}")
+            case Err(e):
+                return Err(e)
     else:
         return Err(f"Unknown subparser: {subparser_name}")
 
@@ -143,6 +153,8 @@ def _set_log_level_and_create_default_yaml(cli_config: AIConfigCLIConfig) -> Res
     try:
         with open(aiconfigrc_path, "x") as f:
             YAML().dump(DEFAULT_AICONFIGRC, f)
+
+        return Ok(True)
     except FileExistsError:
         try:
 
@@ -159,13 +171,12 @@ def _set_log_level_and_create_default_yaml(cli_config: AIConfigCLIConfig) -> Res
                     if k not in contents:
                         contents[k] = v
 
-                YAML().dump(contents, f)
+                YAML().dump(contents, f)  # type: ignore[yaml library untyped]
+                return Ok(True)
         except Exception as e:
             return core_utils.ErrWithTraceback(e)
     except Exception as e:
         return core_utils.ErrWithTraceback(e)
-
-    return Ok(True)
 
 
 def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], str]:

@@ -26,11 +26,17 @@
       "input": {
         "attachments": [
           {
-            "data": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_10_18_41_31/1742/bear_with_honey.png",
+            "data": {
+              "kind": "file_uri",
+              "value": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_16_20_22_54/7748/fox_in_forest.png"
+            },
             "mime_type": "image/png"
           },
           {
-            "data": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_10_18_41_31/7275/fox_in_forest.png",
+            "data": {
+              "kind": "file_uri",
+              "value": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_16_20_20_57/508/bear_with_honey.png"
+            },
             "mime_type": "image/png"
           }
         ]
@@ -49,13 +55,13 @@
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": "a bear sitting on a rock eating honey",
+          "data": "a red fox in the woods",
           "metadata": {}
         },
         {
           "output_type": "execute_result",
           "execution_count": 1,
-          "data": "a red fox in the woods",
+          "data": "a bear sitting on a rock eating honey",
           "metadata": {}
         }
       ]
@@ -207,7 +213,10 @@
       "input": {
         "attachments": [
           {
-            "data": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_11_20_34_32/3386/hi.mp3",
+            "data": {
+              "kind": "file_uri",
+              "value": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_16_20_21_10/1673/hi (1).mp3"
+            },
             "mime_type": "audio/mpeg"
           }
         ]
@@ -221,7 +230,14 @@
         },
         "parameters": {}
       },
-      "outputs": []
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": " Hi.",
+          "metadata": {}
+        }
+      ]
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"

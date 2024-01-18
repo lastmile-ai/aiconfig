@@ -1289,6 +1289,18 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
+"@datadog/browser-core@5.7.0":
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/@datadog/browser-core/-/browser-core-5.7.0.tgz#ae8cd791626e928a82dfdfb3ccea88778323ddb8"
+  integrity sha512-rNUe3s5XD+9UUe/muYuh/UJzb0YXTRwSP1VevMRZmEpNgkBhurWjqjm3LQphYXMYsmQIgvqDPWm05Z+jOxTzRw==
+
+"@datadog/browser-logs@^5.7.0":
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/@datadog/browser-logs/-/browser-logs-5.7.0.tgz#6ae1cc4e1ec6634af9f52cf969da14400a4c3dec"
+  integrity sha512-pep6LkM2mBq+q3HEO72/qCIDImWKo+PuO3nHQLC2Ew+H5A1qWReWV6MfFQ5k3J9z0QR/nPhEewN7kaC1i0OvUg==
+  dependencies:
+    "@datadog/browser-core" "5.7.0"
+
 "@emotion/babel-plugin@^11.11.0":
   version "11.11.0"
   resolved "https://registry.yarnpkg.com/@emotion/babel-plugin/-/babel-plugin-11.11.0.tgz#c2d872b6a7767a9d176d007f5b31f7d504bb5d6c"
@@ -3155,7 +3167,7 @@ agentkeepalive@^4.2.1:
     humanize-ms "^1.2.1"
 
 aiconfig@../../../../../typescript:
-  version "1.1.3"
+  version "1.1.5"
   dependencies:
     "@google-ai/generativelanguage" "^1.1.0"
     "@huggingface/inference" "^2.6.4"

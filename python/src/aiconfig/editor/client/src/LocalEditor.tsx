@@ -4,7 +4,7 @@ import AIConfigEditor, {
   RunPromptStreamErrorCallback,
   RunPromptStreamErrorEvent,
 } from "./components/AIConfigEditor";
-import { Flex, Loader, MantineProvider, Image } from "@mantine/core";
+import { Flex, Loader, Image, createStyles } from "@mantine/core";
 import {
   AIConfig,
   InferenceSettings,
@@ -16,9 +16,33 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
 import { streamingApiChain } from "./utils/oboeHelpers";
+import { datadogLogs } from "@datadog/browser-logs";
+import { LogEvent, LogEventData } from "./shared/types";
 
-export default function Editor() {
+const useStyles = createStyles(() => ({
+  editorBackground: {
+    background:
+      "radial-gradient(ellipse at top,#08122d,#030712),radial-gradient(ellipse at bottom,#030712,#030712)",
+    margin: "0 auto",
+    minHeight: "100vh",
+  },
+
+  logo: {
+    maxWidth: "80rem",
+    margin: "0 auto",
+    padding: "32px 0 0 32px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+}));
+
+
+const MODE = "local";
+
+export default function LocalEditor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
+  const { classes } = useStyles();
 
   const loadConfig = useCallback(async () => {
     const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
@@ -28,6 +52,36 @@ export default function Editor() {
   useEffect(() => {
     loadConfig();
   }, [loadConfig]);
+
+  const setupTelemetryIfAllowed = useCallback(async () => {
+    const isDev = (process.env.NODE_ENV ?? "development") === "development";
+
+    // Don't enable telemetry in dev mode because hot reload will spam the logs.
+    if (isDev) {
+      return;
+    }
+
+    const res = await ufetch.get(ROUTE_TABLE.GET_AICONFIGRC, {});
+
+    const enableTelemetry = res.allow_usage_data_sharing;
+
+    if (enableTelemetry) {
+      datadogLogs.init({
+        clientToken: "pub356987caf022337989e492681d1944a8",
+        env: process.env.NODE_ENV ?? "development",
+        service: "aiconfig-editor",
+        site: "us5.datadoghq.com",
+        forwardErrorsToLogs: true,
+        sessionSampleRate: 100,
+      });
+
+      datadogLogs.setGlobalContextProperty('mode', MODE);
+    }
+  }, []);
+
+  useEffect(() => {
+    setupTelemetryIfAllowed();
+  }, [setupTelemetryIfAllowed]);
 
   const save = useCallback(async (aiconfig: AIConfig) => {
     const res = await ufetch.post(ROUTE_TABLE.SAVE, {
@@ -98,11 +152,11 @@ export default function Editor() {
           output_chunk: (data) => {
             onStream({ type: "output_chunk", data: data as Output });
           },
-          aiconfig: (data) => {
-            onStream({ type: "aiconfig", data: data as AIConfig });
+          aiconfig_chunk: (data) => {
+            onStream({ type: "aiconfig_chunk", data: data as AIConfig });
           },
-          aiconfig_complete: (data) => {
-            onStream({ type: "aiconfig_complete", data: data as AIConfig });
+          stop_streaming: (_data) => {
+            onStream({ type: "stop_streaming", data: null });
           },
           error: (data) => {
             onError({
@@ -174,6 +228,17 @@ export default function Editor() {
     return await ufetch.get(ROUTE_TABLE.SERVER_STATUS);
   }, []);
 
+  const logEventHandler = useCallback(
+    (event: LogEvent, data?: LogEventData) => {
+      try {
+        datadogLogs.logger.info(event, data);
+      } catch (e) {
+        // Ignore logger errors for now
+      }
+    },
+    []
+  );
+
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
@@ -182,6 +247,7 @@ export default function Editor() {
       deletePrompt,
       getModels,
       getServerStatus,
+      logEventHandler,
       runPrompt,
       save,
       setConfigDescription,
@@ -197,6 +263,7 @@ export default function Editor() {
       deletePrompt,
       getModels,
       getServerStatus,
+      logEventHandler,
       runPrompt,
       save,
       setConfigDescription,
@@ -208,200 +275,26 @@ export default function Editor() {
   );
 
   return (
-    <div className="editorBackground">
-      <MantineProvider
-        withGlobalStyles
-        withNormalizeCSS
-        theme={{
-          colorScheme: "dark",
-
-          headings: {
-            fontFamily:
-              "system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Arial, sans-serif",
-            sizes: {
-              h1: { fontSize: "2rem" },
-            },
-          },
-
-          defaultGradient: {
-            from: "pink",
-            to: "pink",
-            deg: 45,
-          },
-          // local editor theme
-          globalStyles: () => ({
-            ".editorBackground": {
-              background:
-                "radial-gradient(ellipse at top,#08122d,#030712),radial-gradient(ellipse at bottom,#030712,#030712)",
-              margin: "0 auto",
-              minHeight: "100vh",
-            },
-            ".monoFont": {
-              fontFamily:
-                "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-            },
-            ".ghost": {
-              border: "none",
-              borderRadius: "4px",
-              padding: "4px",
-              margin: "0px",
-              backgroundColor: "transparent",
-              ":hover": {
-                backgroundColor: "rgba(226,232,255,.1)",
-              },
-              input: {
-                maxHeight: "16px",
-                fontFamily:
-                  "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-                border: "none",
-                borderRadius: "4px",
-                padding: "4px",
-                margin: "0px",
-                backgroundColor: "transparent",
-              },
-            },
-            ".cellStyle": {
-              border: "1px solid rgba(226,232,255,.1) !important",
-              background: "rgb(12 21 57 / 10%)",
-              flex: 1,
-              borderTopRightRadius: "0px",
-              borderBottomRightRadius: "0px",
-              ":hover": {
-                background: "rgba(255, 255, 255, 0.03) !important",
-              },
-              textarea: {
-                border: "1px solid rgba(226,232,255,.1)",
-                backgroundColor: "#060c21",
-                ":focus": {
-                  outline: "solid 1px #ff1cf7 !important",
-                  outlineOffset: "-1px",
-                },
-              },
-              ".mantine-InputWrapper-label": {
-                display: "none",
-              },
-            },
-            ".sidePanel": {
-              border: "1px solid rgba(226,232,255,.1)",
-              borderLeft: "none",
-              borderTopRightRadius: "4px",
-              borderBottomRightRadius: "4px",
-              input: {
-                border: "1px solid rgba(226,232,255,.1)",
-                backgroundColor: "#060c21",
-                ":focus": {
-                  outline: "solid 1px #ff1cf7 !important",
-                  outlineOffset: "-1px",
-                },
-              },
-              textarea: {
-                border: "1px solid rgba(226,232,255,.1)",
-                backgroundColor: "#060c21",
-                ":focus": {
-                  outline: "solid 1px #ff1cf7 !important",
-                  outlineOffset: "-1px",
-                },
-              },
-            },
-            ".divider": {
-              borderTopWidth: "1px",
-              borderTopColor: "rgba(226,232,255,.1)",
-              marginBottom: "0.5em",
-            },
-            ".runPromptButton": {
-              background: "#ff1cf7",
-              color: "white",
-              height: "auto",
-              "&:hover": {
-                background: "#ff46f8",
-              },
-            },
-            ".actionTabsPanel": {
-              width: "400px",
-            },
-            ".logo": {
-              maxWidth: "80rem",
-              margin: "0 auto",
-              padding: "32px 0 0 32px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            },
-
-            ".parametersContainer": {
-              maxWidth: "1250px",
-              maxHeight: "-webkit-fill-available",
-              margin: "16px auto",
-              padding: "0",
-              backgroundColor: "rgba(226,232,255,.1)",
-              borderRadius: "4px",
-              border: "1px solid rgba(226,232,255,.1) !important",
-              button: {
-                ":hover": {
-                  backgroundColor: "rgba(226,232,255,.1)",
-                },
-              },
-              input: {
-                border: "1px solid rgba(226,232,255,.1)",
-                backgroundColor: "#060c21",
-                borderRadius: "4px",
-                ":focus": {
-                  outline: "solid 1px #ff1cf7 !important",
-                  outlineOffset: "-1px",
-                },
-              },
-              textarea: {
-                border: "1px solid rgba(226,232,255,.1)",
-                backgroundColor: "#060c21",
-                borderRadius: "4px",
-                ":focus": {
-                  outline: "solid 1px #ff1cf7 !important",
-                  outlineOffset: "-1px",
-                },
-              },
-            },
-            ".addParameterButton": {
-              position: "sticky",
-              left: "0",
-              bottom: "0",
-              margin: "16px 0 0 0",
-              background: "#ff1cf7",
-              "&:hover": {
-                background: "#ff46f8",
-              },
-            },
-            ".mantine-Slider-thumb": {
-              border: "0.25rem solid #ff1cf7",
-              backgroundColor: "white",
-            },
-            ".mantine-Slider-bar": {
-              backgroundColor: "#ff1cf7",
-            },
-            ".mantine-Tabs-tab[data-active]": {
-              borderBottom: "solid 1px #ff1cf7",
-              ":hover": {
-                borderBottom: "solid 1px #ff1cf7",
-              },
-            },
-          }),
-        }}
-      >
-        <div className="logo">
-          <Image
-            withPlaceholder
-            maw={140}
-            src="images/aiconfigLogo.png"
-            alt="AiConfig Logo"
-          />
-        </div>
-        {!aiconfig ? (
-          <Flex justify="center" mt="xl">
-            <Loader size="xl" />
-          </Flex>
-        ) : (
-          <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} />
-        )}
-      </MantineProvider>
+    <div className={classes.editorBackground}>
+      <div className={classes.logo}>
+        <Image
+          withPlaceholder
+          maw={140}
+          src="images/aiconfigLogo.png"
+          alt="AiConfig Logo"
+        />
+      </div>
+      {!aiconfig ? (
+        <Flex justify="center" mt="xl">
+          <Loader size="xl" />
+        </Flex>
+      ) : (
+        <AIConfigEditor
+          aiconfig={aiconfig}
+          callbacks={callbacks}
+          mode={MODE}
+        />
+      )}
     </div>
   );
 }
