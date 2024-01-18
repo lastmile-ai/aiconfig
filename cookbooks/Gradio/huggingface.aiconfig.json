@@ -238,6 +238,14 @@
           "metadata": {}
         }
       ]
+    },
+    {
+      "name": "prompt_8",
+      "input": "help me understand this react code:\n```\nexport default memo(function JSONRenderer({\n  content,\n  onChange,\n  schema,\n}: Props) {\n  return !onChange ? (\n    <Prism language=\"json\" styles={{ code: { textWrap: \"pretty\" } }}>\n      {JSON.stringify(content, null, 2)}\n    </Prism>\n  ) : (\n    <JSONEditor content={content} onChangeContent={onChange} schema={schema} />\n  );\n});\n```\n",
+      "metadata": {
+        "model": "gpt-4",
+        "parameters": {}
+      }
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
