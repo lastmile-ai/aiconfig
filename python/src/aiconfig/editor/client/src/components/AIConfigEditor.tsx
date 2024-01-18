@@ -750,7 +750,7 @@ export default function AIConfigEditor({
         onPromptError(message);
       }
     },
-    [runPromptCallback]
+    [logEventHandler, runPromptCallback]
   );
 
   const setNameCallback = callbacks?.setConfigName;
