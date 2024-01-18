@@ -1,10 +1,11 @@
-import { memo } from "react";
+import { memo, useContext } from "react";
 import type { Attachment as InputAttachment, JSONObject, AttachmentDataWithStringValue } from "aiconfig";
 import { PromptInputObjectAttachmentsSchema } from "../../../../utils/promptUtils";
 import { ActionIcon, Container, Flex, Tooltip } from "@mantine/core";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import AttachmentMetadata from "./AttachmentMetadata";
 import MimeTypeRenderer from "../../../MimeTypeRenderer";
+import AIConfigContext from "../../../../contexts/AIConfigContext";
 
 type Props = {
   schema: PromptInputObjectAttachmentsSchema;
@@ -21,17 +22,18 @@ export default memo(function AttachmentContainer({
   onRemoveAttachment,
   onEditAttachment,
 }: Props) {
+  const {readOnly} = useContext(AIConfigContext);
   return (
     <Container display="flex">
       <Flex direction="column">
-        {onEditAttachment && (
+        {onEditAttachment && !readOnly && (
           <ActionIcon onClick={onEditAttachment}>
             <Tooltip label="Edit attachment">
               <IconEdit size={16} />
             </Tooltip>
           </ActionIcon>
         )}
-        {onRemoveAttachment && (
+        {onRemoveAttachment && !readOnly && (
           <ActionIcon onClick={onRemoveAttachment}>
             <Tooltip label="Remove attachment">
               <IconTrash size={16} color="red" />
