@@ -10,8 +10,9 @@ import {
 } from "@mantine/core";
 import { IconTrash, IconPlus } from "@tabler/icons-react";
 import { debounce, uniqueId } from "lodash";
-import { useState, useCallback, memo, useMemo } from "react";
+import { useState, useCallback, memo, useMemo, useContext } from "react";
 import { JSONValue, JSONObject } from "aiconfig";
+import AIConfigContext from "../contexts/AIConfigContext";
 
 type Parameter = { parameterName: string; parameterValue: JSONValue };
 
@@ -36,7 +37,7 @@ const ParameterInput = memo(function ParameterInput(props: {
 }) {
   const { initialItemValue, removeParameter, onUpdateParameter } = props;
   // TODO: saqadri - update this once we have a readonly mode
-  const { isReadonly } = { isReadonly: false };
+  const { readOnly } = useContext(AIConfigContext);
 
   const [parameterName, setParameterName] = useState(
     initialItemValue?.parameterName ?? ""
@@ -79,7 +80,7 @@ const ParameterInput = memo(function ParameterInput(props: {
       <Stack p="xs" spacing="xs" style={{ flexGrow: 1, borderBottom: border }}>
         <TextInput
           placeholder="Enter parameter name"
-          disabled={isReadonly}
+          disabled={readOnly}
           error={
             parameterName && !isValidParameterName(parameterName)
               ? "Name must contain only letters, numbers, and underscores"
@@ -100,7 +101,7 @@ const ParameterInput = memo(function ParameterInput(props: {
         />
         <Textarea
           placeholder="Enter parameter value"
-          disabled={isReadonly}
+          disabled={readOnly}
           radius="md"
           value={parameterValueString}
           autosize
@@ -111,12 +112,13 @@ const ParameterInput = memo(function ParameterInput(props: {
             debouncedCellParameterUpdate(parameterName, event.target.value);
           }}
         />
-        <ActionIcon
+       { !readOnly && <ActionIcon
           onClick={() => removeParameter(parameterName)}
-          disabled={isReadonly}
+          disabled={readOnly}
         >
-          <IconTrash size={16} color={isReadonly ? "grey" : "red"} />
+          <IconTrash size={16} color={readOnly ? "grey" : "red"} />
         </ActionIcon>
+        }
       </Stack>
     </Group>
   );
@@ -150,7 +152,7 @@ export default memo(function ParametersRenderer(props: {
 }) {
   const { initialValue, onUpdateParameters } = props;
   // TODO: saqadri - update this when we have a readonly mode
-  const { isReadonly } = { isReadonly: false }; //useContext(WorkbookContext);
+  const { readOnly } = useContext(AIConfigContext);
 
   const [parameters, setParameters] = useState<ParametersArray>(
     initialValue && Object.keys(initialValue).length > 0
@@ -244,7 +246,7 @@ export default memo(function ParametersRenderer(props: {
           );
         })}
       </Stack>
-      {isReadonly ? null : (
+      {readOnly ? null : (
         <Tooltip label="Add parameter">
           <ActionIcon onClick={addParameter} className="addParameterButton">
             <IconPlus size={16} />
