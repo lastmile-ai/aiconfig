@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
+    "build": "cd aiconfig-editor && yarn clean && yarn build && cd .. && react-app-rewired build",
     "postbuild": "node postbuild.js",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@datadog/browser-logs": "^5.7.0",
+    "@lastmileai/aiconfig-editor": "./aiconfig-editor",
     "@mantine/core": "^6.0.7",
     "aiconfig": "../../../../../typescript",
     "aiconfig-editor": "./aiconfig-editor",
