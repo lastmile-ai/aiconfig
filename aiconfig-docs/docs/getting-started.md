@@ -10,6 +10,14 @@ import constants from '@site/core/tabConstants';
 
 AIConfig is a framework that makes it easy to build generative AI applications for production. It manages generative AI prompts and model parameters as JSON-serializable configs that can be version controlled, evaluated, and opened in a local editor for rapid prototyping. Please read [AIConfig Basics](https://aiconfig.lastmileai.dev/docs/basics/) to learn more.
 
+## Quickstart
+
+1. `pip3 install python-aiconfig`
+2. `export OPENAI_API_KEY='your-key'`
+3. `aiconfig edit`
+
+## Getting Started Tutorial
+
 **In this tutorial, we will create a customizable NYC travel itinerary using AIConfig.**
 
 ## Install

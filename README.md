@@ -36,7 +36,13 @@ It allows you to store and iterate on generative AI behavior _separately from yo
 
 **[More context here](#why-is-this-important).**
 
-## Getting Started
+## Quickstart
+
+1. `pip3 install python-aiconfig`
+2. `export OPENAI_API_KEY='your-key'`
+3. `aiconfig edit`
+
+## Getting Started Tutorial
 
 Check out the full [Getting Started tutorial](https://aiconfig.lastmileai.dev/docs/getting-started/).
 
