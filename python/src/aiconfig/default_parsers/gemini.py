@@ -3,11 +3,7 @@ import copy
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import google.generativeai as genai
-from aiconfig import (
-    AIConfigRuntime,
-    CallbackEvent,
-    get_api_key_from_environment
-)
+from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import (
@@ -17,12 +13,14 @@ from aiconfig.schema import (
     Prompt,
     PromptInput
 )
+from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt, resolve_prompt_string
 from google.protobuf.json_format import MessageToDict
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
     from google.generativeai.types import AsyncGenerateContentResponse
+    from aiconfig.Config import AIConfigRuntime
 
 
 DOCSTRING = """
@@ -104,6 +102,7 @@ async def construct_stream_outputs(response: "AsyncGenerateContentResponse", opt
 class GeminiModelParser(ParameterizedModelParser):
     def __init__(self, id: str = "gemini-pro"):
         super().__init__()
+        # TODO(?): @Ankush-lastmile Figure out how to make this model parser impl and init not depend on the model
         self.model = genai.GenerativeModel(id)
 
         # Note: we don't need to explicitly set the key as long as this is set
