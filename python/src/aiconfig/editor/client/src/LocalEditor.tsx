@@ -4,7 +4,7 @@ import AIConfigEditor, {
   RunPromptStreamErrorCallback,
   RunPromptStreamErrorEvent,
 } from "./components/AIConfigEditor";
-import { Flex, Loader, Image, createStyles } from "@mantine/core";
+import { Flex, Image, Loader, createStyles } from "@mantine/core";
 import {
   AIConfig,
   InferenceSettings,
@@ -12,12 +12,13 @@ import {
   Output,
   Prompt,
 } from "aiconfig";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
 import { ROUTE_TABLE } from "./utils/api";
 import { streamingApiChain } from "./utils/oboeHelpers";
 import { datadogLogs } from "@datadog/browser-logs";
 import { LogEvent, LogEventData } from "./shared/types";
+import WebviewContext from "./WebviewContext";
 
 const useStyles = createStyles(() => ({
   editorBackground: {
@@ -37,12 +38,13 @@ const useStyles = createStyles(() => ({
   },
 }));
 
-
 const MODE = "local";
 
 export default function LocalEditor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
   const { classes } = useStyles();
+
+  const { vscode } = useContext(WebviewContext);
 
   const loadConfig = useCallback(async () => {
     const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
@@ -52,6 +54,39 @@ export default function LocalEditor() {
   useEffect(() => {
     loadConfig();
   }, [loadConfig]);
+
+  const updateContent = useCallback(
+    async (text: string) => {
+      // TODO: saqadri - this won't work for YAML -- the handling of the text needs to include the logic from AIConfig.load
+      const updatedConfig = text != null ? JSON.parse(text) : {};
+      console.log("updatedConfig=", JSON.stringify(updatedConfig));
+      setAiConfig(updatedConfig);
+
+      // Then persist state information.
+      // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
+      vscode?.setState({ text });
+
+      // TODO: saqadri - as soon as content is updated, we have to call /load endpoint for the server to have the latest content as well
+      // However, instead of loading from FS, the /load endpoint should load from the data passed to it here.
+    },
+    [vscode]
+  );
+
+  // Handle messages sent from the extension to the webview
+  window.addEventListener("message", (event) => {
+    console.log("onMessage, event=", JSON.stringify(event));
+    const message = event.data; // The json data that the extension sent
+    switch (message.type) {
+      case "update": {
+        console.log("onMessage, message=", JSON.stringify(message));
+        const text = message.text;
+
+        // Update our webview's content
+        updateContent(text);
+        return;
+      }
+    }
+  });
 
   const setupTelemetryIfAllowed = useCallback(async () => {
     const isDev = (process.env.NODE_ENV ?? "development") === "development";
@@ -75,7 +110,7 @@ export default function LocalEditor() {
         sessionSampleRate: 100,
       });
 
-      datadogLogs.setGlobalContextProperty('mode', MODE);
+      datadogLogs.setGlobalContextProperty("mode", MODE);
     }
   }, []);
 
@@ -289,11 +324,7 @@ export default function LocalEditor() {
           <Loader size="xl" />
         </Flex>
       ) : (
-        <AIConfigEditor
-          aiconfig={aiconfig}
-          callbacks={callbacks}
-          mode={MODE}
-        />
+        <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} mode={MODE} />
       )}
     </div>
   );
