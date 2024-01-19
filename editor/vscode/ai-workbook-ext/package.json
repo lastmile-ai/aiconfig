@@ -13,6 +13,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "ai-workbook-ext.init",
+        "title": "AIConfig: Initialize Extension"
+      },
+      {
         "command": "ai-workbook-ext.helloWorld",
         "title": "Hello World"
       },
