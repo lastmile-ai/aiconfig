@@ -6,8 +6,9 @@ import DataRenderer from "./PromptInputDataSchemaRenderer";
 import AttachmentsRenderer from "./PromptInputAttachmentsSchemaRenderer";
 import { Flex, Text, Textarea } from "@mantine/core";
 import { Attachment, JSONValue, PromptInput } from "aiconfig";
-import { memo } from "react";
+import { memo, useContext } from "react";
 import JSONRenderer from "../../../JSONRenderer";
+import AIConfigContext from "../../../../contexts/AIConfigContext";
 
 type Props = {
   input: PromptInput;
@@ -62,6 +63,8 @@ function SchemaRenderer({ input, schema, onChangeInput }: SchemaRendererProps) {
 }
 
 export default memo(function PromptInputSchemaRenderer(props: Props) {
+  const {readOnly} = useContext(AIConfigContext);
+
   if (props.schema.type === "string") {
     if (props.input && typeof props.input !== "string") {
       return (
@@ -77,6 +80,7 @@ export default memo(function PromptInputSchemaRenderer(props: Props) {
         label="Prompt"
         onChange={(e) => props.onChangeInput(e.target.value)}
         placeholder="Type a prompt"
+        disabled = {readOnly}
         autosize
       />
     );
