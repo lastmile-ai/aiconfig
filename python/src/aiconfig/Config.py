@@ -7,6 +7,7 @@ import yaml
 from aiconfig.callback import CallbackEvent, CallbackManager
 from aiconfig.default_parsers.anyscale_endpoint import DefaultAnyscaleEndpointParser
 from aiconfig.default_parsers.openai import DefaultOpenAIParser
+from aiconfig.default_parsers.gemini import GeminiModelParser
 from aiconfig.default_parsers.palm import PaLMChatParser, PaLMTextParser
 from aiconfig.model_parser import InferenceOptions, ModelParser
 
@@ -43,6 +44,7 @@ dalle_image_generation_models = [
 ]
 for model in dalle_image_generation_models:
     ModelParserRegistry.register_model_parser(DalleImageGenerationParser(model))
+ModelParserRegistry.register_model_parser(GeminiModelParser("gemini-pro"), "gemini-pro")
 
 
 class AIConfigRuntime(AIConfig):
