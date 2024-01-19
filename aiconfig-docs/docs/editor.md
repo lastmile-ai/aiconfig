@@ -119,7 +119,7 @@ Each cell in AIConfig Editor is used to prompt generative AI models and output r
 | **Prompt Name**                  | The name of the prompt cell which can be referenced in other cells for chaining.                                                                              |
 | **Model**                        | The model you are prompting in this cell. Use the dropdown to see the available default models to AIConfig Editor.                                            |
 | **Settings**                     | The settings and parameters specific to the model (i.e. system prompt, temperature). These settings will vary depending on the model selected.                |
-| **Local Variables (Parameters)** | These are variables that you set to be used in the prompt via handlebars syntax. Local variables are local to the cell and cannot be accessed in other cells. |
+| **Local Parameters**             | These are parameters (variables) that you set to be used in the prompt via handlebars syntax. Local parameters are local to the cell and cannot be accessed in other cells. |
 
 Click ▶️ at the right of the cell to execute the prompt and see the model response.
 
@@ -135,15 +135,15 @@ You can chain your prompts via the cell reference names and handlebars syntax. F
 
 ## Create Prompt Templates {#prompt-templates}
 
-Prompt templates allow you to scale your prompts to different data inputs without needing to constantly modify the prompt itself. To do this in AIConfig Editor, variables are used to pass in data to prompts. You can set both global variables and local variables. Global Variables can be used across all prompts defined in the editor whereas Local Variables can only be used in the prompt cell they are defined for.
+Prompt templates allow you to scale your prompts to different data inputs without needing to constantly modify the prompt itself. To do this in AIConfig Editor, parameters are used to pass in data to prompts. You can set both global and local parameters. Global Parameters can be used across all prompts defined in the editor whereas Local Parameters can only be used in the prompt cell they are defined for.
 
-**Global Variables**
-You can set global variables to be used across all cells in the editor. Click on `Global Variables` at the top of the editor to expand the form to enter your global variables.
+**Global Parameters**
+You can set global parameters to be used across all cells in the editor. Click on `Global Parameters` at the top of the editor to expand the form to enter your global parameters.
 
 ![image5](https://github.com/lastmile-ai/aiconfig/assets/129882602/9633b389-a9ae-4bbd-b9bd-5c965dbbdcaf)
 
-**Local Variables**
-You can set local variables to be used in specific cells in the editor. In the cell, expand the right pane and select `Local Variables (Parameters)`.
+**Local Parameters**
+You can set local parameters to be used in specific cells in the editor. In the cell, expand the right pane and select `Local Parameters`.
 
 :::note
 Local parameters will override the global parameters if they have the same name.
@@ -152,7 +152,7 @@ Local parameters will override the global parameters if they have the same name.
 ![image6](https://github.com/lastmile-ai/aiconfig/assets/129882602/3c4408e4-be34-4b13-bddc-2dff5df88bcd)
 
 **Creating Prompt Templates**
-Prompt templates are created using [handlebars syntax](https://handlebarsjs.com/guide/) for the variables. Here is an example where `{{language}}` is defined as a global variable. You can easily change the values of the variable but keep the prompt template the same.
+Prompt templates are created using [handlebars syntax](https://handlebarsjs.com/guide/) for the parameters. Here is an example where `{{language}}` is defined as a global parameter. You can easily change the values of the parameter but keep the prompt template the same.
 
 ![image4](https://github.com/lastmile-ai/aiconfig/assets/129882602/4333b532-bc04-41c4-adcb-ce1e9c8ef8ea)
 

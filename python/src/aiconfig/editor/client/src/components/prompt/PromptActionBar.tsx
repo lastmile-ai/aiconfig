@@ -58,7 +58,7 @@ export default memo(function PromptActionBar({
                 <Tabs.Tab value="settings">Settings</Tabs.Tab>
                 {checkParametersSupported(prompt) && (
                   <Tabs.Tab value="parameters">
-                    Local Variables (Parameters)
+                    Local Parameters
                   </Tabs.Tab>
                 )}
               </Tabs.List>
