@@ -10,7 +10,7 @@
 
 
 <link rel="search" type="application/opensearchdescription+xml" title="AIConfig" href="/opensearch.xml"><link rel="stylesheet" href="/assets/css/styles.d55df971.css">
-<script src="/assets/js/runtime~main.e26c34e5.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.b8260146.js" defer="defer"></script>
 <script src="/assets/js/main.8ca534c3.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -71,7 +71,7 @@
 <p>Your edits in AIConfig Editor will auto-save and update the AIConfig file every 15 seconds. There is also a <code>Save</code> button to manually save changes to your AIConfig.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="run-prompts">Run Prompts<a href="#run-prompts" class="hash-link" aria-label="Direct link to Run Prompts" title="Direct link to Run Prompts">​</a></h2>
 <p>Each cell in AIConfig Editor is used to prompt generative AI models and output responses. Editor cell features:</p>
-<table><thead><tr><th>Feature</th><th>Description</th></tr></thead><tbody><tr><td><strong>Prompt Name</strong></td><td>The name of the prompt cell which can be referenced in other cells for chaining.</td></tr><tr><td><strong>Model</strong></td><td>The model you are prompting in this cell. Use the dropdown to see the available default models to AIConfig Editor.</td></tr><tr><td><strong>Settings</strong></td><td>The settings and parameters specific to the model (i.e. system prompt, temperature). These settings will vary depending on the model selected.</td></tr><tr><td><strong>Local Variables (Parameters)</strong></td><td>These are variables that you set to be used in the prompt via handlebars syntax. Local variables are local to the cell and cannot be accessed in other cells.</td></tr></tbody></table>
+<table><thead><tr><th>Feature</th><th>Description</th></tr></thead><tbody><tr><td><strong>Prompt Name</strong></td><td>The name of the prompt cell which can be referenced in other cells for chaining.</td></tr><tr><td><strong>Model</strong></td><td>The model you are prompting in this cell. Use the dropdown to see the available default models to AIConfig Editor.</td></tr><tr><td><strong>Settings</strong></td><td>The settings and parameters specific to the model (i.e. system prompt, temperature). These settings will vary depending on the model selected.</td></tr><tr><td><strong>Local Parameters</strong></td><td>These are parameters (variables) that you set to be used in the prompt via handlebars syntax. Local parameters are local to the cell and cannot be accessed in other cells.</td></tr></tbody></table>
 <p>Click ▶️ at the right of the cell to execute the prompt and see the model response.</p>
 <p><img loading="lazy" src="https://github.com/lastmile-ai/aiconfig/assets/129882602/df2718ba-41e8-46ac-88f6-0ab312ecdc6b" alt="image3" class="img_ev3q"></p>
 <p>The outputs are saved to the AIConfig file by default.</p>
@@ -79,16 +79,16 @@
 <p>You can chain your prompts via the cell reference names and handlebars syntax. For example, you can have a cell that uses GPT-4 to generate a haiku, and a GPT-3.5 cell that translates the message into a different language.</p>
 <p><img loading="lazy" src="https://github.com/lastmile-ai/aiconfig/assets/129882602/22243c9e-f615-4abd-9b59-7d9f9a54bb2f" alt="image7" class="img_ev3q"></p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="prompt-templates">Create Prompt Templates<a href="#prompt-templates" class="hash-link" aria-label="Direct link to Create Prompt Templates" title="Direct link to Create Prompt Templates">​</a></h2>
-<p>Prompt templates allow you to scale your prompts to different data inputs without needing to constantly modify the prompt itself. To do this in AIConfig Editor, variables are used to pass in data to prompts. You can set both global variables and local variables. Global Variables can be used across all prompts defined in the editor whereas Local Variables can only be used in the prompt cell they are defined for.</p>
-<p><strong>Global Variables</strong>
-You can set global variables to be used across all cells in the editor. Click on <code>Global Variables</code> at the top of the editor to expand the form to enter your global variables.</p>
+<p>Prompt templates allow you to scale your prompts to different data inputs without needing to constantly modify the prompt itself. To do this in AIConfig Editor, parameters are used to pass in data to prompts. You can set both global and local parameters. Global Parameters can be used across all prompts defined in the editor whereas Local Parameters can only be used in the prompt cell they are defined for.</p>
+<p><strong>Global Parameters</strong>
+You can set global parameters to be used across all cells in the editor. Click on <code>Global Parameters</code> at the top of the editor to expand the form to enter your global parameters.</p>
 <p><img loading="lazy" src="https://github.com/lastmile-ai/aiconfig/assets/129882602/9633b389-a9ae-4bbd-b9bd-5c965dbbdcaf" alt="image5" class="img_ev3q"></p>
-<p><strong>Local Variables</strong>
-You can set local variables to be used in specific cells in the editor. In the cell, expand the right pane and select <code>Local Variables (Parameters)</code>.</p>
+<p><strong>Local Parameters</strong>
+You can set local parameters to be used in specific cells in the editor. In the cell, expand the right pane and select <code>Local Parameters</code>.</p>
 <div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>note</div><div class="admonitionContent_BuS1"><p>Local parameters will override the global parameters if they have the same name.</p></div></div>
 <p><img loading="lazy" src="https://github.com/lastmile-ai/aiconfig/assets/129882602/3c4408e4-be34-4b13-bddc-2dff5df88bcd" alt="image6" class="img_ev3q"></p>
 <p><strong>Creating Prompt Templates</strong>
-Prompt templates are created using <a href="https://handlebarsjs.com/guide/" target="_blank" rel="noopener noreferrer">handlebars syntax</a> for the variables. Here is an example where <code>{{language}}</code> is defined as a global variable. You can easily change the values of the variable but keep the prompt template the same.</p>
+Prompt templates are created using <a href="https://handlebarsjs.com/guide/" target="_blank" rel="noopener noreferrer">handlebars syntax</a> for the parameters. Here is an example where <code>{{language}}</code> is defined as a global parameter. You can easily change the values of the parameter but keep the prompt template the same.</p>
 <p><img loading="lazy" src="https://github.com/lastmile-ai/aiconfig/assets/129882602/4333b532-bc04-41c4-adcb-ce1e9c8ef8ea" alt="image4" class="img_ev3q"></p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="custom-model-parsers">Add Custom Model Parsers<a href="#custom-model-parsers" class="hash-link" aria-label="Direct link to Add Custom Model Parsers" title="Direct link to Add Custom Model Parsers">​</a></h2>
 <p>The AIConfig Editor is highly customizable and allows for custom models to be integrated into the editor. Check out our <a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Gradio" target="_blank" rel="noopener noreferrer">Gradio cookbook</a> to see an example of integrating other cool model parsers like:</p>
