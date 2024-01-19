@@ -30,7 +30,7 @@ export default memo(function GlobalParametersContainer({
       >
         <Accordion.Item value="parameters">
           <Accordion.Control>
-            <Text color="blue">Global Parameters</Text>
+            <Text color="blue">Global Parameters {}</Text>
           </Accordion.Control>
           <Accordion.Panel>
             {isParametersDrawerOpen && (
