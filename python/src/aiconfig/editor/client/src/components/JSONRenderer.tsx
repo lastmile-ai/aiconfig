@@ -1,7 +1,8 @@
 import { Prism } from "@mantine/prism";
 import { JSONObject, JSONValue } from "aiconfig";
-import { memo } from "react";
+import { memo, useContext } from "react";
 import JSONEditor from "./JSONEditor";
+import AIConfigContext from "../contexts/AIConfigContext";
 
 type Props = {
   content: JSONValue;
@@ -14,7 +15,9 @@ export default memo(function JSONRenderer({
   onChange,
   schema,
 }: Props) {
-  return !onChange ? (
+  const { readOnly } = useContext(AIConfigContext);
+  // Prism is a read only renderer.
+  return !onChange || readOnly ? (
     <Prism language="json" styles={{ code: { textWrap: "pretty" } }}>
       {JSON.stringify(content, null, 2)}
     </Prism>
