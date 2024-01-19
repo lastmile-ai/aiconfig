@@ -226,6 +226,8 @@ export default function aiconfigReducer(
           isRunning: true,
           cancellationToken: action.cancellationToken,
         },
+        // clear the outputs before running so that new outputs are noticeable, even if they are identical
+        outputs: [],
       }));
     }
     case "RUN_PROMPT_CANCEL": {
