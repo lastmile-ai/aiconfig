@@ -167,18 +167,27 @@ export default function aiconfigReducer(
       }));
     }
     case "UPDATE_PROMPT_MODEL": {
-      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
-        ...prompt,
-        metadata: {
-          ...prompt.metadata,
-          model: action.modelName
-            ? {
-                name: action.modelName,
-                // TODO: Consolidate settings based on schema union
-              }
-            : undefined,
-        },
-      }));
+      return reduceReplacePrompt(dirtyState, action.id, (prompt) => {
+        // TODO: Consolidate settings based on schema union, server-side
+        // For now, just keep all the settings to match the server-side implementation
+        let modelSettings;
+        const promptModel = prompt.metadata?.model;
+        if (promptModel && typeof promptModel !== "string") {
+          modelSettings = promptModel.settings;
+        }
+        return {
+          ...prompt,
+          metadata: {
+            ...prompt.metadata,
+            model: action.modelName
+              ? {
+                  name: action.modelName,
+                  settings: modelSettings,
+                }
+              : undefined,
+          },
+        };
+      });
     }
     case "UPDATE_PROMPT_MODEL_SETTINGS": {
       return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
