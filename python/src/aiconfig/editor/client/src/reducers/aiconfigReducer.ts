@@ -221,6 +221,7 @@ export default function aiconfigReducer(
       const runningState = setRunningPromptId(dirtyState, action.promptId);
       return reduceReplacePrompt(runningState, action.promptId, (prompt) => ({
         ...prompt,
+        outputs: [],
         _ui: {
           ...prompt._ui,
           isRunning: true,
