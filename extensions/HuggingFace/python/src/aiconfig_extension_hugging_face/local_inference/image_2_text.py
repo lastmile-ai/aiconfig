@@ -1,8 +1,9 @@
 import base64
 import json
 from io import BytesIO
-from PIL import Image
 from typing import Any, Dict, Optional, List, TYPE_CHECKING, Union
+from PIL import Image as img_module
+from PIL.Image import Image as ImageType
 from transformers import (
     Pipeline,
     pipeline,
@@ -230,7 +231,7 @@ def validate_attachment_type_is_image(
         raise ValueError(f"Invalid attachment mimetype {attachment.mime_type} for prompt '{prompt_name}'. Please use a mimetype that starts with 'image/'.")
 
 
-def validate_and_retrieve_images_from_attachments(prompt: Prompt) -> list[Union[str, Image]]:
+def validate_and_retrieve_images_from_attachments(prompt: Prompt) -> list[Union[str, ImageType]]:
     """
     Retrieves the image uri's from each attachment in the prompt input.
 
@@ -244,7 +245,7 @@ def validate_and_retrieve_images_from_attachments(prompt: Prompt) -> list[Union[
     if not hasattr(prompt.input, "attachments") or len(prompt.input.attachments) == 0:
         raise ValueError(f"No attachments found in input for prompt '{prompt.name}'. Please add an image attachment to the prompt input.")
 
-    images: list[Union[str, Image]] = []
+    images: list[Union[str, ImageType]] = []
 
     for i, attachment in enumerate(prompt.input.attachments):
         validate_attachment_type_is_image(prompt.name, attachment)
@@ -256,7 +257,7 @@ def validate_and_retrieve_images_from_attachments(prompt: Prompt) -> list[Union[
                          Please specify a uri or base64 encoded string for the image attachment in prompt '{prompt.name}'.""")
         input_data = attachment.data.value
         if attachment.data.kind == "base64":
-            pil_image: Image = Image.open(BytesIO(base64.b64decode(input_data)))
+            pil_image: ImageType = img_module.open(BytesIO(base64.b64decode(input_data)))
             images.append(pil_image)
         else:
             images.append(input_data) # expect a uri
