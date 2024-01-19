@@ -106,6 +106,7 @@ const ParameterInput = memo(function ParameterInput(props: {
           value={parameterValueString}
           autosize
           size="xs"
+          minRows={3}
           maxRows={5}
           onChange={(event) => {
             setParameterValueString(event.target.value);
