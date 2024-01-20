@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useContext, useState } from "react";
 import type { Attachment, Attachment as InputAttachment } from "aiconfig";
 import { PromptInputObjectAttachmentsSchema } from "../../../../utils/promptUtils";
 import { Dropzone, FileRejection } from "@mantine/dropzone";
@@ -8,6 +8,7 @@ import {
 } from "../../../../utils/dropzoneHelpers";
 import { ActionIcon, Container, Text, Title, Tooltip } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
+import AIConfigContext from "../../../../contexts/AIConfigContext";
 
 type Props = {
   schema: PromptInputObjectAttachmentsSchema;
@@ -85,6 +86,7 @@ Props) {
   const [fileList, setFileList] = useState<File[]>([]);
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const {readOnly} = useContext(AIConfigContext);
 
   const onDropzoneClick = async (files: File[]) => {
     if (uploadState === "dropzone_error") {
@@ -115,7 +117,7 @@ Props) {
 
       const attachments: Attachment[] = uploads.map((upload) => {
         return {
-          data: upload.url,
+          data: {value: upload.url, kind: "file_uri"},
           mime_type: upload.mimeType,
         };
       });
@@ -163,6 +165,7 @@ Props) {
           // TODO: Get these from schema,
           // maxSize={MAX_IMAGE_FILE_SIZE}
           accept={schema.items.mime_types}
+          disabled={readOnly}
         >
           {fileList.length > 0 ? (
             `${fileList.length} File(s) Uploading...`

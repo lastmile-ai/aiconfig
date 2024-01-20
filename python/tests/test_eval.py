@@ -1,7 +1,9 @@
 import itertools
+import json
 import logging
 import os
 from typing import Any
+from frozendict import frozendict
 
 import hypothesis
 import hypothesis.strategies as st
@@ -177,6 +179,79 @@ async def test_run_test_suite_with_inputs(data: st.DataObject):
             )
 
             assert input_pairs == result_pairs
+
+            df_brevity = df[df["metric_name"] == "brevity"]  # type: ignore
+            assert (df_brevity["aiconfig_output"].apply(len) == df_brevity["value"]).all()  # type: ignore
+
+            df_substring = df[df["metric_name"] == "substring_match"]  # type: ignore
+            assert (df_substring["value"].apply(lambda x: x in {False, True})).all()  # type: ignore
+
+        case Err(e):
+            assert False, f"expected Ok, got Err({e})"
+
+
+@hypothesis.given(st.data())
+@pytest.mark.asyncio
+async def test_run_test_suite_with_inputs_general_params(data: st.DataObject):
+    """In test_run_test_suite_outputs_only, we test the user-facing function (e2e)
+    In this case that's harder because run_test_suite_with_inputs takes
+    an aiconfig path, not object.
+    In order to test with a mock AIConfig object, in this test we go one level down
+    and test run_test_suite_helper().
+
+    Also see test_run_with_inputs_sanity_check.
+    """
+    metrics_list = [brevity, substring_match("hello")]
+    inputs = st.dictionaries(st.text(min_size=1), st.text(min_size=1), min_size=0, max_size=2)
+    test_pairs = st.tuples(inputs, st.sampled_from(metrics_list))
+    user_test_suite_with_inputs = data.draw(
+        st.lists(
+            test_pairs,
+            min_size=1,
+        )
+    )
+
+    async def mock_run_text_to_text(prompt_name: str, params: dict[str, str]) -> str:
+        return f"{prompt_name}_output." + ",".join(f"{key=};{value=}" for key, value in params.items())
+
+    mock_aiconfig = mocks.make_mock_aiconfig_runtime(mock_run_text_to_text)
+
+    out = await run_test_suite_helper(
+        TestSuiteWithInputsSpec(
+            test_suite=user_test_suite_with_inputs, prompt_name="prompt0", aiconfig=mock_aiconfig, general_settings=TestSuiteGeneralSettings()
+        )
+    )
+
+    df_out = out.map(text_eval_res_to_df)
+
+    match df_out:
+        case Ok(df):
+            assert isinstance(df, pd.DataFrame)
+            assert df.shape[0] == (len(user_test_suite_with_inputs))
+            assert df.columns.tolist() == [
+                "input",
+                "aiconfig_output",
+                "value",
+                "metric_id",
+                "metric_name",
+                "metric_description",
+                "best_possible_value",
+                "worst_possible_value",
+            ]
+
+            input_pairs = {
+                (
+                    #
+                    json.dumps(frozendict(input_datum), sort_keys=True),
+                    metric.metric_metadata.id,
+                )
+                for input_datum, metric in user_test_suite_with_inputs
+            }
+            result_pairs = set(  # type: ignore[no-untyped-call]
+                df[["input", "metric_id"]].itertuples(index=False, name=None)  # type: ignore[no-untyped-call]
+            )
+
+            assert input_pairs == result_pairs, f"fail: {input_pairs=}, {result_pairs=}"
 
             df_brevity = df[df["metric_name"] == "brevity"]  # type: ignore
             assert (df_brevity["aiconfig_output"].apply(len) == df_brevity["value"]).all()  # type: ignore

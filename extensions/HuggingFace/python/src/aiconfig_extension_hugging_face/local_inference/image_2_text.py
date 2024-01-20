@@ -1,8 +1,9 @@
 import base64
 import json
 from io import BytesIO
-from PIL import Image
 from typing import Any, Dict, Optional, List, TYPE_CHECKING, Union
+from PIL import Image as img_module
+from PIL.Image import Image as ImageType
 from transformers import (
     Pipeline,
     pipeline,
@@ -17,6 +18,7 @@ from aiconfig.schema import (
     ExecuteResult,
     Output,
     Prompt,
+    AttachmentDataWithStringValue
 )
 
 # Circular Dependency Type Hints
@@ -229,7 +231,7 @@ def validate_attachment_type_is_image(
         raise ValueError(f"Invalid attachment mimetype {attachment.mime_type} for prompt '{prompt_name}'. Please use a mimetype that starts with 'image/'.")
 
 
-def validate_and_retrieve_images_from_attachments(prompt: Prompt) -> list[Union[str, Image]]:
+def validate_and_retrieve_images_from_attachments(prompt: Prompt) -> list[Union[str, ImageType]]:
     """
     Retrieves the image uri's from each attachment in the prompt input.
 
@@ -243,23 +245,21 @@ def validate_and_retrieve_images_from_attachments(prompt: Prompt) -> list[Union[
     if not hasattr(prompt.input, "attachments") or len(prompt.input.attachments) == 0:
         raise ValueError(f"No attachments found in input for prompt '{prompt.name}'. Please add an image attachment to the prompt input.")
 
-    images: list[Union[str, Image]] = []
+    images: list[Union[str, ImageType]] = []
 
     for i, attachment in enumerate(prompt.input.attachments):
         validate_attachment_type_is_image(prompt.name, attachment)
 
-        input_data = attachment.data
-        if not isinstance(input_data, str):
+        
+        if not isinstance(attachment.data, AttachmentDataWithStringValue):
             # See todo above, but for now only support uris and base64
-            raise ValueError(f"Attachment #{i} data is not a uri or base64 string. Please specify a uri or base64 encoded string for the image attachment in prompt '{prompt.name}'.")
-
-        # Really basic heurestic to check if the data is a base64 encoded str
-        # vs. uri. This will be fixed once we have standardized inputs
-        # See https://github.com/lastmile-ai/aiconfig/issues/829
-        if len(input_data) > 10000:
-            pil_image: Image = Image.open(BytesIO(base64.b64decode(input_data)))
+            raise ValueError(f"""Attachment #{i} data must be of type `AttachmentDataWithStringValue` with a `kind` and `value` field.
+                         Please specify a uri or base64 encoded string for the image attachment in prompt '{prompt.name}'.""")
+        input_data = attachment.data.value
+        if attachment.data.kind == "base64":
+            pil_image: ImageType = img_module.open(BytesIO(base64.b64decode(input_data)))
             images.append(pil_image)
         else:
-            images.append(input_data)
+            images.append(input_data) # expect a uri
 
     return images

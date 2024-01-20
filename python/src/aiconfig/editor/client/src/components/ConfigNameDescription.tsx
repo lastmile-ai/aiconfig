@@ -87,7 +87,7 @@ export default memo(function ConfigNameDescription({
         setInitialFocus("description");
       }
     },
-    []
+    [readOnly]
   );
 
   return (
