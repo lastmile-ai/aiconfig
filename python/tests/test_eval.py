@@ -321,11 +321,12 @@ async def test_exception_metric(caplog: pytest.LogCaptureFixture):
     user_test_suite_outputs_only = list(
         itertools.product(
             ["Hundred Acre Wood", ""],
-            [metrics.brevity],
+            [brevity],
         )
     )
     with caplog.at_level(logging.ERROR):
         df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
+        print(df[["metric_name"]])
     mapping: dict[str, Any] = df.query("metric_name=='brevity'").set_index("aiconfig_output").value.to_dict()  # type: ignore
     assert mapping["Hundred Acre Wood"] == 17.0
     assert pd.isnull(mapping[""])  # type: ignore
