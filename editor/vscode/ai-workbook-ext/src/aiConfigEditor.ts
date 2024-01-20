@@ -1,8 +1,17 @@
 import * as vscode from "vscode";
-import { getNonce } from "./util";
+import {
+  COMMANDS,
+  ServerInfo,
+  getNonce,
+  initializeServerState,
+  waitUntilServerReady,
+} from "./util";
 import { getUri } from "./utilities/getUri";
 
 import * as fs from "fs";
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+import path from "path";
+import { getPortPromise } from "portfinder";
 
 /**
  * Provider for cat scratch editors.
@@ -17,8 +26,14 @@ import * as fs from "fs";
  * - Synchronizing changes between a text document and a custom editor.
  */
 export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
-  public static register(context: vscode.ExtensionContext): vscode.Disposable {
-    const provider = new AIConfigEditorProvider(context);
+  public static register(
+    context: vscode.ExtensionContext,
+    extensionOutputChannel: vscode.LogOutputChannel
+  ): vscode.Disposable {
+    const provider = new AIConfigEditorProvider(
+      context,
+      extensionOutputChannel
+    );
     const providerRegistration = vscode.window.registerCustomEditorProvider(
       AIConfigEditorProvider.viewType,
       provider
@@ -41,7 +56,12 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     "🐱",
   ];
 
-  constructor(private readonly context: vscode.ExtensionContext) {}
+  private editorServer: ServerInfo | null = null;
+
+  constructor(
+    private readonly context: vscode.ExtensionContext,
+    private readonly extensionOutputChannel: vscode.LogOutputChannel
+  ) {}
 
   /**
    * Called when our custom editor is opened.
@@ -54,12 +74,23 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     _token: vscode.CancellationToken
   ): Promise<void> {
     console.log(this.context.extensionUri);
+
+    console.log(`${document.fileName}: resolveCustomTextEditor called`);
+
+    // We show the extension output channel so users can see some of the server logs as they use the extension
+    this.extensionOutputChannel.show(/*preserveFocus*/ true);
+
+    // Start the AIConfig editor server process.
+    this.editorServer = await this.startEditorServer(document);
+
     // Setup initial content for the webview
     webviewPanel.webview.options = {
       enableScripts: true,
+      enableCommandUris: true,
       localResourceRoots: [
         vscode.Uri.joinPath(this.context.extensionUri, "out"),
         vscode.Uri.joinPath(this.context.extensionUri, "media"),
+        // TODO: saqadri - update to main.js once we have a build step
         vscode.Uri.joinPath(
           this.context.extensionUri,
           "..",
@@ -89,7 +120,9 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(
       (e) => {
+        console.log(`changeDocumentSubscription, e=${JSON.stringify(e)})}`);
         if (e.document.uri.toString() === document.uri.toString()) {
+          console.log("changeDocumentSubscription");
           updateWebview();
         }
       }
@@ -97,7 +130,14 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Make sure we get rid of the listener when our editor is closed.
     webviewPanel.onDidDispose(() => {
+      console.log(`${document.fileName}: Webview disposed`);
       changeDocumentSubscription.dispose();
+
+      // TODO: saqadri -- terminate the editor server process.
+      if (this.editorServer) {
+        console.log("Killing editor server process");
+        this.editorServer.proc.kill();
+      }
     });
 
     // Receive message from the webview.
@@ -129,7 +169,102 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       }
     });
 
+    // Wait for server ready
+    await waitUntilServerReady(this.editorServer.url);
+
+    // Now set up the server with the latest document content
+    await initializeServerState(this.editorServer.url, document);
+
+    // Inform the webview of the server URL
+    webviewPanel.webview.postMessage({
+      type: "set_server_url",
+      url: this.editorServer.url,
+    });
+
     updateWebview();
+  }
+
+  private prependMessage(message: string, document: vscode.TextDocument) {
+    return `${document.fileName}: ${message}`;
+  }
+
+  private async startEditorServer(
+    document: vscode.TextDocument
+  ): Promise<ServerInfo> {
+    this.extensionOutputChannel.info(
+      this.prependMessage("Starting editor server", document)
+    );
+
+    const extensionPath = this.context.extensionPath;
+    const startServerScriptPath = path.join(
+      extensionPath,
+      "python",
+      "src",
+      "start_server.py"
+    );
+
+    const openPort = await getPortPromise();
+
+    // TODO: saqadri - specify parsers_module_path
+    let startServer = spawn("python3", [
+      startServerScriptPath,
+      "--server_port",
+      openPort.toString(),
+    ]);
+
+    startServer.stdout.on("data", (data) => {
+      this.extensionOutputChannel.info(this.prependMessage(data, document));
+      console.log(`server stdout: ${data}`);
+    });
+
+    startServer.stderr.on("data", (data) => {
+      this.extensionOutputChannel.error(this.prependMessage(data, document));
+      console.error(`server stderr: ${data}`);
+    });
+
+    startServer.on("spawn", () => {
+      this.extensionOutputChannel.info(
+        this.prependMessage(
+          `Started server at port=${openPort}, pid=${startServer.pid}`,
+          document
+        )
+      );
+      console.log(`server spawned: ${startServer.pid}`);
+    });
+
+    startServer.on("close", (code) => {
+      if (code !== 0) {
+        this.extensionOutputChannel.error(
+          this.prependMessage(
+            `Server at port=${openPort}, pid=${startServer.pid} was terminated unexpectedly with exit code ${code}`,
+            document
+          )
+        );
+        console.error(`server terminated unexpectedly: exit code=${code}`);
+      } else {
+        this.extensionOutputChannel.info(
+          this.prependMessage(
+            `Server at port=${openPort}, pid=${startServer.pid} was terminated successfully.`,
+            document
+          )
+        );
+        console.log(`server terminated successfully`);
+      }
+    });
+
+    startServer.on("error", (err) => {
+      this.extensionOutputChannel.error(
+        this.prependMessage(JSON.stringify(err), document)
+      );
+      // TODO: saqadri - add "restart" option with error message
+    });
+
+    const serverUrl = `http://localhost:${openPort}`;
+
+    return {
+      proc: startServer,
+      url: serverUrl,
+    };
   }
 
   /**
