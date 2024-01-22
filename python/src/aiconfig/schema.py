@@ -17,6 +17,7 @@ EXCLUDE_OPTIONS = {
     "callback_manager": True,
 }
 
+
 class OutputDataWithStringValue(BaseModel):
     """
     This represents the output content that is storied as a string, but we use
@@ -79,6 +80,7 @@ OutputDataWithValue = Union[
     OutputDataWithToolCallsValue,
 ]
 
+
 class AttachmentDataWithStringValue(BaseModel):
     """
     This represents the attachment data that is stored as a string, but we use
@@ -88,6 +90,7 @@ class AttachmentDataWithStringValue(BaseModel):
 
     kind: Literal["file_uri", "base64"]
     value: str
+
 
 class ExecuteResult(BaseModel):
     """
@@ -104,7 +107,7 @@ class ExecuteResult(BaseModel):
     mime_type: Optional[str] = None
     # Output metadata
     metadata: Dict[str, Any]
-    
+
     def to_json(self) -> JSONObject:
         """
         Helper method used to ensure this is formatted to a valid JSON object
@@ -226,6 +229,7 @@ class ConfigMetadata(BaseModel):
 
     class Config:
         extra = "allow"
+        protected_namespaces = ()
 
 
 class AIConfig(BaseModel):
