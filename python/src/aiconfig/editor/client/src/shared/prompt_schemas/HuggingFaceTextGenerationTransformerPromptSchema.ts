@@ -79,7 +79,7 @@ export const HuggingFaceTextGenerationTransformerPromptSchema: PromptSchema = {
         description: `Whether or not the model should use the past last key/values attentions (if applicable to the model) to speed up decoding.`,
       },
       temperature: {
-        type: "float",
+        type: "number",
         description: `The value used to modulate the next token probabilities.`,
       },
       top_k: {
@@ -87,24 +87,24 @@ export const HuggingFaceTextGenerationTransformerPromptSchema: PromptSchema = {
         description: `The number of highest probability vocabulary tokens to keep for top-k-filtering.`,
       },
       top_p: {
-        type: "float",
+        type: "number",
         description: `If set to float < 1, only the most probable tokens with probabilities that add up to top_p or higher are kept for generation.`,
       },
       typical_p: {
-        type: "float",
+        type: "number",
         description: `Local typicality measures how similar the conditional probability of predicting a target token next is to 
         the expected conditional probability of predicting a random token next, given the partial text already generated. 
         If set to float < 1, the smallest set of the most locally typical tokens with probabilities that add up to typical_p 
         or higher are kept for generation.`,
       },
       epsilon_cutoff: {
-        type: "float",
+        type: "number",
         description: ` If set to float strictly between 0 and 1, only tokens with a conditional probability greater than 
         epsilon_cutoff will be sampled. In the paper, suggested values range from 3e-4 to 9e-4, depending on the size of the model.
          See Truncation Sampling as Language Model Desmoothing for more details.`,
       },
       eta_cutoff: {
-        type: "float",
+        type: "number",
         description: `Eta sampling is a hybrid of locally typical sampling and epsilon sampling. If set to float strictly between 0 
         and 1, a token is only considered if it is greater than either 
         eta_cutoff or sqrt(eta_cutoff) * exp(-entropy(softmax(next_token_logits))). The latter term is intuitively the expected 
@@ -112,21 +112,21 @@ export const HuggingFaceTextGenerationTransformerPromptSchema: PromptSchema = {
         on the size of the model. See Truncation Sampling as Language Model Desmoothing for more details.`,
       },
       diveristy_penalty: {
-        type: "flow",
+        type: "number",
         description: `This value is subtracted from a beam’s score if it generates a token same as any beam from other group at a 
         particular time. Note that diversity_penalty is only effective if group beam search is enabled.`,
       },
       repetition_penalty: {
-        type: "float",
+        type: "number",
         description: `The parameter for repetition penalty. 1.0 means no penalty.`,
       },
       encoder_repetition_penalty: {
-        type: "float",
+        type: "number",
         description: `The paramater for encoder_repetition_penalty. An exponential penalty on sequences that are not in the 
         original input. 1.0 means no penalty.`,
       },
       length_penalty: {
-        type: "float",
+        type: "number",
         description: `Exponential penalty to the length that is used with beam-based generation. It is applied as an exponent 
         to the sequence length, which in turn is used to divide the score of the sequence. Since the score is the log likelihood 
         of the sequence (i.e. negative), length_penalty > 0.0 promotes longer sequences, while length_penalty < 0.0 encourages 
@@ -236,7 +236,7 @@ export const HuggingFaceTextGenerationTransformerPromptSchema: PromptSchema = {
         forced before sampling. For example, [[1, 123]] means the second generated token will always be a token of index 123.`,
       },
       guidance_scale: {
-        type: "float",
+        type: "number",
         description: `The guidance scale for classifier free guidance (CFG). CFG is enabled by setting guidance_scale > 1. 
         Higher guidance scale encourages the model to generate samples that are more closely linked to the input prompt, usually 
         at the expense of poorer quality.`,
