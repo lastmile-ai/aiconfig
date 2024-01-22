@@ -60,10 +60,10 @@ export default memo(function PromptsContainer(props: Props) {
         return (
           <Stack key={prompt._ui.id}>
             <Flex mt="md">
-              <PromptMenuButton
+              {!readOnly && <PromptMenuButton
                 promptId={prompt._ui.id}
                 onDeletePrompt={() => props.onDeletePrompt(prompt._ui.id)}
-              />
+              />}
               <PromptContainer
                 prompt={prompt}
                 getModels={props.getModels}
