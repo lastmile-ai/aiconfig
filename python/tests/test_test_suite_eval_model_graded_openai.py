@@ -5,12 +5,12 @@ import openai.types.chat as openai_chat_types
 import openai.types.chat.chat_completion as openai_chat_completion_types
 import openai.types.chat.chat_completion_message_tool_call as openai_tool_call_types
 import pytest
-from aiconfig.eval import common
-from aiconfig.eval.api import metrics, run_test_suite_outputs_only
+from aiconfig.eval import test_suite_common
+from aiconfig.eval.api import test_suite_metrics, run_test_suite_outputs_only
 from result import Ok, Result
 
 
-def _mock_response(function_args: common.SerializedJSON) -> openai_chat_types.ChatCompletion:
+def _mock_response(function_args: test_suite_common.SerializedJSON) -> openai_chat_types.ChatCompletion:
     return openai_chat_types.ChatCompletion(
         id="123",
         choices=[
@@ -39,7 +39,7 @@ def _mock_response(function_args: common.SerializedJSON) -> openai_chat_types.Ch
     )
 
 
-def _make_mock_openai_chat_completion_create(function_arguments_return: common.SerializedJSON) -> lib_openai.OpenAIChatCompletionCreate:
+def _make_mock_openai_chat_completion_create(function_arguments_return: test_suite_common.SerializedJSON) -> lib_openai.OpenAIChatCompletionCreate:
     def _mock_openai_chat_completion_create(
         completion_params: lib_openai.OpenAIChatCompletionParams,
     ) -> Result[openai_chat_types.ChatCompletion, str]:
@@ -55,11 +55,13 @@ def _make_mock_openai_chat_completion_create(function_arguments_return: common.S
 @pytest.mark.asyncio
 async def test_openai_structured_eval():
     _mock_create = _make_mock_openai_chat_completion_create(
-        common.SerializedJSON('{"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it\'s pretty concise."}')
+        test_suite_common.SerializedJSON(
+            '{"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it\'s pretty concise."}'
+        )
     )
-    mock_metric = metrics.make_openai_structured_llm_metric(
+    mock_metric = test_suite_metrics.make_openai_structured_llm_metric(
         eval_llm_name="gpt-3.5-turbo-0613",
-        pydantic_basemodel_type=common.TextRatingsData,
+        pydantic_basemodel_type=test_suite_common.TextRatingsData,
         metric_name="text_ratings",
         metric_description="Text ratings",
         field_descriptions=dict(
@@ -74,8 +76,8 @@ async def test_openai_structured_eval():
         ("one two three", mock_metric),
     ]
     df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
-    metric_data = cast(common.CustomMetricPydanticObject[common.TextRatingsData], df.loc[0, "value"]).data
-    assert isinstance(metric_data, common.TextRatingsData)
+    metric_data = cast(test_suite_common.CustomMetricPydanticObject[test_suite_common.TextRatingsData], df.loc[0, "value"]).data
+    assert isinstance(metric_data, test_suite_common.TextRatingsData)
     metric_json = metric_data.to_dict()
     assert metric_json == {"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it's pretty concise."}
 
@@ -83,13 +85,15 @@ async def test_openai_structured_eval():
 @pytest.mark.asyncio
 async def test_bad_structured_eval_metric():
     _mock_create = _make_mock_openai_chat_completion_create(
-        common.SerializedJSON('{"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it\'s pretty concise."}')
+        test_suite_common.SerializedJSON(
+            '{"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it\'s pretty concise."}'
+        )
     )
 
     with pytest.raises(ValueError) as exc:
-        _ = metrics.make_openai_structured_llm_metric(
+        _ = test_suite_metrics.make_openai_structured_llm_metric(
             eval_llm_name="gpt-3.5-turbo-0613",
-            pydantic_basemodel_type=common.TextRatingsData,
+            pydantic_basemodel_type=test_suite_common.TextRatingsData,
             metric_name="text_ratings",
             metric_description="Text ratings",
             field_descriptions=dict(

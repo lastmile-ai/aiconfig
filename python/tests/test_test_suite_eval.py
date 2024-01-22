@@ -10,14 +10,14 @@ import hypothesis.strategies as st
 import lastmile_utils.lib.core.api as core_utils
 import pandas as pd
 import pytest
-from aiconfig.eval.api import TestSuiteWithInputsSettings, metrics, run_test_suite_outputs_only, run_test_suite_with_inputs
-from aiconfig.eval.lib import MetricList, TestSuiteGeneralSettings, TestSuiteWithInputsSpec, run_test_suite_helper, text_eval_res_to_df
+from aiconfig.eval.api import TestSuiteWithInputsSettings, test_suite_metrics, run_test_suite_outputs_only, run_test_suite_with_inputs
+from aiconfig.eval.test_suite_lib import MetricList, TestSuiteGeneralSettings, TestSuiteWithInputsSpec, run_test_suite_helper, text_eval_res_to_df
 from result import Err, Ok
 
 from . import mocks
 
-brevity = metrics.brevity
-substring_match = metrics.substring_match
+brevity = test_suite_metrics.brevity
+substring_match = test_suite_metrics.substring_match
 
 MOCK_NLTK_SENTIMENT_SCORE_MAPPING = {
     "nltk is amazing": {"pos": 0.9, "neu": 0.1, "neg": 0.0, "compound": 0.9},
@@ -72,7 +72,7 @@ async def test_run_with_inputs_sanity_check():
 
     path = os.path.join(
         current_dir(),
-        "../src/aiconfig/eval/examples/travel/travel_parametrized.aiconfig.json",
+        "../src/aiconfig/eval/test_suite_examples/travel/travel_parametrized.aiconfig.json",
     )
     out = await run_test_suite_with_inputs(
         [],
@@ -267,27 +267,27 @@ def _make_mock_nltk_metrics() -> MetricList[str]:
     def _mock_get_nltk_polarity_scores(text: str) -> dict[str, float]:
         return MOCK_NLTK_SENTIMENT_SCORE_MAPPING[text]
 
-    mock_nltk_sentiment_scores_vader = metrics.make_sentiment_scores_metric(
+    mock_nltk_sentiment_scores_vader = test_suite_metrics.make_sentiment_scores_metric(
         get_polarity_scores=_mock_get_nltk_polarity_scores,
-        make_evaluation_fn=metrics.make_get_sentiment_scores,
+        make_evaluation_fn=test_suite_metrics.make_get_sentiment_scores,
         name="nltk_sentiment_scores_vader",
         description="NLTK sentiment scores using Vader",
     )
 
-    mock_nltk_sentiment_class_vader = metrics.make_sentiment_scores_metric(
+    mock_nltk_sentiment_class_vader = test_suite_metrics.make_sentiment_scores_metric(
         get_polarity_scores=_mock_get_nltk_polarity_scores,
-        make_evaluation_fn=metrics.make_get_sentiment_class,
+        make_evaluation_fn=test_suite_metrics.make_get_sentiment_class,
         name="nltk_sentiment_class_vader",
         description="Highest-probability NLTK sentiment class using Vader",
     )
 
-    mock_nltk_sentiment_score_overall_positive = metrics.make_sentiment_scores_metric(
+    mock_nltk_sentiment_score_overall_positive = test_suite_metrics.make_sentiment_scores_metric(
         get_polarity_scores=_mock_get_nltk_polarity_scores,
-        make_evaluation_fn=metrics.make_get_overall_positive_sentiment,
+        make_evaluation_fn=test_suite_metrics.make_get_overall_positive_sentiment,
         name="nltk_sentiment_score_overall_positive",
         description="Positive minus negative",
-        best_value=metrics.TextOverallPositiveSentiment(pos=1.0, neg=0.0),
-        worst_value=metrics.TextOverallPositiveSentiment(pos=0.0, neg=1.0),
+        best_value=test_suite_metrics.TextOverallPositiveSentiment(pos=1.0, neg=0.0),
+        worst_value=test_suite_metrics.TextOverallPositiveSentiment(pos=0.0, neg=1.0),
     )
 
     return [mock_nltk_sentiment_scores_vader, mock_nltk_sentiment_class_vader, mock_nltk_sentiment_score_overall_positive]
@@ -306,11 +306,11 @@ async def test_custom_metric_type():
     result = df.set_index(["metric_name", "aiconfig_output"]).value.unstack(0).to_dict()  # type: ignore
     assert result["nltk_sentiment_class_vader"] == MOCK_NLTK_SENTIMENT_CLASS_MAPPING
 
-    assert all(isinstance(v, metrics.TextSentimentScores) for v in result["nltk_sentiment_scores_vader"].values())  # type: ignore
+    assert all(isinstance(v, test_suite_metrics.TextSentimentScores) for v in result["nltk_sentiment_scores_vader"].values())  # type: ignore
 
-    assert all(isinstance(v, metrics.TextOverallPositiveSentiment) for v in result["nltk_sentiment_score_overall_positive"].values())  # type: ignore
+    assert all(isinstance(v, test_suite_metrics.TextOverallPositiveSentiment) for v in result["nltk_sentiment_score_overall_positive"].values())  # type: ignore
 
-    neutral = metrics.TextOverallPositiveSentiment(pos=0.0, neg=0.0)
+    neutral = test_suite_metrics.TextOverallPositiveSentiment(pos=0.0, neg=0.0)
 
     assert result["nltk_sentiment_score_overall_positive"]["nltk is amazing"] > neutral
     assert result["nltk_sentiment_score_overall_positive"]["oh, bother"] < neutral
@@ -318,15 +318,11 @@ async def test_custom_metric_type():
 
 @pytest.mark.asyncio
 async def test_exception_metric(caplog: pytest.LogCaptureFixture):
-    user_test_suite_outputs_only = list(
-        itertools.product(
-            ["Hundred Acre Wood", ""],
-            [brevity],
-        )
-    )
+    user_test_suite_outputs_only = [("Hundred Acre Wood", brevity), ("", brevity)]
+
     with caplog.at_level(logging.ERROR):
         df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
-        print(df[["metric_name"]])
+        print(df[["metric_name"]])  # type: ignore[pandas]
     mapping: dict[str, Any] = df.query("metric_name=='brevity'").set_index("aiconfig_output").value.to_dict()  # type: ignore
     assert mapping["Hundred Acre Wood"] == 17.0
     assert pd.isnull(mapping[""])  # type: ignore

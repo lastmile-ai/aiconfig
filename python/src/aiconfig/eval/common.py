@@ -1,22 +1,26 @@
 import json
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
-from typing import Any, Generic, NewType, Protocol, Type, TypeVar
+from typing import Any, Generic, NewType, Sequence, TypeVar
 
 import lastmile_utils.lib.core.api as core_utils
-import result
+import pandas as pd
 from aiconfig.Config import AIConfigRuntime
-from pydantic import BaseModel
+from aiconfig.eval import common
+from frozendict import frozendict
 from result import Result
+
+
+T_cov = TypeVar("T_cov", covariant=True)
+U_cov = TypeVar("U_cov", covariant=True)
 
 T_InputDatum = TypeVar("T_InputDatum", contravariant=True)
 T_OutputDatum = TypeVar("T_OutputDatum", contravariant=True)
 
-T_Evaluable = TypeVar("T_Evaluable", contravariant=True)
 
-T_BaseModel = TypeVar("T_BaseModel", bound=BaseModel)
-
-SerializedJSON = NewType("SerializedJSON", str)
+# NOTE: it's probably better to avoid NewType in the future, because it doesn't
+# ... create a ... new type. For example, you can't pattern match against it.
+TextOutput = NewType("TextOutput", str)
 
 
 @dataclass(frozen=True)
@@ -33,33 +37,20 @@ class CustomMetricValue(ABC):
     """
 
 
+T_Evaluable = TypeVar("T_Evaluable", contravariant=True)
+
+
 T_MetricValue = TypeVar("T_MetricValue", int, float, str, bool, CustomMetricValue, covariant=True)
+T_MetricValue_inv = TypeVar("T_MetricValue_inv", int, float, str, bool, CustomMetricValue)
 
 
-class CompletionTextToSerializedJSON(Protocol):
-    @abstractmethod
-    def __call__(self, output_datum: str) -> Result[SerializedJSON, str]:
-        pass
-
-
-@dataclass(frozen=True)
-class CustomMetricPydanticObject(CustomMetricValue, Generic[T_BaseModel]):
-    data: T_BaseModel
-
-
-class EvaluationFunction(Protocol, Generic[T_Evaluable, T_MetricValue]):
-    @abstractmethod
-    async def __call__(self, datum: T_Evaluable) -> T_MetricValue:
-        pass
-
-
-class EvaluationMetricMetadata(core_utils.Record, Generic[T_Evaluable, T_MetricValue]):
+class EvaluationMetricMetadata(core_utils.Record, Generic[common.T_Evaluable, common.T_MetricValue]):
 
     """A record to tie together metadata about an evaluation metric
     to ensure that numbers are interpreted as intended.
 
 
-    Assumptions:
+    Assumptions:t
     * If the best and worst values are not None, then the metric is assumed to be ordered.
       In this case (if the metric is ordered) then the comparison operators <, <=, >, and >=
       must be implemented (see CustomMetricValue).
@@ -81,9 +72,7 @@ class EvaluationMetricMetadata(core_utils.Record, Generic[T_Evaluable, T_MetricV
     @property
     def id(self) -> str:
         return core_utils.hash_id(
-            f"{self.name}{self.description}{self.best_value}{self.worst_value}params={self._serialize_extra_metadata()}".encode(
-                "utf-8"
-            )
+            f"{self.name}{self.description}{self.best_value}{self.worst_value}params={self._serialize_extra_metadata()}".encode("utf-8")
         )
 
     def _serialize_extra_metadata(self) -> str:
@@ -91,8 +80,8 @@ class EvaluationMetricMetadata(core_utils.Record, Generic[T_Evaluable, T_MetricV
 
     name: str
     description: str
-    best_value: T_MetricValue | None = None
-    worst_value: T_MetricValue | None = None
+    best_value: common.T_MetricValue | None = None
+    worst_value: common.T_MetricValue | None = None
     # e.g. {"substring": "hello", "case_sensitive": False}
     extra_metadata: dict[str, Any] = {}
 
@@ -104,74 +93,13 @@ class EvaluationMetricMetadata(core_utils.Record, Generic[T_Evaluable, T_MetricV
 
 
 @dataclass(frozen=True)
-class SampleMetricValue(Generic[T_Evaluable, T_MetricValue]):
-    # `None` is used to signal that there was an error during calculation.
-    # In this case, error information is written to stderr (see lib.py:_evaluate_for_sample()).
-    value: T_MetricValue | None
-    metric_metadata: EvaluationMetricMetadata[T_Evaluable, T_MetricValue]
-
-    def __post_init__(self) -> None:
-        metric_metadata = self.metric_metadata
-        worst_value, best_value = (
-            metric_metadata.worst_value,
-            metric_metadata.best_value,
-        )
-        value = self.value
-        if worst_value is None and best_value is None:
-            # fine
-            return
-        elif worst_value is None or best_value is None:
-            raise ValueError(
-                f"""
-                    [{metric_metadata.name}]
-                    {metric_metadata.description}
-
-                    You must define both worst_value and best_value, or neither.
-                    You defined worst_value = {worst_value} and best_value = {best_value}.
-                """
-            )
-        elif worst_value == best_value:
-            raise ValueError("best_value and worst_value cannot be equal")
-        elif value is not None and worst_value < best_value and not worst_value <= value <= best_value:  # type: ignore[fixme]
-            raise ValueError(
-                f"""
-                    [{metric_metadata.name}]
-                    {metric_metadata.description}
-
-                    Value {value} is not in range [{worst_value}, {best_value}]. 
-                    You defined worst_value = {worst_value} and best_value = {best_value},
-                    but got value outside that range.
-                """
-            )
-        elif value is not None and worst_value > best_value and not worst_value >= value >= best_value:  # type: ignore[fixme]
-            raise ValueError(
-                f"""
-                    [{metric_metadata.name}]
-                    {metric_metadata.description}
-
-                    Value {value} is not in range [{worst_value}, {best_value}]. 
-                    You defined worst_value = {worst_value} and best_value = {best_value},
-                    but got value outside that range.
-                """
-            )
+class TextBasedInputDatum:
+    value: str | frozendict[str, str]
 
 
-class TextRatingsData(core_utils.Record):
-    conciseness_rating: int
-    conciseness_confidence: float
-    conciseness_reasoning: str
-
-
-def get_llm_structured_response(
-    input_text: str,
-    chat_completion_create: CompletionTextToSerializedJSON,
-    basemodel_type: Type[T_BaseModel],
-) -> Result[T_BaseModel, str]:
-    return result.do(
-        core_utils.safe_model_validate_json(response_ok, basemodel_type)
-        # get the serialized JSON response
-        for response_ok in chat_completion_create(input_text)
-    )
+@core_utils.exception_to_err_with_traceback
+def load_aiconfig_runtime(aiconfig_path: str) -> AIConfigRuntime:
+    return AIConfigRuntime.load(aiconfig_path)
 
 
 @core_utils.exception_to_err_with_traceback_async
@@ -182,3 +110,39 @@ async def run_aiconfig_get_output_text(
     run_with_dependencies: bool,
 ):
     return await aiconfig.run_and_get_output_text(prompt_name, params, run_with_dependencies=run_with_dependencies)  # type: ignore
+
+
+async def run_aiconfig_on_text_based_input(runtime: AIConfigRuntime, prompt_name: str, params: common.TextBasedInputDatum) -> Result[str, str]:
+    def _get_params_for_aiconfig(params: common.TextBasedInputDatum) -> dict[str, str]:
+        match params.value:
+            case str(input_text):
+                return {"the_query": input_text}
+            case frozendict():
+                return dict(params.value)
+
+    params_for_aiconfig = _get_params_for_aiconfig(params)
+    return await run_aiconfig_get_output_text(runtime, prompt_name, params_for_aiconfig, run_with_dependencies=True)
+
+
+async def batch_run_aiconfig_on_text_based_input(
+    aiconfig: AIConfigRuntime,
+    prompt_name: str,
+    params_seq: Sequence[common.TextBasedInputDatum],
+) -> Result[list[TextOutput], str]:
+    async def _run(input_datum: common.TextBasedInputDatum) -> Result[TextOutput, str]:
+        return (await run_aiconfig_on_text_based_input(aiconfig, prompt_name, input_datum)).map(TextOutput)
+
+    # TODO: fix the race condition and then use gather
+    # https://github.com/lastmile-ai/aiconfig/issues/434
+    res_outputs_: list[Result[TextOutput, str]] = []
+    for input_datum in params_seq:
+        res_outputs_.append(await _run(input_datum))
+    res_outputs = core_utils.result_reduce_list_all_ok(res_outputs_)
+    # res_outputs = await core_utils.result_reduce_list_all_ok_async(list(map(_run, all_inputs)))
+
+    return res_outputs
+
+
+@core_utils.exception_to_err_with_traceback
+def make_df(data: Any) -> pd.DataFrame:
+    return pd.DataFrame(data)
