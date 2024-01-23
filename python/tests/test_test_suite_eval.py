@@ -11,11 +11,11 @@ import pandas as pd
 import pytest
 from aiconfig.eval.api import (
     TestSuiteWithInputsSettings,
-    metrics,
     run_test_suite_outputs_only,
     run_test_suite_with_inputs,
 )
-from aiconfig.eval.lib import (
+from aiconfig.eval.api import test_suite_metrics as metrics
+from aiconfig.eval.test_suite_lib import (
     MetricList,
     TestSuiteGeneralSettings,
     TestSuiteWithInputsSpec,
@@ -99,7 +99,7 @@ async def test_run_with_inputs_sanity_check():
 
     path = os.path.join(
         current_dir(),
-        "../src/aiconfig/eval/examples/travel/travel_parametrized.aiconfig.json",
+        "../src/aiconfig/eval/test_suite_examples/travel/travel_parametrized.aiconfig.json",
     )
     out = await run_test_suite_with_inputs(
         [],
@@ -384,7 +384,6 @@ async def test_exception_metric(caplog: pytest.LogCaptureFixture):
     )
     with caplog.at_level(logging.ERROR):
         df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
-        print(df[["metric_name"]])
     mapping: dict[str, Any] = df.query("metric_name=='brevity'").set_index("aiconfig_output").value.to_dict()  # type: ignore
     assert mapping["Hundred Acre Wood"] == 17.0
     assert pd.isnull(mapping[""])  # type: ignore
