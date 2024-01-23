@@ -20,6 +20,9 @@ from .remote_inference_client.text_generation import (
 from .remote_inference_client.text_summarization import (
     HuggingFaceTextSummarizationParser,
 )
+from .remote_inference_client.text_translation import (
+    HuggingFaceTextTranslationParser,
+)
 
 UTILS = [get_hf_model]
 
@@ -35,5 +38,6 @@ LOCAL_INFERENCE_CLASSES = [
 REMOTE_INFERENCE_CLASSES = [
     "HuggingFaceTextGenerationParser",
     "HuggingFaceTextSummarizationParser",
+    "HuggingFaceTextTranslationParser",
 ]
 __ALL__ = LOCAL_INFERENCE_CLASSES + REMOTE_INFERENCE_CLASSES + UTILS
