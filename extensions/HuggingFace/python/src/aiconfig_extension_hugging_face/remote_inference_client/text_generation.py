@@ -2,6 +2,13 @@ import copy
 import json
 from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Union
 
+from aiconfig.default_parsers.parameterized_model_parser import (
+    ParameterizedModelParser,
+)
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.util.params import resolve_prompt
+
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
 from huggingface_hub.inference._text_generation import (
@@ -10,17 +17,7 @@ from huggingface_hub.inference._text_generation import (
 )
 
 from aiconfig import CallbackEvent
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import (
-    ExecuteResult,
-    Output,
-    Prompt,
-    PromptMetadata,
-)
-from aiconfig.util.config_utils import get_api_key_from_environment
-from aiconfig.util.params import resolve_prompt
-
+from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -105,7 +102,9 @@ def construct_stream_output(
     return output
 
 
-def construct_regular_output(response: TextGenerationResponse, response_includes_details: bool) -> Output:
+def construct_regular_output(
+    response: TextGenerationResponse, response_includes_details: bool
+) -> Output:
     metadata = {"raw_response": response}
     if response_includes_details:
         metadata["details"] = response.details
@@ -153,7 +152,9 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         if use_api_token:
             # You are allowed to use Hugging Face for a bit before you get
             # rate limited, in which case you will receive a clear error
-            token = get_api_key_from_environment("HUGGING_FACE_API_TOKEN", required=False).unwrap()
+            token = get_api_key_from_environment(
+                "HUGGING_FACE_API_TOKEN", required=False
+            ).unwrap()
 
         self.client = InferenceClient(model_id, token=token)
 
@@ -208,12 +209,18 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **kwargs),
+            metadata=PromptMetadata(
+                model=model_metadata, parameters=parameters, **kwargs
+            ),
         )
 
         prompts.append(prompt)
 
-        await ai_config.callback_manager.run_callbacks(CallbackEvent("on_serialize_complete", __name__, {"result": prompts}))
+        await ai_config.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_serialize_complete", __name__, {"result": prompts}
+            )
+        )
 
         return prompts
 
@@ -233,7 +240,13 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         Returns:
             dict: Model-specific completion parameters.
         """
-        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params}))
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_deserialize_start",
+                __name__,
+                {"prompt": prompt, "params": params},
+            )
+        )
 
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
 
@@ -244,11 +257,23 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
 
         completion_data["prompt"] = resolved_prompt
 
-        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data}))
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_deserialize_complete",
+                __name__,
+                {"output": completion_data},
+            )
+        )
 
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: dict[Any, Any]) -> List[Output]:
+    async def run_inference(
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        options: InferenceOptions,
+        parameters: dict[Any, Any],
+    ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -264,7 +289,11 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             CallbackEvent(
                 "on_run_start",
                 __name__,
-                {"prompt": prompt, "options": options, "parameters": parameters},
+                {
+                    "prompt": prompt,
+                    "options": options,
+                    "parameters": parameters,
+                },
             )
         )
 
@@ -290,12 +319,16 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             outputs.append(output)
         else:
             # Handles stream callback
-            output = construct_stream_output(response, response_is_detailed, options)
+            output = construct_stream_output(
+                response, response_is_detailed, options
+            )
             outputs.append(output)
 
         prompt.outputs = outputs
 
-        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_run_complete", __name__, {"result": outputs}))
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent("on_run_complete", __name__, {"result": outputs})
+        )
 
         return outputs
 

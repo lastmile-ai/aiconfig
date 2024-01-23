@@ -2,7 +2,9 @@ import copy
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import openai
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+from aiconfig.default_parsers.parameterized_model_parser import (
+    ParameterizedModelParser,
+)
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt
 from openai import OpenAI
@@ -10,7 +12,13 @@ from openai import OpenAI
 # Dall-E API imports
 from openai.types import Image, ImagesResponse
 
-from aiconfig.schema import ExecuteResult, Output, OutputDataWithStringValue, Prompt, PromptMetadata
+from aiconfig.schema import (
+    ExecuteResult,
+    Output,
+    OutputDataWithStringValue,
+    Prompt,
+    PromptMetadata,
+)
 
 # ModelParser Utils
 # Type hint imports
@@ -30,7 +38,14 @@ def refine_image_completion_params(model_settings, aiconfig, prompt):
     Refines the completion params for the Dall-E request API. Removes any unsupported params.
     The supported keys were found by looking at the OpenAI Dall-E API: https://platform.openai.com/docs/api-reference/images/create?lang=python`
     """
-    supported_keys = {"model", "n", "quality", "response_format", "size", "style"}
+    supported_keys = {
+        "model",
+        "n",
+        "quality",
+        "response_format",
+        "size",
+        "style",
+    }
 
     completion_data = {}
     for key in model_settings:
@@ -48,11 +63,17 @@ def refine_image_completion_params(model_settings, aiconfig, prompt):
 def construct_output(image_data: Image, execution_count: int) -> Output:
     data = None
     if image_data.b64_json is not None:
-        data = OutputDataWithStringValue(kind="base64", value=str(image_data.b64_json))
+        data = OutputDataWithStringValue(
+            kind="base64", value=str(image_data.b64_json)
+        )
     elif image_data.url is not None:
-        data = OutputDataWithStringValue(kind="file_uri", value=str(image_data.url))
+        data = OutputDataWithStringValue(
+            kind="file_uri", value=str(image_data.url)
+        )
     else:
-        raise ValueError(f"Did not receive a valid image type from image_data: {image_data}")
+        raise ValueError(
+            f"Did not receive a valid image type from image_data: {image_data}"
+        )
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
@@ -88,7 +109,10 @@ class DalleImageGenerationParser(ParameterizedModelParser):
             "dall-e-3",
         }
         if model_id.lower() not in supported_models:
-            raise ValueError("{model_id}" + " is not a valid model ID for Dall-E image generation. Supported models: {supported_models}.")
+            raise ValueError(
+                "{model_id}"
+                + " is not a valid model ID for Dall-E image generation. Supported models: {supported_models}."
+            )
         self.model_id = model_id
 
         self.client = None
@@ -129,12 +153,19 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **kwargs),
+            metadata=PromptMetadata(
+                model=model_metadata, parameters=parameters, **kwargs
+            ),
         )
         return [prompt]
 
     # TODO (rossdanlm): Update documentation for args
-    async def deserialize(self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = {}) -> Dict:
+    async def deserialize(
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        params: Optional[Dict] = {},
+    ) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
         and constructs the completion params for that model.
@@ -146,15 +177,21 @@ class DalleImageGenerationParser(ParameterizedModelParser):
             dict: Model-specific completion parameters.
         """
         # Get inputs from aiconfig
-        resolved_prompt = resolve_prompt(prompt, params if params is not None else {}, aiconfig)
+        resolved_prompt = resolve_prompt(
+            prompt, params if params is not None else {}, aiconfig
+        )
         model_settings = self.get_model_settings(prompt, aiconfig)
 
         # Build Completion data
-        completion_data = refine_image_completion_params(model_settings, aiconfig, prompt)
+        completion_data = refine_image_completion_params(
+            model_settings, aiconfig, prompt
+        )
         completion_data["prompt"] = resolved_prompt
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig, _options, parameters) -> List[Output]:
+    async def run_inference(
+        self, prompt: Prompt, aiconfig, _options, parameters
+    ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -168,14 +205,20 @@ class DalleImageGenerationParser(ParameterizedModelParser):
         """
         # If needed, certify the API key and initialize the OpenAI client
         if not openai.api_key:
-            openai.api_key = get_api_key_from_environment("OPENAI_API_KEY").unwrap()
+            openai.api_key = get_api_key_from_environment(
+                "OPENAI_API_KEY"
+            ).unwrap()
         if not self.client:
             self.client = OpenAI(api_key=openai.api_key)
 
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
 
-        print("Calling image generation. This can take several seconds, please hold on...")
-        response: ImagesResponse = self.client.images.generate(**completion_data)
+        print(
+            "Calling image generation. This can take several seconds, please hold on..."
+        )
+        response: ImagesResponse = self.client.images.generate(
+            **completion_data
+        )
 
         outputs = []
         # ImageResponse object also contains a "created" field for timestamp, should I store that somewhere?
