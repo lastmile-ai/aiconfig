@@ -1,24 +1,21 @@
 import base64
 import json
 from io import BytesIO
-from typing import Any, Dict, Optional, List, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
+from aiconfig.callback import CallbackEvent
+from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
 from PIL import Image as img_module
 from PIL.Image import Image as ImageType
-from transformers import (
-    Pipeline,
-    pipeline,
-)
+from transformers import Pipeline, pipeline
 
-from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
-
-from aiconfig import ModelParser, InferenceOptions
-from aiconfig.callback import CallbackEvent
+from aiconfig import InferenceOptions, ModelParser
 from aiconfig.schema import (
     Attachment,
+    AttachmentDataWithStringValue,
     ExecuteResult,
     Output,
     Prompt,
-    AttachmentDataWithStringValue
 )
 
 # Circular Dependency Type Hints
@@ -82,9 +79,13 @@ class HuggingFaceImage2TextTransformer(ModelParser):
         prompts = []
 
         if not isinstance(data, dict):
-            raise ValueError("Invalid data type. Expected dict when serializing prompt data to aiconfig.")
+            raise ValueError(
+                "Invalid data type. Expected dict when serializing prompt data to aiconfig."
+            )
         if data.get("inputs", None) is None:
-            raise ValueError("Invalid data when serializing prompt to aiconfig. Input data must contain an inputs field.")
+            raise ValueError(
+                "Invalid data when serializing prompt to aiconfig. Input data must contain an inputs field."
+            )
 
         prompt = Prompt(
             **{
@@ -97,7 +98,11 @@ class HuggingFaceImage2TextTransformer(ModelParser):
 
         prompts.append(prompt)
 
-        await ai_config.callback_manager.run_callbacks(CallbackEvent("on_serialize_complete", __name__, {"result": prompts}))
+        await ai_config.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_serialize_complete", __name__, {"result": prompts}
+            )
+        )
         return prompts
 
     async def deserialize(
@@ -106,7 +111,13 @@ class HuggingFaceImage2TextTransformer(ModelParser):
         aiconfig: "AIConfigRuntime",
         params: Optional[Dict[str, Any]] = {},
     ) -> Dict[str, Any]:
-        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params}))
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_deserialize_start",
+                __name__,
+                {"prompt": prompt, "params": params},
+            )
+        )
 
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
@@ -116,15 +127,32 @@ class HuggingFaceImage2TextTransformer(ModelParser):
         inputs = validate_and_retrieve_images_from_attachments(prompt)
         completion_params["inputs"] = inputs
 
-        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_params}))
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_deserialize_complete",
+                __name__,
+                {"output": completion_params},
+            )
+        )
         return completion_params
 
-    async def run(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any], **kwargs) -> list[Output]:
+    async def run(
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        options: InferenceOptions,
+        parameters: Dict[str, Any],
+        **kwargs,
+    ) -> list[Output]:
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_run_start",
                 __name__,
-                {"prompt": prompt, "options": options, "parameters": parameters},
+                {
+                    "prompt": prompt,
+                    "options": options,
+                    "parameters": parameters,
+                },
             )
         )
 
@@ -135,7 +163,9 @@ class HuggingFaceImage2TextTransformer(ModelParser):
         key = model_name if model_name is not None else "__default__"
 
         if key not in self.pipelines:
-            self.pipelines[key] = pipeline(task="image-to-text", model=model_name)
+            self.pipelines[key] = pipeline(
+                task="image-to-text", model=model_name
+            )
         captioner = self.pipelines[key]
 
         outputs: List[Output] = []
@@ -198,7 +228,9 @@ def refine_completion_params(model_settings: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # Helper methods
-def construct_regular_output(result: Dict[str, str], execution_count: int) -> Output:
+def construct_regular_output(
+    result: Dict[str, str], execution_count: int
+) -> Output:
     """
     Construct regular output per response result, without streaming enabled
     """
@@ -225,13 +257,19 @@ def validate_attachment_type_is_image(
     image format. Raises ValueError if there's an issue.
     """
     if not hasattr(attachment, "mime_type"):
-        raise ValueError(f"Attachment has no mime type for prompt '{prompt_name}'. Please specify the image mimetype in the AIConfig")
+        raise ValueError(
+            f"Attachment has no mime type for prompt '{prompt_name}'. Please specify the image mimetype in the AIConfig"
+        )
 
     if not attachment.mime_type.startswith("image/"):
-        raise ValueError(f"Invalid attachment mimetype {attachment.mime_type} for prompt '{prompt_name}'. Please use a mimetype that starts with 'image/'.")
+        raise ValueError(
+            f"Invalid attachment mimetype {attachment.mime_type} for prompt '{prompt_name}'. Please use a mimetype that starts with 'image/'."
+        )
 
 
-def validate_and_retrieve_images_from_attachments(prompt: Prompt) -> list[Union[str, ImageType]]:
+def validate_and_retrieve_images_from_attachments(
+    prompt: Prompt,
+) -> list[Union[str, ImageType]]:
     """
     Retrieves the image uri's from each attachment in the prompt input.
 
@@ -242,24 +280,32 @@ def validate_and_retrieve_images_from_attachments(prompt: Prompt) -> list[Union[
     - operation fails for any reason
     """
 
-    if not hasattr(prompt.input, "attachments") or len(prompt.input.attachments) == 0:
-        raise ValueError(f"No attachments found in input for prompt '{prompt.name}'. Please add an image attachment to the prompt input.")
+    if (
+        not hasattr(prompt.input, "attachments")
+        or len(prompt.input.attachments) == 0
+    ):
+        raise ValueError(
+            f"No attachments found in input for prompt '{prompt.name}'. Please add an image attachment to the prompt input."
+        )
 
     images: list[Union[str, ImageType]] = []
 
     for i, attachment in enumerate(prompt.input.attachments):
         validate_attachment_type_is_image(prompt.name, attachment)
 
-        
         if not isinstance(attachment.data, AttachmentDataWithStringValue):
             # See todo above, but for now only support uris and base64
-            raise ValueError(f"""Attachment #{i} data must be of type `AttachmentDataWithStringValue` with a `kind` and `value` field.
-                         Please specify a uri or base64 encoded string for the image attachment in prompt '{prompt.name}'.""")
+            raise ValueError(
+                f"""Attachment #{i} data must be of type `AttachmentDataWithStringValue` with a `kind` and `value` field.
+                         Please specify a uri or base64 encoded string for the image attachment in prompt '{prompt.name}'."""
+            )
         input_data = attachment.data.value
         if attachment.data.kind == "base64":
-            pil_image: ImageType = img_module.open(BytesIO(base64.b64decode(input_data)))
+            pil_image: ImageType = img_module.open(
+                BytesIO(base64.b64decode(input_data))
+            )
             images.append(pil_image)
         else:
-            images.append(input_data) # expect a uri
+            images.append(input_data)  # expect a uri
 
     return images

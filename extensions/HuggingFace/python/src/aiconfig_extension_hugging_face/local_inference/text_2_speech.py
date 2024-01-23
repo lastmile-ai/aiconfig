@@ -2,15 +2,18 @@ import base64
 import copy
 import io
 import json
-import numpy as np
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from transformers import Pipeline, pipeline
-from scipy.io.wavfile import write as write_wav
 
-from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
-
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
+import numpy as np
+from aiconfig.default_parsers.parameterized_model_parser import (
+    ParameterizedModelParser,
+)
 from aiconfig.model_parser import InferenceOptions
+from aiconfig.util.params import resolve_prompt
+from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
+from scipy.io.wavfile import write as write_wav
+from transformers import Pipeline, pipeline
+
 from aiconfig.schema import (
     ExecuteResult,
     Output,
@@ -18,7 +21,6 @@ from aiconfig.schema import (
     Prompt,
     PromptMetadata,
 )
-from aiconfig.util.params import resolve_prompt
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -26,7 +28,9 @@ if TYPE_CHECKING:
 
 
 # Step 1: define Helpers
-def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict[str, Any]]:
+def refine_pipeline_creation_params(
+    model_settings: Dict[str, Any]
+) -> List[Dict[str, Any]]:
     # These are from the transformers Github repo:
     # https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_utils.py#L2534
     supported_keys = {
@@ -56,7 +60,9 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
         if key.lower() in supported_keys:
             pipeline_creation_params[key.lower()] = model_settings[key]
         else:
-            if key.lower() == "kwargs" and isinstance(model_settings[key], Dict):
+            if key.lower() == "kwargs" and isinstance(
+                model_settings[key], Dict
+            ):
                 completion_params.update(model_settings[key])
             else:
                 completion_params[key.lower()] = model_settings[key]
@@ -64,7 +70,9 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
     return [pipeline_creation_params, completion_params]
 
 
-def refine_completion_params(unfiltered_completion_params: Dict[str, Any]) -> Dict[str, Any]:
+def refine_completion_params(
+    unfiltered_completion_params: Dict[str, Any]
+) -> Dict[str, Any]:
     # Note: There seems to be no public API docs on what completion
     # params are supported for text to speech:
     # https://huggingface.co/docs/transformers/tasks/text-to-speech#inference
@@ -83,7 +91,9 @@ def construct_output(audio, execution_count: int) -> Output:
     def _b64_encode_bytes(byte_array: bytes) -> str:
         return base64.b64encode(byte_array).decode("utf-8")
 
-    def _audio_ndarray_to_wav_bytes(audio: np.ndarray, sampling_rate: int) -> bytes:
+    def _audio_ndarray_to_wav_bytes(
+        audio: np.ndarray, sampling_rate: int
+    ) -> bytes:
         buffered = io.BytesIO()
         write_wav(buffered, sampling_rate, audio)
 
@@ -91,11 +101,18 @@ def construct_output(audio, execution_count: int) -> Output:
         byte_array = buffered.getvalue()
         return byte_array
 
-    def _audio_ndarray_to_b64_str(audio: np.ndarray, sampling_rate: int) -> str:
+    def _audio_ndarray_to_b64_str(
+        audio: np.ndarray, sampling_rate: int
+    ) -> str:
         byte_array = _audio_ndarray_to_wav_bytes(audio, sampling_rate)
         return _b64_encode_bytes(byte_array)
 
-    data = dict(kind="base64", value=_audio_ndarray_to_b64_str(np.squeeze(audio["audio"]), audio["sampling_rate"]))
+    data = dict(
+        kind="base64",
+        value=_audio_ndarray_to_b64_str(
+            np.squeeze(audio["audio"]), audio["sampling_rate"]
+        ),
+    )
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
@@ -151,7 +168,11 @@ class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **completion_params),
+            metadata=PromptMetadata(
+                model=model_metadata,
+                parameters=parameters,
+                **completion_params,
+            ),
         )
         return [prompt]
 
@@ -174,15 +195,26 @@ class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
         """
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
-        [_pipeline_creation_params, unfiltered_completion_params] = refine_pipeline_creation_params(model_settings)
-        completion_data = refine_completion_params(unfiltered_completion_params)
+        [
+            _pipeline_creation_params,
+            unfiltered_completion_params,
+        ] = refine_pipeline_creation_params(model_settings)
+        completion_data = refine_completion_params(
+            unfiltered_completion_params
+        )
 
         # Add resolved prompt
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
         completion_data["prompt"] = resolved_prompt
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> List[Output]:
+    async def run_inference(
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        options: InferenceOptions,
+        parameters: Dict[str, Any],
+    ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -195,15 +227,21 @@ class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
             InferenceResponse: The response from the model.
         """
         model_settings = self.get_model_settings(prompt, aiconfig)
-        [pipeline_creation_data, _] = refine_pipeline_creation_params(model_settings)
+        [pipeline_creation_data, _] = refine_pipeline_creation_params(
+            model_settings
+        )
 
         model_name = get_hf_model(aiconfig, prompt, self)
         key = model_name if model_name is not None else "__default__"
         if key not in self.synthesizers:
-            self.synthesizers[key] = pipeline("text-to-speech", model=model_name)
+            self.synthesizers[key] = pipeline(
+                "text-to-speech", model=model_name
+            )
         synthesizer = self.synthesizers[key]
 
-        completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
+        completion_data = await self.deserialize(
+            prompt, aiconfig, options, parameters
+        )
         inputs = completion_data.pop("prompt", None)
         response = synthesizer(inputs, **completion_data)
 
