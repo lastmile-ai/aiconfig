@@ -162,7 +162,7 @@ def text_eval_res_to_df(
                     case str(input_text):
                         return input_text
                     case frozendict():
-                        return json.dumps(input_text_datum.value)
+                        return json.dumps(input_text_datum.value, sort_keys=True)
 
         return [
             SampleEvaluationResult(
