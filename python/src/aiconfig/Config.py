@@ -18,31 +18,35 @@ from .registry import ModelParserRegistry, update_model_parser_registry_with_con
 from .schema import AIConfig, Prompt
 from .util.config_utils import is_yaml_ext
 
-gpt_models = [
+gpt_models_main = [
+    "gpt-3.5-turbo",
     "gpt-4",
+]
+gpt_models_extra = [
+    "gpt-3.5-turbo-16k",
+    "gpt-3.5-turbo-0301",
+    "gpt-3.5-turbo-0613",
+    "gpt-3.5-turbo-16k-0613",
     "gpt-4-0314",
     "gpt-4-0613",
     "gpt-4-32k",
     "gpt-4-32k-0314",
     "gpt-4-32k-0613",
-    "gpt-3.5-turbo",
-    "gpt-3.5-turbo-16k",
-    "gpt-3.5-turbo-0301",
-    "gpt-3.5-turbo-0613",
-    "gpt-3.5-turbo-16k-0613",
 ]
-for model in gpt_models:
+for model in gpt_models_main:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
-ModelParserRegistry.register_model_parser(DefaultAnyscaleEndpointParser("AnyscaleEndpoint"))
-ModelParserRegistry.register_model_parser(PaLMChatParser())
-ModelParserRegistry.register_model_parser(PaLMTextParser())
-ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
 dalle_image_generation_models = [
     "dall-e-2",
     "dall-e-3",
 ]
 for model in dalle_image_generation_models:
     ModelParserRegistry.register_model_parser(DalleImageGenerationParser(model))
+ModelParserRegistry.register_model_parser(DefaultAnyscaleEndpointParser("AnyscaleEndpoint"))
+ModelParserRegistry.register_model_parser(PaLMChatParser())
+ModelParserRegistry.register_model_parser(PaLMTextParser())
+ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
+for model in gpt_models_extra:
+    ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
 
 
 class AIConfigRuntime(AIConfig):
