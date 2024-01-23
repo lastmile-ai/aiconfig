@@ -1,7 +1,7 @@
 #Hugging Face Transformers
-accelerate==0.25.0
-transformers==4.35.2
-torch==2.1.0
+accelerate
+transformers
+torch
 
 #Other
 asyncio
