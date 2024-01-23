@@ -13,6 +13,7 @@ import { HuggingFaceTextGenerationTransformerPromptSchema } from "../shared/prom
 import { HuggingFaceTextSummarizationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationTransformerPromptSchema";
 import { HuggingFaceTextGenerationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationParserPromptSchema";
 import { HuggingFaceTextSummarizationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationParserPromptSchema";
+import { HuggingFaceTextTranslationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextTranslationParserPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -80,8 +81,12 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   // hf core parser and keep it in the extension instead
   // HuggingFaceTextGenerationParser (Core parser and remote inference extension)
   HuggingFaceTextGenerationParser: HuggingFaceTextGenerationParserPromptSchema,
+
   HuggingFaceTextSummarizationParser:
     HuggingFaceTextSummarizationParserPromptSchema,
+
+  HuggingFaceTextTranslationParser:
+    HuggingFaceTextTranslationParserPromptSchema,
 
   // PaLMTextParser
   "models/text-bison-001": PaLMTextParserPromptSchema,
