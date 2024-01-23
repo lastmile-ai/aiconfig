@@ -28,7 +28,9 @@ def rage(config: RageConfig) -> Result[None, str]:
     print("Please open an issue! :) Here's a template:")
     out = _create_issue_draft()
 
-    print("Our sincerest apologies and gratitude. If you opened an issue, will comment on it as soon as possible.")
+    print(
+        "Our sincerest apologies and gratitude. If you opened an issue, will comment on it as soon as possible."
+    )
     print("\n\n")
 
     print("Done raging! :)")
@@ -47,7 +49,9 @@ def _try_run_command(command: str) -> Result[str, str]:
 
     # Try to execute the command and capture output
     try:
-        process = subprocess.Popen(cmd_parts, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(
+            cmd_parts, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         stdout, stderr = process.communicate()
 
         # Decode bytes to string and return formatted message
@@ -60,8 +64,12 @@ def _try_run_command(command: str) -> Result[str, str]:
         return core_utils.ErrWithTraceback(e)
 
 
-def _fmt_command_input_output(command: str, command_output: Result[str, str]) -> str:
-    command_output_str = command_output.unwrap_or("Couldn't run command :(. Please run manually.")
+def _fmt_command_input_output(
+    command: str, command_output: Result[str, str]
+) -> str:
+    command_output_str = command_output.unwrap_or(
+        "Couldn't run command :(. Please run manually."
+    )
     return dedent(
         f"""
             Command: {command}
@@ -74,8 +82,16 @@ def _create_issue_draft() -> Result[None, str]:
     title = "Bug Report [TODO: brief description]"
     server_log_path = _look_for_log("editor_flask_server.log")
     aiconfig_log_path = _look_for_log("aiconfig.log")
-    server_log_str = f"see {server_log_path}" if server_log_path else "Couldn't find the log file :( Check your terminal output"
-    aiconfig_log_str = f"see {aiconfig_log_path}" if aiconfig_log_path else "Couldn't find the log file :( Check your terminal output"
+    server_log_str = (
+        f"see {server_log_path}"
+        if server_log_path
+        else "Couldn't find the log file :( Check your terminal output"
+    )
+    aiconfig_log_str = (
+        f"see {aiconfig_log_path}"
+        if aiconfig_log_path
+        else "Couldn't find the log file :( Check your terminal output"
+    )
 
     commands_to_run = [
         "which pip",
@@ -85,7 +101,12 @@ def _create_issue_draft() -> Result[None, str]:
         "python --version",
         "python3 --version",
     ]
-    command_inputs_outputs = dedent("\n\n".join(_fmt_command_input_output(command, _try_run_command(command)) for command in commands_to_run))
+    command_inputs_outputs = dedent(
+        "\n\n".join(
+            _fmt_command_input_output(command, _try_run_command(command))
+            for command in commands_to_run
+        )
+    )
     pip_list_output = _get_pip_list_filtered()
     body = dedent(
         f"""
@@ -111,7 +132,9 @@ def _create_issue_draft() -> Result[None, str]:
     print("\n\n\n\nIssue draft:\n\n")
     print(f"Title: {title}")
     print(f"Body:\n{body}")
-    open_draft = _get_yes_or_no_input("Would you like to open a draft issue in your browser? [Y/n] ")
+    open_draft = _get_yes_or_no_input(
+        "Would you like to open a draft issue in your browser? [Y/n] "
+    )
     if open_draft:
         _troll_the_user_part_2()
         _open_github_issue_draft(
@@ -130,8 +153,14 @@ def _get_pip_list_filtered() -> str:
     output = _try_run_command("pip3 list")
     match output:
         case Ok(output_str):
-            filtered_lines = [line for line in output_str.split("\n") if "aiconfig" in line.lower()]
-            filtered_str = Ok("aiconfig packages:\n" + "\n".join(filtered_lines))
+            filtered_lines = [
+                line
+                for line in output_str.split("\n")
+                if "aiconfig" in line.lower()
+            ]
+            filtered_str = Ok(
+                "aiconfig packages:\n" + "\n".join(filtered_lines)
+            )
             return _fmt_command_input_output("pip3 list", filtered_str)
         case Err(_):
             return "\nCommand: pip3 list | grep aiconfig\nCouldn't run command :(. Please run manually."
@@ -140,11 +169,15 @@ def _get_pip_list_filtered() -> str:
 def _look_for_log(logfile: str) -> str | None:
     print()
     if os.path.exists(logfile):
-        print(f"Found {logfile}! Please include its contents in your bug report.")
+        print(
+            f"Found {logfile}! Please include its contents in your bug report."
+        )
         return os.path.abspath(logfile)
     else:
         print(f"No {logfile} found. This might be another bug :)")
-        print("For now, please include your terminal output in your bug report.")
+        print(
+            "For now, please include your terminal output in your bug report."
+        )
         return None
 
 
@@ -171,7 +204,9 @@ def _spin(seconds: int, type: str = "spinner"):
         if type == "spinner":
             return next(spinning)
         else:
-            return "".join(np.random.choice(["♩", "♫", "♬", "♪"]) for _ in range(5))
+            return "".join(
+                np.random.choice(["♩", "♫", "♬", "♪"]) for _ in range(5)
+            )
 
     end_time = time.time() + seconds
 
@@ -184,7 +219,9 @@ def _spin(seconds: int, type: str = "spinner"):
 
 def _troll_the_user_part_1():
     _spin(2)
-    print("Please hold. Your call is important to us.\nA representative will be with you shortly.")
+    print(
+        "Please hold. Your call is important to us.\nA representative will be with you shortly."
+    )
     _spin(3, type="music")
     print("Looking for your server logs...")
     _spin(4, type="music")
@@ -194,7 +231,9 @@ def _troll_the_user_part_1():
     _spin(5)
     print("I'm glad we're finally spending time together.")
     _spin(4, type="music")
-    print("Please continue holding. We appreciate your continued support, or whatever.")
+    print(
+        "Please continue holding. We appreciate your continued support, or whatever."
+    )
     _spin(3, type="music")
 
 
@@ -209,11 +248,17 @@ def _troll_the_user_part_2():
     _spin(3)
 
 
-def _open_github_issue_draft(repo: str, title: str, body: str, labels: list[str] | None = None) -> bool:
+def _open_github_issue_draft(
+    repo: str, title: str, body: str, labels: list[str] | None = None
+) -> bool:
     base_url = f"https://github.com/{repo}/issues/new"
     title_str = f"title={quote(title)}"
     body_str = f"body={quote(body)}"
-    labels_str = f"labels={','.join([quote(label) for label in labels])}" if labels else ""
+    labels_str = (
+        f"labels={','.join([quote(label) for label in labels])}"
+        if labels
+        else ""
+    )
 
     issue_url = f"{base_url}?{title_str}&{body_str}&{labels_str}"
     try:
@@ -221,6 +266,8 @@ def _open_github_issue_draft(repo: str, title: str, body: str, labels: list[str]
         return True
     except Exception as e:
         logger.debug(f"exn={e}")
-        logger.warning(f"Couldn't open your browser for you. I guess you'll have to do it yourself :)")
+        logger.warning(
+            f"Couldn't open your browser for you. I guess you'll have to do it yourself :)"
+        )
         logger.warning(f"Please open an issue here: {issue_url}")
         return False
