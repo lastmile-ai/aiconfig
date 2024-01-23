@@ -6,10 +6,11 @@ from functools import partial
 from typing import Any, Generic, NewType, Sequence, Tuple, TypeVar
 
 import aiconfig.eval.common as common
+import aiconfig.eval.test_suite_common as test_suite_common
 import lastmile_utils.lib.core.api as core_utils
 import pandas as pd
 from aiconfig.Config import AIConfigRuntime
-from aiconfig.eval.metrics import Metric
+from aiconfig.eval.test_suite_metrics import TestSuiteMetric
 from frozendict import frozendict
 from result import Err, Ok, Result
 
@@ -18,13 +19,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 # TODO: figure out a way to do heterogenous list without Any
-# Each test is a (input_datum, Metric) pair
+# Each test is a (input_datum, TestSuiteMetric) pair
 UserTestSuiteWithInputs = Sequence[
-    Tuple[str | dict[str, str], Metric[str, Any]]
+    Tuple[str | dict[str, str], TestSuiteMetric[str, Any]]
 ]
 
-# Each test is a (output_datum, Metric) pair
-UserTestSuiteOutputsOnly = Sequence[Tuple[str, Metric[str, Any]]]
+# Each test is a (output_datum, TestSuiteMetric) pair
+UserTestSuiteOutputsOnly = Sequence[Tuple[str, TestSuiteMetric[str, Any]]]
 
 
 # NOTE: it's probably better to avoid NewType in the future, because it doesn't
@@ -97,7 +98,7 @@ class SampleEvaluationResult(
 ):
     input_datum: common.T_InputDatum | None
     output_datum: common.T_OutputDatum
-    metric_value: common.SampleMetricValue[
+    metric_value: test_suite_common.SampleMetricValue[
         common.T_OutputDatum, common.T_MetricValue
     ]
 
@@ -111,7 +112,7 @@ class SampleEvaluationParams(
     # input_sample is here for documentation/debugging.
     input_sample: common.T_InputDatum | None
     output_sample: common.T_OutputDatum
-    metric: Metric[common.T_OutputDatum, common.T_MetricValue]
+    metric: TestSuiteMetric[common.T_OutputDatum, common.T_MetricValue]
 
     def __str__(self) -> str:
         return f"\nSampleEvaluationParams:\n\t{self.output_sample=}\n\t{self.metric=}"
@@ -124,7 +125,7 @@ DatasetEvaluationResult = Sequence[
 DatasetEvaluationParams = Sequence[
     SampleEvaluationParams[common.T_InputDatum, common.T_OutputDatum, Any]
 ]
-MetricList = list[Metric[common.T_OutputDatum, Any]]
+MetricList = list[TestSuiteMetric[common.T_OutputDatum, Any]]
 
 
 async def _evaluate_for_sample(
@@ -157,7 +158,7 @@ async def _evaluate_for_sample(
     result = SampleEvaluationResult(
         input_datum=eval_params.input_sample,
         output_datum=sample,
-        metric_value=common.SampleMetricValue(
+        metric_value=test_suite_common.SampleMetricValue(
             #
             value=_ok_with_log(res_),
             metric_metadata=metric.metric_metadata,
@@ -258,15 +259,15 @@ async def user_test_suite_with_inputs_to_eval_params_list(
                 return TextBasedInputDatum(frozendict(input_datum))
 
     test_suite_internal_types = [
-        (_user_test_input_to_internal_type(input_datum), metric)
-        for input_datum, metric in test_suite
+        (_user_test_input_to_internal_type(input_datum), TestSuiteMetric)
+        for input_datum, TestSuiteMetric in test_suite
     ]
 
     out: DatasetEvaluationParams[TextBasedInputDatum, TextOutput] = []
 
     # Group by input so that we only run each input through the AIConfig once.
     # This is sort of an optimization because the user can give the same input
-    # multiple times (with different metrics).
+    # multiple times (with different TestSuiteMetrics).
     input_to_metrics_mapping: dict[
         TextBasedInputDatum, MetricList[TextOutput]
     ] = {}
@@ -303,8 +304,8 @@ async def user_test_suite_with_inputs_to_eval_params_list(
         # of awaitables in aws.
         outputs_by_input = dict(zip(all_inputs, outputs))
 
-        for input_datum, metrics in input_to_metrics_mapping.items():
-            for metric in metrics:
+        for input_datum, TestSuiteMetrics in input_to_metrics_mapping.items():
+            for metric in TestSuiteMetrics:
                 out.append(
                     SampleEvaluationParams(
                         input_sample=input_datum,
