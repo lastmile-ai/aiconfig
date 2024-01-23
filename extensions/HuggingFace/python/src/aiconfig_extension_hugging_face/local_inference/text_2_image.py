@@ -3,18 +3,23 @@ import copy
 import io
 import itertools
 import json
-import torch
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+
+import torch
+from aiconfig.default_parsers.parameterized_model_parser import (
+    ParameterizedModelParser,
+)
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.util.params import resolve_prompt
+from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
 from diffusers import AutoPipelineForText2Image
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
-from diffusers.pipelines.stable_diffusion_xl.pipeline_output import StableDiffusionXLPipelineOutput
+from diffusers.pipelines.stable_diffusion_xl.pipeline_output import (
+    StableDiffusionXLPipelineOutput,
+)
 from PIL import Image
 from transformers import Pipeline
 
-from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
-
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import (
     ExecuteResult,
     Output,
@@ -22,7 +27,6 @@ from aiconfig.schema import (
     Prompt,
     PromptMetadata,
 )
-from aiconfig.util.params import resolve_prompt
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -30,7 +34,9 @@ if TYPE_CHECKING:
 
 
 # Step 1: define Helpers
-def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict[str, Any]]:
+def refine_pipeline_creation_params(
+    model_settings: Dict[str, Any]
+) -> List[Dict[str, Any]]:
     """
     Refines the pipeline creation params for the HF text2Image generation api.
     Defers unsupported params as completion params, where they can get processed in
@@ -70,7 +76,9 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
         if key.lower() in supported_keys:
             pipeline_creation_params[key.lower()] = model_settings[key]
         else:
-            if key.lower() == "kwargs" and isinstance(model_settings[key], Dict):
+            if key.lower() == "kwargs" and isinstance(
+                model_settings[key], Dict
+            ):
                 completion_params.update(model_settings[key])
             else:
                 completion_params[key.lower()] = model_settings[key]
@@ -78,7 +86,9 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
     return [pipeline_creation_params, completion_params]
 
 
-def refine_image_completion_params(unfiltered_completion_params: Dict[str, Any]) -> Dict[str, Any]:
+def refine_image_completion_params(
+    unfiltered_completion_params: Dict[str, Any]
+) -> Dict[str, Any]:
     """
     Refines the image creation params for the HF text2Image generation api after a
     pipeline has been created via `refine_pipeline_creation_params`. Removes any
@@ -164,7 +174,9 @@ def construct_output(image_data: ImageData, execution_count: int) -> Output:
             "output_type": "execute_result",
             "data": data,
             "execution_count": execution_count,
-            "metadata": {"nsfw_content_detected": image_data.nsfw_content_detected},
+            "metadata": {
+                "nsfw_content_detected": image_data.nsfw_content_detected
+            },
             "mime_type": "image/png",
         }
     )
@@ -233,7 +245,11 @@ class HuggingFaceText2ImageDiffusor(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **completion_params),
+            metadata=PromptMetadata(
+                model=model_metadata,
+                parameters=parameters,
+                **completion_params,
+            ),
         )
         return [prompt]
 
@@ -256,15 +272,26 @@ class HuggingFaceText2ImageDiffusor(ParameterizedModelParser):
         """
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
-        [_pipeline_creation_params, unfiltered_completion_params] = refine_pipeline_creation_params(model_settings)
-        completion_data = refine_image_completion_params(unfiltered_completion_params)
+        [
+            _pipeline_creation_params,
+            unfiltered_completion_params,
+        ] = refine_pipeline_creation_params(model_settings)
+        completion_data = refine_image_completion_params(
+            unfiltered_completion_params
+        )
 
         # Add resolved prompt
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
         completion_data["prompt"] = resolved_prompt
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> List[Output]:
+    async def run_inference(
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        options: InferenceOptions,
+        parameters: Dict[str, Any],
+    ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -277,7 +304,9 @@ class HuggingFaceText2ImageDiffusor(ParameterizedModelParser):
             InferenceResponse: The response from the model.
         """
         model_settings = self.get_model_settings(prompt, aiconfig)
-        [pipeline_creation_data, _] = refine_pipeline_creation_params(model_settings)
+        [pipeline_creation_data, _] = refine_pipeline_creation_params(
+            model_settings
+        )
         if not pipeline_creation_data.get("requires_safety_checker", True):
             pipeline_creation_data["safety_checker"] = None
 
@@ -300,7 +329,9 @@ https://huggingface.co/docs/diffusers/using-diffusers/loading
         # https://huggingface.co/docs/diffusers/using-diffusers/loading#checkpoint-variants
         if key not in self.generators:
             device = self._get_device()
-            self.generators[key] = AutoPipelineForText2Image.from_pretrained(pretrained_model_or_path=model_name, **pipeline_creation_data).to(device)
+            self.generators[key] = AutoPipelineForText2Image.from_pretrained(
+                pretrained_model_or_path=model_name, **pipeline_creation_data
+            ).to(device)
         generator = self.generators[key]
 
         disclaimer_long_response_print_message = """\n
@@ -316,8 +347,12 @@ If that doesn't work, you can also try less computationally intensive models.
         """
         print(disclaimer_long_response_print_message)
 
-        completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
-        response: Union[StableDiffusionPipelineOutput, StableDiffusionXLPipelineOutput] = generator(**completion_data)
+        completion_data = await self.deserialize(
+            prompt, aiconfig, options, parameters
+        )
+        response: Union[
+            StableDiffusionPipelineOutput, StableDiffusionXLPipelineOutput
+        ] = generator(**completion_data)
         nsfw_content_detected = []
         if hasattr(response, "nsfw_content_detected"):
             # StableDiffusionPipelineOutput has "nsfw_content_detected" field  but
@@ -328,7 +363,9 @@ If that doesn't work, you can also try less computationally intensive models.
         # TODO (rossdanlm): Check if "image" field is present for other image
         # diffusers other than StableDiffusion and StableDiffusionXL
         # https://github.com/lastmile-ai/aiconfig/issues/471
-        refined_responses = _refine_responses(response.images or [], nsfw_content_detected)
+        refined_responses = _refine_responses(
+            response.images or [], nsfw_content_detected
+        )
         for count, image_data in enumerate(refined_responses):
             # TODO (rossdanlm): It's possible for image to be of type np.ndarray
             # Update `construct_output` to process this type.
@@ -399,5 +436,8 @@ def _refine_responses(
         # Use zip.longest because nsfw_content_detected can be empty
         itertools.zip_longest(response_images, nsfw_content_detected)
     )
-    image_data_objects: List[ImageData] = [ImageData(image=image, nsfw_content_detected=has_nsfw) for (image, has_nsfw) in merged_responses]
+    image_data_objects: List[ImageData] = [
+        ImageData(image=image, nsfw_content_detected=has_nsfw)
+        for (image, has_nsfw) in merged_responses
+    ]
     return image_data_objects
