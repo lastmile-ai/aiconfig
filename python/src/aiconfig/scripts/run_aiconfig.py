@@ -5,7 +5,10 @@ import sys
 import lastmile_utils.lib.core.api as core_utils
 import result
 from aiconfig.Config import AIConfigRuntime
-from aiconfig.eval.lib import TextBasedInputDatum, run_aiconfig_on_text_based_input
+from aiconfig.eval.lib import (
+    TextBasedInputDatum,
+    run_aiconfig_on_text_based_input,
+)
 from result import Result
 
 logging.basicConfig(format=core_utils.LOGGER_FMT)
@@ -45,7 +48,9 @@ async def main():
 
 
 def _load_settings(settings_path: str) -> Result[Settings, str]:
-    return core_utils.pydantic_model_validate_from_json_file_path(settings_path, Settings)
+    return core_utils.pydantic_model_validate_from_json_file_path(
+        settings_path, Settings
+    )
 
 
 if __name__ == "__main__":

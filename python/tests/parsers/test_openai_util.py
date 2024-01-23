@@ -4,7 +4,13 @@ from aiconfig.Config import AIConfigRuntime
 from aiconfig.default_parsers.openai import refine_chat_completion_params
 from mock import patch
 
-from aiconfig.schema import ExecuteResult, Prompt, PromptInput, PromptMetadata, ModelMetadata
+from aiconfig.schema import (
+    ExecuteResult,
+    ModelMetadata,
+    Prompt,
+    PromptInput,
+    PromptMetadata,
+)
 
 from ..conftest import mock_openai_chat_completion
 from ..util.file_path_utils import get_absolute_file_path_from_relative
@@ -27,9 +33,13 @@ def test_refine_chat_completion_params():
         ),
     )
 
-    aiconfig = AIConfigRuntime.create(name="test_refine_chat_completion_params", prompts=[prompt])
+    aiconfig = AIConfigRuntime.create(
+        name="test_refine_chat_completion_params", prompts=[prompt]
+    )
 
-    refined_params = refine_chat_completion_params(prompt.metadata.model.settings, aiconfig, prompt)
+    refined_params = refine_chat_completion_params(
+        prompt.metadata.model.settings, aiconfig, prompt
+    )
 
     assert "system_prompt" not in refined_params
     assert "stream" in refined_params
@@ -39,9 +49,15 @@ def test_refine_chat_completion_params():
 
 @pytest.mark.asyncio
 async def test_get_output_text(set_temporary_env_vars):
-    with patch.object(openai.chat.completions, "create", side_effect=mock_openai_chat_completion):
+    with patch.object(
+        openai.chat.completions,
+        "create",
+        side_effect=mock_openai_chat_completion,
+    ):
         config_relative_path = "../aiconfigs/basic_chatgpt_query_config.json"
-        config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
+        config_absolute_path = get_absolute_file_path_from_relative(
+            __file__, config_relative_path
+        )
         aiconfig = AIConfigRuntime.load(config_absolute_path)
 
         await aiconfig.run("prompt1", {})
@@ -56,7 +72,11 @@ async def test_get_output_text(set_temporary_env_vars):
 
 @pytest.mark.asyncio
 async def test_serialize(set_temporary_env_vars):
-    with patch.object(openai.chat.completions, "create", side_effect=mock_openai_chat_completion):
+    with patch.object(
+        openai.chat.completions,
+        "create",
+        side_effect=mock_openai_chat_completion,
+    ):
         # Test with one input prompt and system. No output
         completion_params = {
             "model": "gpt-3.5-turbo",
@@ -69,7 +89,9 @@ async def test_serialize(set_temporary_env_vars):
         }
 
         aiconfig = AIConfigRuntime.create()
-        serialized_prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, prompt_name="the prompt")
+        serialized_prompts = await aiconfig.serialize(
+            "gpt-3.5-turbo", completion_params, prompt_name="the prompt"
+        )
         new_prompt = serialized_prompts[0]
 
         # assert prompt serialized correctly into config
@@ -104,11 +126,16 @@ async def test_serialize(set_temporary_env_vars):
             "messages": [
                 {"role": "system", "content": "You are an expert greeter"},
                 {"role": "user", "content": "Hello!"},
-                {"role": "assistant", "content": "Hello! How can I assist you today?"},
+                {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?",
+                },
             ],
         }
 
-        serialized_prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
+        serialized_prompts = await aiconfig.serialize(
+            "gpt-3.5-turbo", completion_params, "prompt"
+        )
         new_prompt = serialized_prompts[0]
 
         expected_prompt = Prompt(
@@ -137,7 +164,10 @@ async def test_serialize(set_temporary_env_vars):
                     execution_count=None,
                     data="Hello! How can I assist you today?",
                     metadata={
-                        "raw_response": {"role": "assistant", "content": "Hello! How can I assist you today?"},
+                        "raw_response": {
+                            "role": "assistant",
+                            "content": "Hello! How can I assist you today?",
+                        },
                         "role": "assistant",
                     },
                     mime_type=None,
@@ -157,7 +187,10 @@ async def test_serialize(set_temporary_env_vars):
             "temperature": 0.7,
             "max_tokens": 900,
             "messages": [
-                {"role": "system", "content": "You are an expert decision maker"},
+                {
+                    "role": "system",
+                    "content": "You are an expert decision maker",
+                },
                 {"role": "user", "content": "What is the weather today?"},
             ],
             "functions": [
@@ -182,7 +215,9 @@ async def test_serialize(set_temporary_env_vars):
             ],
         }
 
-        serialized_prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
+        serialized_prompts = await aiconfig.serialize(
+            "gpt-3.5-turbo", completion_params, "prompt"
+        )
         new_prompt = serialized_prompts[0]
         assert new_prompt == Prompt(
             name="prompt",
@@ -212,7 +247,10 @@ async def test_serialize(set_temporary_env_vars):
                                             },
                                             "unit": {
                                                 "type": "string",
-                                                "enum": ["celsius", "fahrenheit"],
+                                                "enum": [
+                                                    "celsius",
+                                                    "fahrenheit",
+                                                ],
                                             },
                                         },
                                         "required": ["location"],
@@ -231,8 +269,14 @@ async def test_serialize(set_temporary_env_vars):
             "temperature": 0.7,
             "max_tokens": 900,
             "messages": [
-                {"role": "system", "content": "You are an expert decision maker"},
-                {"role": "user", "content": "What's the weather like in Boston today?"},
+                {
+                    "role": "system",
+                    "content": "You are an expert decision maker",
+                },
+                {
+                    "role": "user",
+                    "content": "What's the weather like in Boston today?",
+                },
                 {
                     "role": "assistant",
                     "content": None,
@@ -273,7 +317,9 @@ async def test_serialize(set_temporary_env_vars):
             ],
         }
 
-        prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
+        prompts = await aiconfig.serialize(
+            "gpt-3.5-turbo", completion_params, "prompt"
+        )
         new_prompt = prompts[1]
 
         expected_prompt = Prompt(

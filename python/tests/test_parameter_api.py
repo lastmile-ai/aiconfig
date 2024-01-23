@@ -37,7 +37,10 @@ def test_delete_nonexistent_parameter(ai_config_runtime: AIConfigRuntime):
     )
 
     # Ensure deleting a nonexistent parameter raises a KeyError
-    with pytest.raises(KeyError, match=f"Parameter '{parameter_name_to_delete}' does not exist."):
+    with pytest.raises(
+        KeyError,
+        match=f"Parameter '{parameter_name_to_delete}' does not exist.",
+    ):
         config.delete_parameter(parameter_name_to_delete)
 
 
@@ -142,7 +145,9 @@ def test_set_parameter_for_prompt_no_metadata(ai_config: AIConfig):
     assert prompt.metadata is None
     prompt_parameter_name = "prompt_param"
     prompt_parameter_value = "prompt_value"
-    ai_config.set_parameter(prompt_parameter_name, prompt_parameter_value, prompt_name)
+    ai_config.set_parameter(
+        prompt_parameter_name, prompt_parameter_value, prompt_name
+    )
 
     # Ensure the prompt parameter is set correctly
     assert prompt.metadata is not None
@@ -179,7 +184,9 @@ def test_set_parameter_for_prompt_no_parameters(ai_config: AIConfig):
     assert prompt.metadata.parameters == {}
     prompt_parameter_name = "prompt_param"
     prompt_parameter_value = "prompt_value"
-    ai_config.set_parameter(prompt_parameter_name, prompt_parameter_value, prompt_name)
+    ai_config.set_parameter(
+        prompt_parameter_name, prompt_parameter_value, prompt_name
+    )
 
     # Ensure the prompt parameter is set correctly
     assert prompt.metadata is not None
@@ -222,7 +229,9 @@ def test_set_parameter_for_prompt_has_parameters(ai_config: AIConfig):
     )
 
     prompt_parameter_value = "prompt_value"
-    ai_config.set_parameter(prompt_parameter_name, prompt_parameter_value, prompt_name)
+    ai_config.set_parameter(
+        prompt_parameter_name, prompt_parameter_value, prompt_name
+    )
 
     # Ensure the prompt parameter is set correctly
     assert prompt.metadata is not None
@@ -258,7 +267,9 @@ def test_delete_existing_parameter(ai_config: AIConfig):
     parameter_name_to_delete = "param_to_delete"
     parameter_value = "param_value"
 
-    ai_config.set_parameter(parameter_name_to_delete, parameter_value, prompt_name=None)
+    ai_config.set_parameter(
+        parameter_name_to_delete, parameter_value, prompt_name=None
+    )
     ai_config.delete_parameter(parameter_name_to_delete, prompt_name=None)
 
     assert ai_config.metadata.parameters is not None
