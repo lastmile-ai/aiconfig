@@ -3,7 +3,7 @@ import sys
 from abc import abstractmethod
 from dataclasses import dataclass
 from functools import partial, total_ordering
-from typing import Any, Callable, Generic, Protocol, Type
+from typing import Any, Awaitable, Callable, Concatenate, Generic, ParamSpec, Protocol, Type
 
 import lastmile_utils.lib.core.api as core_utils
 import nltk
@@ -29,22 +29,65 @@ class Metric(Generic[common.T_Evaluable, common.T_MetricValue]):
         return await self.evaluation_fn(datum)
 
 
-def _check_substring(
-    output_datum: str,
-    substring: str,
-    #
-    case_sensitive: bool,
-) -> bool:
-    if case_sensitive:
-        return substring in output_datum
-    else:
-        return substring.lower() in output_datum.lower()
+T_ParamSpec = ParamSpec("T_ParamSpec")
 
 
-async def _calculate_brevity(datum: str) -> int:
-    if len(datum) == 0:
-        raise ValueError("Brevity is meaningless for empty string.")
-    return len(datum)
+@core_utils.parametrized
+def metric(
+    parametrized_evaluation_fn: Callable[Concatenate[common.T_Evaluable, T_ParamSpec], common.T_MetricValue],
+    name: str | None = None,
+    description: str | None = None,
+    best_value: common.T_MetricValue | None = None,
+    worst_value: common.T_MetricValue | None = None,
+) -> Callable[T_ParamSpec, Metric[common.T_Evaluable, common.T_MetricValue]]:
+    name_ = name or parametrized_evaluation_fn.__name__
+    description_ = description or name_
+
+    def _construct(*args: T_ParamSpec.args, **kwargs: T_ParamSpec.kwargs) -> Metric[common.T_Evaluable, common.T_MetricValue]:
+        async def evaluation_fn(datum: common.T_Evaluable) -> common.T_MetricValue:
+            return parametrized_evaluation_fn(datum, *args, **kwargs)
+
+        return Metric(
+            evaluation_fn=evaluation_fn,
+            metric_metadata=common.EvaluationMetricMetadata(
+                name=name_,
+                description=description_,
+                best_value=best_value,
+                worst_value=worst_value,
+                extra_metadata=dict(args=args, **kwargs),
+            ),
+        )
+
+    return _construct
+
+
+@core_utils.parametrized
+def metric_async(
+    parametrized_evaluation_fn: Callable[Concatenate[common.T_Evaluable, T_ParamSpec], Awaitable[common.T_MetricValue]],
+    name: str | None = None,
+    description: str | None = None,
+    best_value: common.T_MetricValue | None = None,
+    worst_value: common.T_MetricValue | None = None,
+) -> Callable[T_ParamSpec, Metric[common.T_Evaluable, common.T_MetricValue]]:
+    name_ = name or parametrized_evaluation_fn.__name__
+    description_ = description or name_
+
+    def _construct(*args: T_ParamSpec.args, **kwargs: T_ParamSpec.kwargs) -> Metric[common.T_Evaluable, common.T_MetricValue]:
+        async def evaluation_fn(datum: common.T_Evaluable) -> common.T_MetricValue:
+            return await parametrized_evaluation_fn(datum, *args, **kwargs)
+
+        return Metric(
+            evaluation_fn=evaluation_fn,
+            metric_metadata=common.EvaluationMetricMetadata(
+                name=name_,
+                description=description_,
+                best_value=best_value,
+                worst_value=worst_value,
+                extra_metadata=dict(args=args, **kwargs),
+            ),
+        )
+
+    return _construct
 
 
 @dataclass(frozen=True)
@@ -261,37 +304,37 @@ def make_openai_structured_llm_metric(
             raise ValueError(f"Error making metric: {e}")
 
 
-def substring_match(substring: str, case_sensitive: bool = True) -> Metric[str, bool]:
-    async def _fn(datum: str) -> bool:
-        return _check_substring(
-            output_datum=datum,
-            substring=substring,
-            case_sensitive=case_sensitive,
-        )
-
-    return Metric(
-        evaluation_fn=_fn,
-        metric_metadata=common.EvaluationMetricMetadata(
-            name="substring_match",
-            description="True (pass) if contains given substring",
-            best_value=True,
-            worst_value=False,
-            extra_metadata=dict(substring=substring, case_sensitive=case_sensitive),
-        ),
-    )
-
-
 # 2. literal metrics
 
-brevity: Metric[str, int] = Metric(
-    evaluation_fn=_calculate_brevity,
-    metric_metadata=common.EvaluationMetricMetadata(
-        name="brevity",
-        description="Absolute text length",
-        best_value=1,
-        worst_value=sys.maxsize,
-    ),
+
+@metric(
+    #
+    description="True (pass) if contains given substring",
+    best_value=True,
+    worst_value=False,
 )
+def substring_match(datum: str, substring: str, case_sensitive: bool = True) -> bool:
+    if case_sensitive:
+        return substring in datum
+    else:
+        return substring.lower() in datum.lower()
+
+
+@metric(
+    #
+    description="Absolute text length",
+    name="brevity",
+    best_value=1,
+    worst_value=sys.maxsize,
+)
+def make_brevity(datum: str):
+    if len(datum) == 0:
+        raise ValueError("Brevity is meaningless for empty string.")
+    return len(datum)
+
+
+# For backwards-compatibility
+brevity = make_brevity()
 
 
 gpt3_5_text_ratings = make_openai_structured_llm_metric(
