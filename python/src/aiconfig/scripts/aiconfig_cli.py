@@ -6,14 +6,16 @@ import socket
 import subprocess
 import sys
 
-import lastmile_utils.lib.core.api as core_utils
-from ruamel.yaml import YAML
-
-from aiconfig.editor.server.server import run_backend_server
-from aiconfig.editor.server.server_utils import DEFAULT_AICONFIGRC, EditServerConfig, ServerMode
-from result import Err, Ok, Result
-
 import aiconfig.scripts.rage.rage as rage
+import lastmile_utils.lib.core.api as core_utils
+from aiconfig.editor.server.server import run_backend_server
+from aiconfig.editor.server.server_utils import (
+    DEFAULT_AICONFIGRC,
+    EditServerConfig,
+    ServerMode,
+)
+from result import Err, Ok, Result
+from ruamel.yaml import YAML
 
 
 class AIConfigCLIConfig(core_utils.Record):
@@ -38,16 +40,25 @@ async def main_with_args(argv: list[str]) -> int:
 
 def run_subcommand(argv: list[str]) -> Result[str, str]:
     LOGGER.info("Running subcommand")
-    subparser_record_types = {"edit": EditServerConfig, "rage": rage.RageConfig}
-    main_parser = core_utils.argparsify(AIConfigCLIConfig, subparser_record_types=subparser_record_types)
+    subparser_record_types = {
+        "edit": EditServerConfig,
+        "rage": rage.RageConfig,
+    }
+    main_parser = core_utils.argparsify(
+        AIConfigCLIConfig, subparser_record_types=subparser_record_types
+    )
 
     # Try to parse the CLI args into a config.
-    cli_config: Result[AIConfigCLIConfig, str] = core_utils.parse_args(main_parser, argv[1:], AIConfigCLIConfig)
+    cli_config: Result[AIConfigCLIConfig, str] = core_utils.parse_args(
+        main_parser, argv[1:], AIConfigCLIConfig
+    )
 
     # If cli_config is Ok(), pass its contents to _get_cli_process_result_from_config().
     # Otherwise, short circuit and assign process_result to the Err.
     # Nothing gets mutated except for log level (see inside _get_cli_process_result_from_config()
-    process_result = cli_config.and_then(_set_log_level_and_create_default_yaml)
+    process_result = cli_config.and_then(
+        _set_log_level_and_create_default_yaml
+    )
     LOGGER.info(f"{process_result=}")
 
     subparser_name = core_utils.get_subparser_name(main_parser, argv[1:])
@@ -55,12 +66,16 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
 
     if subparser_name == "edit":
         LOGGER.debug("Running edit subcommand")
-        edit_config = core_utils.parse_args(main_parser, argv[1:], EditServerConfig)
+        edit_config = core_utils.parse_args(
+            main_parser, argv[1:], EditServerConfig
+        )
         LOGGER.debug(f"{edit_config.is_ok()=}")
         out = _run_editor_servers_with_configs(edit_config, cli_config)
         return out
     elif subparser_name == "rage":
-        res_rage_config = core_utils.parse_args(main_parser, argv[1:], rage.RageConfig)
+        res_rage_config = core_utils.parse_args(
+            main_parser, argv[1:], rage.RageConfig
+        )
         res_rage = res_rage_config.and_then(rage.rage)
         match res_rage:
             case Ok(msg):
@@ -71,11 +86,18 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
         return Err(f"Unknown subparser: {subparser_name}")
 
 
-def _run_editor_servers_with_configs(edit_config: Result[EditServerConfig, str], cli_config: Result[AIConfigCLIConfig, str]) -> Result[str, str]:
+def _run_editor_servers_with_configs(
+    edit_config: Result[EditServerConfig, str],
+    cli_config: Result[AIConfigCLIConfig, str],
+) -> Result[str, str]:
     if not (edit_config.is_ok() and cli_config.is_ok()):
-        return Err(f"Something went wrong with configs: {edit_config=}, {cli_config=}")
+        return Err(
+            f"Something went wrong with configs: {edit_config=}, {cli_config=}"
+        )
 
-    server_outcomes = _run_editor_servers(edit_config.unwrap(), cli_config.unwrap().aiconfigrc_path)
+    server_outcomes = _run_editor_servers(
+        edit_config.unwrap(), cli_config.unwrap().aiconfigrc_path
+    )
     if server_outcomes.is_err():
         return Err(f"Something went wrong with servers: {server_outcomes=}")
 
@@ -100,7 +122,9 @@ def is_port_in_use(port: int) -> bool:
         return s.connect_ex(("localhost", port)) == 0
 
 
-def _run_editor_servers(edit_config: EditServerConfig, aiconfigrc_path: str) -> Result[list[str], str]:
+def _run_editor_servers(
+    edit_config: EditServerConfig, aiconfigrc_path: str
+) -> Result[list[str], str]:
     port = edit_config.server_port
 
     while is_port_in_use(port):
@@ -116,7 +140,11 @@ def _run_editor_servers(edit_config: EditServerConfig, aiconfigrc_path: str) -> 
 
     # Check if server is already running
     LOGGER.info("Running editor servers")
-    frontend_procs = _run_frontend_server_background() if edit_config.server_mode in [ServerMode.DEBUG_SERVERS] else Ok([])
+    frontend_procs = (
+        _run_frontend_server_background()
+        if edit_config.server_mode in [ServerMode.DEBUG_SERVERS]
+        else Ok([])
+    )
     match frontend_procs:
         case Ok(_):
             pass
@@ -138,7 +166,9 @@ def _run_editor_servers(edit_config: EditServerConfig, aiconfigrc_path: str) -> 
     return core_utils.result_reduce_list_all_ok(results)
 
 
-def _set_log_level_and_create_default_yaml(cli_config: AIConfigCLIConfig) -> Result[bool, str]:
+def _set_log_level_and_create_default_yaml(
+    cli_config: AIConfigCLIConfig,
+) -> Result[bool, str]:
     """
     This function has 2 jobs (currently):
     1. Set the log level
@@ -179,16 +209,24 @@ def _set_log_level_and_create_default_yaml(cli_config: AIConfigCLIConfig) -> Res
         return core_utils.ErrWithTraceback(e)
 
 
-def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], str]:
+def _run_frontend_server_background() -> (
+    Result[list[subprocess.Popen[bytes]], str]
+):
     LOGGER.info("Running frontend server in background")
     p1, p2 = None, None
     try:
-        p1 = subprocess.Popen(["yarn"], cwd="python/src/aiconfig/editor/client")
+        p1 = subprocess.Popen(
+            ["yarn"], cwd="python/src/aiconfig/editor/client"
+        )
     except Exception as e:
         return core_utils.ErrWithTraceback(e)
 
     try:
-        p2 = subprocess.Popen(["yarn", "start"], cwd="python/src/aiconfig/editor/client", stdin=subprocess.PIPE)
+        p2 = subprocess.Popen(
+            ["yarn", "start"],
+            cwd="python/src/aiconfig/editor/client",
+            stdin=subprocess.PIPE,
+        )
     except Exception as e:
         return core_utils.ErrWithTraceback(e)
 
