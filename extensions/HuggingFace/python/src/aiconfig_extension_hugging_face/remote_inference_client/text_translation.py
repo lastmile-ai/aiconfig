@@ -62,7 +62,7 @@ def construct_output(response: str) -> Output:
     return output
 
 
-class HuggingFaceTextTranslationParser(ParameterizedModelParser):
+class HuggingFaceTextTranslationRemoteInference(ParameterizedModelParser):
     """
     A model parser for HuggingFace text translation models.
     """
@@ -74,12 +74,12 @@ class HuggingFaceTextTranslationParser(ParameterizedModelParser):
             no_token (bool): Whether or not to require an API token. Set to False if you don't have an api key.
 
         Returns:
-            HuggingFaceTextTranslationParser: The HuggingFaceTextTranslationParser object.
+            HuggingFaceTextTranslationRemoteInference: The HuggingFaceTextTranslationRemoteInference object.
 
         Usage:
 
         1. Create a new model parser object with the model ID of the model to use.
-                parser = HuggingFaceTextTranslationParser("Helsinki-NLP/opus-mt-en-zh", use_api_token=False)
+                parser = HuggingFaceTextTranslationRemoteInference("Helsinki-NLP/opus-mt-en-zh", use_api_token=False)
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
 
@@ -104,7 +104,7 @@ class HuggingFaceTextTranslationParser(ParameterizedModelParser):
         """
         Returns an identifier for the Model Parser
         """
-        return "HuggingFaceTextTranslationParser"
+        return "HuggingFaceTextTranslationRemoteInference"
 
     async def serialize(
         self,

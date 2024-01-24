@@ -12,9 +12,9 @@ import { HuggingFaceText2ImageRemoteInferencePromptSchema } from "../shared/prom
 import { HuggingFaceText2SpeechTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2SpeechTransformerPromptSchema";
 import { HuggingFaceTextGenerationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationTransformerPromptSchema";
 import { HuggingFaceTextSummarizationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationTransformerPromptSchema";
-import { HuggingFaceTextGenerationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationParserPromptSchema";
-import { HuggingFaceTextSummarizationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationParserPromptSchema";
-import { HuggingFaceTextTranslationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextTranslationParserPromptSchema";
+import { HuggingFaceTextGenerationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationRemoteInferencePromptSchema";
+import { HuggingFaceTextSummarizationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationRemoteInferencePromptSchema";
+import { HuggingFaceTextTranslationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextTranslationRemoteInferencePromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -82,14 +82,15 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
     HuggingFaceText2ImageRemoteInferencePromptSchema,
   // TODO: core parser and remote inference share the same code, delete
   // hf core parser and keep it in the extension instead
-  // HuggingFaceTextGenerationParser (Core parser and remote inference extension)
-  HuggingFaceTextGenerationParser: HuggingFaceTextGenerationParserPromptSchema,
+  // HuggingFaceTextGenerationRemoteInference (Core parser and remote inference extension)
+  HuggingFaceTextGenerationRemoteInference:
+    HuggingFaceTextGenerationRemoteInferencePromptSchema,
 
-  HuggingFaceTextSummarizationParser:
-    HuggingFaceTextSummarizationParserPromptSchema,
+  HuggingFaceTextSummarizationRemoteInference:
+    HuggingFaceTextSummarizationRemoteInferencePromptSchema,
 
-  HuggingFaceTextTranslationParser:
-    HuggingFaceTextTranslationParserPromptSchema,
+  HuggingFaceTextTranslationRemoteInference:
+    HuggingFaceTextTranslationRemoteInferencePromptSchema,
 
   // PaLMTextParser
   "models/text-bison-001": PaLMTextParserPromptSchema,
