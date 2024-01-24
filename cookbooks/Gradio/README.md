@@ -32,6 +32,7 @@ We have started by supporting the 6 most popular Hugging Face tasks (by number o
 In addition we support the following **HF inference API**:
 
 - text generation
+- text summarization
 
 ### Gradio custom component
 

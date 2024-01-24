@@ -8,10 +8,14 @@ import { AnyscaleEndpointPromptSchema } from "../shared/prompt_schemas/AnyscaleE
 import { HuggingFaceAutomaticSpeechRecognitionPromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionPromptSchema";
 import { HuggingFaceImage2TextTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextTransformerPromptSchema";
 import { HuggingFaceText2ImageDiffusorPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageDiffusorPromptSchema";
+import { HuggingFaceText2ImageRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageRemoteInferencePromptSchema";
+import { HuggingFaceText2SpeechRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceText2SpeechRemoteInferencePromptSchema";
 import { HuggingFaceText2SpeechTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2SpeechTransformerPromptSchema";
 import { HuggingFaceTextGenerationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationTransformerPromptSchema";
 import { HuggingFaceTextSummarizationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationTransformerPromptSchema";
-import { HuggingFaceTextGenerationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationParserPromptSchema";
+import { HuggingFaceTextGenerationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationRemoteInferencePromptSchema";
+import { HuggingFaceTextSummarizationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationRemoteInferencePromptSchema";
+import { HuggingFaceTextTranslationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextTranslationRemoteInferencePromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -75,10 +79,23 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "dall-e-2": DalleImageGenerationParserPromptSchema,
   "dall-e-3": DalleImageGenerationParserPromptSchema,
 
+  HuggingFaceText2ImageRemoteInference:
+    HuggingFaceText2ImageRemoteInferencePromptSchema,
+
+  HuggingFaceText2SpeechRemoteInference:
+    HuggingFaceText2SpeechRemoteInferencePromptSchema,
+
   // TODO: core parser and remote inference share the same code, delete
   // hf core parser and keep it in the extension instead
-  // HuggingFaceTextGenerationParser (Core parser and remote inference extension)
-  HuggingFaceTextGenerationParser: HuggingFaceTextGenerationParserPromptSchema,
+  // HuggingFaceTextGenerationRemoteInference (Core parser and remote inference extension)
+  HuggingFaceTextGenerationRemoteInference:
+    HuggingFaceTextGenerationRemoteInferencePromptSchema,
+
+  HuggingFaceTextSummarizationRemoteInference:
+    HuggingFaceTextSummarizationRemoteInferencePromptSchema,
+
+  HuggingFaceTextTranslationRemoteInference:
+    HuggingFaceTextTranslationRemoteInferencePromptSchema,
 
   // PaLMTextParser
   "models/text-bison-001": PaLMTextParserPromptSchema,
