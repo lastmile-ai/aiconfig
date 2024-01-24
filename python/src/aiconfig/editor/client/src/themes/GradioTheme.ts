@@ -78,6 +78,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
       borderLeft: "none",
       borderTopRightRadius: "8px",
       borderBottomRightRadius: "8px",
+      minWidth: "32px",
       background:
         theme.colorScheme === "light"
           ? "linear-gradient(90deg, #F6F6F6, #FFFFFF)"

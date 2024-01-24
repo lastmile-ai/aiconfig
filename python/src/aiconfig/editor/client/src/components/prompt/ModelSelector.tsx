@@ -1,4 +1,4 @@
-import { Autocomplete, AutocompleteItem, Button } from "@mantine/core";
+import { Autocomplete, AutocompleteItem, Button, Tooltip } from "@mantine/core";
 import { memo, useState } from "react";
 import { getPromptModelName } from "../../utils/promptUtils";
 import { Prompt } from "aiconfig";
@@ -37,53 +37,55 @@ export default memo(function ModelSelector({
   };
 
   return (
-    <Autocomplete
-      placeholder="Select model"
-      limit={100}
-      className="ghost"
-      label="Model"
-      variant="unstyled"
-      maxDropdownHeight={200}
-      rightSection={
-        selectedModel ? (
-          <Button
-            size="xs"
-            variant="subtle"
-            className="ghost"
-            mr={10}
-            onClick={() => {
-              onSelectModel(undefined);
-              setShowAll(true);
-              setAutocompleteSearch("");
-            }}
-          >
-            <IconX size={10} />
-          </Button>
-        ) : null
-      }
-      filter={(searchValue: string, item: AutocompleteItem) => {
-        if (showAll) {
-          return true;
+    <Tooltip label="Select a Model" position="left">
+      <Autocomplete
+        placeholder="Select model"
+        limit={100}
+        className="ghost"
+        label="Model"
+        variant="unstyled"
+        maxDropdownHeight={200}
+        rightSection={
+          selectedModel ? (
+            <Button
+              size="xs"
+              variant="subtle"
+              className="ghost"
+              mr={10}
+              onClick={() => {
+                onSelectModel(undefined);
+                setShowAll(true);
+                setAutocompleteSearch("");
+              }}
+            >
+              <IconX size={10} />
+            </Button>
+          ) : null
         }
-
-        const modelName: string = item.value;
-        return modelName
-          .toLocaleLowerCase()
-          .includes(searchValue.toLocaleLowerCase().trim());
-      }}
-      data={models}
-      value={autocompleteSearch}
-      onChange={(value: string) => {
-        setAutocompleteSearch(value);
-        setShowAll(false);
-        onSelectModel(value);
-        models.some((model) => {
-          if (model === value) {
-            setShowAll(true);
+        filter={(searchValue: string, item: AutocompleteItem) => {
+          if (showAll) {
             return true;
           }
-        });
-      }}
-    />
+
+          const modelName: string = item.value;
+          return modelName
+            .toLocaleLowerCase()
+            .includes(searchValue.toLocaleLowerCase().trim());
+        }}
+        data={models}
+        value={autocompleteSearch}
+        onChange={(value: string) => {
+          setAutocompleteSearch(value);
+          setShowAll(false);
+          onSelectModel(value);
+          models.some((model) => {
+            if (model === value) {
+              setShowAll(true);
+              return true;
+            }
+          });
+        }}
+      />
+    </Tooltip>
   );
 });

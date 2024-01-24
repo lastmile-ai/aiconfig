@@ -32,12 +32,9 @@ const useStyles = createStyles((theme) => ({
   },
   hoverContainer: {
     "&:hover": {
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? "rgba(255, 255, 255, 0.1)"
-          : theme.colors.gray[1],
+      backgroundColor: "rgba(226, 232, 255, 0.1)",
     },
-    borderRadius: theme.radius.sm,
+    borderRadius: "0px",
     width: "-webkit-fill-available",
   },
 }));
