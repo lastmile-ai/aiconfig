@@ -74,7 +74,7 @@ def construct_output(response: str) -> Output:
     return output
 
 
-class HuggingFaceTextSummarizationParser(ParameterizedModelParser):
+class HuggingFaceTextSummarizationRemoteInference(ParameterizedModelParser):
     """
     A model parser for HuggingFace text summarization models.
     """
@@ -86,12 +86,12 @@ class HuggingFaceTextSummarizationParser(ParameterizedModelParser):
             no_token (bool): Whether or not to require an API token. Set to False if you don't have an api key.
 
         Returns:
-            HuggingFaceTextSummarizationParser: The HuggingFaceTextSummarizationParser object.
+            HuggingFaceTextSummarizationRemoteInference: The HuggingFaceTextSummarizationRemoteInference object.
 
         Usage:
 
         1. Create a new model parser object with the model ID of the model to use.
-                parser = HuggingFaceTextSummarizationParser("facebook/bart-large-cnn", use_api_token=False)
+                parser = HuggingFaceTextSummarizationRemoteInference("facebook/bart-large-cnn", use_api_token=False)
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
 
@@ -116,7 +116,7 @@ class HuggingFaceTextSummarizationParser(ParameterizedModelParser):
         """
         Returns an identifier for the Model Parser
         """
-        return "HuggingFaceTextSummarizationParser"
+        return "HuggingFaceTextSummarizationRemoteInference"
 
     async def serialize(
         self,

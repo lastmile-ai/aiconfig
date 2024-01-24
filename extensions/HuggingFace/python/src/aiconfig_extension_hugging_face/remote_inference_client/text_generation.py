@@ -120,7 +120,7 @@ def construct_regular_output(
     return output
 
 
-class HuggingFaceTextGenerationParser(ParameterizedModelParser):
+class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
     """
     A model parser for HuggingFace text generation models.
     """
@@ -132,12 +132,12 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             no_token (bool): Whether or not to require an API token. Set to False if you don't have an api key.
 
         Returns:
-            HuggingFaceTextParser: The HuggingFaceTextParser object.
+            HuggingFaceTextGenerationRemoteInference: The HuggingFaceTextGenerationRemoteInference object.
 
         Usage:
 
         1. Create a new model parser object with the model ID of the model to use.
-                parser = HuggingFaceTextParser("mistralai/Mistral-7B-Instruct-v0.1", use_api_token=False)
+                parser = HuggingFaceTextGenerationRemoteInference("mistralai/Mistral-7B-Instruct-v0.1", use_api_token=False)
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
 
@@ -162,7 +162,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         """
         Returns an identifier for the Model Parser
         """
-        return "HuggingFaceTextGenerationParser"
+        return "HuggingFaceTextGenerationRemoteInference"
 
     async def serialize(
         self,

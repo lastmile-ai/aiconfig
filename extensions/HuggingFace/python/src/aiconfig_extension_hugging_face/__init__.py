@@ -18,13 +18,13 @@ from .remote_inference_client.text_2_image import (
     HuggingFaceText2ImageRemoteInference,
 )
 from .remote_inference_client.text_generation import (
-    HuggingFaceTextGenerationParser,
+    HuggingFaceTextGenerationRemoteInference,
 )
 from .remote_inference_client.text_summarization import (
-    HuggingFaceTextSummarizationParser,
+    HuggingFaceTextSummarizationRemoteInference,
 )
 from .remote_inference_client.text_translation import (
-    HuggingFaceTextTranslationParser,
+    HuggingFaceTextTranslationRemoteInference,
 )
 
 UTILS = [get_hf_model]
@@ -40,8 +40,8 @@ LOCAL_INFERENCE_CLASSES = [
 ]
 REMOTE_INFERENCE_CLASSES = [
     "HuggingFaceText2ImageRemoteInference",
-    "HuggingFaceTextGenerationParser",
-    "HuggingFaceTextSummarizationParser",
-    "HuggingFaceTextTranslationParser",
+    "HuggingFaceTextGenerationRemoteInference",
+    "HuggingFaceTextSummarizationRemoteInference",
+    "HuggingFaceTextTranslationRemoteInference",
 ]
 __ALL__ = LOCAL_INFERENCE_CLASSES + REMOTE_INFERENCE_CLASSES + UTILS
