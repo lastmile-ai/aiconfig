@@ -17,7 +17,7 @@ from typing import (
 import lastmile_utils.lib.core.api as core_utils
 import nltk
 import pandas as pd
-from aiconfig.eval import common
+from aiconfig.eval import common, test_suite_common
 from aiconfig.eval.openai import (
     OpenAIChatCompletionCreate,
     default_openai_chat_completion_create,
@@ -30,10 +30,10 @@ from result import Err, Ok, Result
 
 
 @dataclass(frozen=True)
-class Metric(Generic[common.T_Evaluable, common.T_MetricValue]):
+class TestSuiteMetric(Generic[common.T_Evaluable, common.T_MetricValue]):
     """See metrics.py for examples."""
 
-    evaluation_fn: common.EvaluationFunction[
+    evaluation_fn: test_suite_common.EvaluationFunction[
         common.T_Evaluable, common.T_MetricValue
     ]
     metric_metadata: common.EvaluationMetricMetadata[
@@ -50,31 +50,31 @@ class Metric(Generic[common.T_Evaluable, common.T_MetricValue]):
         return await self.evaluation_fn(datum)
 
 
-T_ParamSpec = ParamSpec("T_ParamSpec")
+PS = ParamSpec("PS")
 
 
 @core_utils.parametrized
 def metric(
     parametrized_evaluation_fn: Callable[
-        Concatenate[common.T_Evaluable, T_ParamSpec], common.T_MetricValue
+        Concatenate[common.T_Evaluable, PS], common.T_MetricValue
     ],
     name: str | None = None,
     description: str | None = None,
     best_value: common.T_MetricValue | None = None,
     worst_value: common.T_MetricValue | None = None,
-) -> Callable[T_ParamSpec, Metric[common.T_Evaluable, common.T_MetricValue]]:
+) -> Callable[PS, TestSuiteMetric[common.T_Evaluable, common.T_MetricValue]]:
     name_ = name or parametrized_evaluation_fn.__name__
     description_ = description or name_
 
     def _construct(
-        *args: T_ParamSpec.args, **kwargs: T_ParamSpec.kwargs
-    ) -> Metric[common.T_Evaluable, common.T_MetricValue]:
+        *args: PS.args, **kwargs: PS.kwargs
+    ) -> TestSuiteMetric[common.T_Evaluable, common.T_MetricValue]:
         async def evaluation_fn(
             datum: common.T_Evaluable,
         ) -> common.T_MetricValue:
             return parametrized_evaluation_fn(datum, *args, **kwargs)
 
-        return Metric(
+        return TestSuiteMetric(
             evaluation_fn=evaluation_fn,
             metric_metadata=common.EvaluationMetricMetadata(
                 name=name_,
@@ -91,26 +91,25 @@ def metric(
 @core_utils.parametrized
 def metric_async(
     parametrized_evaluation_fn: Callable[
-        Concatenate[common.T_Evaluable, T_ParamSpec],
-        Awaitable[common.T_MetricValue],
+        Concatenate[common.T_Evaluable, PS], Awaitable[common.T_MetricValue]
     ],
     name: str | None = None,
     description: str | None = None,
     best_value: common.T_MetricValue | None = None,
     worst_value: common.T_MetricValue | None = None,
-) -> Callable[T_ParamSpec, Metric[common.T_Evaluable, common.T_MetricValue]]:
+) -> Callable[PS, TestSuiteMetric[common.T_Evaluable, common.T_MetricValue]]:
     name_ = name or parametrized_evaluation_fn.__name__
     description_ = description or name_
 
     def _construct(
-        *args: T_ParamSpec.args, **kwargs: T_ParamSpec.kwargs
-    ) -> Metric[common.T_Evaluable, common.T_MetricValue]:
+        *args: PS.args, **kwargs: PS.kwargs
+    ) -> TestSuiteMetric[common.T_Evaluable, common.T_MetricValue]:
         async def evaluation_fn(
             datum: common.T_Evaluable,
         ) -> common.T_MetricValue:
             return await parametrized_evaluation_fn(datum, *args, **kwargs)
 
-        return Metric(
+        return TestSuiteMetric(
             evaluation_fn=evaluation_fn,
             metric_metadata=common.EvaluationMetricMetadata(
                 name=name_,
@@ -178,7 +177,7 @@ def _get_sentiment_scores(
 
 def make_get_sentiment_scores(
     get_polarity_scores: GetPolarityScores,
-) -> common.EvaluationFunction[str, TextSentimentScores]:
+) -> test_suite_common.EvaluationFunction[str, TextSentimentScores]:
     async def _f(datum: str) -> TextSentimentScores:
         return _get_sentiment_scores(datum, get_polarity_scores)
 
@@ -187,7 +186,7 @@ def make_get_sentiment_scores(
 
 def make_get_sentiment_class(
     get_polarity_scores: GetPolarityScores,
-) -> common.EvaluationFunction[str, str]:
+) -> test_suite_common.EvaluationFunction[str, str]:
     async def _f(datum: str) -> str:
         scores = _get_sentiment_scores(datum, get_polarity_scores)
         return scores.highest
@@ -197,7 +196,7 @@ def make_get_sentiment_class(
 
 def make_get_overall_positive_sentiment(
     get_polarity_scores: GetPolarityScores,
-) -> common.EvaluationFunction[str, TextOverallPositiveSentiment]:
+) -> test_suite_common.EvaluationFunction[str, TextOverallPositiveSentiment]:
     async def _f(datum: str) -> TextOverallPositiveSentiment:
         scores = _get_sentiment_scores(datum, get_polarity_scores)
         return TextOverallPositiveSentiment(pos=scores.pos, neg=scores.neg)
@@ -209,17 +208,17 @@ def make_sentiment_scores_metric(
     get_polarity_scores: GetPolarityScores,
     make_evaluation_fn: Callable[
         [GetPolarityScores],
-        common.EvaluationFunction[str, common.T_MetricValue],
+        test_suite_common.EvaluationFunction[str, common.T_MetricValue],
     ],
     name: str,
     description: str,
     best_value: common.T_MetricValue | None = None,
     worst_value: common.T_MetricValue | None = None,
-) -> Metric[str, common.T_MetricValue]:
-    evaluation_fn: common.EvaluationFunction[
+) -> TestSuiteMetric[str, common.T_MetricValue]:
+    evaluation_fn: test_suite_common.EvaluationFunction[
         str, common.T_MetricValue
     ] = make_evaluation_fn(get_polarity_scores)
-    out: Metric[str, common.T_MetricValue] = Metric(
+    out: TestSuiteMetric[str, common.T_MetricValue] = TestSuiteMetric(
         evaluation_fn=evaluation_fn,
         metric_metadata=common.EvaluationMetricMetadata(
             #
@@ -234,22 +233,32 @@ def make_sentiment_scores_metric(
 
 
 def make_structured_llm_metric(
-    chat_completion_create: common.CompletionTextToSerializedJSON,
+    chat_completion_create: test_suite_common.CompletionTextToSerializedJSON,
     eval_llm_name: str,
-    pydantic_basemodel_type: Type[common.T_BaseModel],
+    pydantic_basemodel_type: Type[test_suite_common.T_BaseModel],
     metric_name: str,
     metric_description: str,
     field_descriptions: dict[str, str] = {},
-) -> Metric[str, common.CustomMetricPydanticObject[common.T_BaseModel]]:
+) -> TestSuiteMetric[
+    str,
+    test_suite_common.CustomMetricPydanticObject[
+        test_suite_common.T_BaseModel
+    ],
+]:
     def _make_evaluation_fn(
-        basemodel_type: Type[common.T_BaseModel],
-    ) -> common.EvaluationFunction[
-        str, common.CustomMetricPydanticObject[common.T_BaseModel]
+        basemodel_type: Type[test_suite_common.T_BaseModel],
+    ) -> test_suite_common.EvaluationFunction[
+        str,
+        test_suite_common.CustomMetricPydanticObject[
+            test_suite_common.T_BaseModel
+        ],
     ]:
         async def _evaluation_fn(
             datum: str,
-        ) -> common.CustomMetricPydanticObject[common.T_BaseModel]:
-            resp = common.get_llm_structured_response(
+        ) -> test_suite_common.CustomMetricPydanticObject[
+            test_suite_common.T_BaseModel
+        ]:
+            resp = test_suite_common.get_llm_structured_response(
                 input_text=datum,
                 chat_completion_create=chat_completion_create,
                 basemodel_type=basemodel_type,
@@ -260,11 +269,13 @@ def make_structured_llm_metric(
                 case Err(e):
                     raise ValueError(f"Error getting structured response: {e}")
                 case Ok(data):
-                    return common.CustomMetricPydanticObject(data=data)
+                    return test_suite_common.CustomMetricPydanticObject(
+                        data=data
+                    )
 
         return _evaluation_fn
 
-    return Metric(
+    return TestSuiteMetric(
         evaluation_fn=_make_evaluation_fn(pydantic_basemodel_type),
         metric_metadata=common.EvaluationMetricMetadata(
             name=metric_name,
@@ -282,13 +293,19 @@ def make_structured_llm_metric(
 
 def _make_openai_structured_llm_metric_helper(
     eval_llm_name: str,
-    pydantic_basemodel_type: Type[common.T_BaseModel],
+    pydantic_basemodel_type: Type[test_suite_common.T_BaseModel],
     metric_name: str,
     metric_description: str,
     field_descriptions: dict[str, str],
     openai_chat_completion_create: OpenAIChatCompletionCreate | None = None,
 ) -> Result[
-    Metric[str, common.CustomMetricPydanticObject[common.T_BaseModel]], str
+    TestSuiteMetric[
+        str,
+        test_suite_common.CustomMetricPydanticObject[
+            test_suite_common.T_BaseModel
+        ],
+    ],
+    str,
 ]:
     schema = pydantic_basemodel_type.model_json_schema()
     properties = schema["properties"]
@@ -313,7 +330,7 @@ def _make_openai_structured_llm_metric_helper(
 
     required = required or list(properties.keys())
 
-    openai_eval_llm_chat_completion_create: common.CompletionTextToSerializedJSON = make_fn_completion_text_to_serialized_json(
+    openai_eval_llm_chat_completion_create: test_suite_common.CompletionTextToSerializedJSON = make_fn_completion_text_to_serialized_json(
         eval_llm_name=eval_llm_name,
         properties=properties,
         required=required,
@@ -343,12 +360,17 @@ def _make_openai_structured_llm_metric_helper(
 
 def make_openai_structured_llm_metric(
     eval_llm_name: str,
-    pydantic_basemodel_type: Type[common.T_BaseModel],
+    pydantic_basemodel_type: Type[test_suite_common.T_BaseModel],
     metric_name: str,
     metric_description: str,
     field_descriptions: dict[str, str] = {},
     openai_chat_completion_create: OpenAIChatCompletionCreate | None = None,
-) -> Metric[str, common.CustomMetricPydanticObject[common.T_BaseModel]]:
+) -> TestSuiteMetric[
+    str,
+    test_suite_common.CustomMetricPydanticObject[
+        test_suite_common.T_BaseModel
+    ],
+]:
     res_metric = _make_openai_structured_llm_metric_helper(
         eval_llm_name=eval_llm_name,
         pydantic_basemodel_type=pydantic_basemodel_type,
@@ -403,7 +425,7 @@ brevity = make_brevity()
 
 gpt3_5_text_ratings = make_openai_structured_llm_metric(
     eval_llm_name="gpt-3.5-turbo-0613",
-    pydantic_basemodel_type=common.TextRatingsData,
+    pydantic_basemodel_type=test_suite_common.TextRatingsData,
     metric_name="text_ratings",
     metric_description="Text ratings",
     field_descriptions=dict(

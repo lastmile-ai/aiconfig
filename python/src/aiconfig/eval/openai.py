@@ -5,7 +5,7 @@ from typing import Protocol
 import lastmile_utils.lib.core.api as core_utils
 import openai
 import openai.types.chat as openai_types
-from aiconfig.eval import common
+from aiconfig.eval import test_suite_common
 from result import Err, Ok, Result
 
 
@@ -44,13 +44,17 @@ def default_openai_chat_completion_create(
 
 def extract_json_from_chat_completion(
     chat_completion: openai_types.ChatCompletion,
-) -> Result[common.SerializedJSON, str]:
+) -> Result[test_suite_common.SerializedJSON, str]:
     choice = chat_completion.choices[0]
     message = choice.message
     if message.tool_calls is None:
         return Err("No tool calls found")
 
-    return Ok(common.SerializedJSON(message.tool_calls[0].function.arguments))
+    return Ok(
+        test_suite_common.SerializedJSON(
+            message.tool_calls[0].function.arguments
+        )
+    )
 
 
 def make_fn_completion_text_to_serialized_json(
@@ -58,10 +62,10 @@ def make_fn_completion_text_to_serialized_json(
     properties: dict[str, dict[str, str]],
     required: list[str],
     openai_chat_completion_create: OpenAIChatCompletionCreate,
-) -> common.CompletionTextToSerializedJSON:
+) -> test_suite_common.CompletionTextToSerializedJSON:
     def _chat_completion_create(
         output_datum: str,
-    ) -> Result[common.SerializedJSON, str]:
+    ) -> Result[test_suite_common.SerializedJSON, str]:
         openai_chat_completion_params = _make_openai_completion_params(
             output_datum, eval_llm_name, properties, required
         )
@@ -69,7 +73,9 @@ def make_fn_completion_text_to_serialized_json(
             openai_chat_completion_params
         ).and_then(extract_json_from_chat_completion)
 
-    out: common.CompletionTextToSerializedJSON = _chat_completion_create
+    out: test_suite_common.CompletionTextToSerializedJSON = (
+        _chat_completion_create
+    )
     return out
 
 
