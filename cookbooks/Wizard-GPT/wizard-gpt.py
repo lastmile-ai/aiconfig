@@ -20,7 +20,9 @@ async def main():
             break
 
         # Dynamically generate the prompt name and prompt object
-        new_prompt_name = f"prompt{len(config.prompts)+1}"  # Prompt{number of prompts}
+        new_prompt_name = (
+            f"prompt{len(config.prompts)+1}"  # Prompt{number of prompts}
+        )
         new_prompt = Prompt(name=new_prompt_name, input=user_input)
 
         # Add the new prompt and run the model

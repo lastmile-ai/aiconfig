@@ -4,12 +4,15 @@ import copy
 import json
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
+from aiconfig.default_parsers.parameterized_model_parser import (
+    ParameterizedModelParser,
+)
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.util.params import resolve_prompt
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from aiconfig import CallbackEvent
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
 from aiconfig.schema import (
     ExecuteResult,
     Output,
@@ -17,7 +20,6 @@ from aiconfig.schema import (
     Prompt,
     PromptMetadata,
 )
-from aiconfig.util.params import resolve_prompt
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -25,7 +27,9 @@ if TYPE_CHECKING:
 
 
 # Step 1: define Helpers
-def refine_chat_completion_params(model_settings: Dict[str, Any]) -> Dict[str, Any]:
+def refine_chat_completion_params(
+    model_settings: Dict[str, Any]
+) -> Dict[str, Any]:
     """
     Refines the completion params for the HF text generation api. Removes any unsupported params.
     The supported keys were found by looking at the HF text generation api. `huggingface_hub.InferenceClient.text_generation()`
@@ -90,7 +94,9 @@ def refine_chat_completion_params(model_settings: Dict[str, Any]) -> Dict[str, A
     return completion_data
 
 
-def construct_regular_output(result: Dict[str, str], execution_count: int) -> Output:
+def construct_regular_output(
+    result: Dict[str, str], execution_count: int
+) -> Output:
     """
     Construct regular output per response result, without streaming enabled
     """
@@ -103,7 +109,6 @@ def construct_regular_output(result: Dict[str, str], execution_count: int) -> Ou
         }
     )
     return output
-
 
 
 # This model parser doesn't support streaming. TODO: Implement streaming
@@ -126,7 +131,9 @@ class LLamaGuardParser(ParameterizedModelParser):
         """
         super().__init__()
         model_id = "meta-llama/LlamaGuard-7b"
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu"
+        )
         print("device: ", self.device)
         dtype = torch.bfloat16
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
@@ -201,13 +208,20 @@ class LLamaGuardParser(ParameterizedModelParser):
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
 
         # Tokenized Prompt
-        inputs = self.tokenizer([resolved_prompt], return_tensors="pt").to(self.device)
+        inputs = self.tokenizer([resolved_prompt], return_tensors="pt").to(
+            self.device
+        )
 
-        deserialize_output = {"tokenized_input": inputs, "gen_params": completion_data}
+        deserialize_output = {
+            "tokenized_input": inputs,
+            "gen_params": completion_data,
+        }
 
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
-                "on_deserialize_complete", __name__, {"text_prompt": resolved_prompt, "output": deserialize_output}
+                "on_deserialize_complete",
+                __name__,
+                {"text_prompt": resolved_prompt, "output": deserialize_output},
             )
         )
 
@@ -232,7 +246,9 @@ class LLamaGuardParser(ParameterizedModelParser):
             InferenceResponse: The response from the model.
         """
 
-        resolved_data = await self.deserialize(prompt, aiconfig, options, parameters)
+        resolved_data = await self.deserialize(
+            prompt, aiconfig, options, parameters
+        )
         # Move to GPU if applicable, self.device is set in __init__). Otherwise this is a no-op
         tokenized_input_cuda = resolved_data["tokenized_input"].to(self.device)
 
@@ -245,11 +261,13 @@ class LLamaGuardParser(ParameterizedModelParser):
         output_text = self.tokenizer.decode(
             response[0][prompt_len:], skip_special_tokens=True
         )
-        output_data_content: str = ''
+        output_data_content: str = ""
         if isinstance(output_text, str):
             output_data_content = output_text
         else:
-            raise ValueError(f"Output {output_text} needs to be of type 'str' but is of type: {type(output_text)}")
+            raise ValueError(
+                f"Output {output_text} needs to be of type 'str' but is of type: {type(output_text)}"
+            )
         output = ExecuteResult(
             **{
                 "output_type": "execute_result",

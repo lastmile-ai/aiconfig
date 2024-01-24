@@ -90,7 +90,7 @@ For this tutorial, you will need to have an OpenAI API key that has access to GP
 
 ## Open AIConfig Editor
 
-AIConfig Editor allows you to visually create and edit the prompt chains and model parameters that are stored as AIConfigs. You can also chain prompts and use global and local variables in your prompts. Learn more about [AIConfig Editor](https://aiconfig.lastmileai.dev/docs/editor).
+AIConfig Editor allows you to visually create and edit the prompt chains and model parameters that are stored as AIConfigs. You can also chain prompts and use global and local parameters in your prompts. Learn more about [AIConfig Editor](https://aiconfig.lastmileai.dev/docs/editor).
 
 1. Open your Terminal
 2. Run this command: `aiconfig edit --aiconfig-path=travel.aiconfig.json`
@@ -147,13 +147,13 @@ Notice that your AIConfig JSON file updates with the prompt. Your work in AIConf
 
 **4. Create your second prompt `gen_itinerary` which depends on your first prompt.**
 
-This prompt uses GPT-4 to generate an itinerary based on the output of our first prompt `get_activities` (chaining) and a local variable `order_by`. Local variables are local to the prompt cell whereas global variables can be used across prompt cells in the editor. Run the prompt using the Play button.
+This prompt uses GPT-4 to generate an itinerary based on the output of our first prompt `get_activities` (chaining) and a local variable `order_by`. Local parameters are local to the prompt cell whereas global parameters can be used across prompt cells in the editor. Run the prompt using the Play button.
 
 ![img_editor](https://github.com/lastmile-ai/aiconfig/assets/81494782/73558099-b42b-48d2-bac4-3023766da5a0)
 
 **5. Click the **Save** button.**
 
-Notice that your AIConfig JSON file updates with the second prompt, including the chaining logic and variables. See below:
+Notice that your AIConfig JSON file updates with the second prompt, including the chaining logic and parameters. See below:
 
 <details>
 <summary>`travel.aiconfig.json`</summary>

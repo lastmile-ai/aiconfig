@@ -1,8 +1,9 @@
 import copy
-import dotenv
 import os
-from typing import TYPE_CHECKING, Union
-from result import Result, Ok, Err
+from typing import TYPE_CHECKING
+
+import dotenv
+from result import Err, Ok, Result
 
 if TYPE_CHECKING:
     pass
@@ -13,13 +14,13 @@ if TYPE_CHECKING:
 
 
 def get_api_key_from_environment(
-    api_key_name: str,
-    required: bool = True) -> Result[str | None, str]:
+    api_key_name: str, required: bool = True
+) -> Result[str | None, str]:
     """Get the API key if it exists, return None or error if it doesn't
 
     Args:
         api_key_name (str): The keyname that we're trying to import from env variable
-        required (bool, optional): If this is true, we raise an error if the 
+        required (bool, optional): If this is true, we raise an error if the
             key is not found
 
     Returns:
@@ -31,14 +32,20 @@ def get_api_key_from_environment(
     return Ok(os.getenv(api_key_name))
 
 
-def _get_api_key_from_environment_required(api_key_name: str) -> Result[str, str]:
+def _get_api_key_from_environment_required(
+    api_key_name: str,
+) -> Result[str, str]:
     try:
         return Ok(os.environ[api_key_name])
     except KeyError:
         return Err(f"Missing API key '{api_key_name}' in environment")
 
 
-def extract_override_settings(config_runtime: "AIConfig", inference_settings: "InferenceSettings", model_id: str):
+def extract_override_settings(
+    config_runtime: "AIConfig",
+    inference_settings: "InferenceSettings",
+    model_id: str,
+):
     """
     Extract inference settings with overrides based on inference settings.
 
@@ -62,7 +69,8 @@ def extract_override_settings(config_runtime: "AIConfig", inference_settings: "I
         override_settings = {
             key: copy.deepcopy(inference_settings[key])
             for key in inference_settings
-            if key not in global_model_settings or global_model_settings.get(key) != inference_settings[key]
+            if key not in global_model_settings
+            or global_model_settings.get(key) != inference_settings[key]
         }
         return override_settings
     return inference_settings

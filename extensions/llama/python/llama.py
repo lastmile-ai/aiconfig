@@ -2,16 +2,14 @@ import json
 from typing import Any, List
 
 from aiconfig.Config import AIConfigRuntime
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import (
-    ExecuteResult,
-    OutputDataWithValue,
-    Output,
-    Prompt,
+from aiconfig.default_parsers.parameterized_model_parser import (
+    ParameterizedModelParser,
 )
+from aiconfig.model_parser import InferenceOptions
 from aiconfig.util.params import resolve_prompt
 from llama_cpp import Llama
+
+from aiconfig.schema import ExecuteResult, Output, OutputDataWithValue, Prompt
 
 
 class LlamaModelParser(ParameterizedModelParser):
@@ -33,7 +31,10 @@ class LlamaModelParser(ParameterizedModelParser):
         return [out]
 
     async def deserialize(
-        self, prompt: Prompt, aiconfig: AIConfigRuntime, params: dict | None = None
+        self,
+        prompt: Prompt,
+        aiconfig: AIConfigRuntime,
+        params: dict | None = None,
     ) -> dict:
         resolved = resolve_prompt(prompt, params, aiconfig)
 
@@ -74,7 +75,9 @@ class LlamaModelParser(ParameterizedModelParser):
 
         return [result]
 
-    async def _run_inference_helper(self, model_input, options) -> List[Output]:
+    async def _run_inference_helper(
+        self, model_input, options
+    ) -> List[Output]:
         llm = Llama(self.model_path)
         acc = ""
         stream = options.stream if options else True
@@ -88,15 +91,17 @@ class LlamaModelParser(ParameterizedModelParser):
                     options.stream_callback(data, acc, index)
             print(flush=True)
 
-            output_data_value: str = ''
+            output_data_value: str = ""
             if isinstance(acc, str):
                 output_data_value = acc
             else:
-                raise ValueError(f"Output {acc} needs to be of type 'str' but is of type: {type(acc)}")
+                raise ValueError(
+                    f"Output {acc} needs to be of type 'str' but is of type: {type(acc)}"
+                )
             return ExecuteResult(
                 output_type="execute_result",
                 data=output_data_value,
-                metadata={}
+                metadata={},
             )
         else:
             response = llm(model_input)
@@ -108,14 +113,17 @@ class LlamaModelParser(ParameterizedModelParser):
             return ExecuteResult(
                 output_type="execute_result",
                 # TODO: Map all text responses to multiple outputs
-                # This would be part of a large refactor: 
+                # This would be part of a large refactor:
                 # https://github.com/lastmile-ai/aiconfig/issues/630
                 data="\n".join(texts),
-                metadata={}
+                metadata={},
             )
 
     def get_output_text(
-        self, prompt: Prompt, aiconfig: AIConfigRuntime, output: Output | None = None
+        self,
+        prompt: Prompt,
+        aiconfig: AIConfigRuntime,
+        output: Output | None = None,
     ) -> str:
         if not output:
             output = aiconfig.get_latest_output(prompt)
@@ -141,4 +149,6 @@ class LlamaModelParser(ParameterizedModelParser):
                 # TODO: This is an error since list is not compatible with str type
                 return output_data
             return ""
-        raise ValueError(f"Output is an unexpected output type: {type(output)}")
+        raise ValueError(
+            f"Output is an unexpected output type: {type(output)}"
+        )

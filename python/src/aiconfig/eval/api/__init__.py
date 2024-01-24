@@ -12,16 +12,16 @@ from aiconfig.eval.api import (
 from .. import common, metrics
 
 # pyright: reportWildcardImportFromLibrary=false
-from ..lib import TestSuiteWithInputsSettings, run_test_suite_outputs_only, run_test_suite_with_inputs
-from ..metrics import Metric, brevity, substring_match
+from ..lib import (
+    TestSuiteWithInputsSettings,
+    run_test_suite_outputs_only,
+    run_test_suite_with_inputs,
+)
 
 __all__ = [
-    "Metric",
     "common",
     "metrics",
-    "brevity",
-    "substring_match",
-    "run_test_suite_with_inputs",
     "run_test_suite_outputs_only",
+    "run_test_suite_with_inputs",
     "TestSuiteWithInputsSettings",
 ]
