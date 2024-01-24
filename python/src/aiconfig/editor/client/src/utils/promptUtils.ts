@@ -9,6 +9,7 @@ import { HuggingFaceAutomaticSpeechRecognitionPromptSchema } from "../shared/pro
 import { HuggingFaceImage2TextTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextTransformerPromptSchema";
 import { HuggingFaceText2ImageDiffusorPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageDiffusorPromptSchema";
 import { HuggingFaceText2ImageRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageRemoteInferencePromptSchema";
+import { HuggingFaceText2SpeechRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceText2SpeechRemoteInferencePromptSchema";
 import { HuggingFaceText2SpeechTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2SpeechTransformerPromptSchema";
 import { HuggingFaceTextGenerationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationTransformerPromptSchema";
 import { HuggingFaceTextSummarizationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationTransformerPromptSchema";
@@ -80,6 +81,10 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
 
   HuggingFaceText2ImageRemoteInference:
     HuggingFaceText2ImageRemoteInferencePromptSchema,
+
+  HuggingFaceText2SpeechRemoteInference:
+    HuggingFaceText2SpeechRemoteInferencePromptSchema,
+
   // TODO: core parser and remote inference share the same code, delete
   // hf core parser and keep it in the extension instead
   // HuggingFaceTextGenerationRemoteInference (Core parser and remote inference extension)
