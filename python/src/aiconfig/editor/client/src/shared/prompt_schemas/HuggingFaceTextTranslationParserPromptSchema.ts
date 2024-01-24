@@ -13,7 +13,8 @@ export const HuggingFaceTextTranslationParserPromptSchema: PromptSchema = {
     properties: {
       model: {
         type: "string",
-        description: `Hugging Face model to use`,
+        description: `Hugging Face model to use. Can be a model ID hosted on the Hugging Face Hub or a URL 
+        to a deployed Inference Endpoint`,
       },
       src_lang: {
         type: "string",
