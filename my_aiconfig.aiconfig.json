@@ -8,13 +8,69 @@
   "description": "",
   "prompts": [
     {
-      "name": "prompt_1",
-      "input": "",
+      "name": "generation_prompt",
+      "input": "generate instagram comments [good, bad, neutral]. \n",
       "metadata": {
         "model": "gpt-4",
         "parameters": {}
       },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "Good Comments:\n1. The place where creativity meets passion. Amazing work! \u2764\ufe0f\n2. Pure perfection! This is the best thing I've seen today! \ud83d\udc4f\n3. Your posts are always outstanding, keep them coming!\n4. Wow! This deserves a standing ovation! \ud83d\udc4c\n5. Your style is always on point! \ud83d\udc4d\n6. Crushing on your content! Love it! \n7. Attractive photo, you are looking absolutely stunning! \ud83d\udd25\n8. OMG! Your skills are just next level! Keep rolling!! \n9. Radiating positive vibes with these views! Stay vibrant! \ud83d\udcab\n10. This is unbelievable! I'm totally impressed! \ud83d\ude0d\n\nBad Comments:\n1. This is a bit disappointing compared to your usual posts.\n2. This isn't really appealing at all. \ud83d\udc4e\n3. I don't quite understand what you're trying to achieve here. \n4. Seems like a bit more effort could have been put into this post.\n5. Not your best picture, mate. \ud83d\udc4e\n6. Maybe try doing something different, this is getting boring. \n7. Not super impressed with this one. \ud83d\ude1e\n8. Needless to say, this post could have been better. \n9. This looks too edited, it doesn't seem natural. \n10. I'm afraid, this doesn't quite meet my expectations. \n\nNeutral Comments:\n1. Okay, that's interesting. \n2. Clicked this with a phone?\n3. Not bad, not my style though.\n4. Noted, thanks for sharing.\n5. Could you elaborate more on this topic please?\n6. That's an interesting angle. \n7. Seen this before somewhere.  \n8. Curious to see what's next. \n9. What's your inspiration behind this post?\n10. The colors in this picture are quite unique.",
+          "metadata": {
+            "id": "chatcmpl-8kDkFpLy6hu5Yt4085XpJ6TvRlFGS",
+            "created": 1706026615,
+            "model": "gpt-4-0613",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "content": "Good Comments:\n1. The place where creativity meets passion. Amazing work! \u2764\ufe0f\n2. Pure perfection! This is the best thing I've seen today! \ud83d\udc4f\n3. Your posts are always outstanding, keep them coming!\n4. Wow! This deserves a standing ovation! \ud83d\udc4c\n5. Your style is always on point! \ud83d\udc4d\n6. Crushing on your content! Love it! \n7. Attractive photo, you are looking absolutely stunning! \ud83d\udd25\n8. OMG! Your skills are just next level! Keep rolling!! \n9. Radiating positive vibes with these views! Stay vibrant! \ud83d\udcab\n10. This is unbelievable! I'm totally impressed! \ud83d\ude0d\n\nBad Comments:\n1. This is a bit disappointing compared to your usual posts.\n2. This isn't really appealing at all. \ud83d\udc4e\n3. I don't quite understand what you're trying to achieve here. \n4. Seems like a bit more effort could have been put into this post.\n5. Not your best picture, mate. \ud83d\udc4e\n6. Maybe try doing something different, this is getting boring. \n7. Not super impressed with this one. \ud83d\ude1e\n8. Needless to say, this post could have been better. \n9. This looks too edited, it doesn't seem natural. \n10. I'm afraid, this doesn't quite meet my expectations. \n\nNeutral Comments:\n1. Okay, that's interesting. \n2. Clicked this with a phone?\n3. Not bad, not my style though.\n4. Noted, thanks for sharing.\n5. Could you elaborate more on this topic please?\n6. That's an interesting angle. \n7. Seen this before somewhere.  \n8. Curious to see what's next. \n9. What's your inspiration behind this post?\n10. The colors in this picture are quite unique.",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "normalization_prompt",
+      "input": "format into this format \n\n{comment: rating}",
+      "metadata": {
+        "model": "gpt-4",
+        "parameters": {
+          "address": "John Doe\nP.O. Box 6789\nLander, WY 82501"
+        }
+      },
       "outputs": []
+    },
+    {
+      "name": "prompt_3",
+      "input": "say this: \n{{#with word}}\n  {{first}} rest of the word\n{{/with}}",
+      "metadata": {
+        "model": "gpt-4",
+        "parameters": {
+          "word": "hello!"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "Here you go:\n\nGood Comments:\n1. {\"The place where creativity meets passion. Amazing work! \u2764\ufe0f\": \"Positive\"}\n2. {\"Pure perfection! This is the best thing I've seen today! \ud83d\udc4f\": \"Positive\"}\n3. {\"Your posts are always outstanding, keep them coming!\": \"Positive\"}\n4. {\"Wow! This deserves a standing ovation! \ud83d\udc4c\": \"Positive\"}\n5. {\"Your style is always on point! \ud83d\udc4d\": \"Positive\"}\n6. {\"Crushing on your content! Love it!\": \"Positive\"}\n7. {\"Attractive photo, you are looking absolutely stunning! \ud83d\udd25\": \"Positive\"}\n8. {\"OMG! Your skills are just next level! Keep rolling!!\": \"Positive\"}\n9. {\"Radiating positive vibes with these views! Stay vibrant! \ud83d\udcab\": \"Positive\"}\n10. {\"This is unbelievable! I'm totally impressed! \ud83d\ude0d\": \"Positive\"}\n\nBad Comments:\n1. {\"This is a bit disappointing compared to your usual posts.\": \"Negative\"}\n2. {\"This isn't really appealing at all. \ud83d\udc4e\": \"Negative\"}\n3. {\"I don't quite understand what you're trying to achieve here.\": \"Negative\"}\n4. {\"Seems like a bit more effort could have been put into this post.\": \"Negative\"}\n5. {\"Not your best picture, mate. \ud83d\udc4e\": \"Negative\"}\n6. {\"Maybe try doing something different, this is getting boring.\": \"Negative\"}\n7. {\"Not super impressed with this one. \ud83d\ude1e\": \"Negative\"}\n8. {\"Needless to say, this post could have been better.\": \"Negative\"}\n9. {\"This looks too edited, it doesn't seem natural.\": \"Negative\"}\n10. {\"I'm afraid, this doesn't quite meet my expectations.\": \"Negative\"}\n\nNeutral Comments:\n1. {\"Okay, that's interesting.\": \"Neutral\"}\n2. {\"Clicked this with a phone?\": \"Neutral\"}\n3. {\"Not bad, not my style though.\": \"Neutral\"}\n4. {\"Noted, thanks for sharing.\": \"Neutral\"}\n5. {\"Could you elaborate more on this topic please?\": \"Neutral\"}\n6. {\"That's an interesting angle.\": \"Neutral\"}\n7. {\"Seen this before somewhere.\": \"Neutral\"}\n8. {\"Curious to see what's next.\": \"Neutral\"}\n9. {\"What's your inspiration behind this post?\": \"Neutral\"}\n10. {\"The colors in this picture are quite unique.\": \"Neutral\"}",
+          "metadata": {
+            "id": "chatcmpl-8kEhxKs8KRLk9YwGDJ0As6HXvv1Jm",
+            "created": 1706030317,
+            "model": "gpt-4-0613",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "content": "Here you go:\n\nGood Comments:\n1. {\"The place where creativity meets passion. Amazing work! \u2764\ufe0f\": \"Positive\"}\n2. {\"Pure perfection! This is the best thing I've seen today! \ud83d\udc4f\": \"Positive\"}\n3. {\"Your posts are always outstanding, keep them coming!\": \"Positive\"}\n4. {\"Wow! This deserves a standing ovation! \ud83d\udc4c\": \"Positive\"}\n5. {\"Your style is always on point! \ud83d\udc4d\": \"Positive\"}\n6. {\"Crushing on your content! Love it!\": \"Positive\"}\n7. {\"Attractive photo, you are looking absolutely stunning! \ud83d\udd25\": \"Positive\"}\n8. {\"OMG! Your skills are just next level! Keep rolling!!\": \"Positive\"}\n9. {\"Radiating positive vibes with these views! Stay vibrant! \ud83d\udcab\": \"Positive\"}\n10. {\"This is unbelievable! I'm totally impressed! \ud83d\ude0d\": \"Positive\"}\n\nBad Comments:\n1. {\"This is a bit disappointing compared to your usual posts.\": \"Negative\"}\n2. {\"This isn't really appealing at all. \ud83d\udc4e\": \"Negative\"}\n3. {\"I don't quite understand what you're trying to achieve here.\": \"Negative\"}\n4. {\"Seems like a bit more effort could have been put into this post.\": \"Negative\"}\n5. {\"Not your best picture, mate. \ud83d\udc4e\": \"Negative\"}\n6. {\"Maybe try doing something different, this is getting boring.\": \"Negative\"}\n7. {\"Not super impressed with this one. \ud83d\ude1e\": \"Negative\"}\n8. {\"Needless to say, this post could have been better.\": \"Negative\"}\n9. {\"This looks too edited, it doesn't seem natural.\": \"Negative\"}\n10. {\"I'm afraid, this doesn't quite meet my expectations.\": \"Negative\"}\n\nNeutral Comments:\n1. {\"Okay, that's interesting.\": \"Neutral\"}\n2. {\"Clicked this with a phone?\": \"Neutral\"}\n3. {\"Not bad, not my style though.\": \"Neutral\"}\n4. {\"Noted, thanks for sharing.\": \"Neutral\"}\n5. {\"Could you elaborate more on this topic please?\": \"Neutral\"}\n6. {\"That's an interesting angle.\": \"Neutral\"}\n7. {\"Seen this before somewhere.\": \"Neutral\"}\n8. {\"Curious to see what's next.\": \"Neutral\"}\n9. {\"What's your inspiration behind this post?\": \"Neutral\"}\n10. {\"The colors in this picture are quite unique.\": \"Neutral\"}",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
