@@ -16,6 +16,7 @@ import { HuggingFaceTextSummarizationTransformerPromptSchema } from "../shared/p
 import { HuggingFaceTextGenerationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationRemoteInferencePromptSchema";
 import { HuggingFaceTextSummarizationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationRemoteInferencePromptSchema";
 import { HuggingFaceTextTranslationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextTranslationRemoteInferencePromptSchema";
+import { GeminiParserPromptSchema } from "../shared/prompt_schemas/GeminiPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -102,6 +103,9 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
 
   // PaLMChatParser
   "models/chat-bison-001": PaLMChatParserPromptSchema,
+
+  // Gemini
+  "Gemini": GeminiParserPromptSchema,
 
   // AnyscaleEndpoint
   AnyscaleEndpoint: AnyscaleEndpointPromptSchema,
