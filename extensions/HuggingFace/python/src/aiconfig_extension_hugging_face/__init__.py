@@ -14,6 +14,9 @@ from .local_inference.text_translation import (
     HuggingFaceTextTranslationTransformer,
 )
 from .local_inference.util import get_hf_model
+from .remote_inference_client.image_2_text import (
+    HuggingFaceImage2TextRemoteInference,
+)
 from .remote_inference_client.text_2_image import (
     HuggingFaceText2ImageRemoteInference,
 )
@@ -42,6 +45,7 @@ LOCAL_INFERENCE_CLASSES = [
     "HuggingFaceTextTranslationTransformer",
 ]
 REMOTE_INFERENCE_CLASSES = [
+    "HuggingFaceImage2TextRemoteInference",
     "HuggingFaceText2ImageRemoteInference",
     "HuggingFaceText2SpeechRemoteInference",
     "HuggingFaceTextGenerationRemoteInference",

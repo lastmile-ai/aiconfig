@@ -1,0 +1,5 @@
+# huggingface-hub uses this within it's login function and we need it for
+# Jupyter notebooks
+ipywidgets
+
+google-colab
