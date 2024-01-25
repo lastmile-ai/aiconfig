@@ -74,6 +74,7 @@ export const LOCAL_THEME: MantineThemeOverride = {
       borderLeft: "none",
       borderTopRightRadius: "4px",
       borderBottomRightRadius: "4px",
+      minWidth: "32px",
       input: {
         border: "1px solid rgba(226,232,255,.1)",
         backgroundColor: "#060c21",
