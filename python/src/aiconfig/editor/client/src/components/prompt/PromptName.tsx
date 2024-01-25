@@ -9,6 +9,7 @@ type Props = {
 };
 
 export default memo(function PromptName({ promptId, name, onUpdate }: Props) {
+  const { readOnly } = useContext(AIConfigContext);
   const { getState } = useContext(AIConfigContext);
 
   // Use local component state to show error for duplicate names
@@ -28,6 +29,7 @@ export default memo(function PromptName({ promptId, name, onUpdate }: Props) {
       variant="unstyled"
       placeholder="Name this prompt"
       onChange={onChange}
+      disabled={readOnly}
       error={
         getState().prompts.some(
           (p) => p.name === nameInput && p._ui.id !== promptId
