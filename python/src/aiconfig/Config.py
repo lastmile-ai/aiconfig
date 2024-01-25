@@ -9,6 +9,7 @@ from aiconfig.default_parsers.anyscale_endpoint import (
     DefaultAnyscaleEndpointParser,
 )
 from aiconfig.default_parsers.openai import DefaultOpenAIParser
+from aiconfig.default_parsers.gemini import GeminiModelParser
 from aiconfig.default_parsers.palm import PaLMChatParser, PaLMTextParser
 from aiconfig.model_parser import InferenceOptions, ModelParser
 
@@ -51,12 +52,12 @@ for model in dalle_image_generation_models:
 ModelParserRegistry.register_model_parser(
     DefaultAnyscaleEndpointParser("AnyscaleEndpoint")
 )
-ModelParserRegistry.register_model_parser(PaLMChatParser())
-ModelParserRegistry.register_model_parser(PaLMTextParser())
+ModelParserRegistry.register_model_parser(GeminiModelParser("gemini-pro"), ["gemini-pro"])
 ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
 for model in gpt_models_extra:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
-
+ModelParserRegistry.register_model_parser(PaLMChatParser())
+ModelParserRegistry.register_model_parser(PaLMTextParser())
 
 class AIConfigRuntime(AIConfig):
     # A mapping of model names to their respective parsers
