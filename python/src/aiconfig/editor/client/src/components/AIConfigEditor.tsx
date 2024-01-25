@@ -113,7 +113,7 @@ export type AIConfigCallbacks = {
     cancellationToken?: string
   ) => Promise<{ aiconfig: AIConfig }>;
   cancel: (cancellationToken: string) => Promise<void>;
-  save: (aiconfig: AIConfig) => Promise<void>;
+  save?: (aiconfig: AIConfig) => Promise<void>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
   setParameters: (parameters: JSONObject, promptName?: string) => Promise<void>;
@@ -950,7 +950,7 @@ export default function AIConfigEditor({
                     Clear Outputs
                   </Button>
                 )}
-                {!readOnly && (
+                {!readOnly && saveCallback && (
                   <Tooltip
                     label={
                       isDirty ? "Save changes to config" : "No unsaved changes"

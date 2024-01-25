@@ -1,9 +1,10 @@
 import { Autocomplete, AutocompleteItem, Button } from "@mantine/core";
-import { memo, useState } from "react";
+import { memo, useContext, useState } from "react";
 import { getPromptModelName } from "../../utils/promptUtils";
 import { Prompt } from "aiconfig";
 import useLoadModels from "../../hooks/useLoadModels";
 import { IconX } from "@tabler/icons-react";
+import AIConfigContext from "../../contexts/AIConfigContext";
 
 type Props = {
   prompt: Prompt;
@@ -18,6 +19,7 @@ export default memo(function ModelSelector({
   onSetModel,
   defaultConfigModelName,
 }: Props) {
+  const { readOnly } = useContext(AIConfigContext);
   const [selectedModel, setSelectedModel] = useState<string | undefined>(
     getPromptModelName(prompt, defaultConfigModelName)
   );
@@ -44,6 +46,7 @@ export default memo(function ModelSelector({
       label="Model"
       variant="unstyled"
       maxDropdownHeight={200}
+      disabled={readOnly}
       rightSection={
         selectedModel ? (
           <Button

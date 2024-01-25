@@ -14,6 +14,7 @@ export type UnionProperty = {
 };
 
 type Props = {
+  disabled?: boolean;
   property: UnionProperty;
   propertyName: string;
   initialValue?: JSONValue; // TODO: Handle initial value, selecting correct tab to show
@@ -23,7 +24,13 @@ type Props = {
 };
 
 export default memo(function UnionPropertyControl(props: Props) {
-  const { property, renderProperty, setValue, ...renderPropertyProps } = props;
+  const {
+    disabled,
+    property,
+    renderProperty,
+    setValue,
+    ...renderPropertyProps
+  } = props;
 
   const segmentedTabs = useMemo(
     () =>
@@ -62,6 +69,7 @@ export default memo(function UnionPropertyControl(props: Props) {
         data={segmentedTabs}
         value={activeTab}
         onChange={selectTab}
+        disabled={disabled}
       />
       <div style={{ marginLeft: "1em" }}>
         {renderProperty({
