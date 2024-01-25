@@ -6,6 +6,7 @@ import { PaLMTextParserPromptSchema } from "../shared/prompt_schemas/PaLMTextPar
 import { PaLMChatParserPromptSchema } from "../shared/prompt_schemas/PaLMChatParserPromptSchema";
 import { AnyscaleEndpointPromptSchema } from "../shared/prompt_schemas/AnyscaleEndpointPromptSchema";
 import { HuggingFaceAutomaticSpeechRecognitionPromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionPromptSchema";
+import {HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema} from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema";
 import { HuggingFaceImage2TextTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextTransformerPromptSchema";
 import { HuggingFaceText2ImageDiffusorPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageDiffusorPromptSchema";
 import { HuggingFaceText2ImageRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageRemoteInferencePromptSchema";
@@ -82,6 +83,10 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
 
   HuggingFaceImage2TextRemoteInference:
     HuggingFaceImage2TextRemoteInferencePromptSchema,
+
+  "HuggingFaceAutomaticSpeechRecognitionRemoteInference":
+    HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema,
+
   HuggingFaceText2ImageRemoteInference:
     HuggingFaceText2ImageRemoteInferencePromptSchema,
 
