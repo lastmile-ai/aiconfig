@@ -1,23 +1,30 @@
+import base64
 import copy
+from io import BytesIO
 import json
-from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Union
-
-from aiconfig.default_parsers.parameterized_model_parser import (
-    ParameterizedModelParser,
-)
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.util.config_utils import get_api_key_from_environment
-from aiconfig.util.params import resolve_prompt
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, BinaryIO, Dict, List, Optional, Union
 
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
-from huggingface_hub.inference._text_generation import (
-    TextGenerationResponse,
-    TextGenerationStreamResponse,
-)
 
 from aiconfig import CallbackEvent
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+from aiconfig.model_parser import InferenceOptions, ModelParser
+from aiconfig.schema import (
+    Attachment,
+    AttachmentDataWithStringValue,
+    ExecuteResult,
+    Output,
+    Prompt,
+    PromptInput,
+    PromptMetadata,
+)
+from aiconfig.util.config_utils import get_api_key_from_environment
+from PIL import Image as img_module
+from PIL.Image import Image as ImageType
+
+# image is Union[bytes, BinaryIO, Path, str] where str could be path or uri
+RequestImageType = Union[Path, str, bytes, BinaryIO]
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -27,28 +34,13 @@ if TYPE_CHECKING:
 # Step 1: define Helpers
 def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
     """
-    Refines the completion params for the HF text generation api. Removes any unsupported params.
-    The supported keys were found by looking at the HF text generation api. `huggingface_hub.InferenceClient.text_generation()`
+    Refines the completion params for the HF image_to_text api. Removes any unsupported params.
+    See https://github.com/huggingface/huggingface_hub/blob/main/src/huggingface_hub/inference/_client.py#L731
+    for supported params.
     """
 
     supported_keys = {
-        "details",
-        "stream",
         "model",
-        "do_sample",
-        "max_new_tokens",
-        "best_of",
-        "repetition_penalty",
-        "return_full_text",
-        "seed",
-        "stop_sequences",
-        "stream" "temperature",
-        "top_k",
-        "top_p",
-        "truncate",
-        "typical_p",
-        "watermark",
-        "decoder_input_details",
     }
 
     completion_data = {}
@@ -59,70 +51,21 @@ def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
     return completion_data
 
 
-def construct_stream_output(
-    response: Union[Iterable[TextGenerationStreamResponse], Iterable[str]],
-    response_includes_details: bool,
-    options: InferenceOptions,
-) -> Output:
-    """
-    Constructs the output for a stream response.
-
-    Args:
-        response (TextGenerationStreamResponse): The response from the model.
-        response_includes_details (bool): Whether or not the response includes details.
-        options (InferenceOptions): The inference options. Used to determine the stream callback.
-
-    """
-    accumulated_message = ""
-    for iteration in response:
-        metadata = {}
-        # If response_includes_details is false, `iteration` will be a string,
-        # otherwise, `iteration` is a TextGenerationStreamResponse
-        new_text = iteration
-        if response_includes_details:
-            iteration: TextGenerationStreamResponse
-            new_text = iteration.token.text
-            metadata = {"token": iteration.token, "details": iteration.details}
-
-        # Reduce
-        accumulated_message += new_text
-
-        index = 0  # HF Text Generation api doesn't support multiple outputs
-        if options and options.stream_callback:
-            options.stream_callback(new_text, accumulated_message, index)
-        output = ExecuteResult(
-            **{
-                "output_type": "execute_result",
-                "data": accumulated_message,
-                "execution_count": index,
-                "metadata": metadata,
-            }
-        )
-
-    return output
-
-
-def construct_regular_output(
-    response: TextGenerationResponse, response_includes_details: bool
-) -> Output:
-    metadata = {"raw_response": response}
-    if response_includes_details:
-        metadata["details"] = response.details
-
+def construct_output(response: str) -> Output:
     output = ExecuteResult(
         **{
             "output_type": "execute_result",
-            "data": response.generated_text,
+            "data": response,
             "execution_count": 0,
-            "metadata": metadata,
+            "metadata": {},
         }
     )
     return output
 
 
-class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
+class HuggingFaceImage2TextRemoteInference(ModelParser):
     """
-    A model parser for HuggingFace text generation models.
+    A model parser for HuggingFace image-to-text models.
     """
 
     def __init__(self, model_id: str = None, use_api_token=False):
@@ -132,12 +75,12 @@ class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
             no_token (bool): Whether or not to require an API token. Set to False if you don't have an api key.
 
         Returns:
-            HuggingFaceTextGenerationRemoteInference: The HuggingFaceTextGenerationRemoteInference object.
+            HuggingFaceImage2TextRemoteInference: The HuggingFaceImage2TextRemoteInference object.
 
         Usage:
 
         1. Create a new model parser object with the model ID of the model to use.
-                parser = HuggingFaceTextGenerationRemoteInference("mistralai/Mistral-7B-Instruct-v0.1", use_api_token=False)
+                parser = HuggingFaceImage2TextRemoteInference("Salesforce/blip-image-captioning-base", use_api_token=False)
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
 
@@ -162,7 +105,7 @@ class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
         """
         Returns an identifier for the Model Parser
         """
-        return "HuggingFaceTextGenerationRemoteInference"
+        return "HuggingFaceImage2TextRemoteInference"
 
     async def serialize(
         self,
@@ -195,13 +138,40 @@ class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
             )
         )
 
+        # assume data is completion params for HF image_to_text
         data = copy.deepcopy(data)
 
-        # assume data is completion params for HF text generation
-        prompt_input = data["prompt"]
+        # For now, support Path as path to local image file or str as uri only
+        # TODO: Support bytes and BinaryIO
+        image: RequestImageType = data["image"]
 
-        # Prompt is handled, remove from data
-        data.pop("prompt", None)
+        # In some cases (e.g. for uri), we can't determine the mimetype subtype
+        # without loading it, so just use the discrete type by default
+        mime_type = "image"
+
+        if isinstance(image, Path):
+            data["image"] = str(image.as_uri())
+            # Assume the image is saved with extension matching mimetype
+            file_extension = image.suffix.lower()[1:]
+            mime_type = f"image/{file_extension}"
+        elif isinstance(image, str):
+            # Assume it's a uri
+            pass
+        else:
+            raise ValueError(
+                f"Invalid image type. Expected Path or str, got {type(image)}"
+            )
+
+        attachment_data = AttachmentDataWithStringValue(
+            kind="file_uri", value=data["image"]
+        )
+        attachments: List[Attachment] = [
+            Attachment(data=attachment_data, mime_type=mime_type)
+        ]
+        prompt_input = PromptInput(attachments=attachments)
+
+        # image is handled, remove from data
+        data.pop("image", None)
 
         prompts = []
 
@@ -248,14 +218,14 @@ class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
             )
         )
 
-        resolved_prompt = resolve_prompt(prompt, params, aiconfig)
-
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
-
         completion_data = refine_completion_params(model_settings)
 
-        completion_data["prompt"] = resolved_prompt
+        # Add image input
+        completion_data[
+            "image"
+        ] = validate_and_retrieve_image_from_attachments(prompt)
 
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
@@ -267,13 +237,14 @@ class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
 
         return completion_data
 
-    async def run_inference(
+    async def run(
         self,
         prompt: Prompt,
         aiconfig: "AIConfigRuntime",
         options: InferenceOptions,
-        parameters: dict[Any, Any],
-    ) -> List[Output]:
+        parameters: Dict[str, Any],
+        **kwargs,
+    ) -> list[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -305,18 +276,6 @@ class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
 
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
 
-        # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
-        stream = True  # Default value
-        if (
-            sanitized_options is not None
-            and sanitized_options.stream is not None
-        ):
-            stream = sanitized_options.stream
-        elif "stream" in completion_data:
-            stream = completion_data["stream"]
-
-        completion_data["stream"] = stream
-
         # If api token is provided in the options, use it for the client
         client = self.client
         if run_override_api_token:
@@ -324,21 +283,11 @@ class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
                 self.client.model, token=run_override_api_token
             )
 
-        response = client.text_generation(**completion_data)
-        response_is_detailed = completion_data.get("details", False)
-        outputs = []
+        response = client.image_to_text(**completion_data)
 
-        # HF Text Generation api doesn't support multiple outputs. Expect only one output.
-        # Output spec: .data to to the actual string, and metadata to the details and any other info present.
-        if not stream:
-            output = construct_regular_output(response, response_is_detailed)
-            outputs.append(output)
-        else:
-            # Handles stream callback
-            output = construct_stream_output(
-                response, response_is_detailed, sanitized_options
-            )
-            outputs.append(output)
+        # HF Image to Text api doesn't support multiple outputs. Expect only one output.
+        # Output spec: response is raw string
+        outputs = [construct_output(response)]
 
         prompt.outputs = outputs
 
@@ -364,15 +313,68 @@ class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
             output_data = output.data
             if isinstance(output_data, str):
                 return output_data
+            else:
+                raise ValueError(
+                    f"Invalid output data type {type(output_data)} for prompt '{prompt.name}'. Expected string."
+                )
 
-            # Doing this to be backwards-compatible with old output format
-            # where we used to save the TextGenerationResponse or
-            # TextGenerationStreamResponse in output.data
-            if hasattr(output_data, "generated_text"):
-                assert isinstance(output_data.generated_text, str)
-                return output_data.generated_text
-
-            # HuggingFace text generation outputs should only ever be string
-            # format so shouldn't get here, but just being safe
-            return json.dumps(output_data, indent=2)
         return ""
+
+
+def validate_attachment_type_is_image(
+    prompt_name: str,
+    attachment: Attachment,
+) -> None:
+    """
+    Simple helper function to verify that the mimetype is set to a valid
+    image format. Raises ValueError if there's an issue.
+    """
+    if not hasattr(attachment, "mime_type"):
+        raise ValueError(
+            f"Attachment has no mime type for prompt '{prompt_name}'. Please specify the image mimetype in the AIConfig"
+        )
+
+    if not attachment.mime_type.startswith("image"):
+        raise ValueError(
+            f"Invalid attachment mimetype {attachment.mime_type} for prompt '{prompt_name}'. Please use a mimetype that starts with 'image/'."
+        )
+
+
+def validate_and_retrieve_image_from_attachments(
+    prompt: Prompt,
+) -> Union[ImageType, str]:
+    """
+    Retrieves the image uri's from each attachment in the prompt input.
+
+    Throws an exception if
+    - attachment is not image
+    - attachment data is not a uri
+    - no attachments are found
+    - operation fails for any reason
+    """
+
+    if (
+        not hasattr(prompt.input, "attachments")
+        or len(prompt.input.attachments) == 0
+    ):
+        raise ValueError(
+            f"No attachments found in input for prompt '{prompt.name}'. Please add an image attachment to the prompt input."
+        )
+
+    attachment = prompt.input.attachments[0]
+    validate_attachment_type_is_image(prompt.name, attachment)
+
+    if not isinstance(attachment.data, AttachmentDataWithStringValue):
+        # See todo above, but for now only support uris and base64
+        raise ValueError(
+            f"""Attachment data must be of type `AttachmentDataWithStringValue` with a `kind` and `value` field.
+                    Please specify a uri or base64 encoded string for the image attachment in prompt '{prompt.name}'."""
+        )
+    input_data = attachment.data.value
+    if attachment.data.kind == "base64":
+        pil_image: ImageType = img_module.open(
+            BytesIO(base64.b64decode(input_data))
+        )
+        return pil_image
+    else:
+        return input_data

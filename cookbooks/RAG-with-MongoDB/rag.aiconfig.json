@@ -1,0 +1,88 @@
+{
+  "name": "RAG Prompts",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {
+      "few_shot_examples": "",
+      "role": "You are a helpful assistant in responding to inquiries from school faculty.",
+      "style_guide": "- keep sentence structure simple \n- choose precise words \n- be direct \n- answer in 1-2 sentences\n- provide supporting text to be thorough in answering the question with references and quotes\n\n",
+    },
+    "models": {
+      "gpt-3.5-turbo": {
+        "model": "gpt-3.5-turbo",
+        "top_p": 1,
+        "system_prompt": "{{role}} \n\nQuestion to be Answered: {{user_question}}\nContext to answer the question: {{context}}\nFollow the style guide: {{style_guide}} \nExample Responses: {{few_shot_examples}}",
+        "presence_penalty": 0,
+        "frequency_penalty": 0
+      }
+    }
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "question-answer",
+      "input": "{{user_question}}",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo",
+          "settings": {
+            "temperature": 0
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "The department central phone line should be covered by the Administrative Support Associate during regular office hours. If the Administrative Support Associate is absent, the Undergraduate Student Services Specialist will cover the phone line. This is stated in Policy Number 107/1 of the UNC Department of Communication.",
+          "metadata": {
+            "id": "chatcmpl-8kNLXBETeay2mHmo8rClJWj0t8J4o",
+            "created": 1706063523,
+            "model": "gpt-3.5-turbo-0613",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "content": "The department central phone line should be covered by the Administrative Support Associate during regular office hours. If the Administrative Support Associate is absent, the Undergraduate Student Services Specialist will cover the phone line. This is stated in Policy Number 107/1 of the UNC Department of Communication.",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "verification",
+      "input": "Verify if {{question-answer.output}} is correct given {{context}}. Provide clear citations. ",
+      "metadata": {
+        "model": {
+          "name": "gpt-3.5-turbo",
+          "settings": {
+            "temperature": 1
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "Yes, the statement is correct. According to Policy Number 107/1 of the UNC Department of Communication, the department central phone line should be covered by the Administrative Support Associate during regular office hours. In case of the Administrative Support Associate's absence, the phone line will be deferred to the Undergraduate Student Services Specialist. This information can be found in the policy document on Phone Coverage, prepared by Penny Harris and approved by Patricia Parker on November 16, 2015.",
+          "metadata": {
+            "id": "chatcmpl-8kNLajygz1aualYZ8utoLgkboq1jb",
+            "created": 1706063526,
+            "model": "gpt-3.5-turbo-0613",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "content": "Yes, the statement is correct. According to Policy Number 107/1 of the UNC Department of Communication, the department central phone line should be covered by the Administrative Support Associate during regular office hours. In case of the Administrative Support Associate's absence, the phone line will be deferred to the Undergraduate Student Services Specialist. This information can be found in the policy document on Phone Coverage, prepared by Penny Harris and approved by Patricia Parker on November 16, 2015.",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}

@@ -8,7 +8,7 @@ from aiconfig_extension_hugging_face import (
     HuggingFaceTextTranslationTransformer,
 )
 from aiconfig_extension_hugging_face.remote_inference_client.text_generation import (
-    HuggingFaceTextGenerationParser,
+    HuggingFaceTextGenerationRemoteInference,
 )
 
 from aiconfig import AIConfigRuntime
@@ -46,7 +46,7 @@ def register_model_parsers() -> None:
     )
 
     # Register remote inference client for text generation
-    text_generation_remote = HuggingFaceTextGenerationParser()
+    text_generation_remote = HuggingFaceTextGenerationRemoteInference()
     AIConfigRuntime.register_model_parser(
         text_generation_remote, text_generation_remote.id()
     )
