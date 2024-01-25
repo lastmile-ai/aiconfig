@@ -113,7 +113,7 @@ export type AIConfigCallbacks = {
     cancellationToken?: string
   ) => Promise<{ aiconfig: AIConfig }>;
   cancel: (cancellationToken: string) => Promise<void>;
-  save: (aiconfig: AIConfig) => Promise<void>;
+  save?: (aiconfig: AIConfig) => Promise<void>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
   setParameters: (parameters: JSONObject, promptName?: string) => Promise<void>;
@@ -940,6 +940,20 @@ export default function AIConfigEditor({
           <Container maw="80rem">
             <Flex justify="flex-end" mt="md" mb="xs">
               <Group>
+                {/* TODO: Remove false gating below once Share button is ready */}
+                {!readOnly && (
+                  <Tooltip label={"Create a link to share your AIConfig!"}>
+                    <Button
+                      loading={undefined}
+                      onClick={() => {}}
+                      size="xs"
+                      variant="filled"
+                    >
+                      Share
+                    </Button>
+                  </Tooltip>
+                )}
+
                 {!readOnly && (
                   <Button
                     loading={undefined}
@@ -950,7 +964,7 @@ export default function AIConfigEditor({
                     Clear Outputs
                   </Button>
                 )}
-                {!readOnly && (
+                {!readOnly && saveCallback && (
                   <Tooltip
                     label={
                       isDirty ? "Save changes to config" : "No unsaved changes"

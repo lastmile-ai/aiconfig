@@ -6,7 +6,7 @@ import { PaLMTextParserPromptSchema } from "../shared/prompt_schemas/PaLMTextPar
 import { PaLMChatParserPromptSchema } from "../shared/prompt_schemas/PaLMChatParserPromptSchema";
 import { AnyscaleEndpointPromptSchema } from "../shared/prompt_schemas/AnyscaleEndpointPromptSchema";
 import { HuggingFaceAutomaticSpeechRecognitionPromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionPromptSchema";
-import {HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema} from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema";
+import { HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema";
 import { HuggingFaceImage2TextTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextTransformerPromptSchema";
 import { HuggingFaceText2ImageDiffusorPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageDiffusorPromptSchema";
 import { HuggingFaceText2ImageRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageRemoteInferencePromptSchema";
@@ -84,7 +84,7 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   HuggingFaceImage2TextRemoteInference:
     HuggingFaceImage2TextRemoteInferencePromptSchema,
 
-  "HuggingFaceAutomaticSpeechRecognitionRemoteInference":
+  HuggingFaceAutomaticSpeechRecognitionRemoteInference:
     HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema,
 
   HuggingFaceText2ImageRemoteInference:
@@ -135,6 +135,17 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
     HuggingFaceTextSummarizationTransformerPromptSchema,
   HuggingFaceTextTranslationTransformer:
     HuggingFaceTextGenerationTransformerPromptSchema,
+
+  // Temporary mapping of HF model parsers to task names. This won't be needed
+  // once we have prompt schemas implemented at the parser layer
+  "Automatic Speech Recognition":
+    HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema,
+  "Image-to-Text": HuggingFaceImage2TextRemoteInferencePromptSchema,
+  "Text-to-Image": HuggingFaceText2ImageRemoteInferencePromptSchema,
+  "Text-to-Speech": HuggingFaceText2SpeechRemoteInferencePromptSchema,
+  "Text Generation": HuggingFaceTextGenerationRemoteInferencePromptSchema,
+  Summarization: HuggingFaceTextSummarizationRemoteInferencePromptSchema,
+  Translation: HuggingFaceTextTranslationRemoteInferencePromptSchema,
 };
 
 export type PromptInputSchema =
