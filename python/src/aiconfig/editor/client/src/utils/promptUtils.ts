@@ -16,6 +16,7 @@ import { HuggingFaceTextSummarizationTransformerPromptSchema } from "../shared/p
 import { HuggingFaceTextGenerationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationRemoteInferencePromptSchema";
 import { HuggingFaceTextSummarizationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationRemoteInferencePromptSchema";
 import { HuggingFaceTextTranslationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextTranslationRemoteInferencePromptSchema";
+import { HuggingFaceImage2TextRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextRemoteInferencePromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -79,6 +80,8 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "dall-e-2": DalleImageGenerationParserPromptSchema,
   "dall-e-3": DalleImageGenerationParserPromptSchema,
 
+  HuggingFaceImage2TextRemoteInference:
+    HuggingFaceImage2TextRemoteInferencePromptSchema,
   HuggingFaceText2ImageRemoteInference:
     HuggingFaceText2ImageRemoteInferencePromptSchema,
 
