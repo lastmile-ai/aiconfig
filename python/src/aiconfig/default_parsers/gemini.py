@@ -1,14 +1,12 @@
 # Define a Model Parser for LLama-Guard
-from typing import TYPE_CHECKING, Dict, List, Optional, Any
 import copy
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import google.generativeai as genai
-from google.protobuf.json_format import MessageToDict
-
 from aiconfig import (
     AIConfigRuntime,
     CallbackEvent,
-    get_api_key_from_environment,
+    get_api_key_from_environment
 )
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
@@ -17,9 +15,10 @@ from aiconfig.schema import (
     Output,
     OutputDataWithValue,
     Prompt,
-    PromptInput,
+    PromptInput
 )
 from aiconfig.util.params import resolve_prompt, resolve_prompt_string
+from google.protobuf.json_format import MessageToDict
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
