@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "aiconfig_extension_hugging_face"
-version = "0.0.4"
+version = "0.0.5"
 authors = [
   { name="LastMile AI" },
   { name="Rossdan Craig", email="rossdan@lastmileai.dev" },
@@ -25,6 +25,7 @@ dependencies = {file = ["requirements.txt"]}
 [project.urls]
 Homepage = "https://github.com/lastmile-ai/aiconfig/"
 Issues = "https://github.com/lastmile-ai/aiconfig/issues"
+LastMile = "https://lastmileai.dev/"
 
 # Black formatting
 [tool.black]
