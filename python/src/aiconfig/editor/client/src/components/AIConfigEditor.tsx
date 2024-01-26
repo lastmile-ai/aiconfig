@@ -56,6 +56,7 @@ import {
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
 import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
+import ShareButton from "./global/ShareButton";
 import PromptsContainer from "./prompt/PromptsContainer";
 
 type Props = {
@@ -162,10 +163,8 @@ export default function AIConfigEditor({
       return;
     }
     try {
-      // TODO: While uploading, show a loader state for share button
       const { share_url: shareUrl } = await shareCallback();
-      // TODO: display the shareUrl in a dialog
-      // console.log("Share URL: ", shareUrl);
+      return shareUrl;
     } catch (err: unknown) {
       const message = (err as RequestCallbackError).message ?? null;
       showNotification({
@@ -969,19 +968,7 @@ export default function AIConfigEditor({
             <Flex justify="flex-end" mt="md" mb="xs">
               {!readOnly && (
                 <Group>
-                  {shareCallback && (
-                    <Tooltip label={"Create a link to share your AIConfig!"}>
-                      <Button
-                        loading={undefined}
-                        onClick={onShare}
-                        size="xs"
-                        variant="filled"
-                      >
-                        Share
-                      </Button>
-                    </Tooltip>
-                  )}
-
+                  {shareCallback && <ShareButton onShare={onShare} />}
                   {onClearOutputs && (
                     <Button
                       loading={undefined}
