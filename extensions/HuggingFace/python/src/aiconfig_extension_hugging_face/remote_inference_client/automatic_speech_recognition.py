@@ -20,6 +20,10 @@ from aiconfig.schema import (
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
 
+from aiconfig_extension_hugging_face.remote_inference_client.util import (
+    add_default_model_if_not_set,
+)
+
 if TYPE_CHECKING:
     from aiconfig import AIConfigRuntime
 
@@ -68,6 +72,7 @@ class HuggingFaceAutomaticSpeechRecognitionRemoteInference(ModelParser):
 
     Uses the Inference Endpoint for inference.
     """
+    HF_TASK = "automatic-speech-recognition"
 
     def __init__(self, model_id: str = None, use_api_token: bool = False):
         """
@@ -214,6 +219,8 @@ class HuggingFaceAutomaticSpeechRecognitionRemoteInference(ModelParser):
         audio_input = validate_and_retrieve_audio_from_attachments(prompt)
 
         completion_data["audio"] = audio_input
+
+        add_default_model_if_not_set(completion_data, self.HF_TASK)
 
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
