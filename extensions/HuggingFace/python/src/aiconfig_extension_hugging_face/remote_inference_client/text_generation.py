@@ -19,6 +19,10 @@ from huggingface_hub.inference._text_generation import (
 from aiconfig import CallbackEvent
 from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 
+from aiconfig_extension_hugging_face.remote_inference_client.util import (
+    add_default_model_if_not_set,
+)
+
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
@@ -124,6 +128,7 @@ class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
     """
     A model parser for HuggingFace text generation models.
     """
+    HF_TASK = "text-generation"
 
     def __init__(self, model_id: str = None, use_api_token=False):
         """
@@ -254,6 +259,8 @@ class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
         model_settings = self.get_model_settings(prompt, aiconfig)
 
         completion_data = refine_completion_params(model_settings)
+
+        add_default_model_if_not_set(completion_data, self.HF_TASK)
 
         completion_data["prompt"] = resolved_prompt
 

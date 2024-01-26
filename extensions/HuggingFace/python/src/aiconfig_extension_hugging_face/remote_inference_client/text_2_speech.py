@@ -24,6 +24,10 @@ from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt
 from scipy.io.wavfile import write as write_wav
 
+from aiconfig_extension_hugging_face.remote_inference_client.util import (
+    add_default_model_if_not_set,
+)
+
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -78,6 +82,7 @@ class HuggingFaceText2SpeechRemoteInference(ParameterizedModelParser):
     """
     A model parser for HuggingFace text-to-speech models.
     """
+    HF_TASK = "text-to-speech"
 
     def __init__(
         self,
@@ -211,6 +216,8 @@ class HuggingFaceText2SpeechRemoteInference(ParameterizedModelParser):
         model_settings = self.get_model_settings(prompt, aiconfig)
 
         completion_data = refine_completion_params(model_settings)
+
+        add_default_model_if_not_set(completion_data, self.HF_TASK)
 
         completion_data["text"] = resolved_prompt
 
