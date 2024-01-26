@@ -8,6 +8,7 @@ import {
   Group,
 } from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
+import { IconDeviceFloppy } from "@tabler/icons-react";
 import {
   AIConfig,
   InferenceSettings,
@@ -16,6 +17,7 @@ import {
   Prompt,
   PromptInput,
 } from "aiconfig";
+import { debounce, uniqueId } from "lodash";
 import {
   useCallback,
   useEffect,
@@ -25,8 +27,9 @@ import {
   useState,
 } from "react";
 import { v4 as uuidv4 } from "uuid";
-import aiconfigReducer from "../reducers/aiconfigReducer";
+import AIConfigContext from "../contexts/AIConfigContext";
 import type { AIConfigReducerAction } from "../reducers/actions";
+import aiconfigReducer from "../reducers/aiconfigReducer";
 import {
   AIConfigEditorMode,
   LogEvent,
@@ -35,15 +38,12 @@ import {
   clientConfigToAIConfig,
   clientPromptToAIConfigPrompt,
 } from "../shared/types";
+import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
 import {
   getDefaultNewPromptName,
   getModelSettingsStream,
   getPrompt,
 } from "../utils/aiconfigStateUtils";
-import { debounce, uniqueId } from "lodash";
-import GlobalParametersContainer from "./GlobalParametersContainer";
-import AIConfigContext from "../contexts/AIConfigContext";
-import ConfigNameDescription from "./ConfigNameDescription";
 import {
   AUTOSAVE_INTERVAL_MS,
   DEBOUNCE_MS,
@@ -53,10 +53,11 @@ import {
   getDefaultPromptInputForModel,
   getPromptModelName,
 } from "../utils/promptUtils";
-import { IconDeviceFloppy } from "@tabler/icons-react";
-import CopyButton from "./CopyButton";
-import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
+import ShareButton from "./global/ShareButton";
 import PromptsContainer from "./prompt/PromptsContainer";
+import ConfigNameDescription from "./ConfigNameDescription";
+import CopyButton from "./CopyButton";
+import GlobalParametersContainer from "./GlobalParametersContainer";
 
 type Props = {
   aiconfig: AIConfig;
@@ -942,18 +943,7 @@ export default function AIConfigEditor({
               {!readOnly && (
                 <Group>
                   {/* TODO: Remove false gating below once Share button is ready */}
-                  {false && (
-                    <Tooltip label={"Create a link to share your AIConfig!"}>
-                      <Button
-                        loading={undefined}
-                        onClick={() => {}}
-                        size="xs"
-                        variant="filled"
-                      >
-                        Share
-                      </Button>
-                    </Tooltip>
-                  )}
+                  {false && <ShareButton />}
 
                   {onClearOutputs && (
                     <Button
