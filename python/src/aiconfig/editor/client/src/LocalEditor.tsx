@@ -37,7 +37,6 @@ const useStyles = createStyles(() => ({
   },
 }));
 
-
 const MODE = "local";
 
 export default function LocalEditor() {
@@ -75,7 +74,7 @@ export default function LocalEditor() {
         sessionSampleRate: 100,
       });
 
-      datadogLogs.setGlobalContextProperty('mode', MODE);
+      datadogLogs.setGlobalContextProperty("mode", MODE);
     }
   }, []);
 
@@ -239,6 +238,16 @@ export default function LocalEditor() {
     []
   );
 
+  const mockShare = useCallback(() => {
+    return new Promise<{ share_url: string }>((resolve, _reject) => {
+      setTimeout(() => {
+        resolve({ share_url: "test" });
+        // uncomment & comment out resolve to test error handling
+        // reject("message");
+      }, 5000);
+    });
+  }, []);
+
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
@@ -253,6 +262,7 @@ export default function LocalEditor() {
       setConfigDescription,
       setConfigName,
       setParameters,
+      share: mockShare,
       updateModel,
       updatePrompt,
     }),
@@ -269,6 +279,7 @@ export default function LocalEditor() {
       setConfigDescription,
       setConfigName,
       setParameters,
+      mockShare,
       updateModel,
       updatePrompt,
     ]
@@ -289,11 +300,7 @@ export default function LocalEditor() {
           <Loader size="xl" />
         </Flex>
       ) : (
-        <AIConfigEditor
-          aiconfig={aiconfig}
-          callbacks={callbacks}
-          mode={MODE}
-        />
+        <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} mode={MODE} />
       )}
     </div>
   );
