@@ -88,6 +88,13 @@ export type RunPromptStreamErrorEvent = {
   };
 };
 
+export type ShareError = {
+  error: {
+    message: string;
+    code: number | string;
+  };
+};
+
 export type RunPromptStreamCallback = (event: RunPromptStreamEvent) => void;
 
 export type RunPromptStreamErrorCallback = (
@@ -114,7 +121,7 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   cancel: (cancellationToken: string) => Promise<void>;
   save?: (aiconfig: AIConfig) => Promise<void>;
-  share?: () => Promise<{ share_url: string }>;
+  share?: () => Promise<{ error?: ShareError; share_url?: string }>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
   setParameters: (parameters: JSONObject, promptName?: string) => Promise<void>;
