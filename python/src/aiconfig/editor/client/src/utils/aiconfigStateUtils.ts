@@ -1,4 +1,4 @@
-import { AIConfig } from "aiconfig";
+import { AIConfig, Prompt } from "aiconfig";
 import { ClientAIConfig, ClientPrompt } from "../shared/types";
 import { getPromptModelName } from "./promptUtils";
 
@@ -46,4 +46,22 @@ export function getModelSettingsStream(
   }
 
   return undefined;
+}
+
+export function convertClientAIConfigToAIConfig(
+  clientConfig: ClientAIConfig
+): AIConfig {
+  const {
+    _ui: _config_ui,
+    prompts: client_prompts,
+    ...config_without_ui_and_prompts
+  } = clientConfig;
+  const prompts: Prompt[] = client_prompts.map((prompt) => {
+    const { _ui: _prompt_ui, ...regular_prompt } = prompt;
+    return regular_prompt;
+  });
+  return {
+    ...(config_without_ui_and_prompts as Omit<AIConfig, "prompts">),
+    prompts,
+  } as AIConfig;
 }
