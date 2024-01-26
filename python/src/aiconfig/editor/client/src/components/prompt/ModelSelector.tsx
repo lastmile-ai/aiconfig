@@ -19,6 +19,7 @@ export default memo(function ModelSelector({
   onSetModel,
   defaultConfigModelName,
 }: Props) {
+  const { mode } = useContext(AIConfigContext);
   const { readOnly } = useContext(AIConfigContext);
   const [selectedModel, setSelectedModel] = useState<string | undefined>(
     getPromptModelName(prompt, defaultConfigModelName)
@@ -40,10 +41,10 @@ export default memo(function ModelSelector({
 
   return (
     <Autocomplete
-      placeholder="Select model"
+      placeholder={`Select ${mode === "gradio" ? "task" : "model"}`}
       limit={100}
       className="ghost"
-      label="Model"
+      label={mode === "gradio" ? "HuggingFace Task" : "Model"}
       variant="unstyled"
       maxDropdownHeight={200}
       disabled={readOnly}
