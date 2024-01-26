@@ -6,7 +6,7 @@ import {
   RunPromptStreamCallback,
   RunPromptStreamErrorCallback,
   RunPromptStreamErrorEvent,
-} from "aiconfig-editor";
+} from "@lastmileai/aiconfig-editor";
 import { Flex, Loader, Image, createStyles } from "@mantine/core";
 import {
   AIConfig,
