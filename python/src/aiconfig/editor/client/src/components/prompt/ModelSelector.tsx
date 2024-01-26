@@ -41,7 +41,7 @@ export default memo(function ModelSelector({
 
   return (
     <Autocomplete
-      placeholder="Select model"
+      placeholder={`Select ${mode === "gradio" ? "task" : "model"}`}
       limit={100}
       className="ghost"
       label={mode === "gradio" ? "HuggingFace Task" : "Model"}
