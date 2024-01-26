@@ -19,6 +19,10 @@ from aiconfig.schema import (
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt
 
+from aiconfig_extension_hugging_face.remote_inference_client.util import (
+    add_default_model_if_not_set,
+)
+
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -78,6 +82,7 @@ class HuggingFaceTextSummarizationRemoteInference(ParameterizedModelParser):
     """
     A model parser for HuggingFace text summarization models.
     """
+    HF_TASK = "summarization"
 
     def __init__(self, model_id: str = None, use_api_token=False):
         """
@@ -214,6 +219,8 @@ class HuggingFaceTextSummarizationRemoteInference(ParameterizedModelParser):
         model_settings = self.get_model_settings(prompt, aiconfig)
 
         completion_data = refine_completion_params(model_settings)
+        
+        add_default_model_if_not_set(completion_data, self.HF_TASK)
 
         completion_data["text"] = resolved_prompt
 
