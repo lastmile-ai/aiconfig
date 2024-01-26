@@ -21,6 +21,7 @@
     "@types/",
     "build/",
     "node_modules/",
+    "config-overrides.js",
     "public/",
     "postbuild.js"
   ]
