@@ -114,6 +114,7 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   cancel: (cancellationToken: string) => Promise<void>;
   save?: (aiconfig: AIConfig) => Promise<void>;
+  share?: (aiconfig: AIConfig) => Promise<{ share_url: string }>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
   setParameters: (parameters: JSONObject, promptName?: string) => Promise<void>;
@@ -147,6 +148,28 @@ export default function AIConfigEditor({
   stateRef.current = aiconfigState;
 
   const logEventHandler = callbacks?.logEventHandler;
+
+  const shareCallback = callbacks?.share;
+  const onShare = useCallback(async () => {
+    if (!shareCallback) {
+      return;
+    }
+    try {
+      // TODO: While uploading, show a loader state for share button
+      const { share_url: shareUrl } = await shareCallback(
+        clientConfigToAIConfig(stateRef.current)
+      );
+      // TODO: display the shareUrl in a dialog
+      console.log("Share URL: ", shareUrl);
+    } catch (err: unknown) {
+      const message = (err as RequestCallbackError).message ?? null;
+      showNotification({
+        title: "Error sharing AIConfig",
+        message,
+        color: "red",
+      });
+    }
+  }, [shareCallback]);
 
   const saveCallback = callbacks?.save;
   const onSave = useCallback(async () => {
@@ -941,12 +964,11 @@ export default function AIConfigEditor({
             <Flex justify="flex-end" mt="md" mb="xs">
               {!readOnly && (
                 <Group>
-                  {/* TODO: Remove false gating below once Share button is ready */}
-                  {false && (
+                  {shareCallback && (
                     <Tooltip label={"Create a link to share your AIConfig!"}>
                       <Button
                         loading={undefined}
-                        onClick={() => {}}
+                        onClick={onShare}
                         size="xs"
                         variant="filled"
                       >
