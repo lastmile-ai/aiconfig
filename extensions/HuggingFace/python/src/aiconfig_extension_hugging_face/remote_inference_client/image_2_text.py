@@ -26,6 +26,10 @@ from PIL.Image import Image as ImageType
 # image is Union[bytes, BinaryIO, Path, str] where str could be path or uri
 RequestImageType = Union[Path, str, bytes, BinaryIO]
 
+from aiconfig_extension_hugging_face.remote_inference_client.util import (
+    add_default_model_if_not_set,
+)
+
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
@@ -67,6 +71,7 @@ class HuggingFaceImage2TextRemoteInference(ModelParser):
     """
     A model parser for HuggingFace image-to-text models.
     """
+    HF_TASK = "image-to-text"
 
     def __init__(self, model_id: str = None, use_api_token=False):
         """
@@ -221,6 +226,8 @@ class HuggingFaceImage2TextRemoteInference(ModelParser):
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
         completion_data = refine_completion_params(model_settings)
+
+        add_default_model_if_not_set(completion_data, self.HF_TASK)
 
         # Add image input
         completion_data[
