@@ -51,6 +51,7 @@ export const HuggingFaceTextGenerationRemoteInferencePromptSchema: PromptSchema 
         },
         max_new_tokens: {
           type: "integer",
+          default: 400,
           description: `The amount of new tokens to be generated, this does not include the input length 
         it is a estimate of the size of generated text you want. Each new tokens slows down the request, 
         so look for balance between response times and length of text generated.`,
