@@ -1,5 +1,5 @@
 // s3 file uris cannot have '+' character, so replace with '_'
-function sanitizeFileName(name: string) {
+export function sanitizeFileName(name: string) {
   return name.replace(/[_+]/g, "_");
 }
 
