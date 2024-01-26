@@ -1,12 +1,17 @@
-import { Button, Tooltip } from "@mantine/core";
+import { Button, Container, Flex, Modal, Text, Tooltip } from "@mantine/core";
 import { memo, useState } from "react";
+import { useDisclosure } from "@mantine/hooks";
+import CopyButton from "../CopyButton";
 
 type Props = {
   onShare: () => Promise<string | void>;
 };
 
 export default memo(function ShareButton({ onShare }: Props) {
+  const [isModalOpened, { open: openModal, close: closeModal }] =
+    useDisclosure(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [shareUrl, setShareUrl] = useState<string>("");
 
   const onClick = async () => {
     if (isLoading) {
@@ -20,29 +25,39 @@ export default memo(function ShareButton({ onShare }: Props) {
     if (!shareUrl) {
       return;
     }
-
-    console.log("Share URL: ", shareUrl);
+    setShareUrl(shareUrl);
+    openModal();
   };
-
-  const button = (
-    <Button
-      loaderPosition="center"
-      loading={isLoading}
-      onClick={onClick}
-      p="xs"
-      size="xs"
-      variant="filled"
-    >
-      Share
-    </Button>
-  );
 
   const tooltipMessage: string = isLoading
     ? "Generating share link..."
     : "Create a link to share your AIConfig!";
-  return (
+  const button = (
     <Tooltip label={tooltipMessage} withArrow>
-      <div>{button}</div>
+      <Button
+        loaderPosition="center"
+        loading={isLoading}
+        onClick={onClick}
+        p="xs"
+        size="xs"
+        variant="filled"
+      >
+        Share
+      </Button>
     </Tooltip>
+  );
+
+  return (
+    <>
+      <Modal opened={isModalOpened} onClose={closeModal} title="AIConfig URL">
+        <Container p={0} mr={-8}>
+          <Flex direction="row">
+            <Text truncate>{shareUrl}</Text>
+            <CopyButton value={shareUrl} contentLabel="AIConfig URL" />
+          </Flex>
+        </Container>
+      </Modal>
+      {button}
+    </>
   );
 });
