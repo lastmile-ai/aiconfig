@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, BinaryIO
 from aiconfig.util.config_utils import get_api_key_from_environment
 
-from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
+from aiconfig_extension_hugging_face.util.util import get_hf_model
 from aiconfig.callback import CallbackEvent
 
 from aiconfig import InferenceOptions, ModelParser
@@ -299,7 +299,7 @@ class HuggingFaceAutomaticSpeechRecognitionRemoteInference(ModelParser):
             output_data = output.data
             if isinstance(output_data, str):
                 return output_data
-            
+
             else:
                 raise ValueError(
                     f"Invalid output data type {type(output_data)} for prompt '{prompt.name}'. Expected string."
@@ -347,7 +347,7 @@ def validate_and_retrieve_audio_from_attachments(prompt: Prompt) -> str:
         raise ValueError(
             "Multiple audio inputs are not supported for the HF Automatic Speech Recognition Inference api. Please specify a single audio input attachment for Prompt: {prompt.name}."
         )
-    
+
     attachment = prompt.input.attachments[0]
 
     validate_attachment_type_is_audio(attachment)

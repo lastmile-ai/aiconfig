@@ -13,7 +13,7 @@ from .local_inference.text_summarization import (
 from .local_inference.text_translation import (
     HuggingFaceTextTranslationTransformer,
 )
-from .local_inference.util import get_hf_model
+from .util.util import get_hf_model
 from .remote_inference_client.image_2_text import (
     HuggingFaceImage2TextRemoteInference,
 )

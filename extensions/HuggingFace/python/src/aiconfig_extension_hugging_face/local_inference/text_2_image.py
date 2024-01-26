@@ -11,7 +11,7 @@ from aiconfig.default_parsers.parameterized_model_parser import (
 )
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.util.params import resolve_prompt
-from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
+from aiconfig_extension_hugging_face.util.util import get_hf_model
 from diffusers import AutoPipelineForText2Image
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.pipelines.stable_diffusion_xl.pipeline_output import (

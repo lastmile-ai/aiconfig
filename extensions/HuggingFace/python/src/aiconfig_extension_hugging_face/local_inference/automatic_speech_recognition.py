@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import torch
 from aiconfig.callback import CallbackEvent
-from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
+from aiconfig_extension_hugging_face.util.util import get_hf_model
 from transformers import Pipeline, pipeline
 
 from aiconfig import InferenceOptions, ModelParser
