@@ -20,7 +20,10 @@ export const GRADIO_THEME: MantineThemeOverride = {
     ".editorBackground": {
       background: theme.colorScheme === "light" ? "white" : "#0b0f19",
       margin: "0 auto",
-      minHeight: "100vh",
+      minHeight: "400px",
+      // Gradio component is iframed so height should be in relation to
+      // the height of the containing iframe, not the viewport
+      height: "100%",
     },
     ".monoFont": {
       fontFamily:
