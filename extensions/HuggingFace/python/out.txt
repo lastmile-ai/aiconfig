@@ -1,0 +1,53 @@
+diff --git a/extensions/HuggingFace/.github/workflows/name: Python Tests  # Triggers the workflow on push on main. This is the same as pr_python.yml but does not run on every PR. on:   push:     branches: [main]  jobs:   build:     runs-on: ubuntu-latest     steps:       - uses: actions/checkout@v3         with:           fetch-depth: "0"       - uses: actions/setup-python@v4         with:           python-version: "3.10"       - name: Build and Install Library into Package         run: |           pip install build && cd python && python -m build && pip install dist/HuggingFaceExtension_python.yml b/extensions/HuggingFace/.github/workflows/name: Python Tests  # Triggers the workflow on push on main. This is the same as pr_python.yml but does not run on every PR. on:   push:     branches: [main]  jobs:   build:     runs-on: ubuntu-latest     steps:       - uses: actions/checkout@v3         with:           fetch-depth: "0"       - uses: actions/setup-python@v4         with:           python-version: "3.10"       - name: Build and Install Library into Package         run: |           pip install build && cd python && python -m build && pip install dist/HuggingFaceExtension_python.yml
+new file mode 100644
+--- /dev/null
++++ b/extensions/HuggingFace/.github/workflows/name: Python Tests  # Triggers the workflow on push on main. This is the same as pr_python.yml but does not run on every PR. on:   push:     branches: [main]  jobs:   build:     runs-on: ubuntu-latest     steps:       - uses: actions/checkout@v3         with:           fetch-depth: "0"       - uses: actions/setup-python@v4         with:           python-version: "3.10"       - name: Build and Install Library into Package         run: |           pip install build && cd python && python -m build && pip install dist/HuggingFaceExtension_python.yml	
+@@ -0,0 +1,26 @@
++name: Python Test
++on:
++  pull_request:
++    branches: [main]
++    paths:
++      - "python/**/*"
++
++jobs:
++  build:
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v3
++        with:
++          fetch-depth: "0"
++      - uses: actions/setup-python@v4
++        with:
++          python-version: "3.10"
++      - name: Build and Install Library into Package
++        run: |
++          pip install build && cd python && python -m build && pip install dist/*.whl
++      - name: Install Test dependencies
++        run: |
++          cd python && pip install -r requirements-dev.txt
++      - name: Run tests
++        run: |
++          cd python && pytest
+diff --git a/extensions/HuggingFace/python/requirements-dev.txt b/extensions/HuggingFace/python/requirements-dev.txt
+new file mode 100644
+--- /dev/null
++++ b/extensions/HuggingFace/python/requirements-dev.txt
+@@ -0,0 +1,7 @@
++flake8
++tox
++pytest
++pytest-cov
++pytest-mock
++pytest-asyncio
++mock
+\ No newline at end of file
+diff --git a/extensions/HuggingFace/python/src/aiconfig_extension_hugging_face/local_inference/util.py b/extensions/HuggingFace/python/src/aiconfig_extension_hugging_face/local_inference/util.py
+--- a/extensions/HuggingFace/python/src/aiconfig_extension_hugging_face/local_inference/util.py
++++ b/extensions/HuggingFace/python/src/aiconfig_extension_hugging_face/local_inference/util.py
+@@ -32,3 +32,4 @@
+     else:
+         # Otherwise the model name is the name of the model to use.
+         return model_name
++#test
+\ No newline at end of file
