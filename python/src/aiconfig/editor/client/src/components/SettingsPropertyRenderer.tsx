@@ -12,14 +12,15 @@ import {
   AutocompleteItem,
   Select,
 } from "@mantine/core";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useContext } from "react";
 import { uniqueId } from "lodash";
 import { IconHelp, IconPlus, IconTrash } from "@tabler/icons-react";
 import UnionPropertyControl, {
   UnionProperty,
 } from "./property_controls/UnionPropertyControl";
 import { JSONObject, JSONValue } from "aiconfig";
-import JSONEditor from "./JSONEditor";
+import AIConfigContext from "../contexts/AIConfigContext";
+import JSONRenderer from "./JSONRenderer";
 
 export type StateSetFromPrevFn = (prev: JSONValue) => void;
 export type SetStateFn = (val: StateSetFromPrevFn | JSONValue) => void;
@@ -59,6 +60,7 @@ export default function SettingsPropertyRenderer({
   initialValue = null,
   setValue,
 }: PropertyRendererProps) {
+  const { readOnly } = useContext(AIConfigContext);
   const propertyType = property.type;
   const defaultValue = property.default;
   const propertyDescription = property.description;
@@ -176,6 +178,7 @@ export default function SettingsPropertyRenderer({
             data={property.enum}
             value={propertyValue ?? ""}
             onChange={setAndPropagateValue}
+            disabled={readOnly}
           />
         );
       } else {
@@ -197,6 +200,7 @@ export default function SettingsPropertyRenderer({
             }
             autosize
             maxRows={20}
+            disabled={readOnly}
           />
         );
       }
@@ -218,6 +222,7 @@ export default function SettingsPropertyRenderer({
           value={propertyValue ?? ""}
           onChange={(event) => setAndPropagateValue(event.currentTarget.value)}
           autosize
+          disabled={readOnly}
         />
       );
       break;
@@ -240,6 +245,7 @@ export default function SettingsPropertyRenderer({
               value={propertyValue}
               onChange={setAndPropagateValue}
               style={{ padding: "0 0.5em" }}
+              disabled={readOnly}
             />
           </Stack>
         );
@@ -262,6 +268,7 @@ export default function SettingsPropertyRenderer({
             radius="md"
             value={propertyValue ?? ""}
             onChange={(val) => setAndPropagateValue(val)}
+            disabled={readOnly}
           />
         );
       }
@@ -285,6 +292,7 @@ export default function SettingsPropertyRenderer({
               value={propertyValue}
               onChange={setAndPropagateValue}
               style={{ padding: "0 0.5em" }}
+              disabled={readOnly}
             />
           </Stack>
         );
@@ -306,6 +314,7 @@ export default function SettingsPropertyRenderer({
             radius="md"
             value={propertyValue ?? ""}
             onChange={(val) => setAndPropagateValue(val)}
+            disabled={readOnly}
           />
         );
       }
@@ -324,6 +333,7 @@ export default function SettingsPropertyRenderer({
           onChange={(event) =>
             setAndPropagateValue(event.currentTarget.checked)
           }
+          disabled={readOnly}
         />
       );
       break;
@@ -398,9 +408,9 @@ export default function SettingsPropertyRenderer({
               propertyDescription={propertyDescription}
             />
             <div style={{ minWidth: "350px" }}>
-              <JSONEditor
+              <JSONRenderer
                 content={initialValue as JSONObject}
-                onChangeContent={setAndPropagateValue}
+                onChange={setAndPropagateValue}
               />
             </div>
           </Stack>
@@ -424,6 +434,7 @@ export default function SettingsPropertyRenderer({
               setAndPropagateValue(val);
             }}
             defaultValue={property.default}
+            disabled={readOnly}
           ></Select>
         );
       }
@@ -443,6 +454,7 @@ export default function SettingsPropertyRenderer({
             initialValue={initialValue}
             setValue={setAndPropagateValue}
             renderProperty={(props) => <SettingsPropertyRenderer {...props} />}
+            disabled={readOnly}
           />
         </Stack>
       );

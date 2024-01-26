@@ -113,7 +113,8 @@ export type AIConfigCallbacks = {
     cancellationToken?: string
   ) => Promise<{ aiconfig: AIConfig }>;
   cancel: (cancellationToken: string) => Promise<void>;
-  save: (aiconfig: AIConfig) => Promise<void>;
+  save?: (aiconfig: AIConfig) => Promise<void>;
+  share?: () => Promise<{ share_url: string }>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
   setParameters: (parameters: JSONObject, promptName?: string) => Promise<void>;
@@ -147,6 +148,26 @@ export default function AIConfigEditor({
   stateRef.current = aiconfigState;
 
   const logEventHandler = callbacks?.logEventHandler;
+
+  const shareCallback = callbacks?.share;
+  const onShare = useCallback(async () => {
+    if (!shareCallback) {
+      return;
+    }
+    try {
+      // TODO: While uploading, show a loader state for share button
+      const { share_url: shareUrl } = await shareCallback();
+      // TODO: display the shareUrl in a dialog
+      // console.log("Share URL: ", shareUrl);
+    } catch (err: unknown) {
+      const message = (err as RequestCallbackError).message ?? null;
+      showNotification({
+        title: "Error sharing AIConfig",
+        message,
+        color: "red",
+      });
+    }
+  }, [shareCallback]);
 
   const saveCallback = callbacks?.save;
   const onSave = useCallback(async () => {
@@ -939,39 +960,57 @@ export default function AIConfigEditor({
           )}
           <Container maw="80rem">
             <Flex justify="flex-end" mt="md" mb="xs">
-              <Group>
-                {!readOnly && (
-                  <Button
-                    loading={undefined}
-                    onClick={onClearOutputs}
-                    size="xs"
-                    variant="gradient"
-                  >
-                    Clear Outputs
-                  </Button>
-                )}
-                {!readOnly && (
-                  <Tooltip
-                    label={
-                      isDirty ? "Save changes to config" : "No unsaved changes"
-                    }
-                  >
+              {!readOnly && (
+                <Group>
+                  {shareCallback && (
+                    <Tooltip label={"Create a link to share your AIConfig!"}>
+                      <Button
+                        loading={undefined}
+                        onClick={onShare}
+                        size="xs"
+                        variant="filled"
+                      >
+                        Share
+                      </Button>
+                    </Tooltip>
+                  )}
+
+                  {onClearOutputs && (
                     <Button
-                      leftIcon={<IconDeviceFloppy />}
-                      loading={isSaving}
-                      onClick={() => {
-                        onSave();
-                        logEventHandler?.("SAVE_BUTTON_CLICKED");
-                      }}
-                      disabled={!isDirty}
+                      loading={undefined}
+                      onClick={onClearOutputs}
                       size="xs"
                       variant="gradient"
                     >
-                      Save
+                      Clear Outputs
                     </Button>
-                  </Tooltip>
-                )}
-              </Group>
+                  )}
+
+                  {saveCallback && (
+                    <Tooltip
+                      label={
+                        isDirty
+                          ? "Save changes to config"
+                          : "No unsaved changes"
+                      }
+                    >
+                      <Button
+                        leftIcon={<IconDeviceFloppy />}
+                        loading={isSaving}
+                        onClick={() => {
+                          onSave();
+                          logEventHandler?.("SAVE_BUTTON_CLICKED");
+                        }}
+                        disabled={!isDirty}
+                        size="xs"
+                        variant="gradient"
+                      >
+                        Save
+                      </Button>
+                    </Tooltip>
+                  )}
+                </Group>
+              )}
             </Flex>
             <ConfigNameDescription
               name={aiconfigState.name}
