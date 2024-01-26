@@ -940,6 +940,20 @@ export default function AIConfigEditor({
           <Container maw="80rem">
             <Flex justify="flex-end" mt="md" mb="xs">
               <Group>
+                {/* TODO: Remove false gating below once Share button is ready */}
+                {false && !readOnly && (
+                  <Tooltip label={"Create a link to share your AIConfig!"}>
+                    <Button
+                      loading={undefined}
+                      onClick={() => {}}
+                      size="xs"
+                      variant="filled"
+                    >
+                      Share
+                    </Button>
+                  </Tooltip>
+                )}
+
                 {!readOnly && (
                   <Button
                     loading={undefined}
