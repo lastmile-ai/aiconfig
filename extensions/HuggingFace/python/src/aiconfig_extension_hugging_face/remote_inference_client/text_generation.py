@@ -56,6 +56,13 @@ def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
         if key.lower() in supported_keys:
             completion_data[key.lower()] = model_settings[key]
 
+    # Default max_new_tokens is set to 20 at the api layer if not specified. We
+    # increase that to 400 for an improved user experience.
+    # TODO: Once prompt schemas are implemented in the parser, obtain this
+    # default value from the schema.
+    if completion_data.get("max_new_tokens") is None:
+        completion_data["max_new_tokens"] = 400
+
     return completion_data
 
 
