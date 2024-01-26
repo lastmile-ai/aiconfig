@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
     "postbuild": "node postbuild.js",
-    "test": "react-scripts test",
+    "test": "react-app-rewired test",
     "eject": "react-scripts eject",
     "lint": "eslint . --max-warnings=0"
   },
@@ -45,6 +45,8 @@
     "eslint": "^8",
     "eslint-config-next": "14.0.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "react-app-rewire-alias": "^1.1.7",
+    "react-app-rewired": "^2.2.1",
     "typescript": "^5"
   }
 }
