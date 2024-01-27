@@ -251,14 +251,6 @@ class OpenAIInference(ParameterizedModelParser):
 
         response = openai.chat.completions.create(**completion_data)
 
-        # print("@@@@@@@@@@@@@@@@")
-        # print(completion_data)
-        # print("&&&&&&&&&&&&&&&&&&&&&")
-        #
-        # print("@@@@@@@@@@@@@@@@")
-        # print(response.model_dump(exclude_none=True))
-        # print("&&&&&&&&&&&&&&&&&&&&&")
-
         outputs = []
         if not stream:
             # # OpenAI>1.0.0 uses pydantic models for response
