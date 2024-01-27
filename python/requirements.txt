@@ -1,4 +1,5 @@
 # Editor server
+anthropic_bedrock
 black
 flake8
 flask-cors
