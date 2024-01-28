@@ -861,9 +861,10 @@ export default function AIConfigEditor({
     () => ({
       getState,
       logEventHandler,
+      mode,
       readOnly,
     }),
-    [getState, logEventHandler, readOnly]
+    [getState, logEventHandler, mode, readOnly]
   );
 
   const isDirty = aiconfigState._ui.isDirty !== false;

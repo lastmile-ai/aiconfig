@@ -36,6 +36,7 @@ export const HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema: P
       model: {
         type: "string",
         description: `Hugging Face model to use. Can be a model ID hosted on the Hugging Face Hub or a URL to a deployed Inference Endpoint`,
+        default: "openai/whisper-large-v3"
       },
     },
   },

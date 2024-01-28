@@ -23,7 +23,9 @@ export default function AIConfigEditorThemeProvider({ children, mode }: Props) {
   const theme = useMemo(
     () => ({
       colorScheme: preferredColorScheme,
-      ...THEMES[mode!],
+      ...THEMES[
+        mode!
+      ] /* mode must be nonnull per conditional wrapper condition */,
     }),
     [mode, preferredColorScheme]
   );

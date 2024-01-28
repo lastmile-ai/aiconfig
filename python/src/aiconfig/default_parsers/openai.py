@@ -291,10 +291,7 @@ class OpenAIInference(ParameterizedModelParser):
         )
 
         if self.client is None:
-            openai_api_key = get_api_key_from_environment(
-                "OPENAI_API_KEY"
-            ).unwrap()
-            self.client = openai.Client(api_key=openai_api_key)
+            self.initialize_openai_client()
 
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
@@ -399,6 +396,17 @@ class OpenAIInference(ParameterizedModelParser):
             )
         )
         return prompt.outputs
+    
+    def initialize_openai_client(self) -> None:
+        """
+        Initializes the client to be used with the OpenAI Module.
+        This method can be overriden to customize the client initialization.
+        """
+
+        openai_api_key = get_api_key_from_environment(
+            "OPENAI_API_KEY"
+        ).unwrap()
+        self.client = openai.Client(api_key=openai_api_key)   
 
     def get_prompt_template(
         self, prompt: Prompt, aiconfig: "AIConfigRuntime"
