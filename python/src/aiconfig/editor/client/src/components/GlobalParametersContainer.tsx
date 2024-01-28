@@ -37,6 +37,7 @@ export default memo(function GlobalParametersContainer({
               <ParametersRenderer
                 initialValue={initialValue}
                 onUpdateParameters={onUpdateParameters}
+                maxHeight="300px"
               />
             )}
           </Accordion.Panel>
