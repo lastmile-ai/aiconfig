@@ -16,6 +16,7 @@ export const HuggingFaceTextGenerationRemoteInferencePromptSchema: PromptSchema 
           type: "string",
           description: `Hugging Face model to use. Can be a model ID hosted on the Hugging Face Hub or a URL 
         to a deployed Inference Endpoint`,
+          default: "HuggingFaceH4/zephyr-7b-beta",
         },
         temperature: {
           type: "number",

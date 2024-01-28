@@ -5,11 +5,12 @@ import {
   PromptSchema,
   checkParametersSupported,
 } from "../../utils/promptUtils";
-import { ActionIcon, Container, Flex, Tabs } from "@mantine/core";
+import { ActionIcon, Container, Flex, ScrollArea, Tabs } from "@mantine/core";
 import { IconClearAll } from "@tabler/icons-react";
 import { memo, useState } from "react";
 import ParametersRenderer from "../ParametersRenderer";
 import { JSONObject } from "aiconfig";
+import { PROMPT_CONTAINER_HEIGHT_MAP } from "./PromptContainer";
 
 type Props = {
   prompt: ClientPrompt;
@@ -30,6 +31,13 @@ function getPromptParameters(prompt: ClientPrompt) {
   return prompt.metadata?.parameters;
 }
 
+// This height accounts for all height within the action bar except the contents of the Panel
+// items. This is important to have correct, otherwise the cellInputOutputRef height would
+// itself be updated by the height of the action bar contents, which would cause the action
+// bar content height to increase each time the input changes (even if the change would not
+// normally affect the cellInputOutput container height)
+const ACTION_CONTENT_SURROUNDING_HEIGHT = 84;
+
 export default memo(function PromptActionBar({
   prompt,
   promptSchema,
@@ -41,29 +49,35 @@ export default memo(function PromptActionBar({
   const modelSettingsSchema = promptSchema?.model_settings;
   const promptMetadataSchema = promptSchema?.prompt_metadata;
 
-  return (
-    <Flex direction="column" justify="space-between" h="100%">
-      {isExpanded ? (
-        <>
-          <Container miw="400px">
-            <ActionIcon
-              size="sm"
-              onClick={() => setIsExpanded(false)}
-              mt="0.5em"
-            >
-              <IconClearAll />
-            </ActionIcon>
-            <Tabs defaultValue="settings" mb="1em">
-              <Tabs.List>
-                <Tabs.Tab value="settings">Settings</Tabs.Tab>
-                {checkParametersSupported(prompt) && (
-                  <Tabs.Tab value="parameters">
-                    Local Parameters
-                  </Tabs.Tab>
-                )}
-              </Tabs.List>
+  const promptContainerHeight = PROMPT_CONTAINER_HEIGHT_MAP.get(prompt._ui.id);
+  let maxContentHeight;
+  if (promptContainerHeight) {
+    maxContentHeight = `${
+      promptContainerHeight - ACTION_CONTENT_SURROUNDING_HEIGHT
+    }px`;
+  }
 
-              <Tabs.Panel value="settings" className="actionTabsPanel">
+  return (
+    <Flex direction="column" justify="space-between">
+      {isExpanded ? (
+        <Container miw="400px">
+          <ActionIcon size="sm" onClick={() => setIsExpanded(false)} mt="0.5em">
+            <IconClearAll />
+          </ActionIcon>
+          <Tabs defaultValue="settings" mb="1em">
+            <Tabs.List>
+              <Tabs.Tab value="settings">Settings</Tabs.Tab>
+              {checkParametersSupported(prompt) && (
+                <Tabs.Tab value="parameters">Local Parameters</Tabs.Tab>
+              )}
+            </Tabs.List>
+
+            <Tabs.Panel value="settings" className="actionTabsPanel">
+              <ScrollArea
+                h={maxContentHeight}
+                type="auto"
+                style={{ overflowY: "auto" }}
+              >
                 <ModelSettingsRenderer
                   settings={getModelSettings(prompt)}
                   schema={modelSettingsSchema}
@@ -73,19 +87,20 @@ export default memo(function PromptActionBar({
                   prompt={prompt}
                   schema={promptMetadataSchema}
                 />
-              </Tabs.Panel>
+              </ScrollArea>
+            </Tabs.Panel>
 
-              {checkParametersSupported(prompt) && (
-                <Tabs.Panel value="parameters" className="actionTabsPanel">
-                  <ParametersRenderer
-                    initialValue={getPromptParameters(prompt)}
-                    onUpdateParameters={onUpdateParameters}
-                  />
-                </Tabs.Panel>
-              )}
-            </Tabs>
-          </Container>
-        </>
+            {checkParametersSupported(prompt) && (
+              <Tabs.Panel value="parameters" className="actionTabsPanel">
+                <ParametersRenderer
+                  initialValue={getPromptParameters(prompt)}
+                  onUpdateParameters={onUpdateParameters}
+                  maxHeight={maxContentHeight}
+                />
+              </Tabs.Panel>
+            )}
+          </Tabs>
+        </Container>
       ) : (
         <Flex direction="column" justify="space-between" h="100%">
           <Flex direction="row" justify="center" mt="0.5em">
