@@ -2,7 +2,9 @@
   "name": "Book Finder",
   "schema_version": "latest",
   "metadata": {
-    "parameters": {},
+    "parameters": {
+      "hello": "world"
+    },
     "models": {},
     "model_parsers": {
       "mistralai/Mistral-7B-Instruct-v0.1": "AnyscaleEndpoint",

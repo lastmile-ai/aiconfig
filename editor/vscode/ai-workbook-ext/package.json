@@ -59,6 +59,8 @@
   "devDependencies": {
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
+    "@types/oboe": "^2.1.4",
+    "@types/url-join": "^4.0.3",
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
@@ -68,7 +70,9 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "oboe": "^2.1.5",
     "portfinder": "^1.0.32",
-    "ufetch": "^1.6.0"
+    "ufetch": "^1.6.0",
+    "url-join": "^5.0.0"
   }
 }

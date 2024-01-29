@@ -30,6 +30,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
 import {
+  ClientAIConfig,
   ClientPrompt,
   aiConfigToClientConfig,
   clientConfigToAIConfig,
@@ -77,6 +78,11 @@ export type RunPromptStreamEvent =
       data: AIConfig;
     };
 
+export type RunPromptCompleteEvent = {
+  type: "complete";
+  data: AIConfig;
+};
+
 export type RunPromptStreamErrorEvent = {
   type: "error";
   data: {
@@ -92,6 +98,8 @@ export type RunPromptStreamErrorCallback = (
   event: RunPromptStreamErrorEvent
 ) => void;
 
+export type RunPromptCompleteCallback = (event: RunPromptCompleteEvent) => void;
+
 export type AIConfigCallbacks = {
   addPrompt: (
     promptName: string,
@@ -104,11 +112,13 @@ export type AIConfigCallbacks = {
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   runPrompt: (
     promptName: string,
+    promptId: string,
     onStream: RunPromptStreamCallback,
     onError: RunPromptStreamErrorCallback,
+    onComplete: RunPromptCompleteCallback,
     enableStreaming?: boolean,
     cancellationToken?: string
-  ) => Promise<{ aiconfig: AIConfig }>;
+  ) => Promise<{ aiconfig: AIConfig } | null>;
   cancel: (cancellationToken: string) => Promise<void>;
   save: (aiconfig: AIConfig) => Promise<void>;
   setConfigDescription: (description: string) => Promise<void>;
@@ -172,24 +182,24 @@ export default function EditorContainer({
   stateRef.current = aiconfigState;
 
   const saveCallback = callbacks.save;
-  const onSave = useCallback(async () => {
-    setIsSaving(true);
-    try {
-      await saveCallback(clientConfigToAIConfig(stateRef.current));
-      dispatch({
-        type: "SAVE_CONFIG_SUCCESS",
-      });
-    } catch (err: unknown) {
-      const message = (err as RequestCallbackError).message ?? null;
-      showNotification({
-        title: "Error saving",
-        message,
-        color: "red",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  }, [saveCallback]);
+  // const onSave = useCallback(async () => {
+  //   setIsSaving(true);
+  //   try {
+  //     await saveCallback(clientConfigToAIConfig(stateRef.current));
+  //     dispatch({
+  //       type: "SAVE_CONFIG_SUCCESS",
+  //     });
+  //   } catch (err: unknown) {
+  //     const message = (err as RequestCallbackError).message ?? null;
+  //     showNotification({
+  //       title: "Error saving",
+  //       message,
+  //       color: "red",
+  //     });
+  //   } finally {
+  //     setIsSaving(false);
+  //   }
+  // }, [saveCallback]);
 
   const updatePromptCallback = callbacks.updatePrompt;
   const debouncedUpdatePrompt = useMemo(
@@ -629,7 +639,9 @@ export default function EditorContainer({
 
         const serverConfigResponse = await runPromptCallback(
           promptName,
-          (event) => {
+          promptId,
+          /*onStream*/ (event) => {
+            console.log(`Stream event: ${JSON.stringify(event)}`);
             if (event.type === "output_chunk") {
               dispatch({
                 type: "STREAM_OUTPUT_CHUNK",
@@ -647,6 +659,7 @@ export default function EditorContainer({
                 config: event.data,
               });
             } else if (event.type === "aiconfig_complete") {
+              console.log(`Complete event: ${JSON.stringify(event)}`);
               dispatch({
                 type: "CONSOLIDATE_AICONFIG",
                 action,
@@ -654,7 +667,7 @@ export default function EditorContainer({
               });
             }
           },
-          (event) => {
+          /*onError*/ (event) => {
             console.log(
               `Error running prompt ${promptName}: ${JSON.stringify(event)}`
             );
@@ -679,6 +692,17 @@ export default function EditorContainer({
                 });
               } else {
                 onPromptError(event.data.message);
+              }
+            }
+          },
+          /*onComplete*/ (event) => {
+            if (event.type === "complete") {
+              if (event.data) {
+                dispatch({
+                  type: "CONSOLIDATE_AICONFIG",
+                  action,
+                  config: event?.data.aiconfig,
+                });
               }
             }
           },
@@ -775,58 +799,60 @@ export default function EditorContainer({
     [getState]
   );
 
-  const isDirty = aiconfigState._ui.isDirty !== false;
-  useEffect(() => {
-    if (!isDirty) {
-      return;
-    }
+  // TODO: saqadri - similar to this logic, maybe we notify VSCode of dirty changes
+  // when there are unsaved changes (maybe every 5s)
+  // const isDirty = aiconfigState._ui.isDirty !== false;
+  // useEffect(() => {
+  //   if (!isDirty) {
+  //     return;
+  //   }
 
-    // Save every 15 seconds if there are unsaved changes
-    const saveInterval = setInterval(onSave, AUTOSAVE_INTERVAL_MS);
+  //   // Save every 15 seconds if there are unsaved changes
+  //   const saveInterval = setInterval(onSave, AUTOSAVE_INTERVAL_MS);
 
-    return () => clearInterval(saveInterval);
-  }, [isDirty, onSave]);
+  //   return () => clearInterval(saveInterval);
+  // }, [isDirty, onSave]);
 
   // Override CMD+s and CTRL+s to save
-  useEffect(() => {
-    const saveHandler = (e: KeyboardEvent) => {
-      // Note platform property to distinguish between CMD and CTRL for
-      // Mac/Windows/Linux is deprecated.
-      // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/platform
-      // Just handle both for now.
-      if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
+  // useEffect(() => {
+  //   const saveHandler = (e: KeyboardEvent) => {
+  //     // Note platform property to distinguish between CMD and CTRL for
+  //     // Mac/Windows/Linux is deprecated.
+  //     // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/platform
+  //     // Just handle both for now.
+  //     if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
+  //       e.preventDefault();
 
-        if (stateRef.current._ui.isDirty) {
-          onSave();
-        }
-      }
-    };
+  //       if (stateRef.current._ui.isDirty) {
+  //         onSave();
+  //       }
+  //     }
+  //   };
 
-    window.addEventListener("keydown", saveHandler, false);
+  //   window.addEventListener("keydown", saveHandler, false);
 
-    return () => window.removeEventListener("keydown", saveHandler);
-  }, [onSave]);
+  //   return () => window.removeEventListener("keydown", saveHandler);
+  // }, [onSave]);
 
   // Server heartbeat, check every 3s to show error if server is down
   // Don't poll if server status is in an error state since it won't automatically recover
-  const getServerStatusCallback = callbacks.getServerStatus;
-  useEffect(() => {
-    if (!getServerStatusCallback || serverStatus !== "OK") {
-      return;
-    }
+  // const getServerStatusCallback = callbacks.getServerStatus;
+  // useEffect(() => {
+  //   if (!getServerStatusCallback || serverStatus !== "OK") {
+  //     return;
+  //   }
 
-    const interval = setInterval(async () => {
-      try {
-        const res = await getServerStatusCallback();
-        setServerStatus(res.status);
-      } catch (err: unknown) {
-        setServerStatus("ERROR");
-      }
-    }, SERVER_HEARTBEAT_INTERVAL_MS);
+  //   const interval = setInterval(async () => {
+  //     try {
+  //       const res = await getServerStatusCallback();
+  //       setServerStatus(res.status);
+  //     } catch (err: unknown) {
+  //       setServerStatus("ERROR");
+  //     }
+  //   }, SERVER_HEARTBEAT_INTERVAL_MS);
 
-    return () => clearInterval(interval);
-  }, [getServerStatusCallback, serverStatus]);
+  //   return () => clearInterval(interval);
+  // }, [getServerStatusCallback, serverStatus]);
 
   return (
     <AIConfigContext.Provider value={contextValue}>
@@ -872,7 +898,7 @@ export default function EditorContainer({
               Clear Outputs
             </Button>
 
-            <Tooltip
+            {/* <Tooltip
               label={isDirty ? "Save changes to config" : "No unsaved changes"}
             >
               <Button
@@ -885,7 +911,7 @@ export default function EditorContainer({
               >
                 Save
               </Button>
-            </Tooltip>
+            </Tooltip> */}
           </Group>
         </Flex>
         <ConfigNameDescription

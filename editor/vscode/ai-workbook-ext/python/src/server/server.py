@@ -6,7 +6,6 @@ import logging
 import tempfile
 import threading
 import time
-import webbrowser
 import uuid
 from typing import Any, Dict, Type, Union
 
@@ -37,25 +36,38 @@ from .server_utils import (
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.registry import ModelParserRegistry
 from flask import Flask, Response, request, stream_with_context
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from result import Err, Ok, Result
 
 from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+
+import os
 
 logging.getLogger("werkzeug").disabled = True
 
 logging.basicConfig(format=core_utils.LOGGER_FMT)
 LOGGER = logging.getLogger(__name__)
 
-log_handler = logging.FileHandler("editor_flask_server.log", mode="a")
+log_dir = tempfile.gettempdir()  # returns path to temporary directory
+log_path = os.path.join(log_dir, "editor_flask_server.log")
+
+print(f"printing logs to log_path: {log_path}")
+
+log_handler = logging.FileHandler(log_path, mode="a")
 formatter = logging.Formatter(core_utils.LOGGER_FMT)
 log_handler.setFormatter(formatter)
 
 LOGGER.addHandler(log_handler)
 
-
 app = Flask(__name__, static_url_path="")
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(
+    app,
+    resources={r"/api/*": {"origins": "*"}},
+)
+
+# CORS(
+#     app, send_wildcard=True
+# )  # , resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 
 def run_backend_server(
@@ -284,8 +296,13 @@ def create() -> FlaskResponse:
             ).to_flask_format()
 
 
+# @app.route("/api/run", methods=["POST", "OPTONS"])
+# @cross_origin(
+#     send_wildcard=True, origins="*", automatic_options=False, vary_header=False
+# )
 @app.route("/api/run", methods=["POST"])
 def run() -> FlaskResponse:
+    LOGGER.info(f"Running `aiconfig.run()` commandm, request")
     EXCLUDE_OPTIONS = {
         "prompt_index": True,
         "file_path": True,
@@ -293,7 +310,9 @@ def run() -> FlaskResponse:
     }
     state = get_server_state(app)
     aiconfig = state.aiconfig
-    request_json = request.get_json()
+    LOGGER.info(f"Running `aiconfig.run()` ABOUT TO GET request.get_json()")
+    request_json = request.get_json(force=True)
+    LOGGER.info(f"Running `aiconfig.run()` command with request: {request_json}")
     cancellation_token_id: str | None = None
     aiconfig_deep_copy: AIConfigRuntime | None = None
 
@@ -338,6 +357,7 @@ def run() -> FlaskResponse:
         # displaying the streamed output (if streaming is supported)
         def run_async_config_in_thread():
             try:
+                LOGGER.info(f"Running aiconfig.run() with params: {params}")
                 asyncio.run(aiconfig.run(prompt_name=prompt_name, params=params, run_with_dependencies=False, options=inference_options))  # type: ignore
             except Exception as e:
                 output_text_queue.put(e)
@@ -408,7 +428,7 @@ def run() -> FlaskResponse:
             # we can fix later
             time.sleep(0.1)
             wait_time_in_seconds += SLEEP_DELAY_SECONDS
-            print(
+            LOGGER.info(
                 f"Output queue is currently empty. Waiting for {wait_time_in_seconds:.1f}s..."
             )
 
@@ -419,23 +439,33 @@ def run() -> FlaskResponse:
             accumulated_output_text = ""
             for text in output_text_queue:
                 if cancellation_event.is_set():
+                    LOGGER.info(f"CANCELLATION")
                     yield from handle_cancellation()
                     return
 
                 if isinstance(text, Exception):
+                    LOGGER.info(f"ERROR TEXT =: {text}")
                     yield from create_error_payload(
                         message=f"Exception: {text}", code=500
                     )
                     return
                 elif isinstance(text, str):
+                    LOGGER.info(f"accumulated_output_text +=: {text}")
                     accumulated_output_text += text
                 elif isinstance(text, dict) and "content" in text:
                     # TODO: Fix streaming output format so that it returns text
                     accumulated_output_text += text["content"]
+                    LOGGER.info(
+                        f"accumulated_output_text2 =: {accumulated_output_text}"
+                    )
                 elif isinstance(text, dict) and "generated_text" in text:
                     # TODO: Fix streaming output format so that it returns text
+                    LOGGER.info(
+                        f"accumulated_output_text3 +=: {text['generated_text']}"
+                    )
                     accumulated_output_text += text["generated_text"]
 
+                LOGGER.info("YIELDING BEFORE")
                 accumulated_output: Output = ExecuteResult(
                     **{
                         "output_type": "execute_result",
@@ -447,8 +477,15 @@ def run() -> FlaskResponse:
                         "metadata": {},
                     }  # type: ignore
                 )
+
+                # LOGGER.info(f"YIELDING AFTER")
+
+                LOGGER.info(f"Finally yielded object: {accumulated_output_text}")
+
+                # LOGGER.info(f"Yielding output: {accumulated_output.to_json()}")
+
                 yield "["
-                yield json.dumps({"output_chunk": accumulated_output.to_json()})
+                yield json.dumps({"output_chunk": accumulated_output.model_dump_json()})
                 yield "]"
 
         # Ensure that the run process is complete to yield final output
@@ -465,6 +502,9 @@ def run() -> FlaskResponse:
                 if aiconfig is not None
                 else None
             )
+
+            LOGGER.info(f"Yielding aiconfig_complete: {aiconfig_complete.to_json()}")
+
             yield "["
             yield json.dumps({"aiconfig_complete": aiconfig_json})
             yield "]"

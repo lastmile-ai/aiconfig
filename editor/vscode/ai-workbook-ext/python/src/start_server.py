@@ -9,8 +9,8 @@ import sys
 import lastmile_utils.lib.core.api as core_utils
 from ruamel.yaml import YAML
 
-from .server.server import run_backend_server
-from .server.server_utils import (
+from server.server import run_backend_server
+from server.server_utils import (
     DEFAULT_AICONFIGRC,
     StartServerConfig,
     ServerMode,

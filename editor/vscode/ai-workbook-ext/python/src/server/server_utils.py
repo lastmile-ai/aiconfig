@@ -2,6 +2,7 @@ import importlib
 import importlib.util
 import logging
 import os
+import dotenv
 import sys
 import typing
 from dataclasses import dataclass, field
@@ -22,6 +23,8 @@ from ruamel.yaml import YAML
 
 from aiconfig.schema import Prompt, PromptMetadata
 
+import tempfile
+
 MethodName = NewType("MethodName", str)
 
 logging.getLogger("werkzeug").disabled = True
@@ -29,7 +32,13 @@ logging.getLogger("werkzeug").disabled = True
 logging.basicConfig(format=core_utils.LOGGER_FMT)
 LOGGER = logging.getLogger(__name__)
 
-log_handler = logging.FileHandler("editor_flask_server.log", mode="a")
+# TODO: saqadri - pass in vscode logs folder via CLI
+log_dir = tempfile.gettempdir()  # returns path to temporary directory
+log_path = os.path.join(log_dir, "editor_flask_server.log")
+
+print(f"printing2 logs to log_path: {log_path}")
+
+log_handler = logging.FileHandler(log_path, mode="a")
 formatter = logging.Formatter(core_utils.LOGGER_FMT)
 log_handler.setFormatter(formatter)
 
@@ -236,12 +245,13 @@ def get_http_response_load_user_parser_module(
 
 
 def _load_user_parser_module_if_exists(parsers_module_path: str) -> None:
-    res = get_validated_path(parsers_module_path).and_then(load_user_parser_module)
-    match res:
-        case Ok(_):
-            LOGGER.info(f"Loaded parsers module from {parsers_module_path}")
-        case Err(e):
-            LOGGER.warning(f"Failed to load parsers module: {e}")
+    pass
+    # res = get_validated_path(parsers_module_path).and_then(load_user_parser_module)
+    # match res:
+    #     case Ok(_):
+    #         LOGGER.info(f"Loaded parsers module from {parsers_module_path}")
+    #     case Err(e):
+    #         LOGGER.warning(f"Failed to load parsers module: {e}")
 
 
 def safe_load_from_disk(aiconfig_path: ValidatedPath) -> Result[AIConfigRuntime, str]:
@@ -256,10 +266,13 @@ def init_server_state(
     app: Flask, start_config: StartServerConfig, aiconfigrc_path: str
 ) -> Result[None, str]:
     LOGGER.info("Initializing server state")
+    res = dotenv.load_dotenv()
+    print(f"dotenv res={res}")
     _load_user_parser_module_if_exists(start_config.parsers_module_path)
     state = get_server_state(app)
     state.aiconfigrc_path = aiconfigrc_path
     # The aiconfig will be loaded later, when the editor sends the payload.
+    return Ok(None)
 
 
 def _safe_run_aiconfig_method(

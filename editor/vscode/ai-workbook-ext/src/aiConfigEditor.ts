@@ -2,8 +2,10 @@ import * as vscode from "vscode";
 import {
   COMMANDS,
   ServerInfo,
+  getDocumentFromServer,
   getNonce,
   initializeServerState,
+  runPrompt,
   waitUntilServerReady,
 } from "./util";
 import { getUri } from "./utilities/getUri";
@@ -56,8 +58,6 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     "🐱",
   ];
 
-  private editorServer: ServerInfo | null = null;
-
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly extensionOutputChannel: vscode.LogOutputChannel
@@ -73,6 +73,8 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken
   ): Promise<void> {
+    let editorServer: ServerInfo | null = null;
+
     console.log(this.context.extensionUri);
 
     console.log(`${document.fileName}: resolveCustomTextEditor called`);
@@ -81,7 +83,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     this.extensionOutputChannel.show(/*preserveFocus*/ true);
 
     // Start the AIConfig editor server process.
-    this.editorServer = await this.startEditorServer(document);
+    editorServer = await this.startEditorServer(document);
 
     // Setup initial content for the webview
     webviewPanel.webview.options = {
@@ -101,9 +103,17 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         vscode.Uri.joinPath(this.context.extensionUri, "editor/client/build"),
       ],
     };
-    webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
+    webviewPanel.webview.html = this.getHtmlForWebview(
+      webviewPanel.webview,
+      editorServer
+    );
 
     function updateWebview() {
+      if (isWebviewDisposed) {
+        console.warn("Skipping webview update -- it's disposed.");
+        return;
+      }
+
       webviewPanel.webview.postMessage({
         type: "update",
         text: document.getText(),
@@ -118,30 +128,102 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     // Remember that a single text document can also be shared between multiple custom
     // editors (this happens for example when you split a custom editor)
 
+    // We use this flag to track if a change to the document is coming from the webview.
+    // This is because we need to ignore these changes to avoid an infinite loop in onDidChangeTextDocument
+    // For more details, see https://code.visualstudio.com/api/extension-guides/custom-editors#synchronizing-changes-with-the-textdocument
+    let isInternalDocumentChange = false;
+
+    let isWebviewDisposed = false;
+
     const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(
-      (e) => {
-        console.log(`changeDocumentSubscription, e=${JSON.stringify(e)})}`);
+      async (e) => {
+        // console.log(`changeDocumentSubscription, e=${e.document.fileName}`);
         if (e.document.uri.toString() === document.uri.toString()) {
-          console.log("changeDocumentSubscription");
+          if (isInternalDocumentChange) {
+            console.log(
+              `changeDocumentSubscription ${e.document.uri} - skipping event because it was triggered by the webview`
+            );
+
+            // Reset the internal document change flag
+            isInternalDocumentChange = false;
+            return;
+          }
+
+          if (isWebviewDisposed) {
+            console.warn(
+              `changeDocumentSubscription ${e.document.uri} - skipping event because webview has been disposed`
+            );
+            return;
+          }
+
+          // Notify server of updated document
+          if (editorServer) {
+            console.log("changeDocumentSubscription -- updating server");
+
+            // TODO: saqadri - decide if we want to await here or just fire and forget
+            await initializeServerState(editorServer.url, e.document);
+          }
+
+          console.log(
+            `changeDocumentSubscription ${e.document.uri} -- updating webview`
+          );
+
+          // TODO: saqadri - instead of sending the entire document to the webview,
+          // can ask it to reload the document from the server
           updateWebview();
         }
       }
     );
 
+    const willSaveDocumentSubscription =
+      vscode.workspace.onWillSaveTextDocument((e) => {
+        if (e.document.uri.toString() === document.uri.toString()) {
+          console.log(`${e.document.fileName}: willSaveDocument`);
+
+          // Get the latest document state from the server before saving to disk
+          e.waitUntil(
+            new Promise((resolve, _reject) => {
+              console.log(`willSaveDocument - inside promise`);
+              if (!editorServer) {
+                // TODO: saqadri - show error message
+                return [];
+              }
+
+              getDocumentFromServer(editorServer.url, e.document).then(
+                (newDocumentText) => {
+                  console.log(
+                    `${e.document.fileName}: willSaveDocument - creating textedit`
+                  );
+                  resolve([
+                    vscode.TextEdit.replace(
+                      new vscode.Range(0, 0, e.document.lineCount, 0),
+                      newDocumentText
+                    ),
+                  ]);
+                }
+              );
+            })
+          );
+        }
+      });
+
     // Make sure we get rid of the listener when our editor is closed.
     webviewPanel.onDidDispose(() => {
       console.log(`${document.fileName}: Webview disposed`);
       changeDocumentSubscription.dispose();
+      willSaveDocumentSubscription.dispose();
 
       // TODO: saqadri -- terminate the editor server process.
-      if (this.editorServer) {
+      if (editorServer) {
         console.log("Killing editor server process");
-        this.editorServer.proc.kill();
+        editorServer.proc.kill();
       }
+
+      isWebviewDisposed = true;
     });
 
     // Receive message from the webview.
-    webviewPanel.webview.onDidReceiveMessage((e) => {
+    webviewPanel.webview.onDidReceiveMessage(async (e) => {
       const command = e.command;
       const text = e.text;
 
@@ -155,6 +237,90 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       }
 
       switch (e.type) {
+        case "document_changed":
+          // If the webview tells us that the document has changed,
+          // then get the latest document state from the server
+          console.log("document_changed event called");
+
+          if (!editorServer) {
+            // TODO: saqadri - show error message
+            return;
+          }
+
+          const newDocumentText = await getDocumentFromServer(
+            editorServer.url,
+            document
+          );
+
+          isInternalDocumentChange = true;
+          console.log(
+            `pre- isInternalDocumentChange=${isInternalDocumentChange}`
+          );
+          this.updateTextDocument(document, newDocumentText);
+
+          return;
+
+        case "execute_run": {
+          console.log("execute_run event called, payload=", JSON.stringify(e));
+          if (!editorServer) {
+            // TODO: saqadri - show error message
+            console.error(
+              "execute_run event called but no aiconfig server running"
+            );
+            return;
+          }
+
+          const promptName: string = e.promptName;
+          const stream: boolean = e.stream;
+          const cancellationToken: string | null = e.cancellationToken;
+
+          if (!promptName) {
+            // TODO: saqadri - show error message
+            console.error("execute_run event called with empty promptName");
+            return;
+          }
+
+          // Notify the webview that we are starting to run the prompt
+          webviewPanel.webview.postMessage({
+            type: "on_run_start",
+            promptName,
+          });
+
+          // Run the prompt
+          const result = await runPrompt(
+            editorServer.url,
+            document,
+            { promptName, stream, cancellationToken },
+            /*onStream*/ (data) => {
+              console.log("onStream called with data=", data);
+              webviewPanel.webview.postMessage({
+                type: "on_run_stream_update",
+                promptName,
+                data,
+              });
+            },
+            /*onError*/ (error) => {
+              console.log("onStream called with data=", error);
+              webviewPanel.webview.postMessage({
+                type: "on_run_stream_error",
+                promptName,
+                error,
+              });
+            }
+          );
+
+          console.log("DID I EVER GET HERE?");
+
+          // Notify the webview of the result of running the prompt
+          webviewPanel.webview.postMessage({
+            type: "on_run_complete",
+            promptName,
+            result,
+          });
+
+          break;
+        }
+
         case "add":
           console.log("Adding new scratch!");
           //this.addNewScratch(document);
@@ -170,16 +336,18 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     });
 
     // Wait for server ready
-    await waitUntilServerReady(this.editorServer.url);
+    await waitUntilServerReady(editorServer.url);
 
     // Now set up the server with the latest document content
-    await initializeServerState(this.editorServer.url, document);
+    await initializeServerState(editorServer.url, document);
 
     // Inform the webview of the server URL
-    webviewPanel.webview.postMessage({
-      type: "set_server_url",
-      url: this.editorServer.url,
-    });
+    if (!isWebviewDisposed) {
+      webviewPanel.webview.postMessage({
+        type: "set_server_url",
+        url: editorServer.url,
+      });
+    }
 
     updateWebview();
   }
@@ -208,7 +376,8 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     // TODO: saqadri - specify parsers_module_path
     let startServer = spawn("python3", [
       startServerScriptPath,
-      "--server_port",
+      "start",
+      "--server-port",
       openPort.toString(),
     ]);
 
@@ -270,7 +439,10 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
   /**
    * Get the static html used for the editor webviews.
    */
-  private getHtmlForWebview(webview: vscode.Webview): string {
+  private getHtmlForWebview(
+    webview: vscode.Webview,
+    editorServer: ServerInfo
+  ): string {
     // Local path to script and css for the webview
     // const scriptUri = webview.asWebviewUri(
     //   vscode.Uri.joinPath(this.context.extensionUri, "media", "catScratch.js")
@@ -343,7 +515,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 		 <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
      <link href="${styleResetUri}" rel="stylesheet" />
 		 <link href="${styleVSCodeUri}" rel="stylesheet" />
-		 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: 'self'; connect-src vscode-webview: http://localhost:8080; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
+		 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: http: https: 'self'; connect-src vscode-webview: ${editorServer.url} http: https:; style-src 'unsafe-inline' ${webview.cspSource} https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0 https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/editor/editor.main.css; script-src 'nonce-${nonce}' vscode-resource: https: http: https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0 https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/base/browser/ui/codicons/codicon/codicon.ttf; worker-src blob:;">
 		 <title>Hello World</title>
 	   </head>
 	   <body>
@@ -390,6 +562,22 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
   }
 
   /**
+   * Replaces the entire existing document with the provided new text.
+   */
+  private updateTextDocument(document: vscode.TextDocument, newText: string) {
+    const edit = new vscode.WorkspaceEdit();
+
+    // TODO: saqadri - figure out a way to update the document piecemeal
+    edit.replace(
+      document.uri,
+      new vscode.Range(0, 0, document.lineCount, 0),
+      newText
+    );
+
+    return vscode.workspace.applyEdit(edit);
+  }
+
+  /**
    * Add a new scratch to the current document.
    * @command:workbench.action.reopenTextEditor
    */
@@ -410,7 +598,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       },
     ];
 
-    return this.updateTextDocument(document, json);
+    return this.updateTextDocumentJson(document, json);
   }
 
   /**
@@ -424,7 +612,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     json.scratches = json.scratches.filter((note: any) => note.id !== id);
 
-    return this.updateTextDocument(document, json);
+    return this.updateTextDocumentJson(document, json);
   }
 
   /**
@@ -448,7 +636,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
   /**
    * Write out the json to a given document.
    */
-  private updateTextDocument(document: vscode.TextDocument, json: any) {
+  private updateTextDocumentJson(document: vscode.TextDocument, json: any) {
     const edit = new vscode.WorkspaceEdit();
 
     // Just replace the entire document every time for this example extension.

@@ -23,7 +23,39 @@
   "prompts": [
     {
       "name": "get_activities",
-      "input": "Tell me 10 fun attractions to do in NYC."
+      "input": "Tell me 10 fun attractions to do in NYC.",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {
+            "model": "meta-llama/Llama-2-7b-chat-hf"
+          }
+        },
+        "parameters": {}
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "  Sure! Here are 10 fun attractions to do in New York City:\n\n1. The Statue of Liberty and Ellis Island Tour: Take a ferry to Liberty Island to see the iconic Statue of Liberty up close, and visit the Ellis Island Immigration Museum to learn about the history of immigration in the United States.\n2. The Metropolitan Museum of Art: With over 2 million works of art spanning 5,000 years of history, the Met is one of the world's largest and most comprehensive art museums.\n3. Central Park: This 843-acre park in the middle of Manhattan offers a peaceful escape from the hustle and bustle of the city. Take a stroll through the park, rent a bike, or enjoy a picnic on the Great Lawn.\n4. The High Line: This elevated park built on an old rail line offers stunning views of the city and the Hudson River. Take a walk along the park, which features public art installations, gardens, and food vendors.\n5. Times Square: Known as the \"Crossroads of the World,\" Times Square is a bustling area filled with bright lights, giant billboards, and lively street performers. Catch a Broadway show, grab a bite to eat at a famous restaurant, or simply take in the energy of the area.\n6. 9/11 Memorial and Museum: This moving tribute to the victims of the 9/11 attacks features two reflecting pools surrounded by the names of those who were killed, as well as a museum that tells the story of that fateful day.\n7. Brooklyn Bridge: Take a walk across this iconic bridge, which connects Brooklyn and Manhattan, for stunning views of the city skyline and the East River.\n8. Union Square: This vibrant public park in Manhattan is home to a weekly green market, street performers, and some of the city's best restaurants and shops.\n9. Museum of Modern Art (MoMA): With a collection of over 200,000 works of modern and contemporary art, MoMA is one of the world's premier art museums.\n10. Rockefeller Center: This complex of buildings in Midtown Manhattan is home to NBC studios, a skating rink, and the famous Christmas tree lighting ceremony. Take a tour of the center and enjoy the views of the city from the top of the GE Building (formerly the RCA Building).\n\nThese are just a few of the many fun attractions to visit in New York City!",
+          "metadata": {
+            "id": "meta-llama/Llama-2-7b-chat-hf-V1_Ps8PoNNS6MZwrYM8biTfRgd_1zzRUUZ7iZJsi3ek",
+            "created": 1705696612,
+            "model": "meta-llama/Llama-2-7b-chat-hf",
+            "object": "text_completion",
+            "usage": {
+              "prompt_tokens": 22,
+              "completion_tokens": 585,
+              "total_tokens": 607
+            },
+            "raw_response": {
+              "role": "assistant",
+              "content": "  Sure! Here are 10 fun attractions to do in New York City:\n\n1. The Statue of Liberty and Ellis Island Tour: Take a ferry to Liberty Island to see the iconic Statue of Liberty up close, and visit the Ellis Island Immigration Museum to learn about the history of immigration in the United States.\n2. The Metropolitan Museum of Art: With over 2 million works of art spanning 5,000 years of history, the Met is one of the world's largest and most comprehensive art museums.\n3. Central Park: This 843-acre park in the middle of Manhattan offers a peaceful escape from the hustle and bustle of the city. Take a stroll through the park, rent a bike, or enjoy a picnic on the Great Lawn.\n4. The High Line: This elevated park built on an old rail line offers stunning views of the city and the Hudson River. Take a walk along the park, which features public art installations, gardens, and food vendors.\n5. Times Square: Known as the \"Crossroads of the World,\" Times Square is a bustling area filled with bright lights, giant billboards, and lively street performers. Catch a Broadway show, grab a bite to eat at a famous restaurant, or simply take in the energy of the area.\n6. 9/11 Memorial and Museum: This moving tribute to the victims of the 9/11 attacks features two reflecting pools surrounded by the names of those who were killed, as well as a museum that tells the story of that fateful day.\n7. Brooklyn Bridge: Take a walk across this iconic bridge, which connects Brooklyn and Manhattan, for stunning views of the city skyline and the East River.\n8. Union Square: This vibrant public park in Manhattan is home to a weekly green market, street performers, and some of the city's best restaurants and shops.\n9. Museum of Modern Art (MoMA): With a collection of over 200,000 works of modern and contemporary art, MoMA is one of the world's premier art museums.\n10. Rockefeller Center: This complex of buildings in Midtown Manhattan is home to NBC studios, a skating rink, and the famous Christmas tree lighting ceremony. Take a tour of the center and enjoy the views of the city from the top of the GE Building (formerly the RCA Building).\n\nThese are just a few of the many fun attractions to visit in New York City!"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
     },
     {
       "name": "gen_itinerary",
@@ -31,9 +63,27 @@
       "metadata": {
         "model": "gpt-4",
         "parameters": {
-          "order_by": "geographic location"
+          "order_by": "duration"
         }
-      }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "However, the duration for each activity was not provided. Here's a rough estimate based on average visits:\n\n1. Statue of Liberty and Ellis Island Tour: Tour duration is approximately 4-5 hours. Be prepared for wait times.\n   \n2. The Metropolitan Museum of Art: Allow yourself a good 2-3 hours to explore, though you could easily spend longer.\n   \n3. Central Park: Depends on the individual, but typically between 1-2 hours for a good stroll or bike ride.\n   \n4. The High Line: This 1.45 mile long park can be walked in about 1 hour at a leisurely pace.\n   \n5. Times Square: You could spend hours in this bustling area, but for an average visit, allocate around 2 hours.\n   \n6. 9/11 Memorial and Museum: The recommended visit duration is 2 hours. \n  \n7. Brooklyn Bridge: A walk across the Brooklyn Bridge takes approximately 1 hour; allow for extra time for photos and enjoying the view.\n   \n8. Union Square: The Square can be enjoyed in as little as 1 hour, or longer if you explore shops and dine nearby.\n   \n9. Museum of Modern Art: Allocate about 2-3 hours to ensure a thorough visit.\n   \n10. Rockefeller Center: Tour and observation deck visits typically take around 2-3 hours.\n   \nThis is just an estimate, but it should give you a rough idea of how much time to allocate for each. Enjoy your trip!",
+          "metadata": {
+            "id": "chatcmpl-8ipuYKOCRWjaHSaTxAqtzveMQbg2i",
+            "created": 1705696670,
+            "model": "gpt-4-0613",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "content": "However, the duration for each activity was not provided. Here's a rough estimate based on average visits:\n\n1. Statue of Liberty and Ellis Island Tour: Tour duration is approximately 4-5 hours. Be prepared for wait times.\n   \n2. The Metropolitan Museum of Art: Allow yourself a good 2-3 hours to explore, though you could easily spend longer.\n   \n3. Central Park: Depends on the individual, but typically between 1-2 hours for a good stroll or bike ride.\n   \n4. The High Line: This 1.45 mile long park can be walked in about 1 hour at a leisurely pace.\n   \n5. Times Square: You could spend hours in this bustling area, but for an average visit, allocate around 2 hours.\n   \n6. 9/11 Memorial and Museum: The recommended visit duration is 2 hours. \n  \n7. Brooklyn Bridge: A walk across the Brooklyn Bridge takes approximately 1 hour; allow for extra time for photos and enjoying the view.\n   \n8. Union Square: The Square can be enjoyed in as little as 1 hour, or longer if you explore shops and dine nearby.\n   \n9. Museum of Modern Art: Allocate about 2-3 hours to ensure a thorough visit.\n   \n10. Rockefeller Center: Tour and observation deck visits typically take around 2-3 hours.\n   \nThis is just an estimate, but it should give you a rough idea of how much time to allocate for each. Enjoy your trip!",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
