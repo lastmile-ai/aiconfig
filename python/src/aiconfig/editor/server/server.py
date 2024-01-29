@@ -25,6 +25,7 @@ from aiconfig.editor.server.server_utils import (
     OpArgs,
     ServerMode,
     ServerState,
+    StartServerConfig,
     ValidatedPath,
     get_http_response_load_user_parser_module,
     get_server_state,
@@ -62,37 +63,48 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
 def run_backend_server(
-    edit_config: EditServerConfig, aiconfigrc_path: str
+    initialization_settings: StartServerConfig | EditServerConfig,
+    aiconfigrc_path: str,
 ) -> Result[str, str]:
-    LOGGER.setLevel(edit_config.log_level)
-    LOGGER.info("Edit config: %s", edit_config.model_dump_json())
+    LOGGER.setLevel(initialization_settings.log_level)
+    LOGGER.info("Edit config: %s", initialization_settings.model_dump_json())
     LOGGER.info(
-        f"Starting server on http://localhost:{edit_config.server_port}"
+        f"Starting server on http://localhost:{initialization_settings.server_port}"
     )
-    try:
-        LOGGER.info(
-            f"Opening browser at http://localhost:{edit_config.server_port}"
-        )
-        webbrowser.open(f"http://localhost:{edit_config.server_port}")
-    except Exception as e:
-        LOGGER.warning(
-            f"Failed to open browser: {e}. Please open http://localhost:{port} manually."
-        )
+
+    if isinstance(initialization_settings, EditServerConfig):
+        try:
+            LOGGER.info(
+                f"Opening browser at http://localhost:{initialization_settings.server_port}"
+            )
+            webbrowser.open(
+                f"http://localhost:{initialization_settings.server_port}"
+            )
+        except Exception as e:
+            LOGGER.warning(
+                f"Failed to open browser: {e}. Please open http://localhost:{initialization_settings.server_port} manually."
+            )
+    else:
+        # In the case of the 'start' command, just the webserver is started up, and there's no need to open the browser
 
     app.server_state = ServerState()  # type: ignore
     res_server_state_init = init_server_state(
-        app, edit_config, aiconfigrc_path
+        app, initialization_settings, aiconfigrc_path
     )
     match res_server_state_init:
         case Ok(_):
             LOGGER.info("Initialized server state")
-            debug = edit_config.server_mode in [
+            debug = initialization_settings.server_mode in [
                 ServerMode.DEBUG_BACKEND,
                 ServerMode.DEBUG_SERVERS,
             ]
-            LOGGER.info(f"Running in {edit_config.server_mode} mode")
+            LOGGER.info(
+                f"Running in {initialization_settings.server_mode} mode"
+            )
             app.run(
-                port=edit_config.server_port, debug=debug, use_reloader=debug
+                port=initialization_settings.server_port,
+                debug=debug,
+                use_reloader=debug,
             )
             return Ok("Done")
         case Err(e):
