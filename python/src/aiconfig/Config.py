@@ -1,6 +1,7 @@
 import json
 import os
 from typing import Any, Dict, List, Literal, Optional, Tuple
+from aiconfig.default_parsers.claude import ClaudeBedrockModelParser
 
 import requests
 import yaml
@@ -53,6 +54,7 @@ ModelParserRegistry.register_model_parser(
     DefaultAnyscaleEndpointParser("AnyscaleEndpoint")
 )
 ModelParserRegistry.register_model_parser(GeminiModelParser("gemini-pro"), ["gemini-pro"])
+ModelParserRegistry.register_model_parser(ClaudeBedrockModelParser())
 ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
 for model in gpt_models_extra:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
