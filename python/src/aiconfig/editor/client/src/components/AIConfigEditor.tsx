@@ -31,6 +31,7 @@ import {
   AIConfigEditorMode,
   LogEvent,
   LogEventData,
+  ThemeMode,
   aiConfigToClientConfig,
   clientConfigToAIConfig,
   clientPromptToAIConfigPrompt,
@@ -65,6 +66,12 @@ type Props = {
   callbacks?: AIConfigCallbacks;
   mode?: AIConfigEditorMode;
   readOnly?: boolean;
+  /**
+   * Theme mode override for the editor. By default, the editor will use the system
+   * theme variant for the theme associated with the EditorMode. This prop allows
+   * overriding that behavior.
+   */
+  themeMode?: ThemeMode;
 };
 
 export type RunPromptStreamEvent =
@@ -139,6 +146,7 @@ export default function AIConfigEditor({
   callbacks,
   mode,
   readOnly = false,
+  themeMode,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
@@ -945,7 +953,7 @@ export default function AIConfigEditor({
   const runningPromptId: string | undefined = aiconfigState._ui.runningPromptId;
 
   return (
-    <AIConfigEditorThemeProvider mode={mode}>
+    <AIConfigEditorThemeProvider mode={mode} themeMode={themeMode}>
       <AIConfigContext.Provider value={contextValue}>
         <Notifications />
         <div className="editorBackground">
