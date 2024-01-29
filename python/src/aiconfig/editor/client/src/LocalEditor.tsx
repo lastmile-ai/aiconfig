@@ -37,7 +37,6 @@ const useStyles = createStyles(() => ({
   },
 }));
 
-
 const MODE = "local";
 
 export default function LocalEditor() {
@@ -75,7 +74,7 @@ export default function LocalEditor() {
         sessionSampleRate: 100,
       });
 
-      datadogLogs.setGlobalContextProperty('mode', MODE);
+      datadogLogs.setGlobalContextProperty("mode", MODE);
     }
   }, []);
 
@@ -239,12 +238,37 @@ export default function LocalEditor() {
     []
   );
 
+  const mockDownload = useCallback((config: AIConfig) => {
+    return new Promise<void>((resolve, _reject) => {
+      setTimeout(() => {
+        console.log(config);
+        resolve();
+        // uncomment & comment out resolve to test error handling
+        // reject("message");
+      }, 2000);
+    });
+  }, []);
+
+  const mockShare = useCallback(() => {
+    return new Promise<{ share_url: string }>((resolve, _reject) => {
+      setTimeout(() => {
+        resolve({
+          share_url:
+            "https://lastmileai.dev/aiconfig/clrv28cop00enpelzgbk61xs2",
+        });
+        // uncomment & comment out resolve to test error handling
+        // reject("message");
+      }, 2000);
+    });
+  }, []);
+
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
       cancel,
       clearOutputs,
       deletePrompt,
+      download: mockDownload,
       getModels,
       getServerStatus,
       logEventHandler,
@@ -253,6 +277,7 @@ export default function LocalEditor() {
       setConfigDescription,
       setConfigName,
       setParameters,
+      share: mockShare,
       updateModel,
       updatePrompt,
     }),
@@ -269,6 +294,8 @@ export default function LocalEditor() {
       setConfigDescription,
       setConfigName,
       setParameters,
+      mockDownload,
+      mockShare,
       updateModel,
       updatePrompt,
     ]
@@ -289,11 +316,7 @@ export default function LocalEditor() {
           <Loader size="xl" />
         </Flex>
       ) : (
-        <AIConfigEditor
-          aiconfig={aiconfig}
-          callbacks={callbacks}
-          mode={MODE}
-        />
+        <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} mode={MODE} />
       )}
     </div>
   );
