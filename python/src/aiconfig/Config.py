@@ -52,12 +52,15 @@ for model in dalle_image_generation_models:
 ModelParserRegistry.register_model_parser(
     DefaultAnyscaleEndpointParser("AnyscaleEndpoint")
 )
-ModelParserRegistry.register_model_parser(GeminiModelParser("gemini-pro"), ["gemini-pro"])
+ModelParserRegistry.register_model_parser(
+    GeminiModelParser("gemini-pro"), ["gemini-pro"]
+)
 ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
 for model in gpt_models_extra:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
 ModelParserRegistry.register_model_parser(PaLMChatParser())
 ModelParserRegistry.register_model_parser(PaLMTextParser())
+
 
 class AIConfigRuntime(AIConfig):
     # A mapping of model names to their respective parsers
@@ -114,14 +117,37 @@ class AIConfigRuntime(AIConfig):
             else:
                 data = file.read()
 
-        # load the file as bytes and let pydantic handle the parsing
-        # validated_data =  AIConfig.model_validate_json(file.read())
-        aiconfigruntime = cls.model_validate_json(data)
-        update_model_parser_registry_with_config_runtime(aiconfigruntime)
-
+        config_runtime = cls.load_json(data)
         # set the file path. This is used when saving the config
-        aiconfigruntime.file_path = config_filepath
-        return aiconfigruntime
+        config_runtime.file_path = config_filepath
+        return config_runtime
+
+    @classmethod
+    def load_json(cls, config_json: str) -> "AIConfigRuntime":
+        """
+        Constructs AIConfigRuntime from provided JSON and returns it.
+
+        Args:
+            config_json (str): The JSON representing the AIConfig.
+        """
+
+        config_runtime = cls.model_validate_json(config_json)
+        update_model_parser_registry_with_config_runtime(config_runtime)
+
+        return config_runtime
+
+    @classmethod
+    def load_yaml(cls, config_yaml: str) -> "AIConfigRuntime":
+        """
+        Constructs AIConfigRuntime from provided YAML and returns it.
+
+        Args:
+            config_yaml (str): The YAML representing the AIConfig.
+        """
+
+        yaml_data = yaml.safe_load(config_yaml)
+        config_json = json.dumps(yaml_data)
+        return cls.load_json(config_json)
 
     @classmethod
     def load_from_workbook(cls, workbook_id: str) -> "AIConfigRuntime":
