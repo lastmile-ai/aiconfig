@@ -9,8 +9,7 @@ type Props = {
 };
 
 export default memo(function PromptName({ promptId, name, onUpdate }: Props) {
-  const { readOnly } = useContext(AIConfigContext);
-  const { getState } = useContext(AIConfigContext);
+  const { getState, readOnly } = useContext(AIConfigContext);
 
   // Use local component state to show error for duplicate names
   // AIConfig state will not set duplicates to be safe
