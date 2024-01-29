@@ -1,19 +1,9 @@
 {
   "name": "NYC Trip Planner",
-  "description": "Intrepid explorer with ChatGPT and AIConfig",
   "schema_version": "latest",
   "metadata": {
-    "model_parsers": {
-      "meta-llama/Llama-2-7b-chat-hf": "AnyscaleEndpoint",
-      "meta-llama/Llama-2-13b-chat-hf": "AnyscaleEndpoint",
-      "Meta-Llama/Llama-Guard-7b": "AnyscaleEndpoint",
-      "meta-llama/Llama-2-70b-chat-hf": "AnyscaleEndpoint",
-      "Open-Orca/Mistral-7B-OpenOrca": "AnyscaleEndpoint",
-      "codellama/CodeLlama-34b-Instruct-hf": "AnyscaleEndpoint",
-      "HuggingFaceH4/zephyr-7b-beta": "AnyscaleEndpoint",
-      "mistralai/Mistral-7B-Instruct-v0.1": "AnyscaleEndpoint",
-      "mistralai/Mixtral-8x7B-Instruct-v0.1": "AnyscaleEndpoint",
-      "thenlper/gte-large": "AnyscaleEndpoint"
+    "parameters": {
+      "test": "val"
     },
     "models": {
       "meta-llama/Llama-2-7b-chat-hf": {
@@ -27,12 +17,50 @@
         "system_prompt": "You are an expert travel coordinator with exquisite taste."
       }
     },
-    "default_model": "meta-llama/Llama-2-7b-chat-hf"
+    "default_model": "meta-llama/Llama-2-7b-chat-hf",
+    "model_parsers": {
+      "meta-llama/Llama-2-7b-chat-hf": "AnyscaleEndpoint",
+      "meta-llama/Llama-2-13b-chat-hf": "AnyscaleEndpoint",
+      "Meta-Llama/Llama-Guard-7b": "AnyscaleEndpoint",
+      "meta-llama/Llama-2-70b-chat-hf": "AnyscaleEndpoint",
+      "Open-Orca/Mistral-7B-OpenOrca": "AnyscaleEndpoint",
+      "codellama/CodeLlama-34b-Instruct-hf": "AnyscaleEndpoint",
+      "HuggingFaceH4/zephyr-7b-beta": "AnyscaleEndpoint",
+      "mistralai/Mistral-7B-Instruct-v0.1": "AnyscaleEndpoint",
+      "mistralai/Mixtral-8x7B-Instruct-v0.1": "AnyscaleEndpoint",
+      "thenlper/gte-large": "AnyscaleEndpoint"
+    }
   },
+  "description": "Intrepid explorer with ChatGPT and AIConfig",
   "prompts": [
     {
       "name": "get_activities",
-      "input": "Tell me 10 fun attractions to do in NYC."
+      "input": "Tell me 10 fun attractions to do in NYC.",
+      "metadata": {
+        "model": {
+          "name": "gpt-4",
+          "settings": {}
+        },
+        "parameters": {}
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "1. Statue of Liberty: You can't go NYC and not see this iconic monument. Consider taking a ferry to the statue for a closer look. \n\n2. Times Square: Experience the 'heart of the world.' Full of huge billboards, stores, restaurants, and street performers, there is something to do every minute. \n\n3. Central Park: Take a leisurely stroll, rent a bike or visit the Central Park Zoo in this beautiful and massive park located in Manhattan. \n\n4. Broadway Shows: Enjoy a world-class theater performance at Broadway.\n\n5. The Metropolitan Museum of Art: Art lovers would love this huge museum, housing art from all over the world. \n\n6. Empire State Building: Enjoy breathtaking views of the city's skyline from this iconic skyscraper.\n\n7. The Museum of Modern Art: An attraction for modern and contemporary art lovers. \n\n8. Brooklyn Bridge: Consider taking a walk over this historic bridge that has a separate pedestrian walkway. \n\n9. Grand Central Terminal: Check out this iconic, and still functional, beautifully decorated railroad terminal.\n\n10. Coney Island: In the summer, take a trip to Coney Island. Enjoy the beach, walk along the boardwalk, or spend some time in the amusement park.",
+          "metadata": {
+            "id": "chatcmpl-8jsdyJg0r45StxLx3v88zszoLcoMU",
+            "created": 1705945502,
+            "model": "gpt-4-0613",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "content": "1. Statue of Liberty: You can't go NYC and not see this iconic monument. Consider taking a ferry to the statue for a closer look. \n\n2. Times Square: Experience the 'heart of the world.' Full of huge billboards, stores, restaurants, and street performers, there is something to do every minute. \n\n3. Central Park: Take a leisurely stroll, rent a bike or visit the Central Park Zoo in this beautiful and massive park located in Manhattan. \n\n4. Broadway Shows: Enjoy a world-class theater performance at Broadway.\n\n5. The Metropolitan Museum of Art: Art lovers would love this huge museum, housing art from all over the world. \n\n6. Empire State Building: Enjoy breathtaking views of the city's skyline from this iconic skyscraper.\n\n7. The Museum of Modern Art: An attraction for modern and contemporary art lovers. \n\n8. Brooklyn Bridge: Consider taking a walk over this historic bridge that has a separate pedestrian walkway. \n\n9. Grand Central Terminal: Check out this iconic, and still functional, beautifully decorated railroad terminal.\n\n10. Coney Island: In the summer, take a trip to Coney Island. Enjoy the beach, walk along the boardwalk, or spend some time in the amusement park.",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
     },
     {
       "name": "gen_itinerary",
@@ -49,7 +77,35 @@
         "parameters": {
           "order_by": "geographic location"
         }
-      }
+      },
+      "outputs": []
+    },
+    {
+      "name": "prompt_5",
+      "input": "Write me a 5 sentence poem",
+      "metadata": {
+        "model": "gpt-3.5-turbo",
+        "parameters": {}
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "In twilight's embrace, dreams take flight,\nWith whispers of hope in the hushed night.\nStars shimmer above, guiding our path,\nAs we dance with the moon, untouched by wrath.\nLove's gentle caress, a symphony of light.",
+          "metadata": {
+            "id": "chatcmpl-8kVyRctmT32zMJS6D0gccdDNVHrOV",
+            "created": 1706096687,
+            "model": "gpt-3.5-turbo-0613",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "content": "In twilight's embrace, dreams take flight,\nWith whispers of hope in the hushed night.\nStars shimmer above, guiding our path,\nAs we dance with the moon, untouched by wrath.\nLove's gentle caress, a symphony of light.",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
     }
-  ]
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
 }

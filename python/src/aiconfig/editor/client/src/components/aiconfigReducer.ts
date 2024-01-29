@@ -226,19 +226,19 @@ export default function aiconfigReducer(
       const prompts = state.prompts.map((prompt) => {
         if (prompt.outputs) {
           return {
-             ...prompt,
-              outputs: undefined
-           }
+            ...prompt,
+            outputs: undefined,
+          };
         } else {
           return prompt;
         }
       });
 
-
-    for (const prompt of prompts) {
-      if (prompt.outputs) {
-        delete prompt.outputs;
-    }}
+      for (const prompt of prompts) {
+        if (prompt.outputs) {
+          delete prompt.outputs;
+        }
+      }
 
       return {
         ...dirtyState,
@@ -264,6 +264,7 @@ export default function aiconfigReducer(
       }));
     }
     case "RUN_PROMPT_ERROR": {
+      console.log(`RUN_PROMPT_ERROR -- action=${JSON.stringify(action)}`);
       return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
         ...prompt,
         _ui: {

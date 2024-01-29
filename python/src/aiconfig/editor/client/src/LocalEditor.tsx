@@ -1,5 +1,6 @@
 import AIConfigEditor, {
   AIConfigCallbacks,
+  RunPromptCompleteCallback,
   RunPromptStreamCallback,
   RunPromptStreamErrorCallback,
   RunPromptStreamErrorEvent,
@@ -8,7 +9,6 @@ import {
   Flex,
   Loader,
   MantineProvider,
-  Image,
   MantineThemeOverride,
 } from "@mantine/core";
 import {
@@ -20,116 +20,401 @@ import {
 } from "aiconfig";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ufetch } from "ufetch";
-import { ROUTE_TABLE } from "./utils/api";
+import { HOST_ENDPOINT, ROUTE_TABLE } from "./utils/api";
 import { streamingApiChain } from "./utils/oboeHelpers";
 import WebviewContext from "./WebviewContext";
+import {
+  getWebviewState,
+  notifyDocumentDirty,
+  sendMessage,
+  setWebviewState,
+  updateWebviewState,
+} from "./utils/vscodeUtils";
+import { set } from "lodash";
 
 export default function Editor() {
-  const [aiconfig, setAIConfig] = useState<AIConfig | undefined>();
-
   const { vscode } = useContext(WebviewContext);
 
-  const updateContent = useCallback(
-    async (text: string) => {
-      // TODO: saqadri - this won't work for YAML -- the handling of the text needs to include the logic from AIConfig.load
-      const updatedConfig = text != null ? JSON.parse(text) : {};
-      console.log("updatedConfig=", JSON.stringify(updatedConfig));
-      setAIConfig(updatedConfig);
+  // TODO: does this need to be wrapped in a memo?
+  const webviewState = getWebviewState(vscode);
+  console.log(`webviewState = ${JSON.stringify(webviewState)}`);
 
-      // Then persist state information.
-      // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
-      vscode?.setState({ text });
+  const [aiconfig, setAIConfig] = useState<AIConfig | undefined>();
+  const [aiConfigServerUrl, setAIConfigServerUrl] = useState<string>(
+    webviewState?.serverUrl ?? ""
+  );
 
-      // TODO: saqadri - as soon as content is updated, we have to call /load endpoint for the server to have the latest content as well
-      // However, instead of loading from FS, the /load endpoint should load from the data passed to it here.
+  const [callbacksByPromptName, setCallbacksByPromptName] = useState<{
+    [promptName: string]: {
+      onStream: RunPromptStreamCallback;
+      onError: RunPromptStreamErrorCallback;
+      onComplete: RunPromptCompleteCallback;
+    };
+  }>({});
+
+  const updateContent = useCallback(async (text: string) => {
+    // TODO: saqadri - this won't work for YAML -- the handling of the text needs to include the logic from AIConfig.load
+    const updatedConfig = text != null ? JSON.parse(text) : {};
+    setAIConfig(updatedConfig);
+
+    // Then persist state information.
+    // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
+    //vscode?.setState({ text });
+
+    // TODO: saqadri - as soon as content is updated, we have to call /load endpoint for the server to have the latest content as well
+    // However, instead of loading from FS, the /load endpoint should load from the data passed to it here.
+  }, []);
+
+  const webviewMessageHandler = useCallback(
+    (event: MessageEvent) => {
+      //console.log("onMessage, event=", JSON.stringify(event));
+      const message = event.data; // The json data that the extension sent
+      if (!message) {
+        console.log("onMessage, MESSAGE=NULL, event=", JSON.stringify(event));
+        return;
+      }
+
+      switch (message.type) {
+        case "update": {
+          console.log("onMessage, message=", JSON.stringify(message));
+          const text = message.text;
+
+          // Update our webview's content
+          updateContent(text);
+          return;
+        }
+        case "set_server_url": {
+          console.log("onMessage, message=", JSON.stringify(message));
+          const url = message.url;
+          setAIConfigServerUrl(url);
+          updateWebviewState(vscode, { serverUrl: url });
+
+          // TODO: saqadri - as soon as content is updated, we have to call
+          // /get endpoint so we get the latest content from the server
+          return;
+        }
+        case "on_run_start": {
+          console.log(
+            "onMessage on_run_start, message=",
+            JSON.stringify(message)
+          );
+
+          const promptName: string = message.promptName;
+          return;
+        }
+        case "on_run_stream_update": {
+          console.log(
+            "onMessage on_stream_update, message=",
+            JSON.stringify(message)
+          );
+
+          const promptName: string = message.promptName;
+          console.log(
+            `callbacksByPromptName=${JSON.stringify(
+              callbacksByPromptName
+            )}, promptName=${promptName}`
+          );
+
+          callbacksByPromptName[promptName].onStream(message.data);
+
+          return;
+        }
+        case "on_run_stream_error": {
+          console.log(
+            "onMessage on_stream_error, message=",
+            JSON.stringify(message)
+          );
+
+          const promptName: string = message.promptName;
+          console.log(
+            `2callbacksByPromptName=${JSON.stringify(
+              callbacksByPromptName
+            )}, promptName=${promptName}`
+          );
+
+          callbacksByPromptName[promptName].onError(message.error);
+
+          return;
+        }
+        case "on_run_complete": {
+          console.log(
+            "onMessage on_run_complete, message=",
+            JSON.stringify(message)
+          );
+
+          const promptName: string = message.promptName;
+          console.log(
+            `3callbacksByPromptName=${JSON.stringify(
+              callbacksByPromptName
+            )}, promptName=${promptName}`
+          );
+
+          callbacksByPromptName[promptName].onComplete(message.result);
+
+          return;
+        }
+        default: {
+          console.log("onMessage, UNHANDLED message=", JSON.stringify(message));
+        }
+      }
     },
-    [vscode]
+    [callbacksByPromptName, updateContent, vscode]
   );
 
   // Handle messages sent from the extension to the webview
-  window.addEventListener("message", (event) => {
-    console.log("onMessage, event=", JSON.stringify(event));
-    const message = event.data; // The json data that the extension sent
-    switch (message.type) {
-      case "update": {
-        console.log("onMessage, message=", JSON.stringify(message));
-        const text = message.text;
+  // window.addEventListener("message", (event) => {
+  //   //console.log("onMessage, event=", JSON.stringify(event));
+  //   const message = event.data; // The json data that the extension sent
+  //   if (!message) {
+  //     console.log("onMessage, MESSAGE=NULL, event=", JSON.stringify(event));
+  //     return;
+  //   }
 
-        // Update our webview's content
-        updateContent(text);
-        return;
+  //   switch (message.type) {
+  //     case "update": {
+  //       console.log("onMessage, message=", JSON.stringify(message));
+  //       const text = message.text;
+
+  //       // Update our webview's content
+  //       updateContent(text);
+  //       return;
+  //     }
+  //     case "set_server_url": {
+  //       console.log("onMessage, message=", JSON.stringify(message));
+  //       const url = message.url;
+  //       setAIConfigServerUrl(url);
+  //       updateWebviewState(vscode, { serverUrl: url });
+
+  //       // TODO: saqadri - as soon as content is updated, we have to call
+  //       // /get endpoint so we get the latest content from the server
+  //       return;
+  //     }
+  //     case "on_run_start": {
+  //       console.log(
+  //         "onMessage on_run_start, message=",
+  //         JSON.stringify(message)
+  //       );
+
+  //       const promptName: string = message.promptName;
+  //       return;
+  //     }
+  //     case "on_run_stream_update": {
+  //       console.log(
+  //         "onMessage on_stream_update, message=",
+  //         JSON.stringify(message)
+  //       );
+
+  //       const promptName: string = message.promptName;
+  //       console.log(
+  //         `callbacksByPromptName=${JSON.stringify(
+  //           callbacksByPromptName
+  //         )}, promptName=${promptName}`
+  //       );
+
+  //       callbacksByPromptName[promptName].onStream(message.data);
+
+  //       return;
+  //     }
+  //     case "on_run_stream_error": {
+  //       console.log(
+  //         "onMessage on_stream_error, message=",
+  //         JSON.stringify(message)
+  //       );
+
+  //       const promptName: string = message.promptName;
+  //       console.log(
+  //         `2callbacksByPromptName=${JSON.stringify(
+  //           callbacksByPromptName
+  //         )}, promptName=${promptName}`
+  //       );
+
+  //       callbacksByPromptName[promptName].onError(message.error);
+
+  //       return;
+  //     }
+  //     case "on_run_complete": {
+  //       console.log(
+  //         "onMessage on_run_complete, message=",
+  //         JSON.stringify(message)
+  //       );
+
+  //       const promptName: string = message.promptName;
+  //       console.log(
+  //         `3callbacksByPromptName=${JSON.stringify(
+  //           callbacksByPromptName
+  //         )}, promptName=${promptName}`
+  //       );
+
+  //       callbacksByPromptName[promptName].onComplete(message.result);
+
+  //       return;
+  //     }
+  //     default: {
+  //       console.log("onMessage, UNHANDLED message=", JSON.stringify(message));
+  //     }
+  //   }
+  // });
+
+  useEffect(() => {
+    //if (window.eventListe)
+    window.removeEventListener("message", webviewMessageHandler);
+    window.addEventListener("message", webviewMessageHandler);
+  }, [webviewMessageHandler]);
+
+  const loadConfig = useCallback(async () => {
+    const route = ROUTE_TABLE.LOAD(aiConfigServerUrl);
+    console.log(
+      `IN LOAD: route=${route}, aiconfigServerUrl=${aiConfigServerUrl}`
+    );
+
+    const res = await ufetch.post(route, {});
+    console.log(`IN LOAD: route=${route}, res=${JSON.stringify(res)}`);
+    setAIConfig(res.aiconfig);
+  }, [aiConfigServerUrl]);
+
+  useEffect(() => {
+    if (aiConfigServerUrl !== "") {
+      // This is less important for the first load, but when the webview gets dehydrated and rehydrated,
+      // we'll get the aiConfigServerUrl from the webview state. This will trigger a reload of the config.
+      loadConfig();
+    }
+  }, [aiConfigServerUrl, loadConfig]);
+
+  const save = useCallback(
+    async (aiconfig: AIConfig) => {
+      console.log("BAD WE SHOULD NEVER GET HERE");
+      const res = await ufetch.post(ROUTE_TABLE.SAVE(aiConfigServerUrl), {
+        // path: file path,
+        aiconfig,
+      });
+
+      return res;
+    },
+    [aiConfigServerUrl]
+  );
+
+  const getModels = useCallback(
+    async (search: string) => {
+      // For now, rely on caching and handle client-side search filtering
+      // We will use server-side search filtering for Gradio
+      const res = await ufetch.get(ROUTE_TABLE.LIST_MODELS(aiConfigServerUrl));
+      const models = res.data;
+      if (search && search.length > 0) {
+        const lowerCaseSearch = search.toLowerCase();
+        return models.filter(
+          (model: string) =>
+            model.toLocaleLowerCase().indexOf(lowerCaseSearch) >= 0
+        );
       }
-    }
-  });
-
-  // const loadConfig = useCallback(async () => {
-  //   const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
-
-  //   setAiConfig(res.aiconfig);
-  // }, []);
-
-  // useEffect(() => {
-  //   loadConfig();
-  // }, [loadConfig]);
-
-  const save = useCallback(async (aiconfig: AIConfig) => {
-    const res = await ufetch.post(ROUTE_TABLE.SAVE, {
-      // path: file path,
-      aiconfig,
-    });
-    return res;
-  }, []);
-
-  const getModels = useCallback(async (search: string) => {
-    // For now, rely on caching and handle client-side search filtering
-    // We will use server-side search filtering for Gradio
-    const res = await ufetch.get(ROUTE_TABLE.LIST_MODELS);
-    const models = res.data;
-    if (search && search.length > 0) {
-      const lowerCaseSearch = search.toLowerCase();
-      return models.filter(
-        (model: string) =>
-          model.toLocaleLowerCase().indexOf(lowerCaseSearch) >= 0
-      );
-    }
-    return models;
-  }, []);
+      return models;
+    },
+    [aiConfigServerUrl]
+  );
 
   const addPrompt = useCallback(
     async (promptName: string, promptData: Prompt, index: number) => {
-      return await ufetch.post(ROUTE_TABLE.ADD_PROMPT, {
+      const res = await ufetch.post(ROUTE_TABLE.ADD_PROMPT(aiConfigServerUrl), {
         prompt_name: promptName,
         prompt_data: promptData,
         index,
       });
+
+      if (vscode) {
+        notifyDocumentDirty(vscode);
+      }
+
+      return res;
     },
-    []
+    [aiConfigServerUrl, vscode]
   );
 
-  const deletePrompt = useCallback(async (promptName: string) => {
-    return await ufetch.post(ROUTE_TABLE.DELETE_PROMPT, {
-      prompt_name: promptName,
-    });
-  }, []);
+  const deletePrompt = useCallback(
+    async (promptName: string) => {
+      const res = await ufetch.post(
+        ROUTE_TABLE.DELETE_PROMPT(aiConfigServerUrl),
+        {
+          prompt_name: promptName,
+        }
+      );
+
+      if (vscode) {
+        notifyDocumentDirty(vscode);
+      }
+
+      return res;
+    },
+    [aiConfigServerUrl, vscode]
+  );
 
   const clearOutputs = useCallback(async () => {
-    return await ufetch.post(ROUTE_TABLE.CLEAR_OUTPUTS, {});
-  }, []);
+    const res = await ufetch.post(
+      ROUTE_TABLE.CLEAR_OUTPUTS(aiConfigServerUrl),
+      {}
+    );
+    if (vscode) {
+      notifyDocumentDirty(vscode);
+    }
+    return res;
+  }, [aiConfigServerUrl, vscode]);
 
   const runPrompt = useCallback(
     async (
       promptName: string,
+      promptId: string,
       onStream: RunPromptStreamCallback,
       onError: RunPromptStreamErrorCallback,
+      onComplete: RunPromptCompleteCallback,
       enableStreaming: boolean = true,
       cancellationToken?: string
     ) => {
+      // if (vscode) {
+      //   // Save the callbacks for when we get the response from the extension host
+      //   setCallbacksByPromptName((callbacksByPromptName) => {
+      //     console.log(
+      //       `setCallbacksByPromptName: promptName=${promptName}, prevCallbacksByPromptName=${JSON.stringify(
+      //         callbacksByPromptName
+      //       )}`
+      //     );
+      //     return {
+      //       ...callbacksByPromptName,
+      //       [promptName]: {
+      //         onStream,
+      //         onError,
+      //         onComplete,
+      //       },
+      //     };
+      //   });
+
+      //   // Send the message to the extension host to run the prompt
+      //   sendMessage(vscode, {
+      //     type: "execute_run",
+      //     promptName,
+      //     stream: enableStreaming,
+      //     cancellationToken,
+      //   });
+      // }
       // Note: We run the streaming API even for
       // non-streaming runs so that we can unify
       // the way we process data on the client
-      return await streamingApiChain<{ aiconfig: AIConfig }>(
+      const res = await streamingApiChain<{ aiconfig: AIConfig }>(
         {
-          url: ROUTE_TABLE.RUN_PROMPT,
+          url: ROUTE_TABLE.RUN_PROMPT(aiConfigServerUrl),
+          //withCredentials: true,
+          // headers: {
+          //   accept: "*/*",
+          //   "accept-language": "en-US,en;q=0.9,es;q=0.8",
+          //   "cache-control": "no-cache",
+          //   //"content-type": "application/json",
+          //   pragma: "no-cache",
+          //   // "sec-ch-ua":
+          //   //   '"Not_A Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"',
+          //   // "sec-ch-ua-mobile": "?0",
+          //   // "sec-ch-ua-platform": '"macOS"',
+          //   // "sec-fetch-dest": "empty",
+          //   // "sec-fetch-mode": "cors",
+          //   // "sec-fetch-site": "same-origin",
+          //   "x-requested-with": "XMLHttpRequest",
+          // },
           method: "POST",
           body: {
             prompt_name: promptName,
@@ -139,15 +424,19 @@ export default function Editor() {
         },
         {
           output_chunk: (data) => {
+            console.log("HERE output_chunk");
             onStream({ type: "output_chunk", data: data as Output });
           },
           aiconfig: (data) => {
+            console.log("HERE aiconfig");
             onStream({ type: "aiconfig", data: data as AIConfig });
           },
           aiconfig_complete: (data) => {
+            console.log("HERE aiconfig_complete");
             onStream({ type: "aiconfig_complete", data: data as AIConfig });
           },
           error: (data) => {
+            console.log("HERE error");
             onError({
               type: "error",
               data: data as RunPromptStreamErrorEvent["data"],
@@ -155,25 +444,44 @@ export default function Editor() {
           },
         }
       );
+
+      if (vscode) {
+        notifyDocumentDirty(vscode);
+      }
+
+      // TODO: saqadri - update the return type of this function
+      return res;
     },
-    []
+    [aiConfigServerUrl, vscode]
   );
 
-  const cancel = useCallback(async (cancellationToken: string) => {
-    // TODO: saqadri - check the status of the response (can be 400 or 422 if cancellation fails)
-    return await ufetch.post(ROUTE_TABLE.CANCEL, {
-      cancellation_token_id: cancellationToken,
-    });
-  }, []);
+  const cancel = useCallback(
+    async (cancellationToken: string) => {
+      // TODO: saqadri - check the status of the response (can be 400 or 422 if cancellation fails)
+      return await ufetch.post(ROUTE_TABLE.CANCEL(aiConfigServerUrl), {
+        cancellation_token_id: cancellationToken,
+      });
+    },
+    [aiConfigServerUrl]
+  );
 
   const updatePrompt = useCallback(
     async (promptName: string, promptData: Prompt) => {
-      return await ufetch.post(ROUTE_TABLE.UPDATE_PROMPT, {
-        prompt_name: promptName,
-        prompt_data: promptData,
-      });
+      const res = await ufetch.post(
+        ROUTE_TABLE.UPDATE_PROMPT(aiConfigServerUrl),
+        {
+          prompt_name: promptName,
+          prompt_data: promptData,
+        }
+      );
+
+      if (vscode) {
+        notifyDocumentDirty(vscode);
+      }
+
+      return res;
     },
-    []
+    [aiConfigServerUrl, vscode]
   );
 
   const updateModel = useCallback(
@@ -182,40 +490,79 @@ export default function Editor() {
       settings?: InferenceSettings;
       promptName?: string;
     }) => {
-      return await ufetch.post(ROUTE_TABLE.UPDATE_MODEL, {
-        model_name: value.modelName,
-        settings: value.settings,
-        prompt_name: value.promptName,
-      });
+      const res = await ufetch.post(
+        ROUTE_TABLE.UPDATE_MODEL(aiConfigServerUrl),
+        {
+          model_name: value.modelName,
+          settings: value.settings,
+          prompt_name: value.promptName,
+        }
+      );
+
+      if (vscode) {
+        notifyDocumentDirty(vscode);
+      }
+
+      return res;
     },
-    []
+    [aiConfigServerUrl, vscode]
   );
 
-  const setConfigName = useCallback(async (name: string) => {
-    return await ufetch.post(ROUTE_TABLE.SET_NAME, {
-      name,
-    });
-  }, []);
+  const setConfigName = useCallback(
+    async (name: string) => {
+      const res = await ufetch.post(ROUTE_TABLE.SET_NAME(aiConfigServerUrl), {
+        name,
+      });
 
-  const setConfigDescription = useCallback(async (description: string) => {
-    return await ufetch.post(ROUTE_TABLE.SET_DESCRIPTION, {
-      description,
-    });
-  }, []);
+      if (vscode) {
+        notifyDocumentDirty(vscode);
+      }
+
+      return res;
+    },
+    [aiConfigServerUrl, vscode]
+  );
+
+  const setConfigDescription = useCallback(
+    async (description: string) => {
+      const res = await ufetch.post(
+        ROUTE_TABLE.SET_DESCRIPTION(aiConfigServerUrl),
+        {
+          description,
+        }
+      );
+
+      if (vscode) {
+        notifyDocumentDirty(vscode);
+      }
+
+      return res;
+    },
+    [aiConfigServerUrl, vscode]
+  );
 
   const setParameters = useCallback(
     async (parameters: JSONObject, promptName?: string) => {
-      return await ufetch.post(ROUTE_TABLE.SET_PARAMETERS, {
-        parameters,
-        prompt_name: promptName,
-      });
+      const res = await ufetch.post(
+        ROUTE_TABLE.SET_PARAMETERS(aiConfigServerUrl),
+        {
+          parameters,
+          prompt_name: promptName,
+        }
+      );
+
+      if (vscode) {
+        notifyDocumentDirty(vscode);
+      }
+
+      return res;
     },
-    []
+    [aiConfigServerUrl, vscode]
   );
 
   const getServerStatus = useCallback(async () => {
-    return await ufetch.get(ROUTE_TABLE.SERVER_STATUS);
-  }, []);
+    return await ufetch.get(ROUTE_TABLE.SERVER_STATUS(aiConfigServerUrl));
+  }, [aiConfigServerUrl]);
 
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
@@ -626,11 +973,7 @@ export default function Editor() {
 
   return (
     <div className="editorBackground">
-      <MantineProvider
-        withGlobalStyles
-        withNormalizeCSS
-        theme={localEditorTheme}
-      >
+      <MantineProvider withGlobalStyles withNormalizeCSS theme={gradioTheme}>
         {!aiconfig ? (
           <Flex justify="center" mt="xl">
             <Loader size="xl" />

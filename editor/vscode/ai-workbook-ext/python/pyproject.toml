@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "aiconfig-server-temp"
+version = "0.0.1"
+authors = [
+  { name="Sarmad Qadri", email="sarmad@lastmileai.dev" },
+]
+description = "Test test Python library for LastMile AI API"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
