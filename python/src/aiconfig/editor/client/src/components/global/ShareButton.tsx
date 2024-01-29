@@ -38,7 +38,6 @@ export default memo(function ShareButton({ onShare }: Props) {
         loaderPosition="center"
         loading={isLoading}
         onClick={onClick}
-        p="xs"
         size="xs"
         variant="filled"
       >
