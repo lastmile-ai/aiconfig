@@ -56,6 +56,7 @@ import {
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
 import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
+import DownloadButton from "./global/DownloadButton";
 import ShareButton from "./global/ShareButton";
 import PromptsContainer from "./prompt/PromptsContainer";
 
@@ -103,6 +104,7 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
+  download?: (config: AIConfig) => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
@@ -149,6 +151,26 @@ export default function AIConfigEditor({
   stateRef.current = aiconfigState;
 
   const logEventHandler = callbacks?.logEventHandler;
+
+  const downloadCallback = callbacks?.download;
+  const onDownload = useCallback(
+    async (config: AIConfig) => {
+      if (!downloadCallback) {
+        return;
+      }
+      try {
+        await downloadCallback(config);
+      } catch (err: unknown) {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error downloading AIConfig",
+          message,
+          color: "red",
+        });
+      }
+    },
+    [downloadCallback]
+  );
 
   const shareCallback = callbacks?.share;
   const onShare = useCallback(async () => {
@@ -962,6 +984,9 @@ export default function AIConfigEditor({
             <Flex justify="flex-end" mt="md" mb="xs">
               {!readOnly && (
                 <Group>
+                  {downloadCallback && (
+                    <DownloadButton onDownload={onDownload} />
+                  )}
                   {shareCallback && <ShareButton onShare={onShare} />}
                   {onClearOutputs && (
                     <Button
