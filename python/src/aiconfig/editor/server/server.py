@@ -3,11 +3,12 @@ import copy
 import ctypes
 import json
 import logging
+import tempfile
 import threading
 import time
 import uuid
 import webbrowser
-from typing import Any, Dict, Type, Union
+from typing import Any, Dict, Literal, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -42,13 +43,14 @@ from flask import Flask, Response, request, stream_with_context
 from flask_cors import CORS
 from result import Err, Ok, Result
 
-from aiconfig.schema import ExecuteResult, Output, Prompt
+from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 logging.getLogger("werkzeug").disabled = True
 
 logging.basicConfig(format=core_utils.LOGGER_FMT)
 LOGGER = logging.getLogger(__name__)
 
+# TODO: saqadri - use logs directory to save logs
 log_handler = logging.FileHandler("editor_flask_server.log", mode="a")
 formatter = logging.Formatter(core_utils.LOGGER_FMT)
 log_handler.setFormatter(formatter)
@@ -188,6 +190,45 @@ def load() -> FlaskResponse:
                 ).to_flask_format()
 
 
+@app.route("/api/load_content", methods=["POST"])
+def load_content() -> FlaskResponse:
+    state = get_server_state(app)
+    request_json = request.get_json()
+
+    content = request_json.get("content", None)
+    mode = request_json.get("mode", "json")
+    if content is None:
+        # In this case let's create an empty AIConfig
+        aiconfig = AIConfigRuntime.create()  # type: ignore
+        model_ids = ModelParserRegistry.parser_ids()
+        if len(model_ids) > 0:
+            aiconfig.add_prompt(
+                "prompt_1",
+                Prompt(
+                    name="prompt_1",
+                    input="",
+                    metadata=PromptMetadata(model=model_ids[0]),
+                ),
+            )
+
+            state.aiconfig = aiconfig
+            return HttpResponseWithAIConfig(
+                message="Created", aiconfig=aiconfig
+            ).to_flask_format()
+
+    # If we have been provided with the aiconfig string, use it to instantiate
+    # an AIConfigRuntime object
+    if mode == "json":
+        aiconfig = AIConfigRuntime.load_json(content)
+    else:
+        aiconfig = AIConfigRuntime.load_yaml(content)
+
+    state.aiconfig = aiconfig
+    return HttpResponseWithAIConfig(
+        message="Loaded", aiconfig=aiconfig
+    ).to_flask_format()
+
+
 @app.route("/api/save", methods=["POST"])
 def save() -> FlaskResponse:
     state = get_server_state(app)
@@ -223,6 +264,30 @@ def save() -> FlaskResponse:
                 code=400,
                 aiconfig=None,
             ).to_flask_format()
+
+
+@app.route("/api/to_string", methods=["POST"])
+def to_string() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+    mode: Literal["json", "yaml"] = request_json.get("mode", "json")
+    include_outputs: bool = request_json.get("include_outputs", True)
+
+    if mode != "json" and mode != "yaml":
+        return HttpResponseWithAIConfig(
+            message=f"Invalid mode: {mode}", code=400, aiconfig=None
+        ).to_flask_format()
+
+    if aiconfig is None:
+        return HttpResponseWithAIConfig(
+            message="No AIConfig loaded", code=400, aiconfig=None
+        ).to_flask_format()
+    else:
+        aiconfig_string = aiconfig.to_string(
+            include_outputs=include_outputs, mode=mode
+        )
+        return FlaskResponse(({"aiconfig_string": aiconfig_string}, 200))
 
 
 @app.route("/api/create", methods=["POST"])
