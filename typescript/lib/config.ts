@@ -115,10 +115,24 @@ export class AIConfigRuntime implements AIConfig {
   }
 
   /**
+   * Loads an AIConfig from a YAML string.
+   * @param aiConfigYAML YAML string to load the AIConfig from.
+   */
+  public static loadYAML(aiConfigYAML: string) {
+    const aiConfigObj = yaml.load(aiConfigYAML);
+    return this.loadJSON(aiConfigObj);
+  }
+
+  /**
    * Loads an AIConfig from a JSON object.
    * @param aiConfigObj JSON object to load the AIConfig from.
    */
   public static loadJSON(aiConfigObj: any) {
+    if (typeof aiConfigObj === "string") {
+      // Parse the string as JSON
+      aiConfigObj = JSON.parse(aiConfigObj);
+    }
+
     // TODO: saqadri - validate that the type satisfies AIConfig interface
     const aiConfig = new AIConfigRuntime(
       aiConfigObj.name,
