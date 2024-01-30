@@ -74,6 +74,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
         // editor/build/static/js contains the main.js bundle for the editor.
         vscode.Uri.joinPath(this.context.extensionUri, "editor", "build"),
+        vscode.Uri.joinPath(this.context.extensionUri, "editor", "static"),
       ],
     };
     webviewPanel.webview.html = this.getHtmlForWebview(
@@ -367,9 +368,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       webview,
       this.context.extensionUri,
       "editor",
-      "build",
       "static",
-      "js",
       "main.js"
     );
 
