@@ -906,27 +906,6 @@ export default function AIConfigEditor({
     return () => clearInterval(saveInterval);
   }, [isDirty, onSave]);
 
-  // Override CMD+s and CTRL+s to save
-  useEffect(() => {
-    const saveHandler = (e: KeyboardEvent) => {
-      // Note platform property to distinguish between CMD and CTRL for
-      // Mac/Windows/Linux is deprecated.
-      // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/platform
-      // Just handle both for now.
-      if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-
-        if (stateRef.current._ui.isDirty) {
-          onSave();
-        }
-      }
-    };
-
-    window.addEventListener("keydown", saveHandler, false);
-
-    return () => window.removeEventListener("keydown", saveHandler);
-  }, [onSave]);
-
   // Server heartbeat, check every 3s to show error if server is down
   // Don't poll if server status is in an error state since it won't automatically recover
   const getServerStatusCallback = callbacks?.getServerStatus;
@@ -998,7 +977,7 @@ export default function AIConfigEditor({
                       loading={undefined}
                       onClick={onClearOutputs}
                       size="xs"
-                      variant="gradient"
+                      className="primaryButton"
                     >
                       Clear Outputs
                     </Button>

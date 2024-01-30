@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import { IconTrash, IconPlus } from "@tabler/icons-react";
 import { debounce, uniqueId } from "lodash";
-import { memo, useCallback, useContext, useMemo, useState } from 'react';
+import { memo, useCallback, useContext, useMemo, useState } from "react";
 import { JSONValue, JSONObject } from "aiconfig";
 import AIConfigContext from "../contexts/AIConfigContext";
 
@@ -112,12 +112,11 @@ const ParameterInput = memo(function ParameterInput(props: {
             debouncedCellParameterUpdate(parameterName, event.target.value);
           }}
         />
-       { !readOnly && <ActionIcon
-          onClick={() => removeParameter(parameterName)}
-        >
-          <IconTrash size={16} color={"red"} />
-        </ActionIcon>
-        }
+        {!readOnly && (
+          <ActionIcon onClick={() => removeParameter(parameterName)}>
+            <IconTrash size={16} color={"red"} />
+          </ActionIcon>
+        )}
       </Stack>
     </Group>
   );
@@ -209,7 +208,7 @@ export default memo(function ParametersRenderer(props: {
           color="dimmed"
           size="sm"
           p="xs"
-          style={{ display: "block", margin: "0 auto", textAlign: "right" }}
+          style={{ display: "block", margin: "0 auto" }}
         >
           Use parameters in your prompt or system prompt with {"{{parameter}}"}
         </Text>

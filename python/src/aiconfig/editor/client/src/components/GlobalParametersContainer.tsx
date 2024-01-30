@@ -1,4 +1,4 @@
-import { Container, Accordion, Text } from "@mantine/core";
+import { Container, Accordion, Text, createStyles } from "@mantine/core";
 import { JSONObject } from "aiconfig";
 import { memo, useState } from "react";
 import ParametersRenderer from "./ParametersRenderer";
@@ -7,6 +7,15 @@ type Props = {
   initialValue: JSONObject;
   onUpdateParameters: (newParameters: JSONObject) => void;
 };
+
+const useStyles = createStyles((theme) => ({
+  promptsContainer: {
+    [theme.fn.smallerThan("sm")]: {
+      padding: "0 0 200px 0",
+    },
+    paddingBottom: 400,
+  },
+}));
 
 export default memo(function GlobalParametersContainer({
   initialValue,

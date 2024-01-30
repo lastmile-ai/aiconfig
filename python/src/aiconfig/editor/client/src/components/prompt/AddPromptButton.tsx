@@ -24,10 +24,7 @@ const useStyles = createStyles((theme) => ({
     align: "center",
     width: "100%",
     "&:hover": {
-      backgroundColor:
-        theme.colorScheme === "light"
-          ? theme.colors.gray[1]
-          : "rgba(255, 255, 255, 0.1)",
+      backgroundColor: "var(--vscode-toolbar-hoverBackground)",
     },
     [theme.fn.smallerThan("sm")]: {
       marginLeft: "0",

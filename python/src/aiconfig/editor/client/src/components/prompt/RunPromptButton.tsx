@@ -1,7 +1,8 @@
 import { Button, Flex, Loader, Tooltip } from "@mantine/core";
 import { IconPlayerPlayFilled, IconPlayerStop } from "@tabler/icons-react";
-import { memo, useContext } from "react";
+import { memo, useCallback, useContext, useEffect } from "react";
 import AIConfigContext from "../../contexts/AIConfigContext";
+import { run } from "node:test";
 
 type Props = {
   cancel: () => Promise<void>;
@@ -19,13 +20,31 @@ export default memo(function RunPromptButton({
   const { readOnly } = useContext(AIConfigContext);
   const disabledOrReadOnly = disabled || readOnly;
 
-  const onClick = async () => {
+  const onClick = useCallback(async () => {
     if (isRunning) {
       return await cancel();
     } else {
       return await runPrompt();
     }
-  };
+  }, [runPrompt, cancel, isRunning]);
+
+  // Override CTRL+ENTER to run prompt
+  // useEffect(() => {
+  //   const runHandler = (e: KeyboardEvent) => {
+  //     // Note platform property to distinguish between CMD and CTRL for
+  //     // Mac/Windows/Linux is deprecated.
+  //     // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/platform
+  //     // Just handle both for now.
+  //     if ((e.shiftKey || e.ctrlKey) && e.key === "Enter") {
+  //       e.preventDefault();
+  //       onClick();
+  //     }
+  //   };
+
+  //   window.addEventListener("keydown", runHandler, false);
+
+  //   return () => window.removeEventListener("keydown", runHandler);
+  // }, [onClick]);
 
   const button = (
     <Button

@@ -1,4 +1,4 @@
-import { TextInput } from "@mantine/core";
+import { TextInput, Tooltip } from "@mantine/core";
 import { ChangeEvent, memo, useContext, useState } from "react";
 import AIConfigContext from "../../contexts/AIConfigContext";
 
@@ -25,7 +25,6 @@ export default memo(function PromptName({ promptId, name, onUpdate }: Props) {
       value={nameInput}
       label="Prompt Name"
       className="ghost"
-      variant="unstyled"
       placeholder="Name this prompt"
       onChange={onChange}
       disabled={readOnly}

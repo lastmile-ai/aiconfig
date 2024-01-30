@@ -29,7 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Run the setup command on activation
   vscode.commands.executeCommand(COMMANDS.INIT);
 
-  vscode.window.showInformationMessage("Hello World from aiconfig-editor!");
+  //vscode.window.showInformationMessage("Hello World from aiconfig-editor!");
 
   // Register our custom editor providers
   context.subscriptions.push(
@@ -266,7 +266,7 @@ async function checkRequirements(
  */
 async function checkPython() {
   return new Promise((resolve, _reject) => {
-    exec("python --version", (error, stdout, stderr) => {
+    exec("python3 --version", (error, stdout, stderr) => {
       if (error) {
         console.error("Python was not found, can't install requirements");
 
@@ -299,7 +299,7 @@ async function checkPython() {
  */
 async function checkPip() {
   return new Promise((resolve, _reject) => {
-    exec("pip --version", (error, stdout, stderr) => {
+    exec("pip3 --version", (error, stdout, stderr) => {
       if (error) {
         console.log("pip is not found");
         // Guide for installation
