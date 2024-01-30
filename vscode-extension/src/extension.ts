@@ -5,6 +5,7 @@ import * as vscode from "vscode";
 import { exec, spawn } from "child_process";
 import path from "path";
 import { EXTENSION_NAME, COMMANDS } from "./util";
+import { AIConfigEditorProvider } from "./aiConfigEditor";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -29,6 +30,11 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand(COMMANDS.INIT);
 
   vscode.window.showInformationMessage("Hello World from aiconfig-editor!");
+
+  // Register our custom editor providers
+  context.subscriptions.push(
+    AIConfigEditorProvider.register(context, extensionOutputChannel)
+  );
 }
 
 // This method is called when your extension is deactivated
