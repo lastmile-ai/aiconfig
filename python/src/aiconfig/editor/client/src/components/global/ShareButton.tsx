@@ -31,7 +31,7 @@ export default memo(function ShareButton({ onShare }: Props) {
 
   const tooltipMessage: string = isLoading
     ? "Generating share link..."
-    : "Create a link to share your AIConfig!";
+    : "Create a link to share your Workbook!";
   const button = (
     <Tooltip label={tooltipMessage} withArrow>
       <Button
@@ -41,18 +41,18 @@ export default memo(function ShareButton({ onShare }: Props) {
         size="xs"
         variant="filled"
       >
-        Share
+        Share Workbook
       </Button>
     </Tooltip>
   );
 
   return (
     <>
-      <Modal opened={isModalOpened} onClose={closeModal} title="AIConfig URL">
+      <Modal opened={isModalOpened} onClose={closeModal} title="Workbook URL">
         <Container p={0} mr={-8}>
           <Flex direction="row">
             <Text truncate>{shareUrl}</Text>
-            <CopyButton value={shareUrl} contentLabel="AIConfig URL" />
+            <CopyButton value={shareUrl} contentLabel="Workbook URL" />
           </Flex>
         </Container>
       </Modal>
