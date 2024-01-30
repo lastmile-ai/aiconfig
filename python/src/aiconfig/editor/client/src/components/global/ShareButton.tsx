@@ -41,7 +41,7 @@ export default memo(function ShareButton({ onShare }: Props) {
         size="xs"
         variant="filled"
       >
-        Share
+        Share AIConfig
       </Button>
     </Tooltip>
   );
