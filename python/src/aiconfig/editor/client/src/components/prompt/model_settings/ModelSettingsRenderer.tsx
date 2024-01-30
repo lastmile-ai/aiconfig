@@ -15,8 +15,6 @@ type Props = {
 
 const useStyles = createStyles(() => ({
   settingsContainer: {
-    // TODO: Fix max height to be full height if input/output is larger than settings
-    // otherwise bound to some reasonable height
     overflow: "auto",
     paddingTop: "0.5em",
     width: "100%",
