@@ -13,21 +13,17 @@
   "contributes": {
     "commands": [
       {
-        "command": "ai-workbook-ext.init",
+        "command": "vscode-aiconfig.init",
         "title": "AIConfig: Initialize Extension"
       },
       {
-        "command": "ai-workbook-ext.helloWorld",
+        "command": "vscode-aiconfig.helloWorld",
         "title": "Hello World"
-      },
-      {
-        "command": "ai-workbook-ext.helloWorld2",
-        "title": "Testing testing"
       }
     ],
     "customEditors": [
       {
-        "viewType": "ai-workbook-ext.aiConfigEditor",
+        "viewType": "vscode-aiconfig.aiConfigEditor",
         "displayName": "AI Workbook Editor",
         "selector": [
           {
@@ -72,7 +68,6 @@
   "dependencies": {
     "oboe": "^2.1.5",
     "portfinder": "^1.0.32",
-    "ufetch": "^1.6.0",
-    "url-join": "^5.0.0"
+    "ufetch": "^1.6.0"
   }
 }
