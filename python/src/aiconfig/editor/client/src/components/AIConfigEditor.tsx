@@ -145,7 +145,7 @@ export default function AIConfigEditor({
   aiconfig: initialAIConfig,
   callbacks,
   mode,
-  readOnly = false,
+  readOnly = true,
   themeMode,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
