@@ -38,6 +38,7 @@ function getPromptParameters(prompt: ClientPrompt) {
 // normally affect the cellInputOutput container height)
 const ACTION_CONTENT_SURROUNDING_HEIGHT = 84;
 const MIN_ACTION_BAR_HEIGHT = 300;
+const ADD_PARAMETER_BOTTOM_HEIGHT = 46;
 
 export default memo(function PromptActionBar({
   prompt,
@@ -51,13 +52,12 @@ export default memo(function PromptActionBar({
   const promptMetadataSchema = promptSchema?.prompt_metadata;
 
   const promptContainerHeight = PROMPT_CONTAINER_HEIGHT_MAP.get(prompt._ui.id);
-  let maxContentHeight;
+  let maxContentHeightPx;
   if (promptContainerHeight) {
-    const maxHeight = Math.max(
+    maxContentHeightPx = Math.max(
       promptContainerHeight - ACTION_CONTENT_SURROUNDING_HEIGHT,
       MIN_ACTION_BAR_HEIGHT
     );
-    maxContentHeight = `${maxHeight}px`;
   }
 
   return (
@@ -77,7 +77,7 @@ export default memo(function PromptActionBar({
 
             <Tabs.Panel value="settings" className="actionTabsPanel">
               <ScrollArea
-                h={maxContentHeight}
+                h={maxContentHeightPx}
                 type="auto"
                 style={{ overflowY: "auto" }}
               >
@@ -98,7 +98,11 @@ export default memo(function PromptActionBar({
                 <ParametersRenderer
                   initialValue={getPromptParameters(prompt)}
                   onUpdateParameters={onUpdateParameters}
-                  maxHeight={maxContentHeight}
+                  maxHeight={
+                    maxContentHeightPx
+                      ? maxContentHeightPx - ADD_PARAMETER_BOTTOM_HEIGHT
+                      : undefined
+                  }
                 />
               </Tabs.Panel>
             )}

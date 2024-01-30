@@ -196,53 +196,56 @@ export default memo(function ParametersRenderer(props: {
   }, [onUpdateParameters]);
 
   return (
-    <div
-      style={{
-        maxHeight: props.maxHeight,
-        overflow: "auto",
-        width: "100%",
-      }}
-    >
-      {props.customDescription ?? (
-        <Text
-          color="dimmed"
-          size="sm"
-          p="xs"
-          style={{ display: "block", margin: "0 auto", textAlign: "right" }}
-        >
-          Use parameters in your prompt or system prompt with {"{{parameter}}"}
-        </Text>
-      )}
-      <Stack>
-        {parameters.map((parameter, i) => {
-          return (
-            <ParameterInput
-              onUpdateParameter={({ parameterName, parameterValue }) => {
-                setParameters((prev) => {
-                  const newParameters = [...prev];
-                  const currentElement = newParameters[i];
-                  currentElement.parameterName = parameterName;
-                  currentElement.parameterValue = parameterValue ?? "";
+    <div>
+      <div
+        style={{
+          maxHeight: props.maxHeight,
+          overflow: "auto",
+          width: "100%",
+        }}
+      >
+        {props.customDescription ?? (
+          <Text
+            color="dimmed"
+            size="sm"
+            p="xs"
+            style={{ display: "block", margin: "0 auto", textAlign: "right" }}
+          >
+            Use parameters in your prompt or system prompt with{" "}
+            {"{{parameter}}"}
+          </Text>
+        )}
+        <Stack>
+          {parameters.map((parameter, i) => {
+            return (
+              <ParameterInput
+                onUpdateParameter={({ parameterName, parameterValue }) => {
+                  setParameters((prev) => {
+                    const newParameters = [...prev];
+                    const currentElement = newParameters[i];
+                    currentElement.parameterName = parameterName;
+                    currentElement.parameterValue = parameterValue ?? "";
 
-                  onUpdateParameters(
-                    parametersArrayToJSONObject(newParameters)
-                  );
+                    onUpdateParameters(
+                      parametersArrayToJSONObject(newParameters)
+                    );
 
-                  return newParameters;
-                });
-              }}
-              removeParameter={(parameterName) =>
-                removeParameter(parameter.key, parameterName)
-              }
-              initialItemValue={{
-                parameterName: parameter.parameterName,
-                parameterValue: parameter.parameterValue,
-              }}
-              key={parameter.key}
-            />
-          );
-        })}
-      </Stack>
+                    return newParameters;
+                  });
+                }}
+                removeParameter={(parameterName) =>
+                  removeParameter(parameter.key, parameterName)
+                }
+                initialItemValue={{
+                  parameterName: parameter.parameterName,
+                  parameterValue: parameter.parameterValue,
+                }}
+                key={parameter.key}
+              />
+            );
+          })}
+        </Stack>
+      </div>
       {readOnly ? null : (
         <Tooltip label="Add parameter">
           <ActionIcon onClick={addParameter} className="addParameterButton">
