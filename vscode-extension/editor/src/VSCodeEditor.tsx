@@ -7,7 +7,7 @@ import {
   LogEvent,
   LogEventData,
 } from "@lastmileai/aiconfig-editor";
-import { Flex, Loader, Image, createStyles } from "@mantine/core";
+import { Flex, Loader } from "@mantine/core";
 import {
   AIConfig,
   InferenceSettings,
@@ -28,13 +28,6 @@ import {
   updateWebviewState,
 } from "./utils/vscodeUtils";
 
-const useStyles = createStyles(() => ({
-  editorBackground: {
-    margin: "0 auto",
-    minHeight: "100vh",
-  },
-}));
-
 const MODE = "vscode";
 
 export default function VSCodeEditor() {
@@ -48,8 +41,6 @@ export default function VSCodeEditor() {
   const [aiConfigServerUrl, setAIConfigServerUrl] = useState<string>(
     webviewState?.serverUrl ?? ""
   );
-
-  const { classes } = useStyles();
 
   const updateContent = useCallback(async (text: string) => {
     // TODO: saqadri - this won't work for YAML -- the handling of the text needs to include the logic from AIConfig.load
@@ -71,8 +62,7 @@ export default function VSCodeEditor() {
 
   // Register an event listener to handle messages from the extension host
   // This is how we'll receive updates to the webview's content
-  // TODO: saqadri - should this be a useCallback to memoize it?
-  window.addEventListener("message", (event) => {
+  const messageHandler = (event: MessageEvent) => {
     const message = event.data; // The json data that the extension sent
     if (!message) {
       console.log("onMessage, MESSAGE=NULL, event=", JSON.stringify(event));
@@ -103,7 +93,9 @@ export default function VSCodeEditor() {
         return;
       }
     }
-  });
+  };
+
+  window.addEventListener("message", messageHandler, false);
 
   const loadConfig = useCallback(async () => {
     const route = ROUTE_TABLE.LOAD(aiConfigServerUrl);
@@ -287,6 +279,8 @@ export default function VSCodeEditor() {
       if (vscode) {
         notifyDocumentDirty(vscode);
       }
+
+      return res;
     },
     [aiConfigServerUrl, vscode]
   );
@@ -386,9 +380,9 @@ export default function VSCodeEditor() {
     [aiConfigServerUrl, vscode]
   );
 
-  const getServerStatus = useCallback(async () => {
-    return await ufetch.get(ROUTE_TABLE.SERVER_STATUS(aiConfigServerUrl));
-  }, [aiConfigServerUrl]);
+  // const getServerStatus = useCallback(async () => {
+  //   return await ufetch.get(ROUTE_TABLE.SERVER_STATUS(aiConfigServerUrl));
+  // }, [aiConfigServerUrl]);
 
   const logEventHandler = useCallback(
     (event: LogEvent, data?: LogEventData) => {
@@ -408,7 +402,6 @@ export default function VSCodeEditor() {
       clearOutputs,
       deletePrompt,
       getModels,
-      getServerStatus,
       logEventHandler,
       runPrompt,
       setConfigDescription,
@@ -418,6 +411,7 @@ export default function VSCodeEditor() {
       updatePrompt,
       // explicitly omitted
       save: undefined,
+      getServerStatus: undefined,
     }),
     [
       addPrompt,
@@ -436,7 +430,7 @@ export default function VSCodeEditor() {
   );
 
   return (
-    <div className={classes.editorBackground}>
+    <div className="editorBackground">
       {!aiconfig ? (
         <Flex justify="center" mt="xl">
           <Loader size="xl" />

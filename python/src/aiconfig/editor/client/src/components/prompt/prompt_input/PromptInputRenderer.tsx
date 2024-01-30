@@ -110,6 +110,10 @@ export default memo(function PromptInputRenderer({
             input={input}
             schema={schema}
             onChangeInput={onChangeInput}
+            isRunning={isRunning}
+            runDisabled={isRunButtonDisabled}
+            cancelRun={onCancelRun}
+            runPrompt={onRunPrompt}
           />
         ) : (
           <PromptInputConfigRenderer

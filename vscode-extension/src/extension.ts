@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(setupCommand);
 
   // Run the setup command on activation
-  vscode.commands.executeCommand(COMMANDS.INIT);
+  //vscode.commands.executeCommand(COMMANDS.INIT);
 
   vscode.window.showInformationMessage("Hello World from aiconfig-editor!");
 

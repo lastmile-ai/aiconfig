@@ -384,8 +384,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 		 <meta charset="utf-8">
 		 <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
 		 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: http: https: 'self'; connect-src vscode-webview: ${editorServer.url} http: https:; style-src 'unsafe-inline' ${webview.cspSource} https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0 https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/editor/editor.main.css; script-src 'nonce-${nonce}' vscode-resource: https: http: https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0 https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/base/browser/ui/codicons/codicon/codicon.ttf; worker-src blob:;">
-		 <title>Hello World</title>
-	   </head>
+		 </head>
 	   <body>
 		 <noscript>You need to enable JavaScript to run this app.</noscript>
 		 <div id="root"></div>

@@ -15,6 +15,10 @@ type Props = {
   input: PromptInput;
   schema: PromptInputSchema;
   onChangeInput: (value: PromptInput) => void;
+  cancelRun: () => Promise<void>;
+  runPrompt: () => Promise<void>;
+  isRunning?: boolean;
+  runDisabled?: boolean;
 };
 
 type SchemaRendererProps = Props & {
@@ -64,7 +68,7 @@ function SchemaRenderer({ input, schema, onChangeInput }: SchemaRendererProps) {
 }
 
 export default memo(function PromptInputSchemaRenderer(props: Props) {
-  const {readOnly} = useContext(AIConfigContext);
+  const { readOnly } = useContext(AIConfigContext);
 
   if (props.schema.type === "string") {
     if (props.input && typeof props.input !== "string") {
@@ -75,7 +79,7 @@ export default memo(function PromptInputSchemaRenderer(props: Props) {
         </>
       );
     }
-    return  readOnly ? (
+    return readOnly ? (
       <div style={{ padding: "0.5em" }}>
         <Spoiler
           maxHeight={200}
@@ -84,15 +88,23 @@ export default memo(function PromptInputSchemaRenderer(props: Props) {
           initialState={false}
           transitionDuration={300}
         >
-          <TextRenderer content={(props.input as string)} />
+          <TextRenderer content={props.input as string} />
         </Spoiler>
-      </div> 
-      ): (
+      </div>
+    ) : (
       <Textarea
         value={props.input}
         label="Prompt"
         onChange={(e) => props.onChangeInput(e.target.value)}
         placeholder="Type a prompt"
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && (event.shiftKey || event.ctrlKey)) {
+            event.preventDefault();
+            if (!props.runDisabled && !props.isRunning) {
+              props.runPrompt();
+            }
+          }
+        }}
         autosize
       />
     );
