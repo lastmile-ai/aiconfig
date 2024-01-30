@@ -13,21 +13,17 @@
   "contributes": {
     "commands": [
       {
-        "command": "ai-workbook-ext.init",
+        "command": "vscode-aiconfig.init",
         "title": "AIConfig: Initialize Extension"
       },
       {
-        "command": "ai-workbook-ext.helloWorld",
+        "command": "vscode-aiconfig.helloWorld",
         "title": "Hello World"
-      },
-      {
-        "command": "ai-workbook-ext.helloWorld2",
-        "title": "Testing testing"
       }
     ],
     "customEditors": [
       {
-        "viewType": "ai-workbook-ext.aiConfigEditor",
+        "viewType": "vscode-aiconfig.aiConfigEditor",
         "displayName": "AI Workbook Editor",
         "selector": [
           {
