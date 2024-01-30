@@ -90,7 +90,7 @@ class AIConfigRuntime(AIConfig):
 
         This method creates a new AI configuration with the provided parameters and sets it as the current AI configuration.
         """
-        return cls(
+        config: "AIConfigRuntime" = cls(
             **{
                 "name": name,
                 "description": description,
@@ -99,6 +99,8 @@ class AIConfigRuntime(AIConfig):
                 "prompts": prompts,
             }
         )
+        update_model_parser_registry_with_config_runtime(config)
+        return config
 
     @classmethod
     def load(cls, config_filepath: str) -> "AIConfigRuntime":
