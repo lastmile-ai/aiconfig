@@ -145,7 +145,7 @@ export default function AIConfigEditor({
   aiconfig: initialAIConfig,
   callbacks,
   mode,
-  readOnly = false,
+  readOnly = true,
   themeMode,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
@@ -987,6 +987,9 @@ export default function AIConfigEditor({
           )}
           <Container maw="80rem">
             <Flex justify="flex-end" mt="md" mb="xs">
+              {readOnly && downloadCallback && (
+                <DownloadButton onDownload={onDownload} />
+              )}
               {!readOnly && (
                 <Group>
                   {downloadCallback && (
