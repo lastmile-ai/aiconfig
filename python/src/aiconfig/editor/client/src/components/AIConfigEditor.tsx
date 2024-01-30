@@ -987,13 +987,13 @@ export default function AIConfigEditor({
           )}
           <Container maw="80rem">
             <Flex justify="flex-end" mt="md" mb="xs">
-              {!readOnly && (
+              {
                 <Group>
                   {downloadCallback && (
                     <DownloadButton onDownload={onDownload} />
                   )}
                   {shareCallback && <ShareButton onShare={onShare} />}
-                  {onClearOutputs && (
+                  {!readOnly && onClearOutputs && (
                     <Button
                       loading={undefined}
                       onClick={onClearOutputs}
@@ -1003,8 +1003,7 @@ export default function AIConfigEditor({
                       Clear Outputs
                     </Button>
                   )}
-
-                  {saveCallback && (
+                  {!readOnly && saveCallback && (
                     <Tooltip
                       label={
                         isDirty
@@ -1028,7 +1027,7 @@ export default function AIConfigEditor({
                     </Tooltip>
                   )}
                 </Group>
-              )}
+              }
             </Flex>
             <ConfigNameDescription
               name={aiconfigState.name}
