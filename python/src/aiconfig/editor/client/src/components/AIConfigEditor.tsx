@@ -31,6 +31,7 @@ import {
   AIConfigEditorMode,
   LogEvent,
   LogEventData,
+  ThemeMode,
   aiConfigToClientConfig,
   clientConfigToAIConfig,
   clientPromptToAIConfigPrompt,
@@ -56,6 +57,7 @@ import {
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
 import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
+import DownloadButton from "./global/DownloadButton";
 import ShareButton from "./global/ShareButton";
 import PromptsContainer from "./prompt/PromptsContainer";
 
@@ -64,6 +66,12 @@ type Props = {
   callbacks?: AIConfigCallbacks;
   mode?: AIConfigEditorMode;
   readOnly?: boolean;
+  /**
+   * Theme mode override for the editor. By default, the editor will use the system
+   * theme variant for the theme associated with the EditorMode. This prop allows
+   * overriding that behavior.
+   */
+  themeMode?: ThemeMode;
 };
 
 export type RunPromptStreamEvent =
@@ -103,6 +111,7 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
+  download?: () => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
@@ -137,6 +146,7 @@ export default function AIConfigEditor({
   callbacks,
   mode,
   readOnly = false,
+  themeMode,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
@@ -149,6 +159,23 @@ export default function AIConfigEditor({
   stateRef.current = aiconfigState;
 
   const logEventHandler = callbacks?.logEventHandler;
+
+  const downloadCallback = callbacks?.download;
+  const onDownload = useCallback(async () => {
+    if (!downloadCallback) {
+      return;
+    }
+    try {
+      await downloadCallback();
+    } catch (err: unknown) {
+      const message = (err as RequestCallbackError).message ?? null;
+      showNotification({
+        title: "Error downloading AIConfig",
+        message,
+        color: "red",
+      });
+    }
+  }, [downloadCallback]);
 
   const shareCallback = callbacks?.share;
   const onShare = useCallback(async () => {
@@ -923,7 +950,7 @@ export default function AIConfigEditor({
   const runningPromptId: string | undefined = aiconfigState._ui.runningPromptId;
 
   return (
-    <AIConfigEditorThemeProvider mode={mode}>
+    <AIConfigEditorThemeProvider mode={mode} themeMode={themeMode}>
       <AIConfigContext.Provider value={contextValue}>
         <Notifications />
         <div className="editorBackground">
@@ -962,6 +989,9 @@ export default function AIConfigEditor({
             <Flex justify="flex-end" mt="md" mb="xs">
               {!readOnly && (
                 <Group>
+                  {downloadCallback && (
+                    <DownloadButton onDownload={onDownload} />
+                  )}
                   {shareCallback && <ShareButton onShare={onShare} />}
                   {onClearOutputs && (
                     <Button
