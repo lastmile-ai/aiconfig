@@ -22,19 +22,7 @@ class AzureOpenAIParser(DefaultOpenAIParser):
         return openai_deserialized_params
 
     def initialize_openai_client(self) -> None:
-        ## The Azure Client itself will check and retrieve these from environment 
-        # if its not explicitly passed in & will raise otherwise. Technically not needed
-        azure_openai_key = get_api_key_from_environment(
-            "AZURE_OPENAI_KEY"
-        ).unwrap()
+        ## The Azure Client itself will check and retrieve environment variables as necessary
 
-        azure_endpoint = get_api_key_from_environment(
-            "AZURE_OPENAI_ENDPOINT"
-        ).unwrap()
-
-        # Initialize Azure Client.
-        self.client = AzureOpenAI(
-            api_key=azure_openai_key,
-            api_version="2023-12-01-preview", # This will have to either be set here or passed in. Otherwise, azure client will check environment variables and throw error if not set
-            azure_endpoint=azure_endpoint,
-        )
+        # Initialize Azure Client
+        self.client = AzureOpenAI()
