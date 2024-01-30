@@ -48,11 +48,11 @@ export default memo(function ShareButton({ onShare }: Props) {
 
   return (
     <>
-      <Modal opened={isModalOpened} onClose={closeModal} title="AIConfig URL">
+      <Modal opened={isModalOpened} onClose={closeModal} title="Workbook URL">
         <Container p={0} mr={-8}>
           <Flex direction="row">
             <Text truncate>{shareUrl}</Text>
-            <CopyButton value={shareUrl} contentLabel="AIConfig URL" />
+            <CopyButton value={shareUrl} contentLabel="Workbook URL" />
           </Flex>
         </Container>
       </Modal>
