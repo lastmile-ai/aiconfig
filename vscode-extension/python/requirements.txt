@@ -1,0 +1,9 @@
+# AIConfig
+python-aiconfig==1.1.11
+
+# Hugging Face Extension for AIConfig
+aiconfig-extension-hugging-face >= 0.0.3
+
+#Other
+asyncio
+ruamel.yaml
