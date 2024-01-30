@@ -455,17 +455,6 @@ class AIConfigRuntime(AIConfig):
             config_filepath (str, optional): The file path to the JSON or YAML configuration file.
                 Defaults to "aiconfig.json" or "aiconfig.yaml", depending on the mode.
         """
-        # Decide if we want to serialize as YAML or JSON
-
-        # AIConfig json should only contain the core data fields. These are auxiliary fields that should not be persisted
-        exclude_options = {
-            "prompt_index": True,
-            "file_path": True,
-            "callback_manager": True,
-        }
-
-        if not include_outputs:
-            exclude_options["prompts"] = {"__all__": {"outputs"}}
 
         default_filepath = (
             "aiconfig.yaml" if mode == "yaml" else "aiconfig.json"
@@ -481,30 +470,54 @@ class AIConfigRuntime(AIConfig):
                 # Default to JSON
                 mode = "json"
 
+        config_string = self.to_string(include_outputs, mode)
+
         with open(config_filepath, "w") as file:
-            # Serialize the AIConfig to JSON
-            json_data = self.model_dump(
-                mode="json",
-                exclude=exclude_options,
-                exclude_none=True,
+            file.write(config_string)
+
+    def to_string(
+        self,
+        include_outputs: bool = True,
+        mode: Literal["json", "yaml"] = "json",
+    ) -> str:
+        """
+        Returns the well-formatted string representing the AIConfig object.
+        Note that this method will return the string that would be saved as a .aiconfig file using the save() method.
+        To get the raw string representation of the AIConfig object, use the __str__() method.
+        """
+        # AIConfig json should only contain the core data fields. These are auxiliary fields that should not be persisted
+        exclude_options = {
+            "prompt_index": True,
+            "file_path": True,
+            "callback_manager": True,
+        }
+
+        if not include_outputs:
+            exclude_options["prompts"] = {"__all__": {"outputs"}}
+
+        # Serialize the AIConfig to JSON
+        json_data = self.model_dump(
+            mode="json",
+            exclude=exclude_options,
+            exclude_none=True,
+        )
+
+        if json_data.get("$schema", None) is None:
+            # Set the schema if it is not set
+            json_data["$schema"] = "https://json.schemastore.org/aiconfig-1.0"
+
+        if mode == "yaml":
+            # Save AIConfig JSON as YAML string
+            return yaml.dump(
+                json_data,
+                indent=2,
             )
-            if mode == "yaml":
-                # Save AIConfig JSON as YAML to the file
-                yaml.dump(
-                    json_data,
-                    file,
-                    indent=2,
-                )
-            else:
-                # Save AIConfig as JSON to the file, with the schema specified
-                json_data[
-                    "$schema"
-                ] = "https://json.schemastore.org/aiconfig-1.0"
-                json.dump(
-                    json_data,
-                    file,
-                    indent=2,
-                )
+        else:
+            # Save AIConfig as JSON string, with the schema specified
+            return json.dumps(
+                json_data,
+                indent=2,
+            )
 
     def get_output_text(
         self, prompt: str | Prompt, output: Optional[dict] = None
