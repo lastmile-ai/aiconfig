@@ -37,8 +37,7 @@ const useStyles = createStyles(() => ({
   },
 }));
 
-
-const MODE = "local";
+const MODE = "gradio";
 
 export default function LocalEditor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
@@ -75,7 +74,7 @@ export default function LocalEditor() {
         sessionSampleRate: 100,
       });
 
-      datadogLogs.setGlobalContextProperty('mode', MODE);
+      datadogLogs.setGlobalContextProperty("mode", MODE);
     }
   }, []);
 
@@ -289,11 +288,7 @@ export default function LocalEditor() {
           <Loader size="xl" />
         </Flex>
       ) : (
-        <AIConfigEditor
-          aiconfig={aiconfig}
-          callbacks={callbacks}
-          mode={MODE}
-        />
+        <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} mode={MODE} />
       )}
     </div>
   );
