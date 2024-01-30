@@ -5,6 +5,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:vscode": "node ./scripts/build-react-no-split.js",
     "postbuild": "node postbuild.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -36,7 +37,8 @@
     "@mantine/prism": "^6.0.7",
     "@monaco-editor/react": "^4.6.0",
     "@tabler/icons-react": "^2.44.0",
-    "aiconfig": "../../../../../typescript",
+    "aiconfig": "/Users/saqadri/lm/aiconfig2/typescript",
+    "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "node-fetch": "^3.3.2",
     "oboe": "^2.1.5",
@@ -51,17 +53,21 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.14.202",
     "@types/node": "^20",
     "@types/oboe": "^2.1.4",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/uuid": "^9.0.7",
+    "@types/vscode-webview": "^1.57.4",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
     "eslint": "^8",
     "eslint-config-next": "14.0.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "react-scripts": "5.0.1",
+    "rewire": "^5.0.0",
     "typescript": "^5"
   }
 }

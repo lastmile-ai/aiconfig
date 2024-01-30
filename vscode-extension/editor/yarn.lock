@@ -1780,11 +1780,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@lastmileai/aiconfig-editor@^0.1.15":
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/@lastmileai/aiconfig-editor/-/aiconfig-editor-0.1.15.tgz#b763525286191d95fb18fa199a8b9559a5e50c7e"
-  integrity sha512-/o7pTRyGvz3yhtFjmHfZQ2irtUaEjsGHYpdaKSeGiWqTioim4IfOQpVtW0Erw2hZSnnal0KhmU1sl29YrpXMcg==
+"@lastmileai/aiconfig-editor@file:../../python/src/aiconfig/editor/client":
+  version "0.1.0"
   dependencies:
+    "@datadog/browser-logs" "^5.7.0"
     "@emotion/react" "^11.11.1"
     "@mantine/carousel" "^6.0.7"
     "@mantine/core" "^6.0.7"
@@ -1797,12 +1796,18 @@
     "@mantine/prism" "^6.0.7"
     "@monaco-editor/react" "^4.6.0"
     "@tabler/icons-react" "^2.44.0"
-    aiconfig "^1.1.6"
+    aiconfig "file:../../typescript"
     lodash "^4.17.21"
     node-fetch "^3.3.2"
+    oboe "^2.1.5"
+    react "^18"
+    react-dom "^18"
     react-error-boundary "^4.0.12"
     react-markdown "^8.0.6"
+    react-scripts "5.0.1"
     remark-gfm "^3.0.1"
+    ufetch "^1.6.0"
+    url-join "^5.0.0"
     uuid "^9.0.1"
 
 "@leichtgewicht/ip-codec@^2.0.1":
@@ -3213,10 +3218,8 @@ agentkeepalive@^4.2.1:
   dependencies:
     humanize-ms "^1.2.1"
 
-aiconfig@^1.1.6:
+"aiconfig@file:../../typescript":
   version "1.1.7"
-  resolved "https://registry.yarnpkg.com/aiconfig/-/aiconfig-1.1.7.tgz#d5c4929a166dd2b15ba3c963666948cc218df8e7"
-  integrity sha512-ZxBr1YWLJpDggg62BqZ87Z+xDOpxWiIoV4kcUhhtn8jhC7T3k4q5pZ67MZVf/Bn5+1Lzk6V4Nj4zzd0bp4XDig==
   dependencies:
     "@google-ai/generativelanguage" "^1.1.0"
     "@huggingface/inference" "^2.6.4"
