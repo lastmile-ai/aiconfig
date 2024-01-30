@@ -306,10 +306,10 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     });
 
     // TODO: saqadri - stderr is very noisy for some reason (duplicating INFO logs). Figure out why before enabling this.
-    // startServer.stderr.on("data", (data) => {
-    //   this.extensionOutputChannel.error(this.prependMessage(data, document));
-    //   console.error(`server stderr: ${data}`);
-    // });
+    startServer.stderr.on("data", (data) => {
+      this.extensionOutputChannel.info(this.prependMessage(data, document));
+      console.error(`server stderr: ${data}`);
+    });
 
     startServer.on("spawn", () => {
       this.extensionOutputChannel.info(
