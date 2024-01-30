@@ -29,7 +29,10 @@ export const VSCODE_THEME: MantineThemeOverride = {
       borderRadius: "4px",
       padding: "4px",
       margin: "0px",
-      backgroundColor: "transparent",
+
+      color: "var(--vscode-editor-foreground)",
+      backgroundColor: "var(--vscode-input-background)",
+
       ":hover": {
         backgroundColor: "rgba(226,232,255,.1)",
       },
@@ -41,7 +44,8 @@ export const VSCODE_THEME: MantineThemeOverride = {
         borderRadius: "4px",
         padding: "4px",
         margin: "0px",
-        backgroundColor: "transparent",
+        backgroundColor: "var(--vscode-input-background)",
+        color: "var(--vscode-editor-foreground)",
       },
     },
     ".cellStyle": {
@@ -78,15 +82,17 @@ export const VSCODE_THEME: MantineThemeOverride = {
       border: "1px solid",
       borderColor: "var(--vscode-notebook-cellBorderColor)",
       borderLeft: "none",
+      color: "var(--vscode-editor-foreground)",
       borderTopRightRadius: "0px",
       borderBottomRightRadius: "0px",
-      background: "var(--vscode-activityBar-background)",
+      background: "var(--vscode-sideBar-background)",
       minWidth: "32px",
       input: {
         borderRadius: "0px",
         border: "1px solid",
         borderColor: "var(--vscode-notebook-cellBorderColor)",
-        backgroundColor: "var(--vscode-input.background)",
+        color: "var(--vscode-editor-foreground)",
+        backgroundColor: "var(--vscode-input-background)",
         ":focus": {
           outline:
             "solid 1px var(--vscode-inputOption-activeBorder) !important",
@@ -97,7 +103,8 @@ export const VSCODE_THEME: MantineThemeOverride = {
         borderRadius: "0px",
         border: "1px solid",
         borderColor: "var(--vscode-notebook-cellBorderColor)",
-        backgroundColor: "var(--vscode-input.background)",
+        color: "var(--vscode-editor-foreground)",
+        backgroundColor: "var(--vscode-input-background)",
         ":focus": {
           outline:
             "solid 1px var(--vscode-inputOption-activeBorder) !important",
@@ -113,12 +120,26 @@ export const VSCODE_THEME: MantineThemeOverride = {
       },
     },
     ".runPromptButton": {
-      background: "#ff1cf7",
+      background: "var(--vscode-button-background)",
       color: "white",
       borderRadius: "0",
       height: "auto",
       "&:hover": {
-        background: "#ff46f8",
+        background: "var(--vscode-button-hoverBackground)",
+      },
+    },
+    ".primaryButton": {
+      background: "var(--vscode-button-background)",
+      color: "white",
+      "&:hover": {
+        background: "var(--vscode-button-hoverBackground)",
+      },
+    },
+    ".secondaryButton": {
+      background: "var(--vscode-button-secondaryBackground)",
+      color: "white",
+      "&:hover": {
+        background: "var(--vscode-button-secondaryHoverBackground)",
       },
     },
     ".divider": {
@@ -128,26 +149,27 @@ export const VSCODE_THEME: MantineThemeOverride = {
     },
 
     ".parametersContainer": {
-      maxWidth: "1014px",
+      width: "100%",
       maxHeight: "-webkit-fill-available",
       margin: "16px auto",
       padding: "0",
-      background: "var(--vscode-activityBar-background)",
+      background: "var(--vscode-sideBar-background)",
+      color: "var(--vscode-editor-foreground) !important",
       borderRadius: "0px",
       border: "1px solid",
       borderColor: "var(--vscode-notebook-cellBorderColor)",
       textAlign: "left",
       button: {
         ":hover": {
-          backgroundColor:
-            theme.colorScheme === "light" ? "#F0F1F1" : "transparent",
+          backgroundColor: "var(--vscode-toolbar-hoverBackground)",
         },
       },
       input: {
         border: "1px solid",
         borderColor: "var(--vscode-notebook-cellBorderColor)",
         borderRadius: "0px",
-        backgroundColor: "var(--vscode-input.background) !important",
+        color: "var(--vscode-editor-foreground)",
+        backgroundColor: "var(--vscode-input-background) !important",
         ":focus": {
           outline:
             "solid 1px var(--vscode-inputOption-activeBorder) !important",
@@ -158,7 +180,8 @@ export const VSCODE_THEME: MantineThemeOverride = {
         border: "1px solid",
         borderColor: "var(--vscode-notebook-cellBorderColor)",
         borderRadius: "0px",
-        backgroundColor: "var(--vscode-input.background) !important",
+        color: "var(--vscode-editor-foreground)",
+        backgroundColor: "var(--vscode-input-background) !important",
         ":focus": {
           outline:
             "solid 1px var(--vscode-inputOption-activeBorder) !important",
@@ -172,9 +195,20 @@ export const VSCODE_THEME: MantineThemeOverride = {
         bottom: "0",
         margin: "16px 0 0 0",
         borderRadius: "0px",
-        background: "#ff1cf7",
+        background: "var(--vscode-button-background)",
+        ":hover": {
+          backgroundColor: "var(--vscode-button-hoverBackground)",
+        },
         path: {
           color: "#fff",
+        },
+      },
+      ".promptMenuButton": {
+        marginLeft: -8,
+        background: "var(--vscode-button-secondaryBackground)",
+        color: "white",
+        ":hover": {
+          backgroundColor: "var(--vscode-button-hoverBackground)",
         },
       },
     },
