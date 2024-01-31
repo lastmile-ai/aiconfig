@@ -19,6 +19,10 @@
       {
         "command": "vscode-aiconfig.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "vscode-aiconfig.share",
+        "title": "AIConfig: Share"
       }
     ],
     "customEditors": [
@@ -62,6 +66,7 @@
     "@typescript-eslint/parser": "^6.15.0",
     "@vscode/test-cli": "^0.0.4",
     "@vscode/test-electron": "^2.3.8",
+    "aws-sdk": "^2.1547.0",
     "eslint": "^8.56.0",
     "typescript": "^5.3.3"
   },
