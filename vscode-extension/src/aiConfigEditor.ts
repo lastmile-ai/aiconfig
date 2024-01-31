@@ -74,6 +74,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
         // editor/build/static/js contains the main.js bundle for the editor.
         vscode.Uri.joinPath(this.context.extensionUri, "editor", "build"),
+        vscode.Uri.joinPath(this.context.extensionUri, "editor", "static"),
       ],
     };
     webviewPanel.webview.html = this.getHtmlForWebview(
@@ -305,10 +306,10 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     });
 
     // TODO: saqadri - stderr is very noisy for some reason (duplicating INFO logs). Figure out why before enabling this.
-    // startServer.stderr.on("data", (data) => {
-    //   this.extensionOutputChannel.error(this.prependMessage(data, document));
-    //   console.error(`server stderr: ${data}`);
-    // });
+    startServer.stderr.on("data", (data) => {
+      this.extensionOutputChannel.info(this.prependMessage(data, document));
+      console.error(`server stderr: ${data}`);
+    });
 
     startServer.on("spawn", () => {
       this.extensionOutputChannel.info(
