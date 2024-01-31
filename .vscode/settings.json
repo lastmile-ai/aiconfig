@@ -30,5 +30,4 @@
   "black-formatter.args": ["--line-length=79"],
   // example: "--disable=C0114,C0115,C0116"
   "pylint.args": [],
-  "vscode-aiconfig.modelRegistryPath": "/Users/rossdancraig/Projects/aiconfig/cookbooks/Claude-And-Azure/aiconfig_model_registry.py"
 }
