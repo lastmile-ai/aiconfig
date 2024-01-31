@@ -2,6 +2,7 @@
   "name": "The Tale of the Quick Brown Fox",
   "schema_version": "latest",
   "metadata": {
+    "parameters": {},
     "models": {
       "stevhliu/my_awesome_billsum_model": {
         "model": "stevhliu/my_awesome_billsum_model",
@@ -47,19 +48,20 @@
             "max_new_tokens": 10,
             "model": "Salesforce/blip-image-captioning-base"
           }
-        },
-        "parameters": {}
+        }
       },
       "outputs": [
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": "a red fox in the woods"
+          "data": "a red fox in the woods",
+          "metadata": {}
         },
         {
           "output_type": "execute_result",
           "execution_count": 1,
-          "data": "a bear sitting on a rock eating honey"
+          "data": "a bear sitting on a rock eating honey",
+          "metadata": {}
         }
       ]
     },
@@ -82,6 +84,7 @@
           "output_type": "execute_result",
           "execution_count": 0,
           "data": " Il \u00e9tait une fois, dans une for\u00eat luxuriante et vibrante, vivait une magnifique cr\u00e9ature connue sous le nom de Foxe Brun. Ce renard \u00e9tait diff\u00e9rent des autres, poss\u00e9dant une vitesse et une agilit\u00e9 incroyables qui amenaient tous les animaux dans la for\u00eat. Avec sa fourrure aussi dor\u00e9e que le soleil et ses yeux aussi aiguis\u00e9s que les \u00e9meraudes, le Foxe Brun Brun \u00e9tait admir\u00e9 par tout le monde, du plus petit colibri au",
+          "metadata": {}
         }
       ]
     },
@@ -106,7 +109,8 @@
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": " Racontez l'histoire du renard brun rapide. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a."
+          "data": " Racontez l'histoire du renard brun rapide. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a.",
+          "metadata": {}
         }
       ]
     },
@@ -122,14 +126,14 @@
             "model": "facebook/bart-large-cnn",
             "num_beams": 1
           }
-        },
-        "parameters": {}
+        }
       },
       "outputs": [
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": "The Quick Brown Fox was a magnificent creature. It had a kind heart and would often lend a helping paw to those in need. It loved to test its skills against others, always seeking new adventures. One day it got very old and died."
+          "data": "The Quick Brown Fox was a magnificent creature. It had a kind heart and would often lend a helping paw to those in need. It loved to test its skills against others, always seeking new adventures. One day it got very old and died.",
+          "metadata": {}
         }
       ]
     },
@@ -145,8 +149,7 @@
             "min_length": 50,
             "num_beams": 1
           }
-        },
-        "parameters": {}
+        }
       },
       "outputs": [
         {
@@ -171,8 +174,7 @@
             "model": "runwayml/stable-diffusion-v1-5",
             "num_images_per_prompt": 2
           }
-        },
-        "parameters": {}
+        }
       },
       "outputs": [
         {
@@ -226,7 +228,8 @@
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": " Hi."
+          "data": " Hi.",
+          "metadata": {}
         }
       ]
     }
