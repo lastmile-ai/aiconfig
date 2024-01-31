@@ -7,7 +7,7 @@ frozendict
 google-generativeai
 huggingface-hub
 hypothesis==6.91.0
-lastmile-utils==0.0.21
+lastmile-utils==0.0.22
 mock
 nest_asyncio
 nltk
