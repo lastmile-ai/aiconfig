@@ -1,0 +1,82 @@
+{
+  "name": "Exploring Azure OpenAI",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {},
+    "model_parsers": {
+      "gpt-35-turbo": "gpt-35-turbo"
+    }
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "multilinguality",
+      "input": "Can you teach me how to say {{animal}} in different languages? Give me a few options",
+      "metadata": {
+        "model": "gpt-35-turbo",
+        "parameters": {
+          "animal": "horse"
+        },
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "Of course! Here are a few translations for the word \"horse\" in different languages:\n\n1. Spanish: caballo\n2. French: cheval\n3. German: Pferd\n4. Italian: cavallo\n5. Portuguese: cavalo\n6. Russian: \u043b\u043e\u0448\u0430\u0434\u044c (loshad')\n7. Japanese: \u99ac (uma)\n8. Chinese: \u9a6c (m\u01ce)\n9. Arabic: \u062d\u0635\u0627\u0646 (hesan)\n10. Hindi: \u0918\u094b\u0921\u093c\u093e (ghora)\n\nPlease note that pronunciation may vary slightly between different dialects and regions.",
+          "metadata": {
+            "id": "chatcmpl-8n8BM0HxIdKQTeOON1Npv2B50BU3H",
+            "created": 1706720216,
+            "model": "gpt-35-turbo",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "role": "assistant",
+              "content": "Of course! Here are a few translations for the word \"horse\" in different languages:\n\n1. Spanish: caballo\n2. French: cheval\n3. German: Pferd\n4. Italian: cavallo\n5. Portuguese: cavalo\n6. Russian: \u043b\u043e\u0448\u0430\u0434\u044c (loshad')\n7. Japanese: \u99ac (uma)\n8. Chinese: \u9a6c (m\u01ce)\n9. Arabic: \u062d\u0635\u0627\u0646 (hesan)\n10. Hindi: \u0918\u094b\u0921\u093c\u093e (ghora)\n\nPlease note that pronunciation may vary slightly between different dialects and regions."
+            },
+            "role": "assistant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pronounciation",
+      "input": "Can you explain how to pronounce \"{{animal}}\" in Chinese?",
+      "metadata": {
+        "model": "gpt-35-turbo",
+        "parameters": {
+          "animal": "turtle"
+        },
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "Certainly! The Chinese word for horse, \u9a6c (m\u01ce), is pronounced as follows:\n\n- \"m\" is pronounced similar to the English word \"m\" in \"mom\" or \"map.\"\n- \"\u01ce\" is pronounced as a short, low tone vowel sound. It sounds similar to the \"a\" sound in the English word \"car.\"\n\nPutting it together, the pronunciation is \"m\u01ce\" (m-ah).\n\nPlease keep in mind that Chinese has four different tones, and the tone marks represent the tone of the word when spoken in Mandarin Chinese. The third tone, represented by the \u01ce, starts low and then goes up slightly before coming back down.\n\nTo get a better grasp on the pronunciation, you may find it helpful to search for audio recordings or tutorials specifically for the pronunciation of \u9a6c (m\u01ce) in Mandarin Chinese.",
+          "metadata": {
+            "created": 1706720233,
+            "id": "chatcmpl-8n8BdVH1yCnY9rxPe5QDWPqyJFgKi",
+            "model": "gpt-35-turbo",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "content": "Certainly! The Chinese word for horse, \u9a6c (m\u01ce), is pronounced as follows:\n\n- \"m\" is pronounced similar to the English word \"m\" in \"mom\" or \"map.\"\n- \"\u01ce\" is pronounced as a short, low tone vowel sound. It sounds similar to the \"a\" sound in the English word \"car.\"\n\nPutting it together, the pronunciation is \"m\u01ce\" (m-ah).\n\nPlease keep in mind that Chinese has four different tones, and the tone marks represent the tone of the word when spoken in Mandarin Chinese. The third tone, represented by the \u01ce, starts low and then goes up slightly before coming back down.\n\nTo get a better grasp on the pronunciation, you may find it helpful to search for audio recordings or tutorials specifically for the pronunciation of \u9a6c (m\u01ce) in Mandarin Chinese.",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "set_params_in_code",
+      "input": "",
+      "metadata": {
+        "model": "gpt-35-turbo",
+        "parameters": {}
+      },
+      "outputs": []
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}
