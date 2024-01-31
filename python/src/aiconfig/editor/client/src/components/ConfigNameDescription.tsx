@@ -9,6 +9,7 @@ import {
 import { useClickOutside } from "@mantine/hooks";
 import { memo, useCallback, useContext, useRef, useState } from "react";
 import AIConfigContext from "../contexts/AIConfigContext";
+import { TextRenderer } from "./prompt/TextRenderer";
 
 type Props = {
   name?: string;
@@ -67,7 +68,8 @@ export default memo(function ConfigNameDescription({
 
   const onHandleEnter = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      if (event.key === "Enter") {
+      if (event.key === "Enter" && !event.shiftKey) {
+        // Shift+Enter to add new line
         event.stopPropagation();
         setIsEditing(false);
       }
@@ -126,14 +128,15 @@ export default memo(function ConfigNameDescription({
           >
             {name}
           </Title>
-          <Text
-            ref={descriptionDisplayRef}
-            onClick={onClickEdit}
-            style={{ whiteSpace: "pre-wrap" }}
-            className={!readOnly ? classes.hoverContainer : undefined}
-          >
-            {description}
-          </Text>
+          {description && (
+            <div
+              ref={descriptionDisplayRef}
+              onClick={onClickEdit}
+              className={!readOnly ? classes.hoverContainer : undefined}
+            >
+              <TextRenderer content={description} />
+            </div>
+          )}
         </div>
       )}
     </Stack>
