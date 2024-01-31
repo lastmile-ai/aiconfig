@@ -9,6 +9,7 @@ export const EXTENSION_NAME = "vscode-aiconfig";
 export const COMMANDS = {
   INIT: `${EXTENSION_NAME}.init`,
   HELLO_WORLD: `${EXTENSION_NAME}.helloWorld`,
+  SHARE: `${EXTENSION_NAME}.share`,
 };
 
 const EDITOR_SERVER_API_ENDPOINT = `/api`;
