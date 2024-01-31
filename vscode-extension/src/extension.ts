@@ -1,11 +1,18 @@
+
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 
+import { PutObjectCommand, PutObjectCommandInput, S3Client } from "@aws-sdk/client-s3";
+// import {PutObjectCommand, PutObjectCommandInput, S3Client} from "@aws-sdk/client-s3";
 import { exec, spawn } from "child_process";
+import {readFileSync} from 'fs';
 import path from "path";
+import { ufetch } from "ufetch";
 import { EXTENSION_NAME, COMMANDS } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
+
+const LASTMILE_BASE_URI: string = "https://lastmileai.dev/"
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -25,6 +32,45 @@ export function activate(context: vscode.ExtensionContext) {
     installDependencies(context, extensionOutputChannel);
   });
   context.subscriptions.push(setupCommand);
+
+  let shareCommand = vscode.commands.registerCommand(COMMANDS.SHARE, async () => {
+    // TODO vscode.window.activeTextEditor instead of hardcoding
+    const fileName: string = "/Users/rossdancraig/Projects/aiconfig/cookbooks/Gemini/gemini_demo.aiconfig.json";
+    const sanitizedFileName: string = sanitizeFileName(fileName);
+
+    // TODO: Set config in S3Client to be UNSIGNED credentials so anyone can upload
+    const s3Client = new S3Client(
+      // {credentials: UNSIGNED}
+    );
+
+    const randomPath = Math.round(Math.random() * 10000);
+    const bucket: string = "lastmileai.aiconfig.public";
+    const uploadKey: string = `aiconfigs/${getTodayDateString()}/${randomPath}/${sanitizedFileName}`;
+    const configString = readFileSync(fileName, 'utf-8');
+    // TODO: Will also need to check for yaml files and change the contentType accordingly
+    const contentType = "application/json";
+
+    const input : PutObjectCommandInput = {
+      ACL: 'public-read',
+      ContentType: contentType,
+      // TODO: Check if we can just pass in fileName itself? Don't think so
+      Body: configString, 
+      Bucket: bucket,
+      Key: uploadKey,
+    };
+    const putCommand = new PutObjectCommand(input);
+    await s3Client.send(putCommand);
+    
+    const s3Url: string = `https://s3.amazonaws.com/${bucket}/${uploadKey.replace(/[ ]/g, "%20")}`
+    
+    const lastmileUploadUrl: string = LASTMILE_BASE_URI + "api/aiconfig/upload";
+    const response = await ufetch.post(lastmileUploadUrl, {"url": s3Url, "source": "vscode"});
+    if (response?.id !== null && response?.id !== undefined) {
+      const renderingUrl: string = LASTMILE_BASE_URI + `aiconfig/${response?.id}`;
+      vscode.window.showInformationMessage("shareUri: " + renderingUrl);
+    }
+  });
+  context.subscriptions.push(shareCommand);
 
   // Run the setup command on activation
   vscode.commands.executeCommand(COMMANDS.INIT);
@@ -324,4 +370,18 @@ async function checkPip() {
       }
     });
   });
+}
+
+function getTodayDateString(): string {
+  const date = new Date();
+  const dateString = `${date.getFullYear()}_${
+    date.getMonth() + 1 // getMonth() returns 0-11
+  }_${date.getDate()}`;
+  const timeString = `${date.getUTCHours()}_${date.getUTCMinutes()}_${date.getUTCSeconds()}`;
+  return `${dateString}_${timeString}`;
+}
+
+// s3 file uris cannot have '+' character, so replace with '_'
+function sanitizeFileName(name: string) {
+  return name.replace(/[_+]/g, "_");
 }
