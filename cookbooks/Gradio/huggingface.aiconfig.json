@@ -2,6 +2,7 @@
   "name": "The Tale of the Quick Brown Fox",
   "schema_version": "latest",
   "metadata": {
+    "parameters": {},
     "models": {
       "stevhliu/my_awesome_billsum_model": {
         "model": "stevhliu/my_awesome_billsum_model",
@@ -27,13 +28,6 @@
           {
             "data": {
               "kind": "file_uri",
-              "value": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_16_20_22_54/7748/fox_in_forest.png"
-            },
-            "mime_type": "image/png"
-          },
-          {
-            "data": {
-              "kind": "file_uri",
               "value": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_16_20_20_57/508/bear_with_honey.png"
             },
             "mime_type": "image/png"
@@ -54,12 +48,30 @@
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": "a red fox in the woods"
-        },
+          "data": "a bear sitting on a rock eating honey",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "name": "prompt_8",
+      "input": "{{image_caption.output}}",
+      "metadata": {
+        "model": "dall-e-3",
+        "parameters": {}
+      },
+      "outputs": [
         {
           "output_type": "execute_result",
-          "execution_count": 1,
-          "data": "a bear sitting on a rock eating honey"
+          "execution_count": 0,
+          "data": {
+            "kind": "file_uri",
+            "value": "https://oaidalleapiprodscus.blob.core.windows.net/private/org-o8J42XpAe8XLnxJ01WbOsM4M/user-AT3ivBdlHeOcDX62AOM5Je23/img-HUqBjX9HuOX0Mysegk25SPU3.png?st=2024-01-31T18%3A08%3A57Z&se=2024-01-31T20%3A08%3A57Z&sp=r&sv=2021-08-06&sr=b&rscd=inline&rsct=image/png&skoid=6aaadede-4fb3-4698-a8f6-684d7786b067&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2024-01-31T18%3A53%3A19Z&ske=2024-02-01T18%3A53%3A19Z&sks=b&skv=2021-08-06&sig=Jhsfga70A%2Bh1PXsKJ6Mp1sbAC2QC7cttS62b8RpYI5k%3D"
+          },
+          "mime_type": "image/png",
+          "metadata": {
+            "revised_prompt": "A scenic view of the wilderness is portrayed where a large brown bear can be seen seated comfortably on a massive boulder in the middle of the woods. This mammal is endearingly occupied with a pot of honey it's found, dipping a big paw into the sweet delight and savoring it. The surroundings are serene with tall, dense trees and protracted beams of sunlight piercing through the canopy to illuminate portions of this delightful scene."
+          }
         }
       ]
     },
@@ -75,13 +87,15 @@
             "min_length": 50,
             "num_beams": 1
           }
-        }
+        },
+        "parameters": {}
       },
       "outputs": [
         {
           "output_type": "execute_result",
           "execution_count": 0,
           "data": " Il \u00e9tait une fois, dans une for\u00eat luxuriante et vibrante, vivait une magnifique cr\u00e9ature connue sous le nom de Foxe Brun. Ce renard \u00e9tait diff\u00e9rent des autres, poss\u00e9dant une vitesse et une agilit\u00e9 incroyables qui amenaient tous les animaux dans la for\u00eat. Avec sa fourrure aussi dor\u00e9e que le soleil et ses yeux aussi aiguis\u00e9s que les \u00e9meraudes, le Foxe Brun Brun \u00e9tait admir\u00e9 par tout le monde, du plus petit colibri au",
+          "metadata": {}
         }
       ]
     },
@@ -106,7 +120,8 @@
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": " Racontez l'histoire du renard brun rapide. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a."
+          "data": " Racontez l'histoire du renard brun rapide. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a.",
+          "metadata": {}
         }
       ]
     },
@@ -129,7 +144,8 @@
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": "The Quick Brown Fox was a magnificent creature. It had a kind heart and would often lend a helping paw to those in need. It loved to test its skills against others, always seeking new adventures. One day it got very old and died."
+          "data": "The Quick Brown Fox was a magnificent creature. It had a kind heart and would often lend a helping paw to those in need. It loved to test its skills against others, always seeking new adventures. One day it got very old and died.",
+          "metadata": {}
         }
       ]
     },
@@ -220,13 +236,37 @@
           "settings": {
             "model": "openai/whisper-small"
           }
-        }
+        },
+        "parameters": {}
       },
       "outputs": [
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": " Hi."
+          "data": " Hi.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "name": "prompt_9",
+      "input": "{{translation.output}}",
+      "metadata": {
+        "model": {
+          "name": "HuggingFaceTextTranslationTransformer",
+          "settings": {
+            "model": "Helsinki-NLP/opus-mt-fr-en",
+            "num_beams": 1
+          }
+        },
+        "parameters": {}
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": " Once upon a time, in a lush and vibrant forest, lived a magnificent creature known as Foxe Brun. This fox was different from others, possessing incredible speed and agility that brought all the animals into the forest. With its fur as golden as the sun and its eyes as sharp as the emeralds, Foxe Brun Brun was admired by everyone, from the smallest hummingbird to the most beautiful, and the most beautiful of the birds.",
+          "metadata": {}
         }
       ]
     }
