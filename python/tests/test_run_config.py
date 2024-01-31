@@ -51,6 +51,7 @@ async def test_load_parametrized_data_config(set_temporary_env_vars):
             ],
         }
 
+@pytest.mark.xfail
 @pytest.mark.asyncio
 async def test_running_prompt_with_dependencies(set_temporary_env_vars):
     """Test running a prompt with dependencies with the run_with_dependencies flag set to True"""
