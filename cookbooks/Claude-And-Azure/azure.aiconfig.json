@@ -1,0 +1,71 @@
+{
+  "name": "Exploring Azure OpenAI",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {},
+    "model_parsers": {
+      "gpt-35-turbo": "gpt-35-turbo"
+    }
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "multilinguality",
+      "input": "Can you teach me how to say {{animal}} in Chinese? And, give me a few options.",
+      "metadata": {
+        "model": "gpt-35-turbo",
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "Certainly! Here are a few ways to say \"duck\" in different languages:\n\n1. Spanish: Pato\n2. French: Canard\n3. German: Ente\n4. Italian: Anatra\n5. Portuguese: Pato\n6. Russian: \u0423\u0442\u043a\u0430 (Utka)\n7. Japanese: \u9d28 (Kamo)\n8. Chinese (Mandarin): \u9e2d (Y\u0101)\n9. Hindi: \u092c\u0924\u0916 (Batak)\n10. Korean: \uc624\ub9ac (Ori)",
+          "metadata": {
+            "created": 1706719734,
+            "id": "chatcmpl-8n83aLlJ8fE9Tq8kcFtskxvR9iV8Y",
+            "model": "gpt-35-turbo",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "content": "Certainly! Here are a few ways to say \"duck\" in different languages:\n\n1. Spanish: Pato\n2. French: Canard\n3. German: Ente\n4. Italian: Anatra\n5. Portuguese: Pato\n6. Russian: \u0423\u0442\u043a\u0430 (Utka)\n7. Japanese: \u9d28 (Kamo)\n8. Chinese (Mandarin): \u9e2d (Y\u0101)\n9. Hindi: \u092c\u0924\u0916 (Batak)\n10. Korean: \uc624\ub9ac (Ori)",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pronounciation",
+      "input": "Can you explain how to pronounce the {{language}} one?",
+      "metadata": {
+        "model": "gpt-35-turbo",
+        "parameters": {
+          "language": "Chinese"
+        },
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "Certainly! The Chinese word for \"duck\" is \u9e2d (Y\u0101).\n\nTo pronounce it, you can follow these guidelines:\n\n1. The first sound \"Y\u0101\" is similar to the English \"ya\" sound.\n2. The \"Y\" is pronounced as a \"yuh\" sound, similar to the \"y\" in \"yes\".\n3. The \"\u0101\" sound is a long \"a\" sound, similar to the \"a\" in \"father\" or \"car\".\n\nPutting it together, you can say \"Y\u0101\" like \"yah\" with a longer \"a\" sound at the end.",
+          "metadata": {
+            "id": "chatcmpl-8n83i5SBIgzBWHLkh7mKMlCxyjXf6",
+            "created": 1706719742,
+            "model": "gpt-35-turbo",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "role": "assistant",
+              "content": "Certainly! The Chinese word for \"duck\" is \u9e2d (Y\u0101).\n\nTo pronounce it, you can follow these guidelines:\n\n1. The first sound \"Y\u0101\" is similar to the English \"ya\" sound.\n2. The \"Y\" is pronounced as a \"yuh\" sound, similar to the \"y\" in \"yes\".\n3. The \"\u0101\" sound is a long \"a\" sound, similar to the \"a\" in \"father\" or \"car\".\n\nPutting it together, you can say \"Y\u0101\" like \"yah\" with a longer \"a\" sound at the end."
+            },
+            "role": "assistant"
+          }
+        }
+      ]
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}

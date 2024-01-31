@@ -28,10 +28,13 @@
       "input": "Can you explain how to pronounce the {{language}} one?",
       "metadata": {
         "model": "gemini-pro",
-        "parameters": {},
+        "parameters": {
+          "language": "Chinese"
+        },
         "remember_chat_context": true
       },
       "outputs": []
     }
-  ]
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
 }
