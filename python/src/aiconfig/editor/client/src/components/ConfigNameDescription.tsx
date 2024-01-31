@@ -1,11 +1,4 @@
-import {
-  createStyles,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
-  Title,
-} from "@mantine/core";
+import { createStyles, Stack, Textarea, TextInput, Title } from "@mantine/core";
 import { useClickOutside } from "@mantine/hooks";
 import { memo, useCallback, useContext, useRef, useState } from "react";
 import AIConfigContext from "../contexts/AIConfigContext";
