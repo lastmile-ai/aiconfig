@@ -26,6 +26,9 @@ def _load_aiconfig(settings: Settings):
 
 
 async def main():
+    LOGGER.warning(
+        "Running legacy script. Consider switching to run_aiconfig_v2.py"
+    )
     settings_path = sys.argv[1]
     res_settings = _load_settings(settings_path)
 
