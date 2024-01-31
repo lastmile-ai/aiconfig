@@ -47,7 +47,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
       ".mantine-Text-root":
         theme.colorScheme === "dark"
           ? {
-              color: "C1C2C5",
+              color: "#C1C2C5",
               // default inherited backgroundColor is correct
             }
           : undefined, // light colorScheme is fine without overrides
