@@ -17,7 +17,9 @@ async def main():
     )
 
     # 4. Register the model parser with the model name (see file path).
-    AIConfigRuntime.register_model_parser(llama_model_parser, "llama-2-7b-chat")
+    AIConfigRuntime.register_model_parser(
+        llama_model_parser, "llama-2-7b-chat"
+    )
 
     # 5. Use the AIConfigRuntime API to load and run your prompt(s).
     config = AIConfigRuntime.load(aiconfig_path)
@@ -41,7 +43,9 @@ async def main():
     )
 
     # 4. Register the model parser with the model name (see file path).
-    AIConfigRuntime.register_model_parser(llama_model_parser_13b, "llama-2-13b-chat")
+    AIConfigRuntime.register_model_parser(
+        llama_model_parser_13b, "llama-2-13b-chat"
+    )
 
     print("\n\nRunning prompt13b...")
     await config.run("prompt13b", params={}, options=inference_options)
@@ -53,7 +57,9 @@ async def main():
         llama_model_parser_code, "codeup-llama-2-13b-chat-hf"
     )
     print("\n\nRunning prompt13b_code...")
-    code_res = await config.run("prompt13b_code", params={}, options=inference_options)
+    code_res = await config.run(
+        "prompt13b_code", params={}, options=inference_options
+    )
     print(f"\n\n\n\nCode response:\n{code_res}")
 
 

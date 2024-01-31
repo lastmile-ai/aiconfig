@@ -53,13 +53,20 @@ async def query(aiconfig_path: str, question: str) -> list[ExecuteResult]:
     return result
 
 
-async def get_mod_result(aiconfig_path: str, source_code: str, question: str) -> list[ExecuteResult]:
+async def get_mod_result(
+    aiconfig_path: str, source_code: str, question: str
+) -> list[ExecuteResult]:
     question_about_code = f"QUERY ABOUT SOURCE CODE:\n{question}\nSOURCE CODE:\n```{source_code}\n```"
 
     return await query(aiconfig_path, question_about_code)
 
 
-async def mod_code(aiconfig_path: str, source_code_file: str, question: str, update_file: bool = False):
+async def mod_code(
+    aiconfig_path: str,
+    source_code_file: str,
+    question: str,
+    update_file: bool = False,
+):
     # read source code from file
     with open(source_code_file, "r", encoding="utf8") as file:
         source_code = file.read()
@@ -93,7 +100,9 @@ async def loop(aiconfig_path: str, source_code_file: str | None):
     i = 0
     while True:
         try:
-            user_input = await event_loop.run_in_executor(None, session.prompt, "Query: [ctrl-D to exit] ")
+            user_input = await event_loop.run_in_executor(
+                None, session.prompt, "Query: [ctrl-D to exit] "
+            )
         except KeyboardInterrupt:
             continue
         except EOFError:
@@ -113,7 +122,9 @@ async def loop(aiconfig_path: str, source_code_file: str | None):
             prompt = user_input
 
         # Dynamically generate the prompt name and prompt object
-        new_prompt_name = f"prompt{len(runtime.prompts)+1}"  # Prompt{number of prompts}
+        new_prompt_name = (
+            f"prompt{len(runtime.prompts)+1}"  # Prompt{number of prompts}
+        )
         new_prompt = Prompt(name=new_prompt_name, input=prompt)
 
         # Add the new prompt and run the model
@@ -144,7 +155,9 @@ async def main():
     subparsers = parser.add_subparsers(dest="command")
 
     loop_parser = subparsers.add_parser("loop")
-    loop_parser.add_argument("-scf", "--source-code-file", help="Specify a source code file.")
+    loop_parser.add_argument(
+        "-scf", "--source-code-file", help="Specify a source code file."
+    )
 
     args = parser.parse_args()
 

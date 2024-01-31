@@ -1,6 +1,6 @@
 import { TextInput } from "@mantine/core";
 import { ChangeEvent, memo, useContext, useState } from "react";
-import AIConfigContext from "../AIConfigContext";
+import AIConfigContext from "../../contexts/AIConfigContext";
 
 type Props = {
   promptId: string;
@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default memo(function PromptName({ promptId, name, onUpdate }: Props) {
-  const { getState } = useContext(AIConfigContext);
+  const { getState, readOnly } = useContext(AIConfigContext);
 
   // Use local component state to show error for duplicate names
   // AIConfig state will not set duplicates to be safe
@@ -28,6 +28,7 @@ export default memo(function PromptName({ promptId, name, onUpdate }: Props) {
       variant="unstyled"
       placeholder="Name this prompt"
       onChange={onChange}
+      disabled={readOnly}
       error={
         getState().prompts.some(
           (p) => p.name === nameInput && p._ui.id !== promptId

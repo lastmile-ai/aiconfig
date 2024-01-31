@@ -1,9 +1,6 @@
-import PromptContainer from "./prompt/PromptContainer";
 import {
   Container,
   Button,
-  createStyles,
-  Stack,
   Flex,
   Text,
   Tooltip,
@@ -28,25 +25,25 @@ import {
   useState,
 } from "react";
 import { v4 as uuidv4 } from "uuid";
-import aiconfigReducer, { AIConfigReducerAction } from "./aiconfigReducer";
+import aiconfigReducer from "../reducers/aiconfigReducer";
+import type { AIConfigReducerAction } from "../reducers/actions";
 import {
-  ClientPrompt,
+  AIConfigEditorMode,
   LogEvent,
   LogEventData,
+  ThemeMode,
   aiConfigToClientConfig,
   clientConfigToAIConfig,
   clientPromptToAIConfigPrompt,
 } from "../shared/types";
-import AddPromptButton from "./prompt/AddPromptButton";
 import {
   getDefaultNewPromptName,
   getModelSettingsStream,
   getPrompt,
 } from "../utils/aiconfigStateUtils";
 import { debounce, uniqueId } from "lodash";
-import PromptMenuButton from "./prompt/PromptMenuButton";
 import GlobalParametersContainer from "./GlobalParametersContainer";
-import AIConfigContext from "./AIConfigContext";
+import AIConfigContext from "../contexts/AIConfigContext";
 import ConfigNameDescription from "./ConfigNameDescription";
 import {
   AUTOSAVE_INTERVAL_MS,
@@ -59,10 +56,22 @@ import {
 } from "../utils/promptUtils";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
+import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
+import DownloadButton from "./global/DownloadButton";
+import ShareButton from "./global/ShareButton";
+import PromptsContainer from "./prompt/PromptsContainer";
 
 type Props = {
   aiconfig: AIConfig;
-  callbacks: AIConfigCallbacks;
+  callbacks?: AIConfigCallbacks;
+  mode?: AIConfigEditorMode;
+  readOnly?: boolean;
+  /**
+   * Theme mode override for the editor. By default, the editor will use the system
+   * theme variant for the theme associated with the EditorMode. This prop allows
+   * overriding that behavior.
+   */
+  themeMode?: ThemeMode;
 };
 
 export type RunPromptStreamEvent =
@@ -71,8 +80,12 @@ export type RunPromptStreamEvent =
       data: Output;
     }
   | {
-      type: "aiconfig";
+      type: "aiconfig_chunk";
       data: AIConfig;
+    }
+  | {
+      type: "stop_streaming";
+      data: null;
     };
 
 export type RunPromptStreamErrorEvent = {
@@ -98,9 +111,10 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
+  download?: () => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
-  logEvent?: (event: LogEvent, data?: LogEventData) => void;
+  logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
   runPrompt: (
     promptName: string,
     onStream: RunPromptStreamCallback,
@@ -109,7 +123,8 @@ export type AIConfigCallbacks = {
     cancellationToken?: string
   ) => Promise<{ aiconfig: AIConfig }>;
   cancel: (cancellationToken: string) => Promise<void>;
-  save: (aiconfig: AIConfig) => Promise<void>;
+  save?: (aiconfig: AIConfig) => Promise<void>;
+  share?: () => Promise<{ share_url: string }>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
   setParameters: (parameters: JSONObject, promptName?: string) => Promise<void>;
@@ -126,39 +141,12 @@ export type AIConfigCallbacks = {
 
 type RequestCallbackError = { message?: string };
 
-const useStyles = createStyles((theme) => ({
-  addPromptRow: {
-    borderRadius: "4px",
-    display: "inline-block",
-    bottom: -24,
-    left: -40,
-    "&:hover": {
-      backgroundColor:
-        theme.colorScheme === "light"
-          ? theme.colors.gray[1]
-          : "rgba(255, 255, 255, 0.1)",
-    },
-    [theme.fn.smallerThan("sm")]: {
-      marginLeft: "0",
-      display: "block",
-      position: "static",
-      bottom: -10,
-      left: 0,
-      height: 28,
-      margin: "10px 0",
-    },
-  },
-  promptsContainer: {
-    [theme.fn.smallerThan("sm")]: {
-      padding: "0 0 200px 0",
-    },
-    paddingBottom: 400,
-  },
-}));
-
-export default function EditorContainer({
+export default function AIConfigEditor({
   aiconfig: initialAIConfig,
   callbacks,
+  mode,
+  readOnly = false,
+  themeMode,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
@@ -170,10 +158,48 @@ export default function EditorContainer({
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
 
-  const logEventCallback = callbacks.logEvent;
+  const logEventHandler = callbacks?.logEventHandler;
 
-  const saveCallback = callbacks.save;
+  const downloadCallback = callbacks?.download;
+  const onDownload = useCallback(async () => {
+    if (!downloadCallback) {
+      return;
+    }
+    try {
+      await downloadCallback();
+    } catch (err: unknown) {
+      const message = (err as RequestCallbackError).message ?? null;
+      showNotification({
+        title: "Error downloading AIConfig",
+        message,
+        color: "red",
+      });
+    }
+  }, [downloadCallback]);
+
+  const shareCallback = callbacks?.share;
+  const onShare = useCallback(async () => {
+    if (!shareCallback) {
+      return;
+    }
+    try {
+      const { share_url: shareUrl } = await shareCallback();
+      return shareUrl;
+    } catch (err: unknown) {
+      const message = (err as RequestCallbackError).message ?? null;
+      showNotification({
+        title: "Error sharing AIConfig",
+        message,
+        color: "red",
+      });
+    }
+  }, [shareCallback]);
+
+  const saveCallback = callbacks?.save;
   const onSave = useCallback(async () => {
+    if (!saveCallback) {
+      return;
+    }
     setIsSaving(true);
     try {
       await saveCallback(clientConfigToAIConfig(stateRef.current));
@@ -192,35 +218,42 @@ export default function EditorContainer({
     }
   }, [saveCallback]);
 
-  const updatePromptCallback = callbacks.updatePrompt;
-  const debouncedUpdatePrompt = useMemo(
-    () =>
-      debounce(
-        async (
-          promptName: string,
-          newPrompt: Prompt,
-          onSuccess: (aiconfigRes: AIConfig) => void,
-          onError: (err: unknown) => void
-        ) => {
-          try {
-            const serverConfigRes = await updatePromptCallback(
-              promptName,
-              newPrompt
-            );
-            if (serverConfigRes?.aiconfig) {
-              onSuccess(serverConfigRes.aiconfig);
-            }
-          } catch (err: unknown) {
-            onError(err);
+  const updatePromptCallback = callbacks?.updatePrompt;
+  const debouncedUpdatePrompt = useMemo(() => {
+    if (!updatePromptCallback) {
+      return;
+    }
+    return debounce(
+      async (
+        promptName: string,
+        newPrompt: Prompt,
+        onSuccess: (aiconfigRes: AIConfig) => void,
+        onError: (err: unknown) => void
+      ) => {
+        try {
+          const serverConfigRes = await updatePromptCallback(
+            promptName,
+            newPrompt
+          );
+          if (serverConfigRes?.aiconfig) {
+            onSuccess(serverConfigRes.aiconfig);
           }
-        },
-        DEBOUNCE_MS
-      ),
-    [updatePromptCallback]
-  );
+        } catch (err: unknown) {
+          onError(err);
+        }
+      },
+      DEBOUNCE_MS
+    );
+  }, [updatePromptCallback]);
 
   const onChangePromptInput = useCallback(
     async (promptId: string, newPromptInput: PromptInput) => {
+      if (!debouncedUpdatePrompt) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       const action: AIConfigReducerAction = {
         type: "UPDATE_PROMPT_INPUT",
         id: promptId,
@@ -268,6 +301,12 @@ export default function EditorContainer({
 
   const onChangePromptName = useCallback(
     async (promptId: string, newName: string) => {
+      if (!debouncedUpdatePrompt) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
@@ -308,31 +347,39 @@ export default function EditorContainer({
     [debouncedUpdatePrompt]
   );
 
-  const updateModelCallback = callbacks.updateModel;
-  const debouncedUpdateModel = useMemo(
-    () =>
-      debounce(
-        async (
-          value: {
-            modelName?: string;
-            settings?: InferenceSettings;
-            promptName?: string;
-          },
-          onError: (err: unknown) => void
-        ) => {
-          try {
-            await updateModelCallback(value);
-          } catch (err: unknown) {
-            onError(err);
-          }
+  const updateModelCallback = callbacks?.updateModel;
+  const debouncedUpdateModel = useMemo(() => {
+    if (!updateModelCallback) {
+      return;
+    }
+
+    return debounce(
+      async (
+        value: {
+          modelName?: string;
+          settings?: InferenceSettings;
+          promptName?: string;
         },
-        DEBOUNCE_MS
-      ),
-    [updateModelCallback]
-  );
+        onError: (err: unknown) => void
+      ) => {
+        try {
+          await updateModelCallback(value);
+        } catch (err: unknown) {
+          onError(err);
+        }
+      },
+      DEBOUNCE_MS
+    );
+  }, [updateModelCallback]);
 
   const onUpdatePromptModelSettings = useCallback(
     async (promptId: string, newModelSettings: JSONObject) => {
+      if (!debouncedUpdateModel) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "UPDATE_PROMPT_MODEL_SETTINGS",
         id: promptId,
@@ -377,6 +424,12 @@ export default function EditorContainer({
 
   const onUpdatePromptModel = useCallback(
     async (promptId: string, newModel?: string) => {
+      if (!debouncedUpdateModel) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "UPDATE_PROMPT_MODEL",
         id: promptId,
@@ -412,28 +465,36 @@ export default function EditorContainer({
     [dispatch, debouncedUpdateModel]
   );
 
-  const setParametersCallback = callbacks.setParameters;
-  const debouncedSetParameters = useMemo(
-    () =>
-      debounce(
-        async (
-          parameters: JSONObject,
-          promptName?: string,
-          onError?: (err: unknown) => void
-        ) => {
-          try {
-            await setParametersCallback(parameters, promptName);
-          } catch (err: unknown) {
-            onError?.(err);
-          }
-        },
-        DEBOUNCE_MS
-      ),
-    [setParametersCallback]
-  );
+  const setParametersCallback = callbacks?.setParameters;
+  const debouncedSetParameters = useMemo(() => {
+    if (!setParametersCallback) {
+      return;
+    }
+
+    return debounce(
+      async (
+        parameters: JSONObject,
+        promptName?: string,
+        onError?: (err: unknown) => void
+      ) => {
+        try {
+          await setParametersCallback(parameters, promptName);
+        } catch (err: unknown) {
+          onError?.(err);
+        }
+      },
+      DEBOUNCE_MS
+    );
+  }, [setParametersCallback]);
 
   const onUpdateGlobalParameters = useCallback(
     async (newParameters: JSONObject) => {
+      if (!debouncedSetParameters) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "UPDATE_GLOBAL_PARAMETERS",
         parameters: newParameters,
@@ -463,6 +524,12 @@ export default function EditorContainer({
 
   const onUpdatePromptParameters = useCallback(
     async (promptId: string, newParameters: JSONObject) => {
+      if (!debouncedSetParameters) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "UPDATE_PROMPT_PARAMETERS",
         id: promptId,
@@ -493,9 +560,15 @@ export default function EditorContainer({
     [debouncedSetParameters, dispatch]
   );
 
-  const addPromptCallback = callbacks.addPrompt;
+  const addPromptCallback = callbacks?.addPrompt;
   const onAddPrompt = useCallback(
     async (promptIndex: number, model: string) => {
+      if (!addPromptCallback) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       const promptName = getDefaultNewPromptName(
         stateRef.current as unknown as AIConfig
       );
@@ -520,7 +593,7 @@ export default function EditorContainer({
       };
 
       dispatch(action);
-      logEventCallback?.("ADD_PROMPT", { model, promptIndex });
+      logEventHandler?.("ADD_PROMPT", { model, promptIndex });
 
       try {
         const serverConfigRes = await addPromptCallback(
@@ -542,12 +615,18 @@ export default function EditorContainer({
         });
       }
     },
-    [addPromptCallback, logEventCallback]
+    [addPromptCallback, logEventHandler]
   );
 
-  const deletePromptCallback = callbacks.deletePrompt;
+  const deletePromptCallback = callbacks?.deletePrompt;
   const onDeletePrompt = useCallback(
     async (promptId: string) => {
+      if (!deletePromptCallback) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "DELETE_PROMPT",
         id: promptId,
@@ -571,8 +650,14 @@ export default function EditorContainer({
     [deletePromptCallback, dispatch]
   );
 
-  const clearOutputsCallback = callbacks.clearOutputs;
+  const clearOutputsCallback = callbacks?.clearOutputs;
   const onClearOutputs = useCallback(async () => {
+    if (!clearOutputsCallback) {
+      // Just no-op if no callback specified. We could technically perform
+      // client-side updates but that might be confusing
+      return;
+    }
+
     dispatch({
       type: "CLEAR_OUTPUTS",
     });
@@ -588,25 +673,33 @@ export default function EditorContainer({
     }
   }, [clearOutputsCallback, dispatch]);
 
-  const runPromptCallback = callbacks.runPrompt;
+  const runPromptCallback = callbacks?.runPrompt;
 
   const onRunPrompt = useCallback(
     async (promptId: string) => {
-      const cancellationToken = uuidv4();
-      const action: AIConfigReducerAction = {
-        type: "RUN_PROMPT",
-        id: promptId,
-        cancellationToken,
-      };
+      if (!runPromptCallback) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
 
-      dispatch(action);
+      const cancellationToken = uuidv4();
+
+      dispatch({
+        // This sets the isRunning and runningPromptId flags
+        type: "RUN_PROMPT_START",
+        promptId,
+        cancellationToken,
+      });
+      logEventHandler?.("RUN_PROMPT_START");
 
       const onPromptError = (message: string | null) => {
         dispatch({
           type: "RUN_PROMPT_ERROR",
-          id: promptId,
+          promptId,
           message: message ?? undefined,
         });
+        logEventHandler?.("RUN_PROMPT_ERROR");
 
         const promptName = getPrompt(stateRef.current, promptId)?.name;
 
@@ -635,17 +728,23 @@ export default function EditorContainer({
             if (event.type === "output_chunk") {
               dispatch({
                 type: "STREAM_OUTPUT_CHUNK",
-                id: promptId,
+                promptId,
                 output: event.data,
               });
-            } else if (event.type === "aiconfig") {
+            } else if (event.type === "aiconfig_chunk") {
               dispatch({
-                type: "CONSOLIDATE_AICONFIG",
-                action: {
-                  ...action,
-                },
+                type: "STREAM_AICONFIG_CHUNK",
                 config: event.data,
               });
+            } else if (event.type === "stop_streaming") {
+              // Pass this event at the end of streaming to signal
+              // that the prompt is done running and we're ready
+              // to reset the ClientAIConfig to a non-running state
+              dispatch({
+                type: "RUN_PROMPT_SUCCESS",
+                promptId,
+              });
+              logEventHandler?.("RUN_PROMPT_SUCCESS");
             }
           },
           (event) => {
@@ -657,17 +756,19 @@ export default function EditorContainer({
                 // This is a cancellation
                 // Reset the aiconfig to the state before we started running the prompt
                 dispatch({
-                  type: "CONSOLIDATE_AICONFIG",
-                  action,
+                  type: "RUN_PROMPT_CANCEL",
+                  promptId,
+                  // Returned config output is reset to before running RUN_PROMPT
                   config: event.data.data,
                 });
+                logEventHandler?.("RUN_PROMPT_CANCELED");
 
                 const promptName = getPrompt(stateRef.current, promptId)?.name;
 
                 showNotification({
                   title: `Execution interrupted for prompt${
-                    promptName ? ` ${promptName}` : ""
-                  }. Resetting to previous state.`,
+                    promptName ? ` '${promptName}'` : ""
+                  }. Resetting output to previous state.`,
                   message: event.data.message,
                   color: "yellow",
                 });
@@ -683,35 +784,45 @@ export default function EditorContainer({
         // Keep this here in case any server implementations don't return
         // aiconfig as a streaming format
         if (serverConfigResponse?.aiconfig) {
+          // Do we need to log here
           dispatch({
-            type: "CONSOLIDATE_AICONFIG",
-            action,
-            config: serverConfigResponse?.aiconfig,
+            type: "RUN_PROMPT_SUCCESS",
+            promptId,
+            config: serverConfigResponse.aiconfig,
           });
+          logEventHandler?.("RUN_PROMPT_SUCCESS");
         }
       } catch (err: unknown) {
         const message = (err as RequestCallbackError).message ?? null;
         onPromptError(message);
       }
     },
-    [runPromptCallback]
+    [logEventHandler, runPromptCallback]
   );
 
-  const setNameCallback = callbacks.setConfigName;
-  const debouncedSetName = useMemo(
-    () =>
-      debounce(async (name: string, onError: (err: unknown) => void) => {
-        try {
-          await setNameCallback(name);
-        } catch (err: unknown) {
-          onError(err);
-        }
-      }, DEBOUNCE_MS),
-    [setNameCallback]
-  );
+  const setNameCallback = callbacks?.setConfigName;
+  const debouncedSetName = useMemo(() => {
+    if (!setNameCallback) {
+      return;
+    }
+
+    return debounce(async (name: string, onError: (err: unknown) => void) => {
+      try {
+        await setNameCallback(name);
+      } catch (err: unknown) {
+        onError(err);
+      }
+    }, DEBOUNCE_MS);
+  }, [setNameCallback]);
 
   const onSetName = useCallback(
     async (name: string) => {
+      if (!debouncedSetName) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "SET_NAME",
         name,
@@ -729,21 +840,32 @@ export default function EditorContainer({
     [debouncedSetName]
   );
 
-  const setDescriptionCallback = callbacks.setConfigDescription;
-  const debouncedSetDescription = useMemo(
-    () =>
-      debounce(async (description: string, onError: (err: unknown) => void) => {
+  const setDescriptionCallback = callbacks?.setConfigDescription;
+  const debouncedSetDescription = useMemo(() => {
+    if (!setDescriptionCallback) {
+      return;
+    }
+
+    return debounce(
+      async (description: string, onError: (err: unknown) => void) => {
         try {
           await setDescriptionCallback(description);
         } catch (err: unknown) {
           onError(err);
         }
-      }, DEBOUNCE_MS),
-    [setDescriptionCallback]
-  );
+      },
+      DEBOUNCE_MS
+    );
+  }, [setDescriptionCallback]);
 
   const onSetDescription = useCallback(
     async (description: string) => {
+      if (!debouncedSetDescription) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
       dispatch({
         type: "SET_DESCRIPTION",
         description,
@@ -761,15 +883,15 @@ export default function EditorContainer({
     [debouncedSetDescription]
   );
 
-  const { classes } = useStyles();
-
   const getState = useCallback(() => stateRef.current, []);
   const contextValue = useMemo(
     () => ({
       getState,
-      logEvent: logEventCallback,
+      logEventHandler,
+      mode,
+      readOnly,
     }),
-    [getState, logEventCallback]
+    [getState, logEventHandler, mode, readOnly]
   );
 
   const isDirty = aiconfigState._ui.isDirty !== false;
@@ -807,7 +929,7 @@ export default function EditorContainer({
 
   // Server heartbeat, check every 3s to show error if server is down
   // Don't poll if server status is in an error state since it won't automatically recover
-  const getServerStatusCallback = callbacks.getServerStatus;
+  const getServerStatusCallback = callbacks?.getServerStatus;
   useEffect(() => {
     if (!getServerStatusCallback || serverStatus !== "OK") {
       return;
@@ -828,125 +950,113 @@ export default function EditorContainer({
   const runningPromptId: string | undefined = aiconfigState._ui.runningPromptId;
 
   return (
-    <AIConfigContext.Provider value={contextValue}>
-      <Notifications />
-      {serverStatus !== "OK" && (
-        <>
-          {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
-          <div style={{ height: "100px" }} />
-          <Alert
-            color="red"
-            title="Server Connection Error"
-            w="100%"
-            style={{ position: "fixed", top: 0, zIndex: 999 }}
-          >
-            <Text>
-              There is a problem with the editor server connection. Please copy
-              important changes somewhere safe and then try reloading the page
-              or restarting the editor.
-            </Text>
-            <Flex align="center">
-              <CopyButton
-                value={JSON.stringify(
-                  clientConfigToAIConfig(aiconfigState),
-                  null,
-                  2
-                )}
-                contentLabel="AIConfig JSON"
-              />
-              <Text color="dimmed">Click to copy current AIConfig JSON</Text>
-            </Flex>
-          </Alert>
-        </>
-      )}
-      <Container maw="80rem">
-        <Flex justify="flex-end" mt="md" mb="xs">
-          <Group>
-            <Button
-              loading={undefined}
-              onClick={onClearOutputs}
-              size="xs"
-              variant="gradient"
-            >
-              Clear Outputs
-            </Button>
-
-            <Tooltip
-              label={isDirty ? "Save changes to config" : "No unsaved changes"}
-            >
-              <Button
-                leftIcon={<IconDeviceFloppy />}
-                loading={isSaving}
-                onClick={() => {
-                  onSave();
-                  logEventCallback?.("SAVE_BUTTON_CLICKED");
-                }}
-                disabled={!isDirty}
-                size="xs"
-                variant="gradient"
+    <AIConfigEditorThemeProvider mode={mode} themeMode={themeMode}>
+      <AIConfigContext.Provider value={contextValue}>
+        <Notifications />
+        <Container className="editorBackground" maw="80rem">
+          {serverStatus !== "OK" && (
+            <>
+              {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
+              <div style={{ height: "100px" }} />
+              <Alert
+                color="red"
+                title="Server Connection Error"
+                w="100%"
+                style={{ position: "fixed", top: 0, zIndex: 999 }}
               >
-                Save
-              </Button>
-            </Tooltip>
-          </Group>
-        </Flex>
-        <ConfigNameDescription
-          name={aiconfigState.name}
-          description={aiconfigState.description}
-          setDescription={onSetDescription}
-          setName={onSetName}
-        />
-      </Container>
-      <GlobalParametersContainer
-        initialValue={aiconfigState?.metadata?.parameters ?? {}}
-        onUpdateParameters={onUpdateGlobalParameters}
-      />
-      <Container maw="80rem" className={classes.promptsContainer}>
-        <div className={classes.addPromptRow}>
-          <AddPromptButton
-            getModels={callbacks.getModels}
-            addPrompt={(model: string) => onAddPrompt(0, model)}
+                <Text>
+                  There is a problem with the editor server connection. Please
+                  copy important changes somewhere safe and then try reloading
+                  the page or restarting the editor.
+                </Text>
+                <Flex align="center">
+                  <CopyButton
+                    value={JSON.stringify(
+                      clientConfigToAIConfig(aiconfigState),
+                      null,
+                      2
+                    )}
+                    contentLabel="AIConfig JSON"
+                  />
+                  <Text color="dimmed">
+                    Click to copy current AIConfig JSON
+                  </Text>
+                </Flex>
+              </Alert>
+            </>
+          )}
+          <div>
+            <Flex justify="flex-end" mt="md" mb="xs">
+              {
+                <Group>
+                  {downloadCallback && (
+                    <DownloadButton onDownload={onDownload} />
+                  )}
+                  {shareCallback && <ShareButton onShare={onShare} />}
+                  {!readOnly && onClearOutputs && (
+                    <Button
+                      loading={undefined}
+                      onClick={onClearOutputs}
+                      size="xs"
+                      variant="gradient"
+                    >
+                      Clear Outputs
+                    </Button>
+                  )}
+                  {!readOnly && saveCallback && (
+                    <Tooltip
+                      label={
+                        isDirty
+                          ? "Save changes to config"
+                          : "No unsaved changes"
+                      }
+                    >
+                      <Button
+                        leftIcon={<IconDeviceFloppy />}
+                        loading={isSaving}
+                        onClick={() => {
+                          onSave();
+                          logEventHandler?.("SAVE_BUTTON_CLICKED");
+                        }}
+                        disabled={!isDirty}
+                        size="xs"
+                        variant="gradient"
+                      >
+                        Save
+                      </Button>
+                    </Tooltip>
+                  )}
+                </Group>
+              }
+            </Flex>
+            <ConfigNameDescription
+              name={aiconfigState.name}
+              description={aiconfigState.description}
+              setDescription={onSetDescription}
+              setName={onSetName}
+            />
+          </div>
+          <GlobalParametersContainer
+            initialValue={aiconfigState?.metadata?.parameters ?? {}}
+            onUpdateParameters={onUpdateGlobalParameters}
           />
-        </div>
-        {aiconfigState.prompts.map((prompt: ClientPrompt, i: number) => {
-          const isAnotherPromptRunning =
-            runningPromptId !== undefined && runningPromptId !== prompt._ui.id;
-          return (
-            <Stack key={prompt._ui.id}>
-              <Flex mt="md">
-                <PromptMenuButton
-                  promptId={prompt._ui.id}
-                  onDeletePrompt={() => onDeletePrompt(prompt._ui.id)}
-                />
-                <PromptContainer
-                  prompt={prompt}
-                  getModels={callbacks.getModels}
-                  onChangePromptInput={onChangePromptInput}
-                  onChangePromptName={onChangePromptName}
-                  cancel={callbacks.cancel}
-                  onRunPrompt={onRunPrompt}
-                  onUpdateModel={onUpdatePromptModel}
-                  onUpdateModelSettings={onUpdatePromptModelSettings}
-                  onUpdateParameters={onUpdatePromptParameters}
-                  defaultConfigModelName={aiconfigState.metadata.default_model}
-                  isRunButtonDisabled={isAnotherPromptRunning}
-                />
-              </Flex>
-              <div className={classes.addPromptRow}>
-                <AddPromptButton
-                  getModels={callbacks.getModels}
-                  addPrompt={(model: string) =>
-                    onAddPrompt(
-                      i + 1 /* insert below current prompt index */,
-                      model
-                    )
-                  }
-                />
-              </div>
-            </Stack>
-          );
-        })}
-      </Container>
-    </AIConfigContext.Provider>
+          <PromptsContainer
+            cancelRunPrompt={callbacks?.cancel}
+            defaultModel={aiconfigState.metadata.default_model}
+            getModels={callbacks?.getModels}
+            onAddPrompt={onAddPrompt}
+            onChangePromptInput={onChangePromptInput}
+            onChangePromptName={onChangePromptName}
+            onDeletePrompt={onDeletePrompt}
+            onRunPrompt={onRunPrompt}
+            onUpdatePromptModel={onUpdatePromptModel}
+            onUpdatePromptModelSettings={onUpdatePromptModelSettings}
+            onUpdatePromptParameters={onUpdatePromptParameters}
+            prompts={aiconfigState.prompts}
+            runningPromptId={runningPromptId}
+          />
+        </Container>
+      </AIConfigContext.Provider>
+    </AIConfigEditorThemeProvider>
   );
 }

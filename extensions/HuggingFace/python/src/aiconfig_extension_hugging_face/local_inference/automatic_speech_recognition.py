@@ -1,11 +1,19 @@
-from typing import Any, Dict, Optional, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import torch
-from transformers import pipeline, Pipeline
-from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
-from aiconfig import ModelParser, InferenceOptions
 from aiconfig.callback import CallbackEvent
-from aiconfig.schema import Prompt, Output, ExecuteResult, Attachment
+from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
+from transformers import Pipeline, pipeline
+
+from aiconfig import InferenceOptions, ModelParser
+from aiconfig.schema import (
+    Attachment,
+    AttachmentDataWithStringValue,
+    ExecuteResult,
+    Output,
+    Prompt,
+    PromptInput,
+)
 
 if TYPE_CHECKING:
     from aiconfig import AIConfigRuntime
@@ -57,7 +65,9 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ModelParser):
             str: Serialized representation of the prompt and inference settings.
         """
         # TODO: See https://github.com/lastmile-ai/aiconfig/issues/822
-        raise NotImplementedError("serialize is not implemented for HuggingFaceAutomaticSpeechRecognitionTransformer")
+        raise NotImplementedError(
+            "serialize is not implemented for HuggingFaceAutomaticSpeechRecognitionTransformer"
+        )
 
     async def deserialize(
         self,
@@ -65,12 +75,23 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ModelParser):
         aiconfig: "AIConfigRuntime",
         params: Optional[Dict[str, Any]] = {},
     ) -> Dict[str, Any]:
-        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params}))
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_deserialize_start",
+                __name__,
+                {"prompt": prompt, "params": params},
+            )
+        )
 
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
-        [_pipeline_creation_params, unfiltered_completion_params] = refine_pipeline_creation_params(model_settings)
-        completion_data = refine_asr_completion_params(unfiltered_completion_params)
+        [
+            _pipeline_creation_params,
+            unfiltered_completion_params,
+        ] = refine_pipeline_creation_params(model_settings)
+        completion_data = refine_asr_completion_params(
+            unfiltered_completion_params
+        )
 
         # ASR Pipeline supports input types of bytes, file path, and a dict containing raw sampled audio. Also supports multiple input
         # For now, support multiple or single uri's as input
@@ -82,20 +103,39 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ModelParser):
 
         completion_data["inputs"] = inputs
 
-        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data}))
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_deserialize_complete",
+                __name__,
+                {"output": completion_data},
+            )
+        )
         return completion_data
 
-    async def run(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any], **kwargs) -> list[Output]:
+    async def run(
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        options: InferenceOptions,
+        parameters: Dict[str, Any],
+        **kwargs,
+    ) -> list[Output]:
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_run_start",
                 __name__,
-                {"prompt": prompt, "options": options, "parameters": parameters},
+                {
+                    "prompt": prompt,
+                    "options": options,
+                    "parameters": parameters,
+                },
             )
         )
 
         model_settings = self.get_model_settings(prompt, aiconfig)
-        [pipeline_creation_data, _] = refine_pipeline_creation_params(model_settings)
+        [pipeline_creation_data, _] = refine_pipeline_creation_params(
+            model_settings
+        )
         model_name = get_hf_model(aiconfig, prompt, self)
         key = model_name if model_name is not None else "__default__"
 
@@ -103,7 +143,11 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ModelParser):
             device = self._get_device()
             if pipeline_creation_data.get("device", None) is None:
                 pipeline_creation_data["device"] = device
-            self.pipelines[key] = pipeline(task="automatic-speech-recognition", model=model_name, **pipeline_creation_data)
+            self.pipelines[key] = pipeline(
+                task="automatic-speech-recognition",
+                model=model_name,
+                **pipeline_creation_data,
+            )
 
         asr_pipeline = self.pipelines[key]
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
@@ -114,7 +158,11 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ModelParser):
         outputs = construct_outputs(response)
 
         prompt.outputs = outputs
-        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs}))
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent(
+                "on_run_complete", __name__, {"result": prompt.outputs}
+            )
+        )
         return prompt.outputs
 
     def _get_device(self) -> str:
@@ -146,15 +194,19 @@ class HuggingFaceAutomaticSpeechRecognitionTransformer(ModelParser):
 
 def validate_attachment_type_is_audio(attachment: Attachment):
     if not hasattr(attachment, "mime_type"):
-        raise ValueError(f"Attachment has no mime type. Specify the audio mimetype in the aiconfig")
+        raise ValueError(
+            f"Attachment has no mime type. Specify the audio mimetype in the aiconfig"
+        )
 
     if not attachment.mime_type.startswith("audio/"):
-        raise ValueError(f"Invalid attachment mimetype {attachment.mime_type}. Expected audio mimetype.")
+        raise ValueError(
+            f"Invalid attachment mimetype {attachment.mime_type}. Expected audio mimetype."
+        )
 
 
 def validate_and_retrieve_audio_from_attachments(prompt: Prompt) -> list[str]:
     """
-    Retrieves the audio uri's from each attachment in the prompt input.
+    Retrieves the audio uri's or base64 from each attachment in the prompt input.
 
     Throws an exception if
     - attachment is not audio
@@ -163,24 +215,35 @@ def validate_and_retrieve_audio_from_attachments(prompt: Prompt) -> list[str]:
     - operation fails for any reason
     """
 
-    if not hasattr(prompt.input, "attachments") or len(prompt.input.attachments) == 0:
-        raise ValueError(f"No attachments found in input for prompt {prompt.name}. Please add an audio attachment to the prompt input.")
+    if not isinstance(prompt.input, PromptInput):
+        raise ValueError(
+            f"Prompt input is of type {type(prompt.input) }. Please specify a PromptInput with attachments for prompt {prompt.name}."
+        )
 
-    audio_uris: list[str] = []
+    if prompt.input.attachments is None or len(prompt.input.attachments) == 0:
+        raise ValueError(
+            f"No attachments found in input for prompt {prompt.name}. Please add an audio attachment to the prompt input."
+        )
+
+    audio_inputs: list[str] = []
 
     for i, attachment in enumerate(prompt.input.attachments):
         validate_attachment_type_is_audio(attachment)
 
-        if not isinstance(attachment.data, str):
-            # See todo above, but for now only support uri's
-            raise ValueError(f"Attachment #{i} data is not a uri. Please specify a uri for the audio attachment in prompt {prompt.name}.")
+        if not isinstance(attachment.data, AttachmentDataWithStringValue):
+            raise ValueError(
+                f"""Attachment data must be of type `AttachmentDataWithStringValue` with a `kind` and `value` field. 
+                         Please specify a uri for the audio attachment in prompt {prompt.name}."""
+            )
 
-        audio_uris.append(attachment.data)
+        audio_inputs.append(attachment.data.value)
 
-    return audio_uris
+    return audio_inputs
 
 
-def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict[str, Any]]:
+def refine_pipeline_creation_params(
+    model_settings: Dict[str, Any]
+) -> List[Dict[str, Any]]:
     """
     Refines the pipeline creation params for the HF text2Image generation api.
     Defers unsupported params as completion params, where they can get processed in
@@ -211,7 +274,9 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
         if key.lower() in supported_keys:
             pipeline_creation_params[key.lower()] = model_settings[key]
         else:
-            if key.lower() == "kwargs" and isinstance(model_settings[key], Dict):
+            if key.lower() == "kwargs" and isinstance(
+                model_settings[key], Dict
+            ):
                 completion_params.update(model_settings[key])
             else:
                 completion_params[key.lower()] = model_settings[key]
@@ -219,7 +284,9 @@ def refine_pipeline_creation_params(model_settings: Dict[str, Any]) -> List[Dict
     return [pipeline_creation_params, completion_params]
 
 
-def refine_asr_completion_params(unfiltered_completion_params: Dict[str, Any]) -> Dict[str, Any]:
+def refine_asr_completion_params(
+    unfiltered_completion_params: Dict[str, Any]
+) -> Dict[str, Any]:
     """
     Refines the ASR params for the HF asr generation api after a
     pipeline has been created via `refine_pipeline_creation_params`. Removes any
@@ -269,13 +336,19 @@ def construct_outputs(response: list[Any]) -> list[Output]:
     for i, result in enumerate(response):
         # response is expected to be a dict containing the text output and timestamps if specified. Could not find docs for this.
         result: dict[str, Any]
-        text_output = result.get("text") if "text" in result and isinstance(result, dict) else result
+        text_output = (
+            result.get("text")
+            if "text" in result and isinstance(result, dict)
+            else result
+        )
         output = ExecuteResult(
             **{
                 "output_type": "execute_result",
                 "data": text_output,
                 "execution_count": i,
-                "metadata": {"result": result} if result.get("chunks", False) else {},  # may contain timestamps and chunks, for now pass result
+                "metadata": {"result": result}
+                if result.get("chunks", False)
+                else {},  # may contain timestamps and chunks, for now pass result
             }
         )
         outputs.append(output)

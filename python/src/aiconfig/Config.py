@@ -1,12 +1,16 @@
 import json
 import os
 from typing import Any, Dict, List, Literal, Optional, Tuple
+from aiconfig.default_parsers.claude import ClaudeBedrockModelParser
 
 import requests
 import yaml
 from aiconfig.callback import CallbackEvent, CallbackManager
-from aiconfig.default_parsers.anyscale_endpoint import DefaultAnyscaleEndpointParser
+from aiconfig.default_parsers.anyscale_endpoint import (
+    DefaultAnyscaleEndpointParser,
+)
 from aiconfig.default_parsers.openai import DefaultOpenAIParser
+from aiconfig.default_parsers.gemini import GeminiModelParser
 from aiconfig.default_parsers.palm import PaLMChatParser, PaLMTextParser
 from aiconfig.model_parser import InferenceOptions, ModelParser
 
@@ -14,35 +18,50 @@ from aiconfig.schema import JSONObject
 
 from .default_parsers.dalle import DalleImageGenerationParser
 from .default_parsers.hf import HuggingFaceTextGenerationParser
-from .registry import ModelParserRegistry, update_model_parser_registry_with_config_runtime
+from .registry import (
+    ModelParserRegistry,
+    update_model_parser_registry_with_config_runtime,
+)
 from .schema import AIConfig, Prompt
 from .util.config_utils import is_yaml_ext
 
-gpt_models = [
+gpt_models_main = [
+    "gpt-3.5-turbo",
     "gpt-4",
+]
+gpt_models_extra = [
+    "gpt-3.5-turbo-16k",
+    "gpt-3.5-turbo-0301",
+    "gpt-3.5-turbo-0613",
+    "gpt-3.5-turbo-16k-0613",
     "gpt-4-0314",
     "gpt-4-0613",
     "gpt-4-32k",
     "gpt-4-32k-0314",
     "gpt-4-32k-0613",
-    "gpt-3.5-turbo",
-    "gpt-3.5-turbo-16k",
-    "gpt-3.5-turbo-0301",
-    "gpt-3.5-turbo-0613",
-    "gpt-3.5-turbo-16k-0613",
 ]
-for model in gpt_models:
+for model in gpt_models_main:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
-ModelParserRegistry.register_model_parser(DefaultAnyscaleEndpointParser("AnyscaleEndpoint"))
-ModelParserRegistry.register_model_parser(PaLMChatParser())
-ModelParserRegistry.register_model_parser(PaLMTextParser())
-ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
 dalle_image_generation_models = [
     "dall-e-2",
     "dall-e-3",
 ]
 for model in dalle_image_generation_models:
-    ModelParserRegistry.register_model_parser(DalleImageGenerationParser(model))
+    ModelParserRegistry.register_model_parser(
+        DalleImageGenerationParser(model)
+    )
+ModelParserRegistry.register_model_parser(
+    DefaultAnyscaleEndpointParser("AnyscaleEndpoint")
+)
+ModelParserRegistry.register_model_parser(
+    GeminiModelParser("gemini-pro"), ["gemini-pro"]
+)
+ModelParserRegistry.register_model_parser(ClaudeBedrockModelParser())
+ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
+for model in gpt_models_extra:
+    ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
+ModelParserRegistry.register_model_parser(PaLMChatParser())
+ModelParserRegistry.register_model_parser(PaLMTextParser())
 
 
 class AIConfigRuntime(AIConfig):
@@ -74,7 +93,7 @@ class AIConfigRuntime(AIConfig):
 
         This method creates a new AI configuration with the provided parameters and sets it as the current AI configuration.
         """
-        return cls(
+        config: "AIConfigRuntime" = cls(
             **{
                 "name": name,
                 "description": description,
@@ -83,6 +102,8 @@ class AIConfigRuntime(AIConfig):
                 "prompts": prompts,
             }
         )
+        update_model_parser_registry_with_config_runtime(config)
+        return config
 
     @classmethod
     def load(cls, config_filepath: str) -> "AIConfigRuntime":
@@ -100,14 +121,37 @@ class AIConfigRuntime(AIConfig):
             else:
                 data = file.read()
 
-        # load the file as bytes and let pydantic handle the parsing
-        # validated_data =  AIConfig.model_validate_json(file.read())
-        aiconfigruntime = cls.model_validate_json(data)
-        update_model_parser_registry_with_config_runtime(aiconfigruntime)
-
+        config_runtime = cls.load_json(data)
         # set the file path. This is used when saving the config
-        aiconfigruntime.file_path = config_filepath
-        return aiconfigruntime
+        config_runtime.file_path = config_filepath
+        return config_runtime
+
+    @classmethod
+    def load_json(cls, config_json: str) -> "AIConfigRuntime":
+        """
+        Constructs AIConfigRuntime from provided JSON and returns it.
+
+        Args:
+            config_json (str): The JSON representing the AIConfig.
+        """
+
+        config_runtime = cls.model_validate_json(config_json)
+        update_model_parser_registry_with_config_runtime(config_runtime)
+
+        return config_runtime
+
+    @classmethod
+    def load_yaml(cls, config_yaml: str) -> "AIConfigRuntime":
+        """
+        Constructs AIConfigRuntime from provided YAML and returns it.
+
+        Args:
+            config_yaml (str): The YAML representing the AIConfig.
+        """
+
+        yaml_data = yaml.safe_load(config_yaml)
+        config_json = json.dumps(yaml_data)
+        return cls.load_json(config_json)
 
     @classmethod
     def load_from_workbook(cls, workbook_id: str) -> "AIConfigRuntime":
@@ -127,14 +171,18 @@ class AIConfigRuntime(AIConfig):
             lastmileapi_token = os.environ.get("LASTMILE_API_TOKEN")
 
             if not lastmileapi_token:
-                raise ValueError("LASTMILE_API_TOKEN environment variable is not set.")
+                raise ValueError(
+                    "LASTMILE_API_TOKEN environment variable is not set."
+                )
 
             headers = {"Authorization": "Bearer " + lastmileapi_token}
             url = f"{API_ENDPOINT}/workbooks/aiconfig?id={workbook_id}"
             resp = requests.get(url, headers=headers)
 
             if resp.status_code != 200:
-                raise Exception(f"Failed to load workbook. Status code: {resp.status_code}")
+                raise Exception(
+                    f"Failed to load workbook. Status code: {resp.status_code}"
+                )
 
             data = resp.json()
 
@@ -177,11 +225,15 @@ class AIConfigRuntime(AIConfig):
 
         model_parser = ModelParserRegistry.get_model_parser(model_name)
         if not model_parser:
-            raise ValueError(f"Unable to serialize data: `{data}`\n Model Parser for model {model_name} does not exist.")
+            raise ValueError(
+                f"Unable to serialize data: `{data}`\n Model Parser for model {model_name} does not exist."
+            )
 
         prompts = await model_parser.serialize(prompt_name, data, self, params)
 
-        event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
+        event = CallbackEvent(
+            "on_serialize_complete", __name__, {"result": prompts}
+        )
         await self.callback_manager.run_callbacks(event)
         return prompts
 
@@ -201,14 +253,20 @@ class AIConfigRuntime(AIConfig):
         Returns:
             str: The resolved prompt.
         """
-        event = CallbackEvent("on_resolve_start", __file__, {"prompt_name": prompt_name, "params": params})
+        event = CallbackEvent(
+            "on_resolve_start",
+            __file__,
+            {"prompt_name": prompt_name, "params": params},
+        )
         await self.callback_manager.run_callbacks(event)
 
         if not params:
             params = {}
 
         if prompt_name not in self.prompt_index:
-            raise IndexError(f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}")
+            raise IndexError(
+                f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}"
+            )
 
         prompt_data = self.prompt_index[prompt_name]
         model_name = self.get_model_name(prompt_data)
@@ -216,7 +274,9 @@ class AIConfigRuntime(AIConfig):
 
         response = await model_provider.deserialize(prompt_data, self, params)
 
-        event = CallbackEvent("on_resolve_complete", __name__, {"result": response})
+        event = CallbackEvent(
+            "on_resolve_complete", __name__, {"result": response}
+        )
         await self.callback_manager.run_callbacks(event)
         return response
 
@@ -253,7 +313,9 @@ class AIConfigRuntime(AIConfig):
             params = {}
 
         if prompt_name not in self.prompt_index:
-            raise IndexError(f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}")
+            raise IndexError(
+                f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}"
+            )
 
         prompt_data = self.prompt_index[prompt_name]
         model_name = self.get_model_name(prompt_data)
@@ -267,10 +329,12 @@ class AIConfigRuntime(AIConfig):
             self,
             options,
             params,
-            **kwargs, # TODO: We should remove and make argument explicit
+            **kwargs,  # TODO: We should remove and make argument explicit
         )
 
-        event = CallbackEvent("on_run_complete", __name__, {"result": response})
+        event = CallbackEvent(
+            "on_run_complete", __name__, {"result": response}
+        )
         await self.callback_manager.run_callbacks(event)
         return response
 
@@ -316,7 +380,9 @@ class AIConfigRuntime(AIConfig):
 
         # Check if the provided prompt name is available in the list of prompts
         if prompt_name not in self.prompt_index:
-            raise IndexError(f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}")
+            raise IndexError(
+                f"Prompt '{prompt_name}' not found in config, available prompts are:\n {list(self.prompt_index.keys())}"
+            )
 
         # Retrieve model and respective provider
         prompt_data = self.prompt_index[prompt_name]
@@ -343,11 +409,25 @@ class AIConfigRuntime(AIConfig):
             parameters_dict_used = parameters_list[i]
 
             aiconfig_execute_results = aiconfig.get_prompt(prompt_name).outputs
-            prompt_data_resolved = await aiconfig.resolve(prompt_name, parameters_dict_used)
+            prompt_data_resolved = await aiconfig.resolve(
+                prompt_name, parameters_dict_used
+            )
 
-            batch_results_formatted.append(tuple([aiconfig_execute_results, prompt_data_resolved, parameters_dict_used]))
+            batch_results_formatted.append(
+                tuple(
+                    [
+                        aiconfig_execute_results,
+                        prompt_data_resolved,
+                        parameters_dict_used,
+                    ]
+                )
+            )
 
-        event = CallbackEvent("on_run_batch_complete", __name__, {"result": batch_results_formatted})
+        event = CallbackEvent(
+            "on_run_batch_complete",
+            __name__,
+            {"result": batch_results_formatted},
+        )
 
         await self.callback_manager.run_callbacks(event)
         return batch_results_formatted
@@ -359,10 +439,17 @@ class AIConfigRuntime(AIConfig):
         options: Optional[InferenceOptions] = None,
         **kwargs,
     ) -> str:
-        result: Any = await self.run(prompt_name, params, options=options, **kwargs)
+        result: Any = await self.run(
+            prompt_name, params, options=options, **kwargs
+        )
         return self.get_output_text(prompt_name, result[0])
 
-    def save(self, config_filepath: str | None = None, include_outputs: bool = True, mode: Literal["json", "yaml"] | None = None):
+    def save(
+        self,
+        config_filepath: str | None = None,
+        include_outputs: bool = True,
+        mode: Literal["json", "yaml"] | None = None,
+    ):
         """
         Save the AI Configuration to a file.
 
@@ -370,19 +457,10 @@ class AIConfigRuntime(AIConfig):
             config_filepath (str, optional): The file path to the JSON or YAML configuration file.
                 Defaults to "aiconfig.json" or "aiconfig.yaml", depending on the mode.
         """
-        # Decide if we want to serialize as YAML or JSON
 
-        # AIConfig json should only contain the core data fields. These are auxiliary fields that should not be persisted
-        exclude_options = {
-            "prompt_index": True,
-            "file_path": True,
-            "callback_manager": True,
-        }
-
-        if not include_outputs:
-            exclude_options["prompts"] = {"__all__": {"outputs"}}
-
-        default_filepath = "aiconfig.yaml" if mode == "yaml" else "aiconfig.json"
+        default_filepath = (
+            "aiconfig.yaml" if mode == "yaml" else "aiconfig.json"
+        )
 
         if not config_filepath:
             config_filepath = self.file_path or default_filepath
@@ -394,30 +472,58 @@ class AIConfigRuntime(AIConfig):
                 # Default to JSON
                 mode = "json"
 
-        with open(config_filepath, "w") as file:
-            # Serialize the AIConfig to JSON
-            json_data = self.model_dump(
-                mode="json",
-                exclude=exclude_options,
-                exclude_none=True,
-            )
-            if mode == "yaml":
-                # Save AIConfig JSON as YAML to the file
-                yaml.dump(
-                    json_data,
-                    file,
-                    indent=2,
-                )
-            else:
-                # Save AIConfig as JSON to the file, with the schema specified
-                json_data["$schema"] = "https://json.schemastore.org/aiconfig-1.0"
-                json.dump(
-                    json_data,
-                    file,
-                    indent=2,
-                )
+        config_string = self.to_string(include_outputs, mode)
 
-    def get_output_text(self, prompt: str | Prompt, output: Optional[dict] = None) -> str:
+        with open(config_filepath, "w") as file:
+            file.write(config_string)
+
+    def to_string(
+        self,
+        include_outputs: bool = True,
+        mode: Literal["json", "yaml"] = "json",
+    ) -> str:
+        """
+        Returns the well-formatted string representing the AIConfig object.
+        Note that this method will return the string that would be saved as a .aiconfig file using the save() method.
+        To get the raw string representation of the AIConfig object, use the __str__() method.
+        """
+        # AIConfig json should only contain the core data fields. These are auxiliary fields that should not be persisted
+        exclude_options = {
+            "prompt_index": True,
+            "file_path": True,
+            "callback_manager": True,
+        }
+
+        if not include_outputs:
+            exclude_options["prompts"] = {"__all__": {"outputs"}}
+
+        # Serialize the AIConfig to JSON
+        json_data = self.model_dump(
+            mode="json",
+            exclude=exclude_options,
+            exclude_none=True,
+        )
+
+        if json_data.get("$schema", None) is None:
+            # Set the schema if it is not set
+            json_data["$schema"] = "https://json.schemastore.org/aiconfig-1.0"
+
+        if mode == "yaml":
+            # Save AIConfig JSON as YAML string
+            return yaml.dump(
+                json_data,
+                indent=2,
+            )
+        else:
+            # Save AIConfig as JSON string, with the schema specified
+            return json.dumps(
+                json_data,
+                indent=2,
+            )
+
+    def get_output_text(
+        self, prompt: str | Prompt, output: Optional[dict] = None
+    ) -> str:
         """
         Get the string representing the output from a prompt (if any)
 
@@ -430,7 +536,9 @@ class AIConfigRuntime(AIConfig):
         """
         if isinstance(prompt, str):
             prompt = self.get_prompt(prompt)
-        model_parser = ModelParserRegistry.get_model_parser_for_prompt(prompt, self)
+        model_parser = ModelParserRegistry.get_model_parser_for_prompt(
+            prompt, self
+        )
         return model_parser.get_output_text(prompt, self, output)
 
     @staticmethod
@@ -455,10 +563,14 @@ class AIConfigRuntime(AIConfig):
             ModelParser: The model parser corresponding to the given identifier.
         """
         if model_id not in ModelParserRegistry.parser_ids():
-            raise IndexError(f"Model parser '{model_id}' not found in registry, available model parsers are:\n {ModelParserRegistry.parser_ids()}")
+            raise IndexError(
+                f"Model parser '{model_id}' not found in registry, available model parsers are:\n {ModelParserRegistry.parser_ids()}"
+            )
         return ModelParserRegistry.get_model_parser(model_id)
 
     def set_callback_manager(self, callback_manager: CallbackManager):
         if callback_manager is None:
-            raise ValueError("callback_manager cannot be None. Create a new CallbackManager with No callbacks instead.")
+            raise ValueError(
+                "callback_manager cannot be None. Create a new CallbackManager with No callbacks instead."
+            )
         self.callback_manager = callback_manager

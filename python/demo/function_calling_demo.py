@@ -33,7 +33,9 @@ async def function_calling():
     while True:
         model_output = await config.run(promptToRun, params, inference_options)
 
-        output = model_output[0] if isinstance(model_output, list) else model_output
+        output = (
+            model_output[0] if isinstance(model_output, list) else model_output
+        )
 
         if output.output_type == "error":
             print(f"Error during inference: {output.ename}: {output.evalue}")

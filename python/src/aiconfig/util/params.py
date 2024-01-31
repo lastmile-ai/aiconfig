@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, List, Set
+from typing import TYPE_CHECKING, Any, Dict, List, Set
 
 from aiconfig.registry import ModelParserRegistry
 from pybars import Compiler
@@ -32,7 +32,9 @@ def get_parameters_in_template(template) -> dict:
     re_pattern = r"{{[{]?(.*?)[}]?}}"
 
     # Find all Handlebars tags in the template
-    tags = [match.group(1).strip() for match in re.finditer(re_pattern, template)]
+    tags = [
+        match.group(1).strip() for match in re.finditer(re_pattern, template)
+    ]
 
     # Initialize a dictionary to store parameters
     root = defaultdict(lambda: defaultdict(bool))
@@ -123,7 +125,9 @@ def resolve_parametrized_prompt(raw_prompt, params):
     return resolved_prompt
 
 
-def find_dependencies_in_prompt(prompt_template: str, current_prompt_name: str, prompt_list: List[Prompt]) -> Set[str]:
+def find_dependencies_in_prompt(
+    prompt_template: str, current_prompt_name: str, prompt_list: List[Prompt]
+) -> Set[str]:
     """
     Finds and returns a set of prompt IDs that are dependencies of the given prompt.
 
@@ -156,7 +160,11 @@ def find_dependencies_in_prompt(prompt_template: str, current_prompt_name: str, 
     return dependencies
 
 
-def get_dependency_graph(root_prompt: Prompt, all_prompts: List[Prompt], prompt_dict: Dict[str, Prompt]) -> dict[str, List[str]]:
+def get_dependency_graph(
+    root_prompt: Prompt,
+    all_prompts: List[Prompt],
+    prompt_dict: Dict[str, Prompt],
+) -> dict[str, List[str]]:
     """
     Generates an upstream dependency graph of prompts in the configuration, with each entry representing only its direct dependencies.
     Traversal is required to identify all upstream dependencies. The specified prompt serves as the root.
@@ -179,8 +187,12 @@ def get_dependency_graph(root_prompt: Prompt, all_prompts: List[Prompt], prompt_
             return
         visited.add(current_prompt_name)
 
-        prompt_template = prompt_dict[current_prompt_name].get_raw_prompt_from_config()
-        prompt_dependencies = find_dependencies_in_prompt(prompt_template, current_prompt_name, all_prompts)
+        prompt_template = prompt_dict[
+            current_prompt_name
+        ].get_raw_prompt_from_config()
+        prompt_dependencies = find_dependencies_in_prompt(
+            prompt_template, current_prompt_name, all_prompts
+        )
 
         for prompt_dependency in prompt_dependencies:
             dependency_graph[current_prompt_name].append(prompt_dependency)
@@ -207,7 +219,9 @@ def resolve_parameters(params, prompt: Prompt, ai_config: "AIConfig"):
     return resolved_prompt
 
 
-def get_prompt_template(prompt: Prompt, aiconfig: "AIConfigRuntime") -> str | None:
+def get_prompt_template(
+    prompt: Prompt, aiconfig: "AIConfigRuntime"
+) -> str | None:
     """
     Returns the template for a prompt.
 
@@ -218,9 +232,13 @@ def get_prompt_template(prompt: Prompt, aiconfig: "AIConfigRuntime") -> str | No
     Returns:
         str: Returns the template for a prompt.
     """
-    model_parser = ModelParserRegistry.get_model_parser_for_prompt(prompt, aiconfig)
+    model_parser = ModelParserRegistry.get_model_parser_for_prompt(
+        prompt, aiconfig
+    )
     # Circular type reference
-    from ..default_parsers.parameterized_model_parser import ParameterizedModelParser
+    from ..default_parsers.parameterized_model_parser import (
+        ParameterizedModelParser,
+    )
 
     if isinstance(model_parser, ParameterizedModelParser):
         return model_parser.get_prompt_template(prompt, aiconfig)
@@ -233,7 +251,9 @@ def get_prompt_template(prompt: Prompt, aiconfig: "AIConfigRuntime") -> str | No
         return None
 
 
-def collect_prompt_references(current_prompt: Prompt, ai_config: "AIConfigRuntime"):
+def collect_prompt_references(
+    current_prompt: Prompt, ai_config: "AIConfigRuntime"
+) -> Dict[Any, Any]:
     """
     Collects references to all other prompts in the AIConfig. Only prompts that appear before the current prompt are collected.
     """
@@ -242,12 +262,18 @@ def collect_prompt_references(current_prompt: Prompt, ai_config: "AIConfigRuntim
         if current_prompt.name == previous_prompt.name:
             break
 
+        # Note: not all model inputs are parameterizable. This can be None.
         prompt_input = get_prompt_template(previous_prompt, ai_config)
-        if prompt_input is None:
-            # not all model inputs are parameterizable
-            continue
+        
+        prompt_output = (
+            ai_config.get_output_text(
+                previous_prompt, ai_config.get_latest_output(previous_prompt)
+            )
+            if previous_prompt.outputs
+            else None
+        )
 
-        prompt_output = ai_config.get_output_text(previous_prompt, ai_config.get_latest_output(previous_prompt)) if previous_prompt.outputs else None
+        # pybars will ignore None values when resolving the template
         prompt_references[previous_prompt.name] = {
             "input": prompt_input,
             "output": prompt_output,
@@ -255,13 +281,17 @@ def collect_prompt_references(current_prompt: Prompt, ai_config: "AIConfigRuntim
     return prompt_references
 
 
-def resolve_prompt(current_prompt: Prompt, input_params: Dict, ai_config: "AIConfigRuntime") -> str:
+def resolve_prompt(
+    current_prompt: Prompt, input_params: Dict, ai_config: "AIConfigRuntime"
+) -> str:
     """
     Parameterizes a prompt using provided parameters, references to other prompts, and parameters stored in config..
     """
     raw_prompt = get_prompt_template(current_prompt, ai_config)
 
-    return resolve_prompt_string(current_prompt, input_params, ai_config, raw_prompt)
+    return resolve_prompt_string(
+        current_prompt, input_params, ai_config, raw_prompt
+    )
 
 
 def resolve_system_prompt(
@@ -273,7 +303,9 @@ def resolve_system_prompt(
     """
     Parameterizes a system prompt using provided prompt and parameters, references to other prompts, and parameters stored in config..
     """
-    return resolve_prompt_string(current_prompt, input_params, ai_config, system_prompt)
+    return resolve_prompt_string(
+        current_prompt, input_params, ai_config, system_prompt
+    )
 
 
 def resolve_prompt_string(

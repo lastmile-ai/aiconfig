@@ -4,10 +4,12 @@ import {
 } from "../../../../utils/promptUtils";
 import DataRenderer from "./PromptInputDataSchemaRenderer";
 import AttachmentsRenderer from "./PromptInputAttachmentsSchemaRenderer";
-import { Flex, Text, Textarea } from "@mantine/core";
+import { Flex, Spoiler, Text, Textarea } from "@mantine/core";
 import { Attachment, JSONValue, PromptInput } from "aiconfig";
-import { memo } from "react";
+import { memo, useContext } from "react";
 import JSONRenderer from "../../../JSONRenderer";
+import AIConfigContext from "../../../../contexts/AIConfigContext";
+import { TextRenderer } from "../../TextRenderer";
 
 type Props = {
   input: PromptInput;
@@ -62,6 +64,8 @@ function SchemaRenderer({ input, schema, onChangeInput }: SchemaRendererProps) {
 }
 
 export default memo(function PromptInputSchemaRenderer(props: Props) {
+  const {readOnly} = useContext(AIConfigContext);
+
   if (props.schema.type === "string") {
     if (props.input && typeof props.input !== "string") {
       return (
@@ -71,7 +75,19 @@ export default memo(function PromptInputSchemaRenderer(props: Props) {
         </>
       );
     }
-    return (
+    return  readOnly ? (
+      <div style={{ padding: "0.5em" }}>
+        <Spoiler
+          maxHeight={200}
+          showLabel="Show more"
+          hideLabel="Hide"
+          initialState={false}
+          transitionDuration={300}
+        >
+          <TextRenderer content={(props.input as string)} />
+        </Spoiler>
+      </div> 
+      ): (
       <Textarea
         value={props.input}
         label="Prompt"

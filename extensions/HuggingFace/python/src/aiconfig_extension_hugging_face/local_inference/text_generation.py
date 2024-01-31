@@ -2,24 +2,21 @@ import copy
 import json
 import threading
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+from aiconfig.default_parsers.parameterized_model_parser import (
+    ParameterizedModelParser,
+)
+from aiconfig.model_parser import InferenceOptions
+from aiconfig.util.params import resolve_prompt
+from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
 from transformers import (
     AutoTokenizer,
     Pipeline,
-    pipeline,
     TextIteratorStreamer,
+    pipeline,
 )
 
-from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
-
-from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import (
-    ExecuteResult,
-    Output,
-    Prompt,
-    PromptMetadata,
-)
-from aiconfig.util.params import resolve_prompt
+from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
@@ -92,7 +89,9 @@ def refine_completion_params(model_settings: Dict[str, Any]) -> Dict[str, Any]:
     return completion_data
 
 
-def construct_regular_output(result: Dict[str, str], execution_count: int) -> Output:
+def construct_regular_output(
+    result: Dict[str, str], execution_count: int
+) -> Output:
     """
     Construct regular output per response result, without streaming enabled
     """
@@ -193,7 +192,9 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **kwargs),
+            metadata=PromptMetadata(
+                model=model_metadata, parameters=parameters, **kwargs
+            ),
         )
         return [prompt]
 
@@ -223,7 +224,13 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         completion_data["prompt"] = resolved_prompt
         return completion_data
 
-    async def run_inference(self, prompt: Prompt, aiconfig: "AIConfigRuntime", options: InferenceOptions, parameters: Dict[str, Any]) -> List[Output]:
+    async def run_inference(
+        self,
+        prompt: Prompt,
+        aiconfig: "AIConfigRuntime",
+        options: InferenceOptions,
+        parameters: Dict[str, Any],
+    ) -> List[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
         the actual model inference based on the provided prompt and inference settings.
@@ -235,20 +242,29 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
         Returns:
             InferenceResponse: The response from the model.
         """
-        completion_data = await self.deserialize(prompt, aiconfig, options, parameters)
+        completion_data = await self.deserialize(
+            prompt, aiconfig, options, parameters
+        )
         completion_data["text_inputs"] = completion_data.pop("prompt", None)
 
         model_name = get_hf_model(aiconfig, prompt, self)
         key = model_name if model_name is not None else "__default__"
         if key not in self.generators:
-            self.generators[key] = pipeline("text-generation", model=model_name)
+            self.generators[key] = pipeline(
+                "text-generation", model=model_name
+            )
         generator = self.generators[key]
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         streamer = None
-        should_stream = (options.stream if options else False) and (not "stream" in completion_data or completion_data.get("stream") != False)
+        should_stream = (options.stream if options else False) and (
+            not "stream" in completion_data
+            or completion_data.get("stream") != False
+        )
         if should_stream:
-            tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
+            tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(
+                model_name
+            )
             streamer = TextIteratorStreamer(tokenizer)
             completion_data["streamer"] = streamer
 
@@ -261,9 +277,13 @@ class HuggingFaceTextGenerationTransformer(ParameterizedModelParser):
                 outputs.append(output)
         else:
             if completion_data.get("num_return_sequences", 1) > 1:
-                raise ValueError("Sorry, TextIteratorStreamer does not support multiple return sequences, please set `num_return_sequences` to 1")
+                raise ValueError(
+                    "Sorry, TextIteratorStreamer does not support multiple return sequences, please set `num_return_sequences` to 1"
+                )
             if not streamer:
-                raise ValueError("Stream option is selected but streamer is not initialized")
+                raise ValueError(
+                    "Stream option is selected but streamer is not initialized"
+                )
 
             # For streaming, cannot call `generator` directly otherwise response will be blocking
             thread = threading.Thread(target=generator, kwargs=completion_data)

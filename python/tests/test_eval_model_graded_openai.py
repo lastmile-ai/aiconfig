@@ -10,7 +10,9 @@ from aiconfig.eval.api import metrics, run_test_suite_outputs_only
 from result import Ok, Result
 
 
-def _mock_response(function_args: common.SerializedJSON) -> openai_chat_types.ChatCompletion:
+def _mock_response(
+    function_args: common.SerializedJSON,
+) -> openai_chat_types.ChatCompletion:
     return openai_chat_types.ChatCompletion(
         id="123",
         choices=[
@@ -39,7 +41,9 @@ def _mock_response(function_args: common.SerializedJSON) -> openai_chat_types.Ch
     )
 
 
-def _make_mock_openai_chat_completion_create(function_arguments_return: common.SerializedJSON) -> lib_openai.OpenAIChatCompletionCreate:
+def _make_mock_openai_chat_completion_create(
+    function_arguments_return: common.SerializedJSON,
+) -> lib_openai.OpenAIChatCompletionCreate:
     def _mock_openai_chat_completion_create(
         completion_params: lib_openai.OpenAIChatCompletionParams,
     ) -> Result[openai_chat_types.ChatCompletion, str]:
@@ -55,7 +59,9 @@ def _make_mock_openai_chat_completion_create(function_arguments_return: common.S
 @pytest.mark.asyncio
 async def test_openai_structured_eval():
     _mock_create = _make_mock_openai_chat_completion_create(
-        common.SerializedJSON('{"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it\'s pretty concise."}')
+        common.SerializedJSON(
+            '{"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it\'s pretty concise."}'
+        )
     )
     mock_metric = metrics.make_openai_structured_llm_metric(
         eval_llm_name="gpt-3.5-turbo-0613",
@@ -74,16 +80,25 @@ async def test_openai_structured_eval():
         ("one two three", mock_metric),
     ]
     df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
-    metric_data = cast(common.CustomMetricPydanticObject[common.TextRatingsData], df.loc[0, "value"]).data
+    metric_data = cast(
+        common.CustomMetricPydanticObject[common.TextRatingsData],
+        df.loc[0, "value"],
+    ).data
     assert isinstance(metric_data, common.TextRatingsData)
     metric_json = metric_data.to_dict()
-    assert metric_json == {"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it's pretty concise."}
+    assert metric_json == {
+        "conciseness_rating": 5,
+        "conciseness_confidence": 0.9,
+        "conciseness_reasoning": "I think it's pretty concise.",
+    }
 
 
 @pytest.mark.asyncio
 async def test_bad_structured_eval_metric():
     _mock_create = _make_mock_openai_chat_completion_create(
-        common.SerializedJSON('{"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it\'s pretty concise."}')
+        common.SerializedJSON(
+            '{"conciseness_rating": 5, "conciseness_confidence": 0.9, "conciseness_reasoning": "I think it\'s pretty concise."}'
+        )
     )
 
     with pytest.raises(ValueError) as exc:
@@ -101,4 +116,7 @@ async def test_bad_structured_eval_metric():
             openai_chat_completion_create=_mock_create,
         )
 
-    assert "The following field_descriptions keys are not in the schema" in str(exc)
+    assert (
+        "The following field_descriptions keys are not in the schema"
+        in str(exc)
+    )

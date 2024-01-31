@@ -164,8 +164,44 @@
                 "type": "object",
                 "properties": {
                   "data": {
-                    "$ref": "#/definitions/JSONValue",
-                    "description": "The data representing the attachment"
+                    "description": "The data representing the attachment",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": {}
+                      },
+                      {
+                        "$ref": "#/definitions/JSONArray"
+                      },
+                      {
+                        "description": "This represents the attachment data that is stored as a string, but we use\nboth the `kind` field here and the `mime_type` in Attachment to convert\nthe string into the input format we want.",
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "enum": [
+                              "base64",
+                              "file_uri"
+                            ],
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": [
+                          "null",
+                          "string",
+                          "number",
+                          "boolean"
+                        ]
+                      }
+                    ]
                   },
                   "mime_type": {
                     "description": "The MIME type of the result. If not specified, the MIME type will be\nassumed to be text/plain",
@@ -200,10 +236,7 @@
           "additionalProperties": {}
         },
         {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/JSONValue"
-          }
+          "$ref": "#/definitions/JSONArray"
         },
         {
           "type": [
@@ -214,6 +247,12 @@
           ]
         }
       ]
+    },
+    "JSONArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/JSONValue"
+      }
     },
     "Output": {
       "description": "Model inference result.",
@@ -239,10 +278,7 @@
                   "additionalProperties": {}
                 },
                 {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/JSONValue"
-                  }
+                  "$ref": "#/definitions/JSONArray"
                 },
                 {
                   "description": "This represents the output content that is storied as a string, but we use\nboth the `kind` field here and the `mime_type` in ExecuteResult to convert\nthe string into the output format we want.",

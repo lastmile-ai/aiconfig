@@ -1,10 +1,17 @@
 from aiconfig import AIConfigRuntime, Prompt
 
-aiconfig = AIConfigRuntime.create("assistant_config", "teaching assistant config")
+aiconfig = AIConfigRuntime.create(
+    "assistant_config", "teaching assistant config"
+)
 
 # Set GPT-4 as default model from Teaching Assistant prompts
 model_name = "gpt-4"
-model_settings = {"top_k": 40, "top_p": 1, "model": "gpt-4", "temperature": 0.0}
+model_settings = {
+    "top_k": 40,
+    "top_p": 1,
+    "model": "gpt-4",
+    "temperature": 0.0,
+}
 aiconfig.add_model(model_name, model_settings)
 
 

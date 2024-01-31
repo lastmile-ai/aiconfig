@@ -10,8 +10,9 @@ import {
 } from "@mantine/core";
 import { IconTrash, IconPlus } from "@tabler/icons-react";
 import { debounce, uniqueId } from "lodash";
-import { useState, useCallback, memo, useMemo } from "react";
+import { memo, useCallback, useContext, useMemo, useState } from "react";
 import { JSONValue, JSONObject } from "aiconfig";
+import AIConfigContext from "../contexts/AIConfigContext";
 
 type Parameter = { parameterName: string; parameterValue: JSONValue };
 
@@ -36,7 +37,7 @@ const ParameterInput = memo(function ParameterInput(props: {
 }) {
   const { initialItemValue, removeParameter, onUpdateParameter } = props;
   // TODO: saqadri - update this once we have a readonly mode
-  const { isReadonly } = { isReadonly: false };
+  const { readOnly } = useContext(AIConfigContext);
 
   const [parameterName, setParameterName] = useState(
     initialItemValue?.parameterName ?? ""
@@ -79,7 +80,7 @@ const ParameterInput = memo(function ParameterInput(props: {
       <Stack p="xs" spacing="xs" style={{ flexGrow: 1, borderBottom: border }}>
         <TextInput
           placeholder="Enter parameter name"
-          disabled={isReadonly}
+          disabled={readOnly}
           error={
             parameterName && !isValidParameterName(parameterName)
               ? "Name must contain only letters, numbers, and underscores"
@@ -100,7 +101,7 @@ const ParameterInput = memo(function ParameterInput(props: {
         />
         <Textarea
           placeholder="Enter parameter value"
-          disabled={isReadonly}
+          disabled={readOnly}
           radius="md"
           value={parameterValueString}
           autosize
@@ -111,12 +112,11 @@ const ParameterInput = memo(function ParameterInput(props: {
             debouncedCellParameterUpdate(parameterName, event.target.value);
           }}
         />
-        <ActionIcon
-          onClick={() => removeParameter(parameterName)}
-          disabled={isReadonly}
-        >
-          <IconTrash size={16} color={isReadonly ? "grey" : "red"} />
-        </ActionIcon>
+        {!readOnly && (
+          <ActionIcon onClick={() => removeParameter(parameterName)}>
+            <IconTrash size={16} color={"red"} />
+          </ActionIcon>
+        )}
       </Stack>
     </Group>
   );
@@ -149,8 +149,7 @@ export default memo(function ParametersRenderer(props: {
   maxHeight?: string | number;
 }) {
   const { initialValue, onUpdateParameters } = props;
-  // TODO: saqadri - update this when we have a readonly mode
-  const { isReadonly } = { isReadonly: false }; //useContext(WorkbookContext);
+  const { readOnly } = useContext(AIConfigContext);
 
   const [parameters, setParameters] = useState<ParametersArray>(
     initialValue && Object.keys(initialValue).length > 0
@@ -197,54 +196,57 @@ export default memo(function ParametersRenderer(props: {
   }, [onUpdateParameters]);
 
   return (
-    <div
-      style={{
-        maxHeight: props.maxHeight ?? "300px",
-        overflow: "auto",
-        width: "100%",
-      }}
-    >
-      {props.customDescription ?? (
-        <Text
-          color="dimmed"
-          size="sm"
-          p="xs"
-          style={{ display: "block", margin: "0 auto", textAlign: "right" }}
-        >
-          Use parameters in your prompt or system prompt with {"{{parameter}}"}
-        </Text>
-      )}
-      <Stack>
-        {parameters.map((parameter, i) => {
-          return (
-            <ParameterInput
-              onUpdateParameter={({ parameterName, parameterValue }) => {
-                setParameters((prev) => {
-                  const newParameters = [...prev];
-                  const currentElement = newParameters[i];
-                  currentElement.parameterName = parameterName;
-                  currentElement.parameterValue = parameterValue ?? "";
+    <div>
+      <div
+        style={{
+          maxHeight: props.maxHeight,
+          overflow: "auto",
+          width: "100%",
+        }}
+      >
+        {props.customDescription ?? (
+          <Text
+            color="dimmed"
+            size="sm"
+            p="xs"
+            style={{ display: "block", margin: "0 auto", textAlign: "right" }}
+          >
+            Use parameters in your prompt or system prompt with{" "}
+            {"{{parameter}}"}
+          </Text>
+        )}
+        <Stack>
+          {parameters.map((parameter, i) => {
+            return (
+              <ParameterInput
+                onUpdateParameter={({ parameterName, parameterValue }) => {
+                  setParameters((prev) => {
+                    const newParameters = [...prev];
+                    const currentElement = newParameters[i];
+                    currentElement.parameterName = parameterName;
+                    currentElement.parameterValue = parameterValue ?? "";
 
-                  onUpdateParameters(
-                    parametersArrayToJSONObject(newParameters)
-                  );
+                    onUpdateParameters(
+                      parametersArrayToJSONObject(newParameters)
+                    );
 
-                  return newParameters;
-                });
-              }}
-              removeParameter={(parameterName) =>
-                removeParameter(parameter.key, parameterName)
-              }
-              initialItemValue={{
-                parameterName: parameter.parameterName,
-                parameterValue: parameter.parameterValue,
-              }}
-              key={parameter.key}
-            />
-          );
-        })}
-      </Stack>
-      {isReadonly ? null : (
+                    return newParameters;
+                  });
+                }}
+                removeParameter={(parameterName) =>
+                  removeParameter(parameter.key, parameterName)
+                }
+                initialItemValue={{
+                  parameterName: parameter.parameterName,
+                  parameterValue: parameter.parameterValue,
+                }}
+                key={parameter.key}
+              />
+            );
+          })}
+        </Stack>
+      </div>
+      {readOnly ? null : (
         <Tooltip label="Add parameter">
           <ActionIcon onClick={addParameter} className="addParameterButton">
             <IconPlus size={16} />

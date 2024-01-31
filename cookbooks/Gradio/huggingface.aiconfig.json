@@ -2,7 +2,6 @@
   "name": "The Tale of the Quick Brown Fox",
   "schema_version": "latest",
   "metadata": {
-    "parameters": {},
     "models": {
       "stevhliu/my_awesome_billsum_model": {
         "model": "stevhliu/my_awesome_billsum_model",
@@ -26,11 +25,17 @@
       "input": {
         "attachments": [
           {
-            "data": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_10_18_41_31/1742/bear_with_honey.png",
+            "data": {
+              "kind": "file_uri",
+              "value": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_16_20_22_54/7748/fox_in_forest.png"
+            },
             "mime_type": "image/png"
           },
           {
-            "data": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_10_18_41_31/7275/fox_in_forest.png",
+            "data": {
+              "kind": "file_uri",
+              "value": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_16_20_20_57/508/bear_with_honey.png"
+            },
             "mime_type": "image/png"
           }
         ]
@@ -49,14 +54,12 @@
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": "a bear sitting on a rock eating honey",
-          "metadata": {}
+          "data": "a red fox in the woods"
         },
         {
           "output_type": "execute_result",
           "execution_count": 1,
-          "data": "a red fox in the woods",
-          "metadata": {}
+          "data": "a bear sitting on a rock eating honey"
         }
       ]
     },
@@ -72,15 +75,13 @@
             "min_length": 50,
             "num_beams": 1
           }
-        },
-        "parameters": {}
+        }
       },
       "outputs": [
         {
           "output_type": "execute_result",
           "execution_count": 0,
           "data": " Il \u00e9tait une fois, dans une for\u00eat luxuriante et vibrante, vivait une magnifique cr\u00e9ature connue sous le nom de Foxe Brun. Ce renard \u00e9tait diff\u00e9rent des autres, poss\u00e9dant une vitesse et une agilit\u00e9 incroyables qui amenaient tous les animaux dans la for\u00eat. Avec sa fourrure aussi dor\u00e9e que le soleil et ses yeux aussi aiguis\u00e9s que les \u00e9meraudes, le Foxe Brun Brun \u00e9tait admir\u00e9 par tout le monde, du plus petit colibri au",
-          "metadata": {}
         }
       ]
     },
@@ -105,8 +106,7 @@
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": " Racontez l'histoire du renard brun rapide. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a.",
-          "metadata": {}
+          "data": " Racontez l'histoire du renard brun rapide. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a. - C'est \u00e7a."
         }
       ]
     },
@@ -129,8 +129,7 @@
         {
           "output_type": "execute_result",
           "execution_count": 0,
-          "data": "The Quick Brown Fox was a magnificent creature. It had a kind heart and would often lend a helping paw to those in need. It loved to test its skills against others, always seeking new adventures. One day it got very old and died.",
-          "metadata": {}
+          "data": "The Quick Brown Fox was a magnificent creature. It had a kind heart and would often lend a helping paw to those in need. It loved to test its skills against others, always seeking new adventures. One day it got very old and died."
         }
       ]
     },
@@ -207,7 +206,10 @@
       "input": {
         "attachments": [
           {
-            "data": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_11_20_34_32/3386/hi.mp3",
+            "data": {
+              "kind": "file_uri",
+              "value": "https://s3.amazonaws.com/lastmileai.aiconfig.public/uploads/2024_1_16_20_21_10/1673/hi (1).mp3"
+            },
             "mime_type": "audio/mpeg"
           }
         ]
@@ -218,10 +220,15 @@
           "settings": {
             "model": "openai/whisper-small"
           }
-        },
-        "parameters": {}
+        }
       },
-      "outputs": []
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": " Hi."
+        }
+      ]
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"

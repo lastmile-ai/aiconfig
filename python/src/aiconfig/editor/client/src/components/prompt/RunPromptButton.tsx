@@ -1,6 +1,7 @@
 import { Button, Flex, Loader, Tooltip } from "@mantine/core";
 import { IconPlayerPlayFilled, IconPlayerStop } from "@tabler/icons-react";
-import { memo } from "react";
+import { memo, useContext } from "react";
+import AIConfigContext from "../../contexts/AIConfigContext";
 
 type Props = {
   cancel: () => Promise<void>;
@@ -15,6 +16,9 @@ export default memo(function RunPromptButton({
   isRunning = false,
   disabled = false,
 }: Props) {
+  const { readOnly } = useContext(AIConfigContext);
+  const disabledOrReadOnly = disabled || readOnly;
+
   const onClick = async () => {
     if (isRunning) {
       return await cancel();
@@ -22,10 +26,11 @@ export default memo(function RunPromptButton({
       return await runPrompt();
     }
   };
+
   const button = (
     <Button
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabledOrReadOnly}
       p="xs"
       size="xs"
       className="runPromptButton"
@@ -43,11 +48,13 @@ export default memo(function RunPromptButton({
     </Button>
   );
 
-  return !disabled ? (
+  const disabledButton = readOnly ? (
     button
   ) : (
-    <Tooltip label="Can't run while another prompt is running" withArrow>
+    <Tooltip label={"Can't run while another prompt is running"} withArrow>
       <div>{button}</div>
     </Tooltip>
   );
+
+  return disabledOrReadOnly ? disabledButton : button;
 });
