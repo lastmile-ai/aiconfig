@@ -367,6 +367,7 @@ class OpenAIInference(ParameterizedModelParser):
                     output = ExecuteResult(
                         **{
                             "output_type": "execute_result",
+                            # TODO (rossdan): accumulated_message_for_choice.get("content")
                             "data": accumulated_message_for_choice,
                             "execution_count": index,
                             "metadata": chunk_without_choices,

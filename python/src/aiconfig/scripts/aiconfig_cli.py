@@ -13,6 +13,7 @@ from aiconfig.editor.server.server_utils import (
     DEFAULT_AICONFIGRC,
     EditServerConfig,
     ServerMode,
+    StartServerConfig,
 )
 from result import Err, Ok, Result
 from ruamel.yaml import YAML
@@ -43,6 +44,7 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
     subparser_record_types = {
         "edit": EditServerConfig,
         "rage": rage.RageConfig,
+        "start": StartServerConfig,
     }
     main_parser = core_utils.argparsify(
         AIConfigCLIConfig, subparser_record_types=subparser_record_types
@@ -71,6 +73,14 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
         )
         LOGGER.debug(f"{edit_config.is_ok()=}")
         out = _run_editor_servers_with_configs(edit_config, cli_config)
+        return out
+    elif subparser_name == "start":
+        LOGGER.debug("Running start subcommand")
+        start_config = core_utils.parse_args(
+            main_parser, argv[1:], StartServerConfig
+        )
+        LOGGER.debug(f"{start_config.is_ok()=}")
+        out = _start_editor_servers_with_configs(start_config, cli_config)
         return out
     elif subparser_name == "rage":
         res_rage_config = core_utils.parse_args(
@@ -104,6 +114,26 @@ def _run_editor_servers_with_configs(
     return Ok(",".join(server_outcomes.unwrap()))
 
 
+def _start_editor_servers_with_configs(
+    start_config: Result[StartServerConfig, str],
+    cli_config: Result[AIConfigCLIConfig, str],
+) -> Result[str, str]:
+    if not (start_config.is_ok() and cli_config.is_ok()):
+        return Err(
+            f"Something went wrong with configs: {start_config=}, {cli_config=}"
+        )
+
+    server_outcomes = _start_server(
+        start_config.unwrap(), cli_config.unwrap().aiconfigrc_path
+    )
+    if server_outcomes.is_err():
+        return Err(
+            f"Something went wrong with starting the aiconfig server: {server_outcomes=}"
+        )
+
+    return Ok(",".join(server_outcomes.unwrap()))
+
+
 def _sigint(procs: list[subprocess.Popen[bytes]]) -> Result[str, str]:
     LOGGER.info("sigint")
     for p in procs:
@@ -120,6 +150,30 @@ def is_port_in_use(port: int) -> bool:
     """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(("localhost", port)) == 0
+
+
+def _start_server(
+    start_config: StartServerConfig, aiconfigrc_path: str
+) -> Result[list[str], str]:
+    port = start_config.server_port
+
+    if is_port_in_use(port):
+        err = f"Port {port} is in use. Cannot start server."
+        LOGGER.error(err)
+        return Err(err)
+
+    LOGGER.warning(f"Using {port} to start aiconfig server.")
+
+    results: list[Result[str, str]] = []
+    backend_res = run_backend_server(start_config, aiconfigrc_path)
+    match backend_res:
+        case Ok(_):
+            pass
+        case Err(e):
+            return Err(e)
+
+    results.append(backend_res)
+    return core_utils.result_reduce_list_all_ok(results)
 
 
 def _run_editor_servers(

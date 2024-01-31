@@ -17,13 +17,40 @@ export const GRADIO_THEME: MantineThemeOverride = {
 
   //gradio light theme
   globalStyles: (theme) => ({
-    ".editorBackground": {
+    "div.editorBackground": {
       background: theme.colorScheme === "light" ? "white" : "#0b0f19",
-      margin: "0 auto",
-      minHeight: "400px",
+      borderRadius: "8px",
       // Gradio component is iframed so height should be in relation to
       // the height of the containing iframe, not the viewport
       height: "100%",
+      // Add some margin & padding to better visually separate from surrounding
+      // gradio card
+      margin: "14px auto 0 auto",
+      minHeight: "400px",
+      paddingTop: "2px",
+
+      // Apply nested styles on mantine text components for higher specificity
+      // than gradio text styles
+      ".mantine-Input-input:focus": {
+        outline: "solid 1px #E85921 !important",
+        outlineOffset: "-1px",
+      },
+
+      ".mantine-Input-input":
+        theme.colorScheme === "dark"
+          ? {
+              color: "#C1C2C5",
+              backgroundColor: "#25262b",
+            }
+          : undefined, // light colorScheme is fine without overrides
+
+      ".mantine-Text-root":
+        theme.colorScheme === "dark"
+          ? {
+              color: "C1C2C5",
+              // default inherited backgroundColor is correct
+            }
+          : undefined, // light colorScheme is fine without overrides
     },
     ".monoFont": {
       fontFamily:
@@ -38,10 +65,6 @@ export const GRADIO_THEME: MantineThemeOverride = {
         margin: "8px 0px 0px 0px",
         backgroundColor: theme.colorScheme === "light" ? "white" : "#384152",
         boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
-        ":focus": {
-          outline: "solid 1px #E85921 !important",
-          outlineOffset: "-1px",
-        },
       },
     },
     ".cellStyle": {
@@ -69,10 +92,6 @@ export const GRADIO_THEME: MantineThemeOverride = {
         margin: "8px 0px 0px 0px",
         boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
         backgroundColor: theme.colorScheme === "light" ? "white" : "#384152",
-        ":focus": {
-          outline: "solid 1px #E85921 !important",
-          outlineOffset: "-1px",
-        },
       },
     },
     ".sidePanel": {
@@ -130,7 +149,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
     ".parametersContainer": {
       maxWidth: "1250px",
       maxHeight: "-webkit-fill-available",
-      margin: "16px auto",
+      margin: "16px auto 16px 36px",
       padding: "0",
       backgroundColor: theme.colorScheme === "light" ? "#F9FAFB" : "#1f2938",
       borderRadius: "8px",
@@ -151,10 +170,6 @@ export const GRADIO_THEME: MantineThemeOverride = {
         boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
         borderRadius: "8px",
         backgroundColor: theme.colorScheme === "light" ? "white" : "#384152",
-        ":focus": {
-          outline: "solid 1px #E85921 !important",
-          outlineOffset: "-1px",
-        },
       },
       textarea: {
         border: "1px solid !important",

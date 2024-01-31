@@ -953,7 +953,7 @@ export default function AIConfigEditor({
     <AIConfigEditorThemeProvider mode={mode} themeMode={themeMode}>
       <AIConfigContext.Provider value={contextValue}>
         <Notifications />
-        <div className="editorBackground">
+        <Container className="editorBackground" maw="80rem">
           {serverStatus !== "OK" && (
             <>
               {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
@@ -985,15 +985,15 @@ export default function AIConfigEditor({
               </Alert>
             </>
           )}
-          <Container maw="80rem">
+          <div>
             <Flex justify="flex-end" mt="md" mb="xs">
-              {!readOnly && (
+              {
                 <Group>
                   {downloadCallback && (
                     <DownloadButton onDownload={onDownload} />
                   )}
                   {shareCallback && <ShareButton onShare={onShare} />}
-                  {onClearOutputs && (
+                  {!readOnly && onClearOutputs && (
                     <Button
                       loading={undefined}
                       onClick={onClearOutputs}
@@ -1003,8 +1003,7 @@ export default function AIConfigEditor({
                       Clear Outputs
                     </Button>
                   )}
-
-                  {saveCallback && (
+                  {!readOnly && saveCallback && (
                     <Tooltip
                       label={
                         isDirty
@@ -1028,7 +1027,7 @@ export default function AIConfigEditor({
                     </Tooltip>
                   )}
                 </Group>
-              )}
+              }
             </Flex>
             <ConfigNameDescription
               name={aiconfigState.name}
@@ -1036,7 +1035,7 @@ export default function AIConfigEditor({
               setDescription={onSetDescription}
               setName={onSetName}
             />
-          </Container>
+          </div>
           <GlobalParametersContainer
             initialValue={aiconfigState?.metadata?.parameters ?? {}}
             onUpdateParameters={onUpdateGlobalParameters}
@@ -1056,7 +1055,7 @@ export default function AIConfigEditor({
             prompts={aiconfigState.prompts}
             runningPromptId={runningPromptId}
           />
-        </div>
+        </Container>
       </AIConfigContext.Provider>
     </AIConfigEditorThemeProvider>
   );
