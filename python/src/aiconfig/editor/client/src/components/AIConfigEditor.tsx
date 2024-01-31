@@ -6,6 +6,7 @@ import {
   Tooltip,
   Alert,
   Group,
+  ActionIcon,
 } from "@mantine/core";
 import { Notifications, showNotification } from "@mantine/notifications";
 import {
@@ -54,7 +55,7 @@ import {
   getDefaultPromptInputForModel,
   getPromptModelName,
 } from "../utils/promptUtils";
-import { IconDeviceFloppy } from "@tabler/icons-react";
+import { IconBraces, IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
 import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
 import DownloadButton from "./global/DownloadButton";
@@ -112,6 +113,7 @@ export type AIConfigCallbacks = {
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
   download?: () => Promise<void>;
+  openInTextEditor?: () => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
@@ -142,7 +144,7 @@ export type AIConfigCallbacks = {
 type RequestCallbackError = { message?: string };
 
 export default function AIConfigEditor({
-  aiconfig: initialAIConfig,
+  aiconfig: providedAIConfig,
   callbacks,
   mode,
   readOnly = false,
@@ -152,8 +154,28 @@ export default function AIConfigEditor({
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
   const [aiconfigState, dispatch] = useReducer(
     aiconfigReducer,
-    aiConfigToClientConfig(initialAIConfig)
+    aiConfigToClientConfig(providedAIConfig)
   );
+
+  const [prevProvidedConfig, setPrevProvidedConfig] =
+    useState<AIConfig>(providedAIConfig);
+  // After initializing the aiconfigState, we should also support updating the
+  // state if the provided AIConfig changes externally
+
+  useEffect(() => {
+    if (prevProvidedConfig !== providedAIConfig) {
+      console.log(
+        `Triggered effect -- provided config is different from prev: prev=${JSON.stringify(
+          prevProvidedConfig
+        )}, providedAIConfig=${JSON.stringify(providedAIConfig)}`
+      );
+      setPrevProvidedConfig(providedAIConfig);
+      dispatch({
+        type: "PROVIDED_AICONFIG_UPDATE",
+        config: providedAIConfig,
+      });
+    }
+  }, [prevProvidedConfig, providedAIConfig]);
 
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
@@ -161,6 +183,7 @@ export default function AIConfigEditor({
   const logEventHandler = callbacks?.logEventHandler;
 
   const downloadCallback = callbacks?.download;
+  const openInTextEditorCallback = callbacks?.openInTextEditor;
   const onDownload = useCallback(async () => {
     if (!downloadCallback) {
       return;
@@ -932,44 +955,23 @@ export default function AIConfigEditor({
     <AIConfigEditorThemeProvider mode={mode} themeMode={themeMode}>
       <AIConfigContext.Provider value={contextValue}>
         <Notifications />
-        <div className="editorBackground">
-          {serverStatus !== "OK" && (
-            <>
-              {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
-              <div style={{ height: "100px" }} />
-              <Alert
-                color="red"
-                title="Server Connection Error"
-                w="100%"
-                style={{ position: "fixed", top: 0, zIndex: 999 }}
-              >
-                <Text>
-                  There is a problem with the editor server connection. Please
-                  copy important changes somewhere safe and then try reloading
-                  the page or restarting the editor.
-                </Text>
-                <Flex align="center">
-                  <CopyButton
-                    value={JSON.stringify(
-                      clientConfigToAIConfig(aiconfigState),
-                      null,
-                      2
-                    )}
-                    contentLabel="AIConfig JSON"
-                  />
-                  <Text color="dimmed">
-                    Click to copy current AIConfig JSON
-                  </Text>
-                </Flex>
-              </Alert>
-            </>
-          )}
-          <Container maw="80rem">
+        <Container className="editorBackground" maw="80rem">
+          <div>
             <Flex justify="flex-end" mt="md" mb="xs">
               {!readOnly && (
                 <Group>
                   {downloadCallback && (
                     <DownloadButton onDownload={onDownload} />
+                  )}
+                  {openInTextEditorCallback && (
+                    <Tooltip label="Open in Text Editor" withArrow>
+                      <ActionIcon
+                        onClick={openInTextEditorCallback}
+                        className="secondaryButton"
+                      >
+                        <IconBraces size="1rem" />
+                      </ActionIcon>
+                    </Tooltip>
                   )}
                   {shareCallback && <ShareButton onShare={onShare} />}
                   {onClearOutputs && (
@@ -1015,7 +1017,7 @@ export default function AIConfigEditor({
               setDescription={onSetDescription}
               setName={onSetName}
             />
-          </Container>
+          </div>
           <GlobalParametersContainer
             initialValue={aiconfigState?.metadata?.parameters ?? {}}
             onUpdateParameters={onUpdateGlobalParameters}
@@ -1035,7 +1037,7 @@ export default function AIConfigEditor({
             prompts={aiconfigState.prompts}
             runningPromptId={runningPromptId}
           />
-        </div>
+        </Container>
       </AIConfigContext.Provider>
     </AIConfigEditorThemeProvider>
   );

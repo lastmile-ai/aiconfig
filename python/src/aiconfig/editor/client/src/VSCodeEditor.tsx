@@ -23,6 +23,7 @@ import { LogEvent, LogEventData } from "./shared/types";
 import {
   getWebviewState,
   notifyDocumentDirty,
+  sendMessage,
   updateWebviewState,
 } from "./utils/vscodeUtils";
 
@@ -393,6 +394,12 @@ export default function VSCodeEditor() {
     []
   );
 
+  const openInTextEditor = useCallback(async () => {
+    if (vscode) {
+      sendMessage(vscode, { type: "open_in_text_editor" });
+    }
+  }, [vscode]);
+
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
@@ -407,6 +414,7 @@ export default function VSCodeEditor() {
       setParameters,
       updateModel,
       updatePrompt,
+      openInTextEditor,
       // explicitly omitted
       save: undefined,
       getServerStatus: undefined,
@@ -424,6 +432,7 @@ export default function VSCodeEditor() {
       setParameters,
       updateModel,
       updatePrompt,
+      openInTextEditor,
     ]
   );
 

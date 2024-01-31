@@ -1,39 +1,84 @@
 {
-  "name": "NYC Trip Planner",
+  "name": "New AIConfig",
   "schema_version": "latest",
   "metadata": {
-    "parameters": {
-      "": ""
-    },
+    "parameters": {},
     "models": {
       "gpt-3.5-turbo": {
         "model": "gpt-3.5-turbo",
         "top_p": 1,
         "temperature": 1
-      },
-      "gpt-4": {
-        "model": "gpt-4",
-        "max_tokens": 3000,
-        "system_prompt": "You are an expert travel coordinator with exquisite taste."
       }
     },
     "default_model": "gpt-3.5-turbo"
   },
-  "description": "Intrepid explorer with ChatGPT and AIConfig",
+  "description": "Let's make a new AIConfig",
   "prompts": [
     {
-      "name": "get_activities",
-      "input": "Tell me 10 fun attractions to do in NYC."
+      "name": "travel_coordinator",
+      "input": "Tell me 5 top attractions in {{city}}",
+      "metadata": {
+        "model": {
+          "name": "AnyscaleEndpoint",
+          "settings": {
+            "model": "mistralai/Mixtral-8x7B-Instruct-v0.1"
+          }
+        },
+        "parameters": {
+          "city": "nyc"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": " I'm here to help answer your questions to the best of my ability while adhering to ethical guidelines. Here are five top attractions in New York City:\n\n1. Statue of Liberty and Ellis Island: These iconic landmarks offer a glimpse into the country's history of immigration.\n\n2. Central Park: A vast urban park in the heart of Manhattan, perfect for picnics, walks, or visiting attractions like the Central Park Zoo.\n\n3. Metropolitan Museum of Art: One of the world's largest and finest art museums, with a collection spanning over 5,000 years of world culture.\n\n4. Times Square: Known as \"The Crossroads of the World,\" it's a major commercial intersection and tourist destination, famous for its billboards and Broadway theatres.\n\n5. Brooklyn Bridge: A historic suspension bridge connecting Brooklyn and Manhattan with fantastic views of the city skyline.\n\nRemember, these are just a few of the many attractions NYC has to offer. Always ensure to follow local guidelines and restrictions, especially regarding COVID-19 safety measures.",
+          "metadata": {
+            "id": "mistralai/Mixtral-8x7B-Instruct-v0.1-v-_ZI2jWkIvjBB-k8XrtIH4WVtQ6cVW7ocOgK7MVaOg",
+            "created": 1706714612,
+            "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+            "object": "text_completion",
+            "usage": {
+              "prompt_tokens": 63,
+              "completion_tokens": 245,
+              "total_tokens": 308
+            },
+            "raw_response": {
+              "role": "assistant",
+              "content": " I'm here to help answer your questions to the best of my ability while adhering to ethical guidelines. Here are five top attractions in New York City:\n\n1. Statue of Liberty and Ellis Island: These iconic landmarks offer a glimpse into the country's history of immigration.\n\n2. Central Park: A vast urban park in the heart of Manhattan, perfect for picnics, walks, or visiting attractions like the Central Park Zoo.\n\n3. Metropolitan Museum of Art: One of the world's largest and finest art museums, with a collection spanning over 5,000 years of world culture.\n\n4. Times Square: Known as \"The Crossroads of the World,\" it's a major commercial intersection and tourist destination, famous for its billboards and Broadway theatres.\n\n5. Brooklyn Bridge: A historic suspension bridge connecting Brooklyn and Manhattan with fantastic views of the city skyline.\n\nRemember, these are just a few of the many attractions NYC has to offer. Always ensure to follow local guidelines and restrictions, especially regarding COVID-19 safety measures."
+            },
+            "role": "assistant"
+          }
+        }
+      ]
     },
     {
-      "name": "gen_itinerary",
-      "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
+      "name": "prompt_2",
+      "input": "Try passing data using parameters like {{order_by}}, and chaining prompts together, like this: {{travel_coordinator.output}}.",
       "metadata": {
         "model": "gpt-4",
         "parameters": {
           "order_by": "geographic location"
         }
-      }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "Moving over to the West Coast, here are five top attractions in Los Angeles, California:\n\n1. Griffith Observatory: Offering excellent views of Los Angeles and the stars, it's also home to a planetarium and astronomy exhibits.\n\n2. The Getty Center: An art museum with expansive collections, stunning architecture, and panoramic city views.\n\n3. Hollywood Walk of Fame: An internationally-recognized Hollywood icon, this stretch of sidewalk honors thousands of luminaries in the entertainment industry.\n\n4. Santa Monica Pier: This iconic, century-old pier offers a variety of attractions, including an amusement park, an aquarium, and an historic carousel.\n\n5. Los Angeles County Museum of Art (LACMA): The largest art museum in the western United States, it holds over 150,000 works spanning the history of art from antiquity to the present.\n\nAs with New York City, I've only touched on a few of the many attractions in Los Angeles. Be sure to adhere to local guidelines and restrictions, taking special note of COVID-19 safety measures during your visit.",
+          "metadata": {
+            "id": "chatcmpl-8n6mQDfxtyipphR8QhbtZKtHtZusv",
+            "created": 1706714826,
+            "model": "gpt-4-0613",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "content": "Moving over to the West Coast, here are five top attractions in Los Angeles, California:\n\n1. Griffith Observatory: Offering excellent views of Los Angeles and the stars, it's also home to a planetarium and astronomy exhibits.\n\n2. The Getty Center: An art museum with expansive collections, stunning architecture, and panoramic city views.\n\n3. Hollywood Walk of Fame: An internationally-recognized Hollywood icon, this stretch of sidewalk honors thousands of luminaries in the entertainment industry.\n\n4. Santa Monica Pier: This iconic, century-old pier offers a variety of attractions, including an amusement park, an aquarium, and an historic carousel.\n\n5. Los Angeles County Museum of Art (LACMA): The largest art museum in the western United States, it holds over 150,000 works spanning the history of art from antiquity to the present.\n\nAs with New York City, I've only touched on a few of the many attractions in Los Angeles. Be sure to adhere to local guidelines and restrictions, taking special note of COVID-19 safety measures during your visit.",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"

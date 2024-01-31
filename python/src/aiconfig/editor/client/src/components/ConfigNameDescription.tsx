@@ -94,8 +94,7 @@ export default memo(function ConfigNameDescription({
     <Stack
       ref={isEditing ? inputSectionRef : undefined}
       spacing="xs"
-      w="100%"
-      ml="1em"
+      ml="36px"
       mr="0.5em"
     >
       {isEditing ? (

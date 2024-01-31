@@ -69,7 +69,8 @@ export type WebviewMessage =
       content?: JSONValue;
     }
   | NotifyDocumentDirtyMessage
-  | ExecuteRunMessage;
+  | ExecuteRunMessage
+  | OpenInTextEditorCommand;
 
 /**
  * Notification message to extension host informing it that the document has been modified in the webview.
@@ -86,6 +87,10 @@ export type ExecuteRunMessage = {
   promptName: string;
   stream: boolean;
   cancellationToken?: string;
+};
+
+export type OpenInTextEditorCommand = {
+  type: "open_in_text_editor";
 };
 
 export function sendMessage<T extends WebviewMessage>(

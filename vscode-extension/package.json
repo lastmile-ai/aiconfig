@@ -4,10 +4,11 @@
   "publisher": "lastmile-ai",
   "displayName": "AIConfig Editor",
   "description": "AIConfig notebook editor that turns VSCode into a generative AI studio.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.85.0"
   },
+  "icon": "./static/Logo.png",
   "categories": [
     "Other"
   ],
@@ -19,8 +20,28 @@
         "title": "AIConfig: Initialize Extension"
       },
       {
-        "command": "vscode-aiconfig.helloWorld",
-        "title": "Hello World"
+        "command": "vscode-aiconfig.createAIConfigJSON",
+        "title": "AIConfig: Create New (JSON)"
+      },
+      {
+        "command": "vscode-aiconfig.createAIConfigYAML",
+        "title": "AIConfig: Create New (YAML)"
+      },
+      {
+        "command": "vscode-aiconfig.share",
+        "title": "AIConfig: Share (get permalink)"
+      },
+      {
+        "command": "vscode-aiconfig.customModelRegistryPath",
+        "title": "AIConfig: Set Custom Model Registry File Path"
+      },
+      {
+        "command": "vscode-aiconfig.createCustomModelRegistry",
+        "title": "AIConfig: Create Custom Model Registry"
+      },
+      {
+        "command": "vscode-aiconfig.openModelRegistry",
+        "title": "AIConfig: Open Custom Model Registry File"
       }
     ],
     "customEditors": [
@@ -38,9 +59,20 @@
             "filenamePattern": "*.aiconfig"
           }
         ],
+        "enableForDiffView": false,
         "priority": "default"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "AIConfig Editor extension settings",
+      "properties": {
+        "vscode-aiconfig.modelRegistryPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the custom model registry file."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
@@ -68,6 +100,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "aws-sdk": "^2.1547.0",
     "oboe": "^2.1.5",
     "portfinder": "^1.0.32",
     "ufetch": "^1.6.0"

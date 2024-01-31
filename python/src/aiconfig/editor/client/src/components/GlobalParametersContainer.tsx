@@ -1,4 +1,4 @@
-import { Container, Accordion, Text, createStyles } from "@mantine/core";
+import { Accordion, Text, createStyles } from "@mantine/core";
 import { JSONObject } from "aiconfig";
 import { memo, useState } from "react";
 import ParametersRenderer from "./ParametersRenderer";
@@ -24,7 +24,7 @@ export default memo(function GlobalParametersContainer({
   const [isParametersDrawerOpen, setIsParametersDrawerOpen] = useState(false);
 
   return (
-    <Container maw="80rem" className="parametersContainer">
+    <div className="parametersContainer">
       <Accordion
         styles={{
           item: { borderBottom: 0 },
@@ -51,6 +51,6 @@ export default memo(function GlobalParametersContainer({
           </Accordion.Panel>
         </Accordion.Item>
       </Accordion>
-    </Container>
+    </div>
   );
 });

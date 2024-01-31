@@ -12,6 +12,7 @@ export type MutateAIConfigAction =
   | AddPromptAction
   | ClearOutputsAction
   | DeletePromptAction
+  | ProvidedAIConfigUpdateAction
   | SetDescriptionAction
   | SetNameAction
   | UpdatePromptInputAction
@@ -55,6 +56,11 @@ export type ClearOutputsAction = {
 export type DeletePromptAction = {
   type: "DELETE_PROMPT";
   id: string;
+};
+
+export type ProvidedAIConfigUpdateAction = {
+  type: "PROVIDED_AICONFIG_UPDATE";
+  config: AIConfig;
 };
 
 export type SetDescriptionAction = {

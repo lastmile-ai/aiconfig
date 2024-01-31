@@ -3,6 +3,7 @@ import {
   COMMANDS,
   EXTENSION_NAME,
   ServerInfo,
+  getCurrentWorkingDirectory,
   getDocumentFromServer,
   initializeServerState,
   waitUntilServerReady,
@@ -10,12 +11,12 @@ import {
 import { getNonce } from "./utilities/getNonce";
 import { getUri } from "./utilities/getUri";
 
-import * as crypto from "crypto";
-import * as fs from "fs";
-import * as os from "os";
 import { spawn } from "child_process";
-import path from "path";
 import { getPortPromise } from "portfinder";
+import {
+  AIConfigEditorManager,
+  AIConfigEditorState,
+} from "./aiConfigEditorManager";
 
 /**
  * Provider for AIConfig editors.
@@ -26,11 +27,13 @@ import { getPortPromise } from "portfinder";
 export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
   public static register(
     context: vscode.ExtensionContext,
-    extensionOutputChannel: vscode.LogOutputChannel
+    extensionOutputChannel: vscode.LogOutputChannel,
+    aiconfigEditorManager: AIConfigEditorManager
   ): vscode.Disposable {
     const provider = new AIConfigEditorProvider(
       context,
-      extensionOutputChannel
+      extensionOutputChannel,
+      aiconfigEditorManager
     );
     const providerRegistration = vscode.window.registerCustomEditorProvider(
       AIConfigEditorProvider.viewType,
@@ -39,11 +42,12 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     return providerRegistration;
   }
 
-  private static readonly viewType = `${EXTENSION_NAME}.aiConfigEditor`;
+  public static readonly viewType = `${EXTENSION_NAME}.aiConfigEditor`;
 
   constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly extensionOutputChannel: vscode.LogOutputChannel
+    private readonly extensionOutputChannel: vscode.LogOutputChannel,
+    private readonly aiconfigEditorManager: AIConfigEditorManager
   ) {}
 
   /**
@@ -64,6 +68,15 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Start the AIConfig editor server process.
     editorServer = await this.startEditorServer(document);
+
+    this.aiconfigEditorManager.addEditor(
+      new AIConfigEditorState(
+        document,
+        webviewPanel,
+        editorServer,
+        this.aiconfigEditorManager
+      )
+    );
 
     // Setup initial content for the webview
     webviewPanel.webview.options = {
@@ -129,6 +142,12 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
             return;
           }
 
+          // TODO: saqadri - instead of sending the entire document to the webview,
+          // can ask it to reload the document from the server
+
+          // Update webview immediately, and server state should be updated in the background.
+          updateWebview();
+
           // Notify server of updated document
           if (editorServer) {
             console.log("changeDocumentSubscription -- updating server");
@@ -140,12 +159,6 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
           console.log(
             `changeDocumentSubscription ${e.document.uri} -- updating webview`
           );
-
-          // TODO: saqadri - instead of sending the entire document to the webview,
-          // can ask it to reload the document from the server
-
-          // TODO: saqadri - we are waiting too long to update the webview. This should happen immediately, and server state should be updated in the background.
-          updateWebview();
         }
       }
     );
@@ -235,10 +248,14 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
           return;
 
-        case "open-raw":
+        case "open_in_text_editor":
           vscode.commands.executeCommand("workbench.action.reopenTextEditor");
+          return;
       }
     });
+
+    // Update webview immediately so we unblock the render; server init should happen in the background.
+    updateWebview();
 
     // Wait for server ready
     await waitUntilServerReady(editorServer.url);
@@ -253,33 +270,10 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         url: editorServer.url,
       });
     }
-
-    updateWebview();
   }
 
   private prependMessage(message: string, document: vscode.TextDocument) {
     return `${document.fileName}: ${message}`;
-  }
-
-  private getCurrentWorkingDirectory(document: vscode.TextDocument) {
-    let cwd: string = null;
-    if (document != null && !document.isUntitled) {
-      // Ideally we use the directory of the current document
-      cwd = path.dirname(document.fileName);
-    } else if (vscode.workspace.workspaceFolders != null) {
-      // If there is no active document, use the workspace path
-      cwd = vscode.workspace.workspaceFolders[0].uri.fsPath;
-    } else {
-      // If there is no active document and no workspace, use a temp directory
-      let tempDir = os.tmpdir();
-      let subDir = "vscode-aiconfig-" + crypto.randomBytes(6).toString("hex");
-      cwd = path.join(tempDir, subDir);
-      if (!fs.existsSync(cwd)) {
-        fs.mkdirSync(cwd);
-      }
-    }
-
-    return cwd;
   }
 
   private async startEditorServer(
@@ -289,14 +283,21 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       this.prependMessage("Starting editor server", document)
     );
 
+    // If there is a custom model registry path, pass it to the server
+    let config = vscode.workspace.getConfiguration(EXTENSION_NAME);
+    let modelRegistryPath = config.get<string>("modelRegistryPath");
+    const modelRegistryPathArgs = modelRegistryPath
+      ? ["--parsers-module-path", modelRegistryPath]
+      : [];
+
     const openPort = await getPortPromise();
 
     // TODO: saqadri - specify parsers_module_path
     let startServer = spawn(
       "aiconfig",
-      ["start", "--server-port", openPort.toString()],
+      ["start", "--server-port", openPort.toString(), ...modelRegistryPathArgs],
       {
-        cwd: this.getCurrentWorkingDirectory(document),
+        cwd: getCurrentWorkingDirectory(document),
       }
     );
 
@@ -307,7 +308,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     // TODO: saqadri - stderr is very noisy for some reason (duplicating INFO logs). Figure out why before enabling this.
     startServer.stderr.on("data", (data) => {
-      this.extensionOutputChannel.info(this.prependMessage(data, document));
+      this.extensionOutputChannel.error(this.prependMessage(data, document));
       console.error(`server stderr: ${data}`);
     });
 
@@ -384,7 +385,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 	   <head>
 		 <meta charset="utf-8">
 		 <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
-		 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: http: https: 'self'; connect-src vscode-webview: ${editorServer.url} http: https:; style-src 'unsafe-inline' ${webview.cspSource} https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0 https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/editor/editor.main.css; script-src 'nonce-${nonce}' vscode-resource: https: http: https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0 https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/base/browser/ui/codicons/codicon/codicon.ttf; worker-src blob:;">
+		 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: http: https: 'self'; media-src data: http: https: 'self'; connect-src vscode-webview: ${editorServer.url} http: https:; style-src 'unsafe-inline' ${webview.cspSource} https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0 https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/editor/editor.main.css; script-src 'nonce-${nonce}' vscode-resource: https: http: https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0 https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/base/browser/ui/codicons/codicon/codicon.ttf; worker-src blob:;">
 		 </head>
 	   <body>
 		 <noscript>You need to enable JavaScript to run this app.</noscript>

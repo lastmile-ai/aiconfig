@@ -149,9 +149,9 @@ export const VSCODE_THEME: MantineThemeOverride = {
     },
 
     ".parametersContainer": {
-      width: "100%",
+      maxWidth: "1084px",
       maxHeight: "-webkit-fill-available",
-      margin: "16px auto",
+      margin: "16px auto 16px 36px",
       padding: "0",
       background: "var(--vscode-sideBar-background)",
       color: "var(--vscode-editor-foreground) !important",
