@@ -2,6 +2,7 @@ import { MantineProvider } from "@mantine/core";
 import { AIConfigEditorMode, ThemeMode } from "../shared/types";
 import { LOCAL_THEME } from "./LocalTheme";
 import { GRADIO_THEME } from "./GradioTheme";
+import { VSCODE_THEME } from "./VSCodeTheme";
 import ConditionalWrapper from "../components/ConditionalWrapper";
 import { useColorScheme } from "@mantine/hooks";
 import { useMemo } from "react";
@@ -15,8 +16,7 @@ type Props = {
 const THEMES = {
   local: LOCAL_THEME,
   gradio: GRADIO_THEME,
-  // TODO: Implement VSCODE_THEME
-  vscode: LOCAL_THEME,
+  vscode: VSCODE_THEME,
 };
 
 export default function AIConfigEditorThemeProvider({

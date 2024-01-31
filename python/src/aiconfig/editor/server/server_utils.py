@@ -1,3 +1,4 @@
+import dotenv
 import importlib
 import importlib.util
 import logging
@@ -29,6 +30,7 @@ logging.getLogger("werkzeug").disabled = True
 logging.basicConfig(format=core_utils.LOGGER_FMT)
 LOGGER = logging.getLogger(__name__)
 
+# TODO: saqadri - use logs directory to save logs
 log_handler = logging.FileHandler("editor_flask_server.log", mode="a")
 formatter = logging.Formatter(core_utils.LOGGER_FMT)
 log_handler.setFormatter(formatter)
@@ -61,6 +63,24 @@ class ServerMode(Enum):
 class EditServerConfig(core_utils.Record):
     server_port: int = 8080
     aiconfig_path: str = "my_aiconfig.aiconfig.json"
+    log_level: str | int = "INFO"
+    server_mode: ServerMode = ServerMode.PROD
+    parsers_module_path: str = "aiconfig_model_registry.py"
+
+    @field_validator("server_mode", mode="before")
+    def convert_to_mode(
+        cls, value: Any
+    ) -> ServerMode:  # pylint: disable=no-self-argument
+        if isinstance(value, str):
+            try:
+                return ServerMode[value.upper()]
+            except KeyError as e:
+                raise ValueError(f"Unexpected value for mode: {value}") from e
+        return value
+
+
+class StartServerConfig(core_utils.Record):
+    server_port: int = 8080
     log_level: str | int = "INFO"
     server_mode: ServerMode = ServerMode.PROD
     parsers_module_path: str = "aiconfig_model_registry.py"
@@ -268,12 +288,24 @@ def safe_load_from_disk(
 
 
 def init_server_state(
-    app: Flask, edit_config: EditServerConfig, aiconfigrc_path: str
+    app: Flask,
+    initialization_settings: StartServerConfig | EditServerConfig,
+    aiconfigrc_path: str,
 ) -> Result[None, str]:
-    LOGGER.info("Initializing server state")
-    _load_user_parser_module_if_exists(edit_config.parsers_module_path)
+    LOGGER.info("Initializing server state for 'edit' command")
+    # TODO: saqadri - load specific .env file if specified
+    dotenv.load_dotenv()
+    _load_user_parser_module_if_exists(
+        initialization_settings.parsers_module_path
+    )
     state = get_server_state(app)
     state.aiconfigrc_path = aiconfigrc_path
+
+    if isinstance(initialization_settings, StartServerConfig):
+        # The aiconfig will be loaded later, when the editor sends the payload.
+        return Ok(None)
+    # else:
+    edit_config = initialization_settings
 
     assert state.aiconfig is None
     if os.path.exists(edit_config.aiconfig_path):
