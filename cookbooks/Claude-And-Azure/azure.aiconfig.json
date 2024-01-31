@@ -1,0 +1,71 @@
+{
+  "name": "Exploring Azure OpenAI",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {},
+    "model_parsers": {
+      "gpt-35-turbo": "gpt-35-turbo"
+    }
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "multilinguality",
+      "input": "Can you teach me how to say duck in a different language? And, give me a few options.",
+      "metadata": {
+        "model": "gpt-35-turbo",
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "Certainly! Here are a few ways to say \"duck\" in different languages:\n\n1. Spanish: Pato\n2. French: Canard\n3. German: Ente\n4. Italian: Anatra\n5. Portuguese: Pato\n6. Russian: \u0423\u0442\u043a\u0430 (Utk\u00e1)\n7. Japanese: \u30a2\u30d2\u30eb (Ahiru)\n8. Mandarin Chinese: \u9e2d\u5b50 (Y\u0101zi)\n9. Arabic: \u0628\u0637\u0629 (Batta)\n10. Turkish: \u00d6rdek\n\nFeel free to practice pronouncing these words and explore more languages if you're interested!",
+          "metadata": {
+            "id": "chatcmpl-8n5gSBSOoBZzXtR6TCG6ICC9raXt6",
+            "created": 1706710612,
+            "model": "gpt-35-turbo",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "role": "assistant",
+              "content": "Certainly! Here are a few ways to say \"duck\" in different languages:\n\n1. Spanish: Pato\n2. French: Canard\n3. German: Ente\n4. Italian: Anatra\n5. Portuguese: Pato\n6. Russian: \u0423\u0442\u043a\u0430 (Utk\u00e1)\n7. Japanese: \u30a2\u30d2\u30eb (Ahiru)\n8. Mandarin Chinese: \u9e2d\u5b50 (Y\u0101zi)\n9. Arabic: \u0628\u0637\u0629 (Batta)\n10. Turkish: \u00d6rdek\n\nFeel free to practice pronouncing these words and explore more languages if you're interested!"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pronounciation",
+      "input": "Can you explain how to pronounce the {{language}} one?",
+      "metadata": {
+        "model": "gpt-35-turbo",
+        "parameters": {
+          "language": "Chinese"
+        },
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "Certainly! The Mandarin Chinese word for \"duck\" is \u9e2d\u5b50 (Y\u0101zi). Here's a breakdown of the pronunciation:\n\n1. \u9e2d (Y\u0101): The \"\u9e2d\" part is pronounced as \"yaa\" with a rising tone. The \"y\" sound is similar to the ending sound of the English word \"yes.\" The tone means that your voice should start at a low pitch and rise in pitch. It should sound like a question.\n\n2. \u5b50 (zi): The \"\u5b50\" part is pronounced as \"zuh\" with a neutral tone. The \"z\" sound is similar to the \"dz\" sound in the word \"adze\" or \"dz\" in \"adzebills.\" The neutral tone means that your voice should not rise or fall significantly in pitch.\n\nSo when combined, it is pronounced as \"Y\u0101zi\" with a rising tone on \"Y\u0101\" and a neutral tone on \"zi.\"\n\nPlease note that Chinese pronunciation can be a bit challenging without hearing it, so I recommend searching for audio resources or videos to help you practice and perfect your pronunciation.",
+          "metadata": {
+            "id": "chatcmpl-8n5gYUgTOrn11jlFufF1ZPZIoLrMk",
+            "created": 1706710618,
+            "model": "gpt-35-turbo",
+            "object": "chat.completion.chunk",
+            "raw_response": {
+              "role": "assistant",
+              "content": "Certainly! The Mandarin Chinese word for \"duck\" is \u9e2d\u5b50 (Y\u0101zi). Here's a breakdown of the pronunciation:\n\n1. \u9e2d (Y\u0101): The \"\u9e2d\" part is pronounced as \"yaa\" with a rising tone. The \"y\" sound is similar to the ending sound of the English word \"yes.\" The tone means that your voice should start at a low pitch and rise in pitch. It should sound like a question.\n\n2. \u5b50 (zi): The \"\u5b50\" part is pronounced as \"zuh\" with a neutral tone. The \"z\" sound is similar to the \"dz\" sound in the word \"adze\" or \"dz\" in \"adzebills.\" The neutral tone means that your voice should not rise or fall significantly in pitch.\n\nSo when combined, it is pronounced as \"Y\u0101zi\" with a rising tone on \"Y\u0101\" and a neutral tone on \"zi.\"\n\nPlease note that Chinese pronunciation can be a bit challenging without hearing it, so I recommend searching for audio resources or videos to help you practice and perfect your pronunciation."
+            },
+            "role": "assistant"
+          }
+        }
+      ]
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}
