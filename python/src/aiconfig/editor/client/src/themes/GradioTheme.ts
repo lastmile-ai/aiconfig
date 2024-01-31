@@ -29,8 +29,70 @@ export const GRADIO_THEME: MantineThemeOverride = {
       minHeight: "400px",
       paddingTop: "2px",
 
-      // Apply nested styles on mantine text components for higher specificity
-      // than gradio text styles
+      // Apply nested styles on mantine elements for higher specificity
+      // than gradio element styles
+
+      /*
+       * For all buttons, excluding menu dropdown and .ghost class buttons, apply the gradio color
+       * styles
+       */
+      ".mantine-Button-root.mantine-UnstyledButton-root:not(.ghost):not([aria-haspopup='menu'])":
+        {
+          background: "linear-gradient(to bottom right, #ffedd5, #fdba74 100%)",
+          border: "1px solid #fed7aa",
+          boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05)",
+          color: "#ea580c !important",
+          fontSize: "16px" /* var(--button-large-text-size) */,
+          fontWeight: 600 /* var(--button-large-text-weight) */,
+          padding: "0 1.25rem",
+        },
+
+      /*
+       * Same as above, only on hover
+       */
+      ".mantine-Button-root.mantine-UnstyledButton-root:not(.ghost):not([aria-haspopup='menu']):hover":
+        {
+          background: "linear-gradient(to bottom right, #ffedd5, #fed7aa)",
+        },
+
+      /*
+       * Same as above, only on disabled. See gradio styles for these colors, specifically
+       * .secondary[disabled] since .primary doesn't make enough of a contrast
+       */
+      ".mantine-Button-root.mantine-UnstyledButton-root:not(.ghost):not([aria-haspopup='menu']):disabled":
+        {
+          background:
+            "linear-gradient(to bottom right, #e5e7eb,  #e5e7eb)" /* var(--button-secondary-background-fill-hover) */,
+          borderColor:
+            "#e5e7eb" /* var(--button-secondary-border-color-hover) */,
+          color:
+            "#374151 !important" /* var(--button-secondary-text-color-hover) */,
+          cursor: "not-allowed",
+          pointerEvents:
+            "auto" /* mantine sets to disabled, we want the cursor to show per gradio styles */,
+        },
+
+      /*
+       * For all buttons, excluding menu dropdown, .ghost class buttons, and .runPromptButton, apply
+       * this dark text color (from gradio text) so the text can be seen over orange button background
+       * regardless of theme
+       */
+      ".mantine-Button-root.mantine-UnstyledButton-root:not(.ghost):not([aria-haspopup='menu']):not(.runPromptButton)":
+        {
+          color: "#374151",
+        },
+
+      /*
+       * Specifically set the .runPromptButton to have the desired styles specified in our custom gradio theme
+       */
+      ".mantine-Button-root.mantine-UnstyledButton-root.runPromptButton": {
+        borderRadius: "8px",
+        height: "auto",
+        margin: "4px",
+        marginTop: "30px",
+        padding: "0.625rem !important",
+      },
+
       ".mantine-Input-input:focus": {
         outline: "solid 1px #E85921 !important",
         outlineOffset: "-1px",
@@ -44,6 +106,29 @@ export const GRADIO_THEME: MantineThemeOverride = {
             }
           : undefined, // light colorScheme is fine without overrides
 
+      ".mantine-Menu-dropdown": {
+        border: "0.0625rem solid #373A40",
+      },
+
+      ".mantine-Slider-bar": {
+        backgroundColor: "#E85921",
+      },
+
+      ".mantine-Slider-thumb": {
+        border: "0.25rem solid #E85921",
+      },
+
+      ".mantine-Tabs-tab[data-active]": {
+        borderBottom: "solid 1px #E85921",
+        ":hover": {
+          borderBottom: "solid 1px #E85921",
+        },
+      },
+
+      ".mantine-Tabs-tabsList": {
+        gap: "12px",
+      },
+
       ".mantine-Text-root":
         theme.colorScheme === "dark"
           ? {
@@ -51,6 +136,14 @@ export const GRADIO_THEME: MantineThemeOverride = {
               // default inherited backgroundColor is correct
             }
           : undefined, // light colorScheme is fine without overrides
+
+      ".mantine-TextInput-input[data-with-icon]": {
+        paddingLeft: "2.25rem",
+      },
+
+      ".mantine-Title-root.mantine-Text-root": {
+        fontSize: "2rem",
+      },
     },
     ".monoFont": {
       fontFamily:
@@ -194,19 +287,6 @@ export const GRADIO_THEME: MantineThemeOverride = {
         path: {
           color: "#E85921",
         },
-      },
-    },
-
-    ".mantine-Slider-thumb": {
-      border: "0.25rem solid #E85921",
-    },
-    ".mantine-Slider-bar": {
-      backgroundColor: "#E85921",
-    },
-    ".mantine-Tabs-tab[data-active]": {
-      borderBottom: "solid 1px #E85921",
-      ":hover": {
-        borderBottom: "solid 1px #E85921",
       },
     },
   }),
