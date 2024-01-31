@@ -36,6 +36,11 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
+function isClickableChildElement(element: EventTarget | null) {
+  // Specifically handle markdown links and prism code copy svg elements
+  return element instanceof HTMLAnchorElement || element instanceof SVGElement;
+}
+
 export default memo(function ConfigNameDescription({
   name,
   description,
@@ -75,11 +80,16 @@ export default memo(function ConfigNameDescription({
       if (readOnly) {
         return;
       }
-      setIsEditing(true);
-      if (event.target === nameDisplayRef.current) {
+
+      if (event.currentTarget === nameDisplayRef.current) {
         setInitialFocus("name");
-      } else if (event.target === descriptionDisplayRef.current) {
+        setIsEditing(true);
+      } else if (
+        event.currentTarget === descriptionDisplayRef.current &&
+        !isClickableChildElement(event.target)
+      ) {
         setInitialFocus("description");
+        setIsEditing(true);
       }
     },
     [readOnly]
