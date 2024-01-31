@@ -19,6 +19,10 @@
       {
         "command": "vscode-aiconfig.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "vscode-aiconfig.share",
+        "title": "AIConfig: Share"
       }
     ],
     "customEditors": [
@@ -53,6 +57,7 @@
     "test:webview": "cd webview-ui && yarn test"
   },
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.503.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
     "@types/oboe": "^2.1.4",
