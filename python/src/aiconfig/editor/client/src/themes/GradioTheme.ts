@@ -197,7 +197,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
           background:
             theme.colorScheme === "light"
               ? "linear-gradient(90deg, #F6F6F6, #FFFFFF)"
-              : "transparent",
+              : "#0e131f",
           input: {
             border: `1px solid ${inputBorderColor} !important`,
             boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
