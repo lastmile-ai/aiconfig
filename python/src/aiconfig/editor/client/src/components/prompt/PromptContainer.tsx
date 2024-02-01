@@ -156,8 +156,13 @@ export default memo(function PromptContainer({
             isRunning={prompt._ui.isRunning}
             isRunButtonDisabled={isRunButtonDisabled}
           />
-          <PromptOutputBar />
-          {prompt.outputs && <PromptOutputsRenderer outputs={prompt.outputs} />}
+
+          {prompt.outputs && prompt.outputs.length > 0 && (
+            <>
+              <PromptOutputBar />
+              <PromptOutputsRenderer outputs={prompt.outputs} />
+            </>
+          )}
         </Flex>
       </Card>
       <div className="sidePanel">
