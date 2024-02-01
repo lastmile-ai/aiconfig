@@ -7,7 +7,7 @@ import threading
 import time
 import uuid
 import webbrowser
-from typing import Any, Dict, Type, Union
+from typing import Any, Dict, Literal, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -25,6 +25,7 @@ from aiconfig.editor.server.server_utils import (
     OpArgs,
     ServerMode,
     ServerState,
+    StartServerConfig,
     ValidatedPath,
     get_http_response_load_user_parser_module,
     get_server_state,
@@ -42,13 +43,14 @@ from flask import Flask, Response, request, stream_with_context
 from flask_cors import CORS
 from result import Err, Ok, Result
 
-from aiconfig.schema import ExecuteResult, Output, Prompt
+from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 logging.getLogger("werkzeug").disabled = True
 
 logging.basicConfig(format=core_utils.LOGGER_FMT)
 LOGGER = logging.getLogger(__name__)
 
+# TODO: saqadri - use logs directory to save logs
 log_handler = logging.FileHandler("editor_flask_server.log", mode="a")
 formatter = logging.Formatter(core_utils.LOGGER_FMT)
 log_handler.setFormatter(formatter)
@@ -61,37 +63,49 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
 def run_backend_server(
-    edit_config: EditServerConfig, aiconfigrc_path: str
+    initialization_settings: StartServerConfig | EditServerConfig,
+    aiconfigrc_path: str,
 ) -> Result[str, str]:
-    LOGGER.setLevel(edit_config.log_level)
-    LOGGER.info("Edit config: %s", edit_config.model_dump_json())
+    LOGGER.setLevel(initialization_settings.log_level)
+    LOGGER.info("Edit config: %s", initialization_settings.model_dump_json())
     LOGGER.info(
-        f"Starting server on http://localhost:{edit_config.server_port}"
+        f"Starting server on http://localhost:{initialization_settings.server_port}"
     )
-    try:
-        LOGGER.info(
-            f"Opening browser at http://localhost:{edit_config.server_port}"
-        )
-        webbrowser.open(f"http://localhost:{edit_config.server_port}")
-    except Exception as e:
-        LOGGER.warning(
-            f"Failed to open browser: {e}. Please open http://localhost:{port} manually."
-        )
+
+    if isinstance(initialization_settings, EditServerConfig):
+        try:
+            LOGGER.info(
+                f"Opening browser at http://localhost:{initialization_settings.server_port}"
+            )
+            webbrowser.open(
+                f"http://localhost:{initialization_settings.server_port}"
+            )
+        except Exception as e:
+            LOGGER.warning(
+                f"Failed to open browser: {e}. Please open http://localhost:{initialization_settings.server_port} manually."
+            )
+    else:
+        # In the case of the 'start' command, just the webserver is started up, and there's no need to open the browser
+        pass
 
     app.server_state = ServerState()  # type: ignore
     res_server_state_init = init_server_state(
-        app, edit_config, aiconfigrc_path
+        app, initialization_settings, aiconfigrc_path
     )
     match res_server_state_init:
         case Ok(_):
             LOGGER.info("Initialized server state")
-            debug = edit_config.server_mode in [
+            debug = initialization_settings.server_mode in [
                 ServerMode.DEBUG_BACKEND,
                 ServerMode.DEBUG_SERVERS,
             ]
-            LOGGER.info(f"Running in {edit_config.server_mode} mode")
+            LOGGER.info(
+                f"Running in {initialization_settings.server_mode} mode"
+            )
             app.run(
-                port=edit_config.server_port, debug=debug, use_reloader=debug
+                port=initialization_settings.server_port,
+                debug=debug,
+                use_reloader=debug,
             )
             return Ok("Done")
         case Err(e):
@@ -188,6 +202,45 @@ def load() -> FlaskResponse:
                 ).to_flask_format()
 
 
+@app.route("/api/load_content", methods=["POST"])
+def load_content() -> FlaskResponse:
+    state = get_server_state(app)
+    request_json = request.get_json()
+
+    content = request_json.get("content", None)
+    mode = request_json.get("mode", "json")
+    if content is None:
+        # In this case let's create an empty AIConfig
+        aiconfig = AIConfigRuntime.create()  # type: ignore
+        model_ids = ModelParserRegistry.parser_ids()
+        if len(model_ids) > 0:
+            aiconfig.add_prompt(
+                "prompt_1",
+                Prompt(
+                    name="prompt_1",
+                    input="",
+                    metadata=PromptMetadata(model=model_ids[0]),
+                ),
+            )
+
+            state.aiconfig = aiconfig
+            return HttpResponseWithAIConfig(
+                message="Created", aiconfig=aiconfig
+            ).to_flask_format()
+
+    # If we have been provided with the aiconfig string, use it to instantiate
+    # an AIConfigRuntime object
+    if mode == "json":
+        aiconfig = AIConfigRuntime.load_json(content)
+    else:
+        aiconfig = AIConfigRuntime.load_yaml(content)
+
+    state.aiconfig = aiconfig
+    return HttpResponseWithAIConfig(
+        message="Loaded", aiconfig=aiconfig
+    ).to_flask_format()
+
+
 @app.route("/api/save", methods=["POST"])
 def save() -> FlaskResponse:
     state = get_server_state(app)
@@ -223,6 +276,30 @@ def save() -> FlaskResponse:
                 code=400,
                 aiconfig=None,
             ).to_flask_format()
+
+
+@app.route("/api/to_string", methods=["POST"])
+def to_string() -> FlaskResponse:
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+    mode: Literal["json", "yaml"] = request_json.get("mode", "json")
+    include_outputs: bool = request_json.get("include_outputs", True)
+
+    if mode != "json" and mode != "yaml":
+        return HttpResponseWithAIConfig(
+            message=f"Invalid mode: {mode}", code=400, aiconfig=None
+        ).to_flask_format()
+
+    if aiconfig is None:
+        return HttpResponseWithAIConfig(
+            message="No AIConfig loaded", code=400, aiconfig=None
+        ).to_flask_format()
+    else:
+        aiconfig_string = aiconfig.to_string(
+            include_outputs=include_outputs, mode=mode
+        )
+        return FlaskResponse(({"aiconfig_string": aiconfig_string}, 200))
 
 
 @app.route("/api/create", methods=["POST"])

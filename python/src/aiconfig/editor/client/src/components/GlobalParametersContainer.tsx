@@ -1,4 +1,4 @@
-import { Container, Accordion, Text } from "@mantine/core";
+import { Accordion, Text } from "@mantine/core";
 import { JSONObject } from "aiconfig";
 import { memo, useState } from "react";
 import ParametersRenderer from "./ParametersRenderer";
@@ -15,7 +15,7 @@ export default memo(function GlobalParametersContainer({
   const [isParametersDrawerOpen, setIsParametersDrawerOpen] = useState(false);
 
   return (
-    <Container maw="80rem" className="parametersContainer">
+    <div className="parametersContainer">
       <Accordion
         styles={{
           item: { borderBottom: 0 },
@@ -37,11 +37,12 @@ export default memo(function GlobalParametersContainer({
               <ParametersRenderer
                 initialValue={initialValue}
                 onUpdateParameters={onUpdateParameters}
+                maxHeight="300px"
               />
             )}
           </Accordion.Panel>
         </Accordion.Item>
       </Accordion>
-    </Container>
+    </div>
   );
 });

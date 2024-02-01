@@ -32,6 +32,7 @@ We have started by supporting the 6 most popular Hugging Face tasks (by number o
 In addition we support the following **HF inference API**:
 
 - text generation
+- text summarization
 
 ### Gradio custom component
 
@@ -52,14 +53,16 @@ We are working on using `sveltris` to package our React frontend to work with Gr
 
 - `pip3 install -r requirements.txt`
 
-- Install `python-aiconfig-test` package from `test-pypi`:
-
-```
-pip3 install --index-url https://test.pypi.org/simple --extra-index-url https://pypi.org/simple python-aiconfig-test==1.1.38 --force
-```
-
-Now run this command to start the AIConfig editor:
+Go to `aiconfig/python/src/aiconfig/editor/client` and run this command:
 
 ```bash
-aiconfig edit --aiconfig-path=huggingface.aiconfig.json --parsers-module-path=hf_model_parsers.py
+rm -rf node_modules && yarn && yarn build
+```
+
+Now run go back to top-level directory (`cd <aiconfig>`) and run this command to start the AIConfig editor:
+
+```bash
+aiconfig_path=./cookbooks/Gradio/huggingface.aiconfig.json
+parsers_path=./cookbooks/Gradio/aiconfig_model_registry.py
+aiconfig edit --aiconfig-path=$aiconfig_path --parsers-module-path=$parsers_path
 ```

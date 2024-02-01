@@ -115,10 +115,24 @@ export class AIConfigRuntime implements AIConfig {
   }
 
   /**
+   * Loads an AIConfig from a YAML string.
+   * @param aiConfigYAML YAML string to load the AIConfig from.
+   */
+  public static loadYAML(aiConfigYAML: string) {
+    const aiConfigObj = yaml.load(aiConfigYAML);
+    return this.loadJSON(aiConfigObj);
+  }
+
+  /**
    * Loads an AIConfig from a JSON object.
    * @param aiConfigObj JSON object to load the AIConfig from.
    */
   public static loadJSON(aiConfigObj: any) {
+    if (typeof aiConfigObj === "string") {
+      // Parse the string as JSON
+      aiConfigObj = JSON.parse(aiConfigObj);
+    }
+
     // TODO: saqadri - validate that the type satisfies AIConfig interface
     const aiConfig = new AIConfigRuntime(
       aiConfigObj.name,
@@ -219,12 +233,40 @@ export class AIConfigRuntime implements AIConfig {
    * Saves this AIConfig to a file.
    * @param filePath The path to the file to save to.
    * @param saveOptions Options that determine how to save the AIConfig to the file.
+   * @param mode Whether to save the AIConfig as JSON or YAML. If unspecified, the file extension will be used to determine the mode.
    */
   public save(
     filePath?: string,
     saveOptions?: SaveOptions,
     mode?: "json" | "yaml"
   ) {
+    const defaultFilePath = mode === "yaml" ? "aiconfig.yaml" : "aiconfig.json";
+    if (!filePath) {
+      filePath = this.filePath ?? defaultFilePath;
+    }
+
+    if (mode == null) {
+      if (isYamlExt(filePath)) {
+        mode = "yaml";
+      } else {
+        // Default to JSON
+        mode = "json";
+      }
+    }
+
+    const aiConfigString = this.toString(saveOptions, mode);
+    fs.writeFileSync(filePath, aiConfigString);
+  }
+
+  /**
+   * Returns this AIConfig as a string.
+   *
+   * Note that this doesn't return the full string representation of the AIConfig object,
+   * but rather the string representation of the AIConfig object that can be persisted to a file.
+   * @param saveOptions Options that determine how to serialize the AIConfig to string.
+   * @param mode Whether to save the AIConfig as JSON or YAML. Defaults to JSON.
+   */
+  public toString(saveOptions?: SaveOptions, mode: "json" | "yaml" = "json") {
     const keysToOmit = ["filePath", "callbackManager"] as const;
 
     try {
@@ -240,19 +282,9 @@ export class AIConfigRuntime implements AIConfig {
         aiConfigObj.prompts = prompts;
       }
 
-      const defaultFilePath =
-        mode === "yaml" ? "aiconfig.yaml" : "aiconfig.json";
-      if (!filePath) {
-        filePath = this.filePath ?? defaultFilePath;
-      }
-
-      if (mode == null) {
-        if (isYamlExt(filePath)) {
-          mode = "yaml";
-        } else {
-          // Default to JSON
-          mode = "json";
-        }
+      if (aiConfigObj["$schema"] == null) {
+        // Add the $schema property to the JSON object before saving it. In the future this can respect the version specified in the AIConfig.
+        aiConfigObj["$schema"] = "https://json.schemastore.org/aiconfig-1.0";
       }
 
       // TODO: saqadri - make sure that the object satisfies the AIConfig schema
@@ -260,12 +292,10 @@ export class AIConfigRuntime implements AIConfig {
       if (mode === "yaml") {
         aiConfigString = yaml.dump(aiConfigObj, { indent: 2 });
       } else {
-        // Add the $schema property to the JSON object before saving it. In the future this can respect the version specified in the AIConfig.
-        aiConfigObj["$schema"] = "https://json.schemastore.org/aiconfig-1.0";
         aiConfigString = JSON.stringify(aiConfigObj, null, 2);
       }
 
-      fs.writeFileSync(filePath, aiConfigString);
+      return aiConfigString;
     } catch (error) {
       console.error(error);
       throw error;

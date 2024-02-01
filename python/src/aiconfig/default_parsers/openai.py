@@ -35,6 +35,8 @@ if TYPE_CHECKING:
 class OpenAIInference(ParameterizedModelParser):
     def __init__(self):
         super().__init__()
+        # Will be set in the run method. This is to avoid having to set the api key in the constructor
+        self.client = None
 
     @abstractmethod
     def id(self) -> str:
@@ -288,10 +290,8 @@ class OpenAIInference(ParameterizedModelParser):
             )
         )
 
-        if not openai.api_key:
-            openai.api_key = get_api_key_from_environment(
-                "OPENAI_API_KEY"
-            ).unwrap()
+        if self.client is None:
+            self.initialize_openai_client()
 
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
@@ -305,7 +305,7 @@ class OpenAIInference(ParameterizedModelParser):
 
         completion_data["stream"] = stream
 
-        response = openai.chat.completions.create(**completion_data)
+        response = self.client.chat.completions.create(**completion_data)
         outputs = []
         if not stream:
             # # OpenAI>1.0.0 uses pydantic models for response
@@ -367,6 +367,7 @@ class OpenAIInference(ParameterizedModelParser):
                     output = ExecuteResult(
                         **{
                             "output_type": "execute_result",
+                            # TODO (rossdan): accumulated_message_for_choice.get("content")
                             "data": accumulated_message_for_choice,
                             "execution_count": index,
                             "metadata": chunk_without_choices,
@@ -396,6 +397,17 @@ class OpenAIInference(ParameterizedModelParser):
             )
         )
         return prompt.outputs
+    
+    def initialize_openai_client(self) -> None:
+        """
+        Initializes the client to be used with the OpenAI Module.
+        This method can be overriden to customize the client initialization.
+        """
+
+        openai_api_key = get_api_key_from_environment(
+            "OPENAI_API_KEY"
+        ).unwrap()
+        self.client = openai.Client(api_key=openai_api_key)   
 
     def get_prompt_template(
         self, prompt: Prompt, aiconfig: "AIConfigRuntime"

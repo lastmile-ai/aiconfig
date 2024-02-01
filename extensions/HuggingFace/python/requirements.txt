@@ -6,7 +6,7 @@ pylint
 python-aiconfig
 
 #Hugging Face Libraries - Remote Infernce Client 
-huggingface-hub
+huggingface-hub>=0.20.3
 
 #Hugging Face Libraries - Local Inference Tranformers & Diffusors
 accelerate # Used to help speed up image generation

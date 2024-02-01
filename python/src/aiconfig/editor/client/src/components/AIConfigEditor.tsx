@@ -31,6 +31,7 @@ import {
   AIConfigEditorMode,
   LogEvent,
   LogEventData,
+  ThemeMode,
   aiConfigToClientConfig,
   clientConfigToAIConfig,
   clientPromptToAIConfigPrompt,
@@ -56,6 +57,8 @@ import {
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
 import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
+import DownloadButton from "./global/DownloadButton";
+import ShareButton from "./global/ShareButton";
 import PromptsContainer from "./prompt/PromptsContainer";
 
 type Props = {
@@ -63,6 +66,12 @@ type Props = {
   callbacks?: AIConfigCallbacks;
   mode?: AIConfigEditorMode;
   readOnly?: boolean;
+  /**
+   * Theme mode override for the editor. By default, the editor will use the system
+   * theme variant for the theme associated with the EditorMode. This prop allows
+   * overriding that behavior.
+   */
+  themeMode?: ThemeMode;
 };
 
 export type RunPromptStreamEvent =
@@ -102,6 +111,7 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
+  download?: () => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
@@ -113,7 +123,8 @@ export type AIConfigCallbacks = {
     cancellationToken?: string
   ) => Promise<{ aiconfig: AIConfig }>;
   cancel: (cancellationToken: string) => Promise<void>;
-  save: (aiconfig: AIConfig) => Promise<void>;
+  save?: (aiconfig: AIConfig) => Promise<void>;
+  share?: () => Promise<{ share_url: string }>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
   setParameters: (parameters: JSONObject, promptName?: string) => Promise<void>;
@@ -135,6 +146,7 @@ export default function AIConfigEditor({
   callbacks,
   mode,
   readOnly = false,
+  themeMode,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
@@ -147,6 +159,41 @@ export default function AIConfigEditor({
   stateRef.current = aiconfigState;
 
   const logEventHandler = callbacks?.logEventHandler;
+
+  const downloadCallback = callbacks?.download;
+  const onDownload = useCallback(async () => {
+    if (!downloadCallback) {
+      return;
+    }
+    try {
+      await downloadCallback();
+    } catch (err: unknown) {
+      const message = (err as RequestCallbackError).message ?? null;
+      showNotification({
+        title: "Error downloading AIConfig",
+        message,
+        color: "red",
+      });
+    }
+  }, [downloadCallback]);
+
+  const shareCallback = callbacks?.share;
+  const onShare = useCallback(async () => {
+    if (!shareCallback) {
+      return;
+    }
+    try {
+      const { share_url: shareUrl } = await shareCallback();
+      return shareUrl;
+    } catch (err: unknown) {
+      const message = (err as RequestCallbackError).message ?? null;
+      showNotification({
+        title: "Error sharing AIConfig",
+        message,
+        color: "red",
+      });
+    }
+  }, [shareCallback]);
 
   const saveCallback = callbacks?.save;
   const onSave = useCallback(async () => {
@@ -841,9 +888,10 @@ export default function AIConfigEditor({
     () => ({
       getState,
       logEventHandler,
+      mode,
       readOnly,
     }),
-    [getState, logEventHandler, readOnly]
+    [getState, logEventHandler, mode, readOnly]
   );
 
   const isDirty = aiconfigState._ui.isDirty !== false;
@@ -902,10 +950,10 @@ export default function AIConfigEditor({
   const runningPromptId: string | undefined = aiconfigState._ui.runningPromptId;
 
   return (
-    <AIConfigEditorThemeProvider mode={mode}>
+    <AIConfigEditorThemeProvider mode={mode} themeMode={themeMode}>
       <AIConfigContext.Provider value={contextValue}>
         <Notifications />
-        <div className="editorBackground">
+        <Container className="editorBackground" maw="80rem">
           {serverStatus !== "OK" && (
             <>
               {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
@@ -937,41 +985,49 @@ export default function AIConfigEditor({
               </Alert>
             </>
           )}
-          <Container maw="80rem">
+          <div>
             <Flex justify="flex-end" mt="md" mb="xs">
-              <Group>
-                {!readOnly && (
-                  <Button
-                    loading={undefined}
-                    onClick={onClearOutputs}
-                    size="xs"
-                    variant="gradient"
-                  >
-                    Clear Outputs
-                  </Button>
-                )}
-                {!readOnly && (
-                  <Tooltip
-                    label={
-                      isDirty ? "Save changes to config" : "No unsaved changes"
-                    }
-                  >
+              {
+                <Group>
+                  {downloadCallback && (
+                    <DownloadButton onDownload={onDownload} />
+                  )}
+                  {shareCallback && <ShareButton onShare={onShare} />}
+                  {!readOnly && onClearOutputs && (
                     <Button
-                      leftIcon={<IconDeviceFloppy />}
-                      loading={isSaving}
-                      onClick={() => {
-                        onSave();
-                        logEventHandler?.("SAVE_BUTTON_CLICKED");
-                      }}
-                      disabled={!isDirty}
+                      loading={undefined}
+                      onClick={onClearOutputs}
                       size="xs"
                       variant="gradient"
                     >
-                      Save
+                      Clear Outputs
                     </Button>
-                  </Tooltip>
-                )}
-              </Group>
+                  )}
+                  {!readOnly && saveCallback && (
+                    <Tooltip
+                      label={
+                        isDirty
+                          ? "Save changes to config"
+                          : "No unsaved changes"
+                      }
+                    >
+                      <Button
+                        leftIcon={<IconDeviceFloppy />}
+                        loading={isSaving}
+                        onClick={() => {
+                          onSave();
+                          logEventHandler?.("SAVE_BUTTON_CLICKED");
+                        }}
+                        disabled={!isDirty}
+                        size="xs"
+                        variant="gradient"
+                      >
+                        Save
+                      </Button>
+                    </Tooltip>
+                  )}
+                </Group>
+              }
             </Flex>
             <ConfigNameDescription
               name={aiconfigState.name}
@@ -979,7 +1035,7 @@ export default function AIConfigEditor({
               setDescription={onSetDescription}
               setName={onSetName}
             />
-          </Container>
+          </div>
           <GlobalParametersContainer
             initialValue={aiconfigState?.metadata?.parameters ?? {}}
             onUpdateParameters={onUpdateGlobalParameters}
@@ -999,7 +1055,7 @@ export default function AIConfigEditor({
             prompts={aiconfigState.prompts}
             runningPromptId={runningPromptId}
           />
-        </div>
+        </Container>
       </AIConfigContext.Provider>
     </AIConfigEditorThemeProvider>
   );

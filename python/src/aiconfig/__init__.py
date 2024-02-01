@@ -10,6 +10,7 @@ from .callback import (
 # The AIConfigRuntime class. This is the main class that you will use to run your AIConfig.
 from .Config import AIConfigRuntime
 from .default_parsers.openai import DefaultOpenAIParser, OpenAIInference
+from .default_parsers.azure import AzureOpenAIParser
 
 # Model Parsers
 from .default_parsers.palm import PaLMChatParser, PaLMTextParser
