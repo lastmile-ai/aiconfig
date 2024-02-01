@@ -158,6 +158,12 @@ export const GRADIO_THEME: MantineThemeOverride = {
             backgroundColor: inputBackgroundColor,
             boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
           },
+          button: {
+            color: theme.colorScheme === "dark" ? "#C1C2C5" : "inherit",
+            ":hover": {
+              backgroundColor: "transparent",
+            },
+          },
         },
 
         ".cellStyle": {
