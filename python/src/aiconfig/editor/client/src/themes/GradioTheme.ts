@@ -225,8 +225,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
           border: "1px solid #FDD7AD",
           background: "linear-gradient(180deg, #FEE1C0 0%, #FCC792 100%)",
           boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05)",
-          margin: "4px",
-          marginTop: "30px",
+          margin: "33px 4px 4px 4px",
           padding: "0.625rem !important",
           height: "auto",
         },
@@ -268,22 +267,22 @@ export const GRADIO_THEME: MantineThemeOverride = {
               outlineOffset: "-1px",
             },
           },
-          ".addParameterButton": {
-            position: "sticky",
-            left: "0",
-            bottom: "0",
-            margin: "16px 0 0 0",
-            background:
-              "linear-gradient(to bottom right, #ffedd5, #fdba74 100%)",
-            border: "1px solid #fed7aa",
-            boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05)",
-            color: "#ea580c !important",
-            path: {
-              color: "#E85921",
-            },
-            ":hover": {
-              background: "linear-gradient(to bottom right, #ffedd5, #fed7aa)",
-            },
+        },
+
+        ".addParameterButton": {
+          position: "sticky",
+          left: "0",
+          bottom: "0",
+          margin: "16px 0 0 0",
+          background: "linear-gradient(to bottom right, #ffedd5, #fdba74 100%)",
+          border: "1px solid #fed7aa",
+          boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05)",
+          color: "#ea580c !important",
+          path: {
+            color: "#E85921",
+          },
+          ":hover": {
+            background: "linear-gradient(to bottom right, #ffedd5, #fed7aa)",
           },
         },
       },
