@@ -24,7 +24,7 @@ export default memo(function PromptMenuButton({
           size="xs"
           variant="subtle"
           color="dark"
-          className={classes.promptMenuButton}
+          className={`${classes.promptMenuButton} promptMenuButton`}
         >
           <IconDotsVertical size={14} />
         </Button>
