@@ -17,6 +17,9 @@ export const GRADIO_THEME: MantineThemeOverride = {
 
   //gradio light theme
   globalStyles: (theme) => {
+    const inputBorderColor =
+      theme.colorScheme === "light" ? "#E5E7EB" : "#384152";
+
     return {
       "div.editorBackground": {
         background: theme.colorScheme === "light" ? "white" : "#0b0f19",
@@ -163,8 +166,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
         },
       },
       ".cellStyle": {
-        border: "1px solid",
-        borderColor: theme.colorScheme === "light" ? "#E5E7EB" : "#384152",
+        border: `1px solid ${inputBorderColor}`,
         background: theme.colorScheme === "light" ? "white" : "#1f2938",
         flex: 1,
         borderTopRightRadius: "0px",
@@ -178,11 +180,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
               : "#1f2938",
         },
         textarea: {
-          border: "1px solid !important",
-          borderColor:
-            theme.colorScheme === "light"
-              ? "#E5E7EB !important"
-              : "#384152 !important",
+          border: `1px solid ${inputBorderColor} !important`,
           borderRadius: "8px",
           margin: "8px 0px 0px 0px",
           boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
@@ -190,8 +188,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
         },
       },
       ".sidePanel": {
-        border: "1px solid",
-        borderColor: theme.colorScheme === "light" ? "#E5E7EB" : "#384152",
+        border: `1px solid ${inputBorderColor}`,
         borderLeft: "none",
         borderTopRightRadius: "8px",
         borderBottomRightRadius: "8px",
@@ -200,7 +197,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
             ? "linear-gradient(90deg, #F6F6F6, #FFFFFF)"
             : "transparent",
         input: {
-          border: "1px solid #E5E7EB !important",
+          border: `1px solid ${inputBorderColor} !important`,
           boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
           backgroundColor: "#ffffff",
           ":focus": {
@@ -248,8 +245,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
         padding: "0",
         backgroundColor: theme.colorScheme === "light" ? "#F9FAFB" : "#1f2938",
         borderRadius: "8px",
-        border: "1px solid",
-        borderColor: theme.colorScheme === "light" ? "#E5E7EB" : "#384152",
+        border: `1px solid ${inputBorderColor}`,
         button: {
           ":hover": {
             backgroundColor:
@@ -257,21 +253,13 @@ export const GRADIO_THEME: MantineThemeOverride = {
           },
         },
         input: {
-          border: "1px solid !important",
-          borderColor:
-            theme.colorScheme === "light"
-              ? "#E5E7EB !important"
-              : "#384152 !important",
+          border: `1px solid ${inputBorderColor} !important`,
           boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
           borderRadius: "8px",
           backgroundColor: theme.colorScheme === "light" ? "white" : "#384152",
         },
         textarea: {
-          border: "1px solid !important",
-          borderColor:
-            theme.colorScheme === "light"
-              ? "#E5E7EB !important"
-              : "#384152 !important",
+          border: `1px solid ${inputBorderColor} !important`,
           boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
           borderRadius: "8px",
           backgroundColor: theme.colorScheme === "light" ? "white" : "#384152",
