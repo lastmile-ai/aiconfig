@@ -82,7 +82,7 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "dall-e-2": DalleImageGenerationParserPromptSchema,
   "dall-e-3": DalleImageGenerationParserPromptSchema,
 
-  "ClaudeBedrockModelParser": ClaudeBedrockPromptSchema,
+  ClaudeBedrockModelParser: ClaudeBedrockPromptSchema,
 
   HuggingFaceImage2TextRemoteInference:
     HuggingFaceImage2TextRemoteInferencePromptSchema,
@@ -149,6 +149,15 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "Text Generation": HuggingFaceTextGenerationRemoteInferencePromptSchema,
   Summarization: HuggingFaceTextSummarizationRemoteInferencePromptSchema,
   Translation: HuggingFaceTextTranslationRemoteInferencePromptSchema,
+
+  "Automatic Speech Recognition (Local)":
+    HuggingFaceAutomaticSpeechRecognitionPromptSchema,
+  "Image-to-Text (Local)": HuggingFaceImage2TextTransformerPromptSchema,
+  "Text-to-Image (Local)": HuggingFaceText2ImageDiffusorPromptSchema,
+  "Text-to-Speech (Local)": HuggingFaceText2SpeechTransformerPromptSchema,
+  "Text Generation (Local)": HuggingFaceTextGenerationTransformerPromptSchema,
+  "Summarization (Local)": HuggingFaceTextSummarizationTransformerPromptSchema,
+  "Translation (Local)": HuggingFaceTextGenerationTransformerPromptSchema,
 };
 
 export type PromptInputSchema =
