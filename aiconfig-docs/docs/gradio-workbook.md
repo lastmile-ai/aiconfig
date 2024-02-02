@@ -8,9 +8,12 @@ import constants from '@site/core/tabConstants';
 
 # Gradio Workbooks
 
-**[Gradio Workbooks](https://huggingface.co/spaces/lastmileai/gradio-workbook-template) provide an out-of-the-box playground for creating Hugging Face Spaces.**
+[Gradio Workbooks](https://huggingface.co/spaces/lastmileai/gradio-workbook-template) is a Gradio custom component that creates a notebook playground on Hugging Face Spaces with only [8-lines of code](https://huggingface.co/spaces/lastmileai/gradio-workbook-template/blob/main/app.py)! 
 
-The playground provides instant model selection, chaining of models, and templates - no setup or code required!
+You can:
+* Use any model, and a combination of models, in a single space
+* Play around with models in any format (text, audio image) and ordering
+* Share Space output results with friends
 
 <div align="center">
   <picture>
@@ -18,9 +21,6 @@ The playground provides instant model selection, chaining of models, and templat
   </picture>
 </div>
 <br/>
-
-1. **Build apps inspired by Spaces**. Gradio Workbook Spaces are backed by an `aiconfig.json` file that stores prompts and model settings. Click **Download** to get the `aiconfig.json` file for your Space. Use the `aiconfig.json` in your application code with the [AIConfig SDK](https://github.com/lastmile-ai/aiconfig).
-2. **Share read-only views of Spaces**. You can now share your workflow, prompts, and outputs, even as a Space viewer. Check out this [Space](https://huggingface.co/spaces/lastmileai/music_generator) and it's [read-only view](https://lastmileai.dev/aiconfig/cls2n2jpk00pnpe1n5xx8uub2)! Make edits to the Space and click **Share Workbook** to get a read-only view of your own.
 
 ## Quickstart
 
@@ -32,6 +32,7 @@ The playground provides instant model selection, chaining of models, and templat
   - [requirements.txt](https://huggingface.co/spaces/lastmileai/gradio-workbook-template/blob/main/requirements.txt)
 
 ### 2. Design your Space
+Use the playground UI in your space to setup your models and prompts that you want on your space.
 
 - **Add a new cell with '+'.** Gradio Workbooks are made up cells. Each cell allows you to prompt a specific model.
 - **Select the model for your cell.** First, choose the [Hugging Face Task](#supported-models) for this cell. Then, click on the Cell Settings panel to select a model for that task. The model needs to available on the [Hugging Face Inference API](https://huggingface.co/docs/api-inference/index) - check the model card on Hugging Face.
