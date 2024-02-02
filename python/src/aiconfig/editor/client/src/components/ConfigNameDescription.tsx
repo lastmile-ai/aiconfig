@@ -99,7 +99,7 @@ export default memo(function ConfigNameDescription({
     <Stack
       ref={isEditing ? inputSectionRef : undefined}
       spacing="xs"
-      ml="36px"
+      ml={readOnly ? "auto" : "36px"}
       mr="0.5em"
     >
       {isEditing ? (
