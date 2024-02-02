@@ -133,11 +133,11 @@ You can easily build generative apps inspired by your work in Gradio Workbook Sp
 Use the `aiconfig.json` file in your code with the [AIConfig SDK](https://github.com/lastmile-ai/aiconfig) in 2 lines.
 
 ```python
-config = await AIConfigRuntime.load('hf_space.aiconfig.json')
+config = await AIConfigRuntime.load('my_app.aiconfig.json')
 model_output = await config.run('prompt_1')
 ```
 
-[AIConfig](https://github.com/lastmile-ai/aiconfig)) is an open-source framework. Message us on [Discord](https://discord.com/invite/xBhNKTetGx) if you feedback or questions!
+[AIConfig](https://github.com/lastmile-ai/aiconfig) is an open-source framework. Message us on [Discord](https://discord.com/invite/xBhNKTetGx) if you feedback or questions!
 
 ## Supported Models
 
