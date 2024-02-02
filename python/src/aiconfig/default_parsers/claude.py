@@ -7,10 +7,11 @@ from aiconfig.default_parsers.parameterized_model_parser import (
     ParameterizedModelParser,
 )
 from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 from aiconfig.util.params import resolve_prompt
 from anthropic_bedrock import AI_PROMPT, HUMAN_PROMPT, AnthropicBedrock, Stream
 from anthropic_bedrock.types import Completion
+
+from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime

@@ -329,7 +329,9 @@ class AIConfig(BaseModel):
         Args:
             model_name (str): The name of the default model.
         """
-        self.metadata.default_model = model_name.strip() if model_name else None
+        self.metadata.default_model = (
+            model_name.strip() if model_name else None
+        )
 
     def get_default_model(self) -> Union[str, None]:
         """
@@ -672,13 +674,16 @@ class AIConfig(BaseModel):
         """
         Strips model names from the prompt data
         """
-        if (prompt_data.metadata is not None and prompt_data.metadata.model is not None):
+        if (
+            prompt_data.metadata is not None
+            and prompt_data.metadata.model is not None
+        ):
             model = prompt_data.metadata.model
             if isinstance(model, str):
                 model = model.strip()
             else:
                 model.name = model.name.strip()
-                
+
                 if model.settings is not None and "model" in model.settings:
                     model.settings["model"] = model.settings["model"].strip()
 
