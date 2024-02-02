@@ -47,7 +47,8 @@ function InputErrorFallback({
     <>
       <Flex direction="column">
         <Text color="red" size="sm">
-          Invalid input format for model. Toggle JSON editor to update
+          Invalid input format for model. Toggle JSON editor to update. Set to
+          {" {}"} in JSON editor and toggle back to reset.
         </Text>
         <Flex>
           <div className={classes.promptInputRendererWrapper}>
