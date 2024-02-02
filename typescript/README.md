@@ -262,7 +262,7 @@ There is a lot you can do with `aiconfig`. We have several other tutorials to he
 Here are some example uses:
 
 - [CLI Chatbot](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Wizard-GPT)
-- [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
+- [RAG with ChromaDB](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-ChromaDB)
 - [Prompt routing](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Basic-Prompt-Routing)
 - [OpenAI function calling](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI)
 - [Chain of thought](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Chain-of-Verification)
@@ -422,7 +422,8 @@ We provide several guides to demonstrate the power of `aiconfig`.
 
 ### Retrieval Augmented Generated (RAG)
 
-- [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
+- [RAG with ChromaDB](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-ChromaDB)
+- [RAG with MongoDB](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-MongoDB)
 
 At its core, RAG is about passing data into prompts. Read how to [pass data](/docs/overview/parameters) with AIConfig.
 
