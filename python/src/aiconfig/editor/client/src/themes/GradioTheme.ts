@@ -243,7 +243,6 @@ export const GRADIO_THEME: MantineThemeOverride = {
         ".parametersContainer": {
           maxWidth: "1250px",
           maxHeight: "-webkit-fill-available",
-          margin: "16px auto 16px 36px",
           padding: "0",
           backgroundColor:
             theme.colorScheme === "light" ? "#F9FAFB" : "#1f2938",
@@ -271,6 +270,12 @@ export const GRADIO_THEME: MantineThemeOverride = {
               outlineOffset: "-1px",
             },
           },
+        },
+
+        // Override gradio's button styles
+        ".promptMenuButton": {
+          marginLeft: "-8px",
+          padding: "0 0.875rem",
         },
 
         ".addParameterButton": {
