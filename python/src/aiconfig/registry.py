@@ -47,8 +47,8 @@ class ModelParserRegistry:
         """
         if ids:
             for id in ids:
-                ModelParserRegistry._parsers[id] = model_parser
-        ModelParserRegistry._parsers[model_parser.id()] = model_parser
+                ModelParserRegistry._parsers[id.strip()] = model_parser
+        ModelParserRegistry._parsers[model_parser.id().strip()] = model_parser
 
     @staticmethod
     def get_model_parser(model_id: str) -> ModelParser:
@@ -61,7 +61,7 @@ class ModelParserRegistry:
         Returns:
             ModelParser: The retrieved model parser
         """
-        return ModelParserRegistry._parsers[model_id]
+        return ModelParserRegistry._parsers[model_id.strip()]
 
     @staticmethod
     def get_model_parser_for_prompt(prompt: Prompt, config: "AIConfigRuntime"):
@@ -74,7 +74,7 @@ class ModelParserRegistry:
         Returns:
             ModelParser: The retrieved model parser
         """
-        model_name = config.get_model_name(prompt)
+        model_name = config.get_model_name(prompt).strip()
         return ModelParserRegistry.get_model_parser(model_name)
 
     @staticmethod
@@ -86,7 +86,7 @@ class ModelParserRegistry:
             id (str): The ID of the model parser to remove
 
         """
-        ModelParserRegistry._parsers.pop(id)
+        ModelParserRegistry._parsers.pop(id.strip())
 
     @staticmethod
     def clear_registry():

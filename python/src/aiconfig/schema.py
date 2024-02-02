@@ -277,6 +277,7 @@ class AIConfig(BaseModel):
         """
         Adds model settings to config level metadata
         """
+        model_name = model_name.strip()
         if model_name in self.metadata.models:
             raise Exception(
                 f"Model '{model_name}' already exists. Use `update_model()`."
@@ -287,6 +288,7 @@ class AIConfig(BaseModel):
         """
         Deletes model settings from config level metadata
         """
+        model_name = model_name.strip()
         if model_name not in self.metadata.models:
             raise Exception(f"Model '{model_name}' does not exist.")
         del self.metadata.models[model_name]
@@ -315,10 +317,10 @@ class AIConfig(BaseModel):
                 )
             return default_model
         if isinstance(prompt.metadata.model, str):
-            return prompt.metadata.model
+            return prompt.metadata.model.strip()
         else:
             # Expect a ModelMetadata object
-            return prompt.metadata.model.name
+            return prompt.metadata.model.name.strip()
 
     def set_default_model(self, model_name: Union[str, None]):
         """
@@ -327,7 +329,7 @@ class AIConfig(BaseModel):
         Args:
             model_name (str): The name of the default model.
         """
-        self.metadata.default_model = model_name
+        self.metadata.default_model = model_name.strip() if model_name else None
 
     def get_default_model(self) -> Union[str, None]:
         """
@@ -348,7 +350,7 @@ class AIConfig(BaseModel):
         if not self.metadata.model_parsers:
             self.metadata.model_parsers = {}
 
-        self.metadata.model_parsers[model_name] = model_parser_id
+        self.metadata.model_parsers[model_name.strip()] = model_parser_id
 
     def get_metadata(self, prompt_name: Optional[str] = None):
         """
@@ -771,6 +773,9 @@ Cannot update model. There are two things you are trying: \
 """
             )
 
+        if model_name is not None:
+            model_name = model_name.strip()
+
         if prompt_name is not None:
             # We first update the model name, then update the model settings
             if model_name is not None:
@@ -856,13 +861,14 @@ as an argument.
                 name=model_name, settings=settings
             )
         else:
+            if "model" in settings:
+                settings["model"] = settings["model"].strip()
             prompt.metadata.model.settings = settings
 
     def _update_model_for_aiconfig(
         self,
         model_name: str,
         settings: Union[InferenceSettings, None],
-        prompt_name: Optional[str] = None,
     ):
         """
         Updates model name at the AIConfig level.
@@ -884,6 +890,7 @@ AIConfig-level settings. If this is a mistake, please rerun the \
 `update_model` function with a specified `prompt_name` argument.
 """
         warnings.warn(warning_message)
+        model_name = model_name.strip()
         if self.metadata.models is None:
             model_settings = settings or {}
             self.metadata.models = {model_name: model_settings}
@@ -1046,7 +1053,7 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         Returns:
             dict: The global settings for the model with the given name. Returns an empty dict if no settings are defined.
         """
-        return self.metadata.models.get(model_name, {})
+        return self.metadata.models.get(model_name.strip(), {})
 
 
 AIConfigV1 = AIConfig
