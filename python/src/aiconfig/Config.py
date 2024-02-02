@@ -17,7 +17,6 @@ from aiconfig.model_parser import InferenceOptions, ModelParser
 from aiconfig.schema import JSONObject
 
 from .default_parsers.dalle import DalleImageGenerationParser
-from .default_parsers.hf import HuggingFaceTextGenerationParser
 from .registry import (
     ModelParserRegistry,
     update_model_parser_registry_with_config_runtime,
