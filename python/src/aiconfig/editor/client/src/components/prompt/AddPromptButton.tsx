@@ -21,8 +21,8 @@ const useStyles = createStyles((theme) => ({
     borderRadius: rem(4),
     display: "flex",
     justifyContent: "center",
+    marginLeft: "36px",
     align: "center",
-    width: "100%",
     "&:hover": {
       backgroundColor:
         theme.colorScheme === "light"

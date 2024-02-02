@@ -537,7 +537,7 @@ A new tab with the AIConfig Editor opens in your default browser at http://local
 Check out these examples and guides:
 
 - [OpenAI function calling](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI)
-- [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
+- [RAG with ChromaDB](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-ChromaDB)
 - [CLI Chatbot](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Wizard-GPT)
 - [Prompt routing](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Basic-Prompt-Routing)
 - [Chain of thought](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Chain-of-Verification)
