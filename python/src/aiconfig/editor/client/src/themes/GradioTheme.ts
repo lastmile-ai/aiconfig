@@ -200,6 +200,17 @@ export const GRADIO_THEME: MantineThemeOverride = {
               outlineOffset: "-1px",
             },
           },
+          textarea: {
+            border: `1px solid ${inputBorderColor} !important`,
+            boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
+            borderRadius: "8px",
+            backgroundColor:
+              theme.colorScheme === "light" ? "white" : "#384152",
+            ":focus": {
+              outline: "solid 1px #E85921 !important",
+              outlineOffset: "-1px",
+            },
+          },
         },
 
         ".divider": {
