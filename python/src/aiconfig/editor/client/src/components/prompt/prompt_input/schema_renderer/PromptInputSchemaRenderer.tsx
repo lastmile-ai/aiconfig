@@ -64,18 +64,21 @@ function SchemaRenderer({ input, schema, onChangeInput }: SchemaRendererProps) {
 }
 
 export default memo(function PromptInputSchemaRenderer(props: Props) {
-  const {readOnly} = useContext(AIConfigContext);
+  const { readOnly } = useContext(AIConfigContext);
 
   if (props.schema.type === "string") {
     if (props.input && typeof props.input !== "string") {
       return (
         <>
-          <Text color="red">Expected input type string</Text>
+          <Text color="red">
+            Expected input type string. Toggle JSON editor to update. Set to
+            {' ""'} in JSON editor and toggle back to reset.
+          </Text>
           <JSONRenderer content={props.input} />
         </>
       );
     }
-    return  readOnly ? (
+    return readOnly ? (
       <div style={{ padding: "0.5em" }}>
         <Spoiler
           maxHeight={200}
@@ -84,10 +87,10 @@ export default memo(function PromptInputSchemaRenderer(props: Props) {
           initialState={false}
           transitionDuration={300}
         >
-          <TextRenderer content={(props.input as string)} />
+          <TextRenderer content={props.input as string} />
         </Spoiler>
-      </div> 
-      ): (
+      </div>
+    ) : (
       <Textarea
         value={props.input}
         label="Prompt"
