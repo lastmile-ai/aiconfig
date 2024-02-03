@@ -264,7 +264,7 @@ def collect_prompt_references(
 
         # Note: not all model inputs are parameterizable. This can be None.
         prompt_input = get_prompt_template(previous_prompt, ai_config)
-        
+
         prompt_output = (
             ai_config.get_output_text(
                 previous_prompt, ai_config.get_latest_output(previous_prompt)
