@@ -896,7 +896,7 @@ export default function AIConfigEditor({
 
   const isDirty = aiconfigState._ui.isDirty !== false;
   useEffect(() => {
-    if (!isDirty) {
+    if (!isDirty || !saveCallback) {
       return;
     }
 
@@ -904,10 +904,14 @@ export default function AIConfigEditor({
     const saveInterval = setInterval(onSave, AUTOSAVE_INTERVAL_MS);
 
     return () => clearInterval(saveInterval);
-  }, [isDirty, onSave]);
+  }, [isDirty, onSave, saveCallback]);
 
   // Override CMD+s and CTRL+s to save
   useEffect(() => {
+    if (!saveCallback) {
+      return;
+    }
+
     const saveHandler = (e: KeyboardEvent) => {
       // Note platform property to distinguish between CMD and CTRL for
       // Mac/Windows/Linux is deprecated.
@@ -925,7 +929,7 @@ export default function AIConfigEditor({
     window.addEventListener("keydown", saveHandler, false);
 
     return () => window.removeEventListener("keydown", saveHandler);
-  }, [onSave]);
+  }, [onSave, saveCallback]);
 
   // Server heartbeat, check every 3s to show error if server is down
   // Don't poll if server status is in an error state since it won't automatically recover
