@@ -329,7 +329,9 @@ class AIConfig(BaseModel):
         Args:
             model_name (str): The name of the default model.
         """
-        self.metadata.default_model = model_name.strip() if model_name else None
+        self.metadata.default_model = (
+            model_name.strip() if model_name else None
+        )
 
     def get_default_model(self) -> Union[str, None]:
         """
@@ -672,7 +674,10 @@ class AIConfig(BaseModel):
         """
         Strips model names from the prompt data
         """
-        if (prompt_data.metadata is not None and prompt_data.metadata.model is not None):
+        if (
+            prompt_data.metadata is not None
+            and prompt_data.metadata.model is not None
+        ):
             model = prompt_data.metadata.model
             if isinstance(model, str):
                 model = model.strip()
@@ -682,7 +687,9 @@ class AIConfig(BaseModel):
                 if model.settings is not None and "model" in model.settings:
                     # TODO: Support cases where "model" field under model settings isn't just a str, since it technically can be anything depending on the model parser
                     if isinstance(model.settings["model"], str):
-                        model.settings["model"] = model.settings["model"].strip()
+                        model.settings["model"] = model.settings[
+                            "model"
+                        ].strip()
 
     def delete_prompt(self, prompt_name: str):
         """
@@ -880,7 +887,7 @@ as an argument.
             )
         else:
             if "model" in settings:
-                # TODO: Support cases where "model" field under model settings isn't just a str, since it technically can be anything depending on the model parser 
+                # TODO: Support cases where "model" field under model settings isn't just a str, since it technically can be anything depending on the model parser
                 if isinstance(settings["model"], str):
                     settings["model"] = settings["model"].strip()
             prompt.metadata.model.settings = settings
