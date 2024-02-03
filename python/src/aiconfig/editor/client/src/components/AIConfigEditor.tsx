@@ -7,7 +7,7 @@ import {
   Alert,
   Group,
 } from "@mantine/core";
-import { Notifications, showNotification } from "@mantine/notifications";
+import { showNotification } from "@mantine/notifications";
 import {
   AIConfig,
   InferenceSettings,
@@ -60,6 +60,7 @@ import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
 import DownloadButton from "./global/DownloadButton";
 import ShareButton from "./global/ShareButton";
 import PromptsContainer from "./prompt/PromptsContainer";
+import NotificationProvider from "./notifications/NotificationProvider";
 
 type Props = {
   aiconfig: AIConfig;
@@ -141,12 +142,11 @@ export type AIConfigCallbacks = {
 
 type RequestCallbackError = { message?: string };
 
-export default function AIConfigEditor({
+function AIConfigEditor({
   aiconfig: initialAIConfig,
   callbacks,
   mode,
   readOnly = false,
-  themeMode,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
@@ -954,113 +954,117 @@ export default function AIConfigEditor({
   const runningPromptId: string | undefined = aiconfigState._ui.runningPromptId;
 
   return (
-    <AIConfigEditorThemeProvider mode={mode} themeMode={themeMode}>
-      <AIConfigContext.Provider value={contextValue}>
-        <Notifications />
-        <Container className="editorBackground" maw="80rem">
-          {serverStatus !== "OK" && (
-            <>
-              {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
-              <div style={{ height: "100px" }} />
-              <Alert
-                color="red"
-                title="Server Connection Error"
-                w="100%"
-                style={{ position: "fixed", top: 0, zIndex: 999 }}
-              >
-                <Text>
-                  There is a problem with the editor server connection. Please
-                  copy important changes somewhere safe and then try reloading
-                  the page or restarting the editor.
-                </Text>
-                <Flex align="center">
-                  <CopyButton
-                    value={JSON.stringify(
-                      clientConfigToAIConfig(aiconfigState),
-                      null,
-                      2
-                    )}
-                    contentLabel="AIConfig JSON"
-                  />
-                  <Text color="dimmed">
-                    Click to copy current AIConfig JSON
-                  </Text>
-                </Flex>
-              </Alert>
-            </>
-          )}
-          <div>
-            <Flex justify="flex-end" mt="md" mb="xs">
-              {
-                <Group>
-                  {downloadCallback && (
-                    <DownloadButton onDownload={onDownload} />
+    <AIConfigContext.Provider value={contextValue}>
+      <Container className="editorBackground" maw="80rem">
+        {serverStatus !== "OK" && (
+          <>
+            {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
+            <div style={{ height: "100px" }} />
+            <Alert
+              color="red"
+              title="Server Connection Error"
+              w="100%"
+              style={{ position: "fixed", top: 0, zIndex: 999 }}
+            >
+              <Text>
+                There is a problem with the editor server connection. Please
+                copy important changes somewhere safe and then try reloading the
+                page or restarting the editor.
+              </Text>
+              <Flex align="center">
+                <CopyButton
+                  value={JSON.stringify(
+                    clientConfigToAIConfig(aiconfigState),
+                    null,
+                    2
                   )}
-                  {shareCallback && <ShareButton onShare={onShare} />}
-                  {!readOnly && onClearOutputs && (
+                  contentLabel="AIConfig JSON"
+                />
+                <Text color="dimmed">Click to copy current AIConfig JSON</Text>
+              </Flex>
+            </Alert>
+          </>
+        )}
+        <div>
+          <Flex justify="flex-end" mt="md" mb="xs">
+            {
+              <Group>
+                {downloadCallback && <DownloadButton onDownload={onDownload} />}
+                {shareCallback && <ShareButton onShare={onShare} />}
+                {!readOnly && onClearOutputs && (
+                  <Button
+                    loading={undefined}
+                    onClick={onClearOutputs}
+                    size="xs"
+                    variant="gradient"
+                  >
+                    Clear Outputs
+                  </Button>
+                )}
+                {!readOnly && saveCallback && (
+                  <Tooltip
+                    label={
+                      isDirty ? "Save changes to config" : "No unsaved changes"
+                    }
+                  >
                     <Button
-                      loading={undefined}
-                      onClick={onClearOutputs}
+                      leftIcon={<IconDeviceFloppy />}
+                      loading={isSaving}
+                      onClick={() => {
+                        onSave();
+                        logEventHandler?.("SAVE_BUTTON_CLICKED");
+                      }}
+                      disabled={!isDirty}
                       size="xs"
                       variant="gradient"
                     >
-                      Clear Outputs
+                      Save
                     </Button>
-                  )}
-                  {!readOnly && saveCallback && (
-                    <Tooltip
-                      label={
-                        isDirty
-                          ? "Save changes to config"
-                          : "No unsaved changes"
-                      }
-                    >
-                      <Button
-                        leftIcon={<IconDeviceFloppy />}
-                        loading={isSaving}
-                        onClick={() => {
-                          onSave();
-                          logEventHandler?.("SAVE_BUTTON_CLICKED");
-                        }}
-                        disabled={!isDirty}
-                        size="xs"
-                        variant="gradient"
-                      >
-                        Save
-                      </Button>
-                    </Tooltip>
-                  )}
-                </Group>
-              }
-            </Flex>
-            <ConfigNameDescription
-              name={aiconfigState.name}
-              description={aiconfigState.description}
-              setDescription={onSetDescription}
-              setName={onSetName}
-            />
-          </div>
-          <GlobalParametersContainer
-            initialValue={aiconfigState?.metadata?.parameters ?? {}}
-            onUpdateParameters={onUpdateGlobalParameters}
+                  </Tooltip>
+                )}
+              </Group>
+            }
+          </Flex>
+          <ConfigNameDescription
+            name={aiconfigState.name}
+            description={aiconfigState.description}
+            setDescription={onSetDescription}
+            setName={onSetName}
           />
-          <PromptsContainer
-            cancelRunPrompt={callbacks?.cancel}
-            defaultModel={aiconfigState.metadata.default_model}
-            getModels={callbacks?.getModels}
-            onAddPrompt={onAddPrompt}
-            onChangePromptInput={onChangePromptInput}
-            onChangePromptName={onChangePromptName}
-            onDeletePrompt={onDeletePrompt}
-            onRunPrompt={onRunPrompt}
-            onUpdatePromptModel={onUpdatePromptModel}
-            onUpdatePromptModelSettings={onUpdatePromptModelSettings}
-            onUpdatePromptParameters={onUpdatePromptParameters}
-            prompts={aiconfigState.prompts}
-            runningPromptId={runningPromptId}
-          />
-        </Container>
-      </AIConfigContext.Provider>
+        </div>
+        <GlobalParametersContainer
+          initialValue={aiconfigState?.metadata?.parameters ?? {}}
+          onUpdateParameters={onUpdateGlobalParameters}
+        />
+        <PromptsContainer
+          cancelRunPrompt={callbacks?.cancel}
+          defaultModel={aiconfigState.metadata.default_model}
+          getModels={callbacks?.getModels}
+          onAddPrompt={onAddPrompt}
+          onChangePromptInput={onChangePromptInput}
+          onChangePromptName={onChangePromptName}
+          onDeletePrompt={onDeletePrompt}
+          onRunPrompt={onRunPrompt}
+          onUpdatePromptModel={onUpdatePromptModel}
+          onUpdatePromptModelSettings={onUpdatePromptModelSettings}
+          onUpdatePromptParameters={onUpdatePromptParameters}
+          prompts={aiconfigState.prompts}
+          runningPromptId={runningPromptId}
+        />
+      </Container>
+    </AIConfigContext.Provider>
+  );
+}
+
+// Wrap the AIConfigEditor in the NotificationProvider to provide NotificationContext
+// to the AIConfigEditor. Wrap NotificationProvider and AIConfigEditor with the
+// theme provider to ensure all components have the proper theme
+export default function AIConfigEditorWrapper(props: Props) {
+  return (
+    <AIConfigEditorThemeProvider mode={props.mode} themeMode={props.themeMode}>
+      <NotificationProvider>
+        <AIConfigEditor {...props} />
+      </NotificationProvider>
     </AIConfigEditorThemeProvider>
   );
 }
