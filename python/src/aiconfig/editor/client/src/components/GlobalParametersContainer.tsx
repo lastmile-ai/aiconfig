@@ -3,6 +3,7 @@ import { JSONObject } from "aiconfig";
 import { memo, useContext, useState } from "react";
 import ParametersRenderer from "./ParametersRenderer";
 import AIConfigContext from "../contexts/AIConfigContext";
+import { PROMPT_CELL_LEFT_MARGIN_PX } from "../utils/constants";
 
 type Props = {
   initialValue: JSONObject;
@@ -11,7 +12,7 @@ type Props = {
 
 const useStyles = createStyles(() => ({
   parametersContainer: {
-    margin: "16px auto 16px 36px",
+    margin: `16px auto 16px ${PROMPT_CELL_LEFT_MARGIN_PX}px`,
   },
   parametersContainerReadonly: {
     margin: "16px auto",
