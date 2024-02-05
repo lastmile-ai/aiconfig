@@ -1,5 +1,5 @@
 import { PromptInput } from "aiconfig";
-import { memo, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { PromptInputSchema } from "../../../utils/promptUtils";
 import PromptInputSchemaRenderer from "./schema_renderer/PromptInputSchemaRenderer";
 import PromptInputConfigRenderer from "./PromptInputConfigRenderer";
@@ -91,6 +91,12 @@ export default memo(function PromptInputRenderer({
     </Flex>
   );
 
+  const runPrompt = useCallback(async () => {
+    if (!(isRunButtonDisabled || isRunning)) {
+      await onRunPrompt();
+    }
+  }, [isRunButtonDisabled, isRunning, onRunPrompt]);
+
   const runPromptButton = (
     // Wrap with a div to prevent it from expanding to input height
     <div className={classes.promptInputButtonWrapper}>
@@ -98,7 +104,7 @@ export default memo(function PromptInputRenderer({
         isRunning={isRunning}
         disabled={isRunButtonDisabled}
         cancel={onCancelRun}
-        runPrompt={onRunPrompt}
+        runPrompt={runPrompt}
       />
     </div>
   );
@@ -111,11 +117,13 @@ export default memo(function PromptInputRenderer({
             input={input}
             schema={schema}
             onChangeInput={onChangeInput}
+            runPrompt={runPrompt}
           />
         ) : (
           <PromptInputConfigRenderer
             input={input}
             onChangeInput={onChangeInput}
+            runPrompt={runPrompt}
           />
         )}
       </div>
