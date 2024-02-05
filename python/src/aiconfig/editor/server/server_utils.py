@@ -1,4 +1,3 @@
-import dotenv
 import importlib
 import importlib.util
 import logging
@@ -12,6 +11,7 @@ from threading import Event
 from types import ModuleType
 from typing import Any, Callable, NewType, Type, TypeVar, cast
 
+import dotenv
 import lastmile_utils.lib.core.api as core_utils
 import result
 from aiconfig.Config import AIConfigRuntime
