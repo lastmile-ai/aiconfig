@@ -7,11 +7,13 @@ import { TextRenderer } from "../TextRenderer";
 type Props = {
   input: PromptInput;
   onChangeInput: (value: PromptInput) => void;
+  runPrompt: () => Promise<void>;
 };
 
 export default memo(function PromptInputConfigRenderer({
   input,
   onChangeInput,
+  runPrompt,
 }: Props) {
   const { readOnly } = useContext(AIConfigContext);
   return readOnly ? (
@@ -31,6 +33,12 @@ export default memo(function PromptInputConfigRenderer({
       label="Prompt"
       value={input as string}
       onChange={(e) => onChangeInput(e.target.value)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" && (event.shiftKey || event.ctrlKey)) {
+          event.preventDefault();
+          runPrompt();
+        }
+      }}
       disabled={readOnly}
     />
   );
