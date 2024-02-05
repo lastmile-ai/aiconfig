@@ -116,7 +116,7 @@ class GeminiModelParser(ParameterizedModelParser):
         """
         Returns an identifier for the model (e.g. llama-2, gpt-4, etc.).
         """
-        return "GeminiModelParser"
+        return self.model_id
 
     async def serialize(
         self,
