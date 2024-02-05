@@ -89,7 +89,7 @@ export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
   const { classes } = useStyles();
 
   return (
-    <div className={classes.addPromptRow}>
+    <div className={`${classes.addPromptRow} addPromptRow`}>
       <Menu
         position="bottom"
         // Manually maintain open state to support ... expand button
