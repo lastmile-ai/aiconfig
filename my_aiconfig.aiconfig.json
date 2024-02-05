@@ -9,12 +9,41 @@
   "prompts": [
     {
       "name": "prompt_1",
-      "input": "",
+      "input": "tell me ajoke about elephants",
       "metadata": {
-        "model": "gpt-4",
+        "model": {
+          "name": "gemini-pro",
+          "settings": {}
+        },
         "parameters": {}
       },
-      "outputs": []
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "Why did the elephant get a job at the library?\n\nBecause he had a trunk full of books!",
+          "metadata": {
+            "safetyRatings": [
+              {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "probability": "NEGLIGIBLE"
+              },
+              {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "probability": "LOW"
+              },
+              {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "probability": "NEGLIGIBLE"
+              },
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "probability": "NEGLIGIBLE"
+              }
+            ]
+          }
+        }
+      ]
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
