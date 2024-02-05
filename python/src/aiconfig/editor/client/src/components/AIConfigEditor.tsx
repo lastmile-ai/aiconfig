@@ -7,7 +7,6 @@ import {
   Alert,
   Group,
 } from "@mantine/core";
-import { showNotification } from "@mantine/notifications";
 import {
   AIConfig,
   InferenceSettings,
@@ -18,6 +17,7 @@ import {
 } from "aiconfig";
 import {
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useReducer,
@@ -61,6 +61,7 @@ import DownloadButton from "./global/DownloadButton";
 import ShareButton from "./global/ShareButton";
 import PromptsContainer from "./prompt/PromptsContainer";
 import NotificationProvider from "./notifications/NotificationProvider";
+import NotificationContext from "./notifications/NotificationContext";
 
 type Props = {
   aiconfig: AIConfig;
@@ -155,6 +156,8 @@ function AIConfigEditorBase({
     aiConfigToClientConfig(initialAIConfig)
   );
 
+  const { showNotification } = useContext(NotificationContext);
+
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
 
@@ -172,10 +175,10 @@ function AIConfigEditorBase({
       showNotification({
         title: "Error downloading AIConfig",
         message,
-        color: "red",
+        type: "error",
       });
     }
-  }, [downloadCallback]);
+  }, [downloadCallback, showNotification]);
 
   const shareCallback = callbacks?.share;
   const onShare = useCallback(async () => {
@@ -190,10 +193,10 @@ function AIConfigEditorBase({
       showNotification({
         title: "Error sharing AIConfig",
         message,
-        color: "red",
+        type: "error",
       });
     }
-  }, [shareCallback]);
+  }, [shareCallback, showNotification]);
 
   const saveCallback = callbacks?.save;
   const onSave = useCallback(async () => {
@@ -211,12 +214,12 @@ function AIConfigEditorBase({
       showNotification({
         title: "Error saving",
         message,
-        color: "red",
+        type: "error",
       });
     } finally {
       setIsSaving(false);
     }
-  }, [saveCallback]);
+  }, [saveCallback, showNotification]);
 
   const updatePromptCallback = callbacks?.updatePrompt;
   const debouncedUpdatePrompt = useMemo(() => {
@@ -267,7 +270,7 @@ function AIConfigEditorBase({
         showNotification({
           title: "Error updating prompt input",
           message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -296,7 +299,7 @@ function AIConfigEditorBase({
         onError(err);
       }
     },
-    [debouncedUpdatePrompt, dispatch]
+    [debouncedUpdatePrompt, dispatch, showNotification]
   );
 
   const onChangePromptName = useCallback(
@@ -312,7 +315,7 @@ function AIConfigEditorBase({
         showNotification({
           title: "Error updating prompt name",
           message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -344,7 +347,7 @@ function AIConfigEditorBase({
         onError(err);
       }
     },
-    [debouncedUpdatePrompt]
+    [debouncedUpdatePrompt, showNotification]
   );
 
   const updateModelCallback = callbacks?.updateModel;
@@ -391,7 +394,7 @@ function AIConfigEditorBase({
         showNotification({
           title: "Error updating prompt model settings",
           message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -419,7 +422,7 @@ function AIConfigEditorBase({
         onError(err);
       }
     },
-    [debouncedUpdateModel, dispatch]
+    [debouncedUpdateModel, dispatch, showNotification]
   );
 
   const onUpdatePromptModel = useCallback(
@@ -441,7 +444,7 @@ function AIConfigEditorBase({
         showNotification({
           title: "Error updating model for prompt",
           message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -462,7 +465,7 @@ function AIConfigEditorBase({
         onError(err);
       }
     },
-    [dispatch, debouncedUpdateModel]
+    [dispatch, debouncedUpdateModel, showNotification]
   );
 
   const setParametersCallback = callbacks?.setParameters;
@@ -505,7 +508,7 @@ function AIConfigEditorBase({
         showNotification({
           title: "Error setting global parameters",
           message: message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -519,7 +522,7 @@ function AIConfigEditorBase({
         onError(err);
       }
     },
-    [debouncedSetParameters, dispatch]
+    [debouncedSetParameters, dispatch, showNotification]
   );
 
   const onUpdatePromptParameters = useCallback(
@@ -543,7 +546,7 @@ function AIConfigEditorBase({
         showNotification({
           title: `Error setting parameters for prompt ${promptIdentifier}`,
           message: message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -557,7 +560,7 @@ function AIConfigEditorBase({
         onError(err);
       }
     },
-    [debouncedSetParameters, dispatch]
+    [debouncedSetParameters, dispatch, showNotification]
   );
 
   const addPromptCallback = callbacks?.addPrompt;
@@ -611,11 +614,11 @@ function AIConfigEditorBase({
         showNotification({
           title: "Error adding prompt to config",
           message: message,
-          color: "red",
+          type: "error",
         });
       }
     },
-    [addPromptCallback, logEventHandler]
+    [addPromptCallback, logEventHandler, showNotification]
   );
 
   const deletePromptCallback = callbacks?.deletePrompt;
@@ -643,11 +646,11 @@ function AIConfigEditorBase({
         showNotification({
           title: "Error deleting prompt",
           message,
-          color: "red",
+          type: "error",
         });
       }
     },
-    [deletePromptCallback, dispatch]
+    [deletePromptCallback, dispatch, showNotification]
   );
 
   const clearOutputsCallback = callbacks?.clearOutputs;
@@ -668,10 +671,10 @@ function AIConfigEditorBase({
       showNotification({
         title: "Error clearing outputs",
         message,
-        color: "red",
+        type: "error",
       });
     }
-  }, [clearOutputsCallback, dispatch]);
+  }, [clearOutputsCallback, dispatch, showNotification]);
 
   const runPromptCallback = callbacks?.runPrompt;
 
@@ -706,7 +709,7 @@ function AIConfigEditorBase({
         showNotification({
           title: `Error running prompt${promptName ? ` ${promptName}` : ""}`,
           message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -770,7 +773,7 @@ function AIConfigEditorBase({
                     promptName ? ` '${promptName}'` : ""
                   }. Resetting output to previous state.`,
                   message: event.data.message,
-                  color: "yellow",
+                  type: "warning",
                 });
               } else {
                 onPromptError(event.data.message);
@@ -797,7 +800,7 @@ function AIConfigEditorBase({
         onPromptError(message);
       }
     },
-    [logEventHandler, runPromptCallback]
+    [logEventHandler, runPromptCallback, showNotification]
   );
 
   const setNameCallback = callbacks?.setConfigName;
@@ -833,11 +836,11 @@ function AIConfigEditorBase({
         showNotification({
           title: "Error setting config name",
           message,
-          color: "red",
+          type: "error",
         });
       });
     },
-    [debouncedSetName]
+    [debouncedSetName, showNotification]
   );
 
   const setDescriptionCallback = callbacks?.setConfigDescription;
@@ -876,11 +879,11 @@ function AIConfigEditorBase({
         showNotification({
           title: "Error setting config description",
           message,
-          color: "red",
+          type: "error",
         });
       });
     },
-    [debouncedSetDescription]
+    [debouncedSetDescription, showNotification]
   );
 
   const getState = useCallback(() => stateRef.current, []);
