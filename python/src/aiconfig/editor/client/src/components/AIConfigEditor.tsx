@@ -60,7 +60,9 @@ import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
 import DownloadButton from "./global/DownloadButton";
 import ShareButton from "./global/ShareButton";
 import PromptsContainer from "./prompt/PromptsContainer";
-import NotificationProvider from "./notifications/NotificationProvider";
+import NotificationProvider, {
+  AIConfigEditorNotification,
+} from "./notifications/NotificationProvider";
 import NotificationContext from "./notifications/NotificationContext";
 
 type Props = {
@@ -111,6 +113,7 @@ export type AIConfigCallbacks = {
     prompt: Prompt,
     index: number
   ) => Promise<{ aiconfig: AIConfig }>;
+  cancel: (cancellationToken: string) => Promise<void>;
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
   download?: () => Promise<void>;
@@ -124,12 +127,12 @@ export type AIConfigCallbacks = {
     enableStreaming?: boolean,
     cancellationToken?: string
   ) => Promise<{ aiconfig: AIConfig }>;
-  cancel: (cancellationToken: string) => Promise<void>;
   save?: (aiconfig: AIConfig) => Promise<void>;
-  share?: () => Promise<{ share_url: string }>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
   setParameters: (parameters: JSONObject, promptName?: string) => Promise<void>;
+  share?: () => Promise<{ share_url: string }>;
+  showNotification?: (notification: AIConfigEditorNotification) => void;
   updateModel: (value: {
     modelName?: string;
     settings?: InferenceSettings;
@@ -1065,7 +1068,9 @@ function AIConfigEditorBase({
 export default function AIConfigEditor(props: Props) {
   return (
     <AIConfigEditorThemeProvider mode={props.mode} themeMode={props.themeMode}>
-      <NotificationProvider>
+      <NotificationProvider
+        showNotification={props.callbacks?.showNotification}
+      >
         <AIConfigEditorBase {...props} />
       </NotificationProvider>
     </AIConfigEditorThemeProvider>
