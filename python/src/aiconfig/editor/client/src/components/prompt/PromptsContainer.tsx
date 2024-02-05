@@ -46,7 +46,7 @@ export default memo(function PromptsContainer(props: Props) {
   const { readOnly } = useContext(AIConfigContext);
 
   return (
-    <div className={classes.promptsContainer}>
+    <div className={`${classes.promptsContainer} promptsContainer`}>
       {!readOnly && (
         <AddPromptButton
           getModels={props.getModels}
