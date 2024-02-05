@@ -332,6 +332,7 @@ class GeminiModelParser(ParameterizedModelParser):
             self.api_key = get_api_key_from_environment("GOOGLE_API_KEY", required=True).unwrap()
 
         # Gemini api stores a reference to the currently executing async event loop.
+        # This causes issues on reruns for the model parser, so to alleviate this, we
         # Reinitialize the "client" to avoid issues with the event loop.
         self.model = genai.GenerativeModel(self.model_id)
         genai.configure(api_key=self.api_key)
