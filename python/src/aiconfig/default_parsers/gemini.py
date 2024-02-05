@@ -104,6 +104,7 @@ class GeminiModelParser(ParameterizedModelParser):
         super().__init__()
         # TODO(?): @Ankush-lastmile Figure out how to make this model parser impl and init not depend on the model
         self.model = genai.GenerativeModel(id)
+        self.model_id = id
 
         # Note: we don't need to explicitly set the key as long as this is set
         # as an env var genai.configure() will pick up the env var
@@ -115,7 +116,7 @@ class GeminiModelParser(ParameterizedModelParser):
         """
         Returns an identifier for the model (e.g. llama-2, gpt-4, etc.).
         """
-        return "GeminiModelParser"
+        return self.model_id
 
     async def serialize(
         self,
@@ -329,6 +330,11 @@ class GeminiModelParser(ParameterizedModelParser):
 
         if not self.api_key:
             self.api_key = get_api_key_from_environment("GOOGLE_API_KEY", required=True).unwrap()
+
+        # Gemini api stores a reference to the currently executing async event loop.
+        # This causes issues on reruns for the model parser, so to alleviate this, we
+        # Reinitialize the "client" to avoid issues with the event loop.
+        self.model = genai.GenerativeModel(self.model_id)
         genai.configure(api_key=self.api_key)
 
         # TODO: check and handle api key here
