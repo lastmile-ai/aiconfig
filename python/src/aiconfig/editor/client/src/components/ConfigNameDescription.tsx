@@ -128,7 +128,9 @@ export default memo(function ConfigNameDescription({
           <Title
             ref={nameDisplayRef}
             onClick={onClickEdit}
-            className={!readOnly ? classes.hoverContainer : undefined}
+            className={
+              !readOnly ? `${classes.hoverContainer} hoverContainer` : undefined
+            }
           >
             {name}
           </Title>
@@ -136,7 +138,11 @@ export default memo(function ConfigNameDescription({
             <div
               ref={descriptionDisplayRef}
               onClick={onClickEdit}
-              className={!readOnly ? classes.hoverContainer : undefined}
+              className={
+                !readOnly
+                  ? `${classes.hoverContainer} hoverContainer`
+                  : undefined
+              }
             >
               <TextRenderer content={description} />
             </div>
