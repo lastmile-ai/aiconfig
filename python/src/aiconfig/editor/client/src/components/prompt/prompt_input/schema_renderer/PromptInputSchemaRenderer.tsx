@@ -15,6 +15,7 @@ type Props = {
   input: PromptInput;
   schema: PromptInputSchema;
   onChangeInput: (value: PromptInput) => void;
+  runPrompt: () => Promise<void>;
 };
 
 type SchemaRendererProps = Props & {
@@ -95,6 +96,12 @@ export default memo(function PromptInputSchemaRenderer(props: Props) {
         value={props.input}
         label="Prompt"
         onChange={(e) => props.onChangeInput(e.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && (event.shiftKey || event.ctrlKey)) {
+            event.preventDefault();
+            props.runPrompt();
+          }
+        }}
         placeholder="Type a prompt"
         autosize
       />
