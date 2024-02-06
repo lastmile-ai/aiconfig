@@ -3,13 +3,25 @@ import type { ChildProcessWithoutNullStreams } from "child_process";
 import { setTimeout } from "timers/promises";
 import { ufetch } from "ufetch";
 
+import crypto from "crypto";
+import fs from "fs";
 import path from "path";
+import os from "os";
 
 export const EXTENSION_NAME = "vscode-aiconfig";
 export const COMMANDS = {
   INIT: `${EXTENSION_NAME}.init`,
+  CREATE_NEW_JSON: `${EXTENSION_NAME}.createAIConfigJSON`,
+  CREATE_NEW_YAML: `${EXTENSION_NAME}.createAIConfigYAML`,
   HELLO_WORLD: `${EXTENSION_NAME}.helloWorld`,
+  CUSTOM_MODEL_REGISTRY_PATH: `${EXTENSION_NAME}.customModelRegistryPath`,
+  CREATE_CUSTOM_MODEL_REGISTRY: `${EXTENSION_NAME}.createCustomModelRegistry`,
+  OPEN_MODEL_REGISTRY: `${EXTENSION_NAME}.openModelRegistry`,
+  SHARE: `${EXTENSION_NAME}.share`,
 };
+
+// Note: This is used for the share feature.
+export const LASTMILE_BASE_URI: string = "https://lastmileai.dev/";
 
 const EDITOR_SERVER_API_ENDPOINT = `/api`;
 
@@ -20,6 +32,8 @@ export const EDITOR_SERVER_ROUTE_TABLE = {
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/server_status"),
   LOAD_CONTENT: (hostUrl: string) =>
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_content"),
+  LOAD_MODEL_PARSER_MODULE: (hostUrl: string) =>
+    urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_model_parser_module"),
 };
 
 export type ServerInfo = {
@@ -55,10 +69,29 @@ export async function initializeServerState(
   serverUrl: string,
   document: vscode.TextDocument
 ) {
-  return await ufetch.post(EDITOR_SERVER_ROUTE_TABLE.LOAD_CONTENT(serverUrl), {
-    content: document.getText(),
-    mode: getModeFromDocument(document),
-  });
+  try {
+    return await ufetch.post(
+      EDITOR_SERVER_ROUTE_TABLE.LOAD_CONTENT(serverUrl),
+      {
+        content: document.getText(),
+        mode: getModeFromDocument(document),
+      }
+    );
+  } catch (e) {
+    // Code that should run in response to the hello message command
+    vscode.window
+      .showErrorMessage(
+        "Failed to start aiconfig server. You can view the aiconfig but cannot modify it.",
+        ...["Retry"]
+      )
+      .then((selection) => {
+        if (selection === "Retry") {
+          initializeServerState(serverUrl, document);
+        }
+      });
+
+    return;
+  }
 }
 
 // Figure out what kind of AIConfig this is that we are loading
@@ -90,6 +123,65 @@ export async function getDocumentFromServer(
 
   // TODO: saqadri - handle error cases
   return res.aiconfig_string;
+}
+
+export async function updateModelRegistryPath(
+  serverUrl: string,
+  customModelRegistryPath: string
+): Promise<string> {
+  const res = await ufetch.post(
+    EDITOR_SERVER_ROUTE_TABLE.LOAD_MODEL_PARSER_MODULE(serverUrl),
+    {
+      path: customModelRegistryPath,
+    }
+  );
+
+  // TODO: saqadri - handle error cases
+  return res;
+}
+
+export function isValidFilePath(filePath: string): boolean {
+  try {
+    fs.accessSync(filePath);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+export function getCurrentWorkingDirectory(document: vscode.TextDocument) {
+  let cwd: string = null;
+  if (document != null && !document.isUntitled) {
+    // Ideally we use the directory of the current document
+    cwd = path.dirname(document.fileName);
+  } else if (vscode.workspace.workspaceFolders != null) {
+    // If there is no active document, use the workspace path
+    cwd = vscode.workspace.workspaceFolders[0].uri.fsPath;
+  } else {
+    // If there is no active document and no workspace, use a temp directory
+    let tempDir = os.tmpdir();
+    let subDir = "vscode-aiconfig-" + crypto.randomBytes(6).toString("hex");
+    cwd = path.join(tempDir, subDir);
+    if (!fs.existsSync(cwd)) {
+      fs.mkdirSync(cwd);
+    }
+  }
+
+  return cwd;
+}
+
+export function getTodayDateString(): string {
+  const date = new Date();
+  const dateString = `${date.getFullYear()}_${
+    date.getMonth() + 1 // getMonth() returns 0-11
+  }_${date.getDate()}`;
+  const timeString = `${date.getUTCHours()}_${date.getUTCMinutes()}_${date.getUTCSeconds()}`;
+  return `${dateString}_${timeString}`;
+}
+
+// s3 file uris cannot have '+' character, so replace with '_'
+export function sanitizeFileName(name: string) {
+  return name.replace(/[_+]/g, "_");
 }
 
 //#region url-join
