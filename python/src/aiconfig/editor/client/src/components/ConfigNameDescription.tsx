@@ -3,6 +3,7 @@ import { useClickOutside } from "@mantine/hooks";
 import { memo, useCallback, useContext, useRef, useState } from "react";
 import AIConfigContext from "../contexts/AIConfigContext";
 import { TextRenderer } from "./prompt/TextRenderer";
+import { PROMPT_CELL_LEFT_MARGIN_PX } from "../utils/constants";
 
 type Props = {
   name?: string;
@@ -99,7 +100,7 @@ export default memo(function ConfigNameDescription({
     <Stack
       ref={isEditing ? inputSectionRef : undefined}
       spacing="xs"
-      ml={readOnly ? "auto" : "36px"}
+      ml={readOnly ? "auto" : PROMPT_CELL_LEFT_MARGIN_PX}
       mr="0.5em"
     >
       {isEditing ? (
@@ -127,7 +128,9 @@ export default memo(function ConfigNameDescription({
           <Title
             ref={nameDisplayRef}
             onClick={onClickEdit}
-            className={!readOnly ? classes.hoverContainer : undefined}
+            className={
+              !readOnly ? `${classes.hoverContainer} hoverContainer` : undefined
+            }
           >
             {name}
           </Title>
@@ -135,7 +138,11 @@ export default memo(function ConfigNameDescription({
             <div
               ref={descriptionDisplayRef}
               onClick={onClickEdit}
-              className={!readOnly ? classes.hoverContainer : undefined}
+              className={
+                !readOnly
+                  ? `${classes.hoverContainer} hoverContainer`
+                  : undefined
+              }
             >
               <TextRenderer content={description} />
             </div>

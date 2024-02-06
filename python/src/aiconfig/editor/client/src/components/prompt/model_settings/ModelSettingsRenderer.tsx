@@ -43,7 +43,8 @@ function SettingsErrorFallback({
             }}
           />
         </Flex>
-        Invalid settings format for model. Toggle JSON editor to update
+        Invalid settings format for model. Toggle JSON editor to update. Set to
+        {" {}"} in JSON editor and toggle back to reset.
       </Text>
       <JSONRenderer content={settings} />
     </Flex>

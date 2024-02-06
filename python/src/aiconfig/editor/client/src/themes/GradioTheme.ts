@@ -236,6 +236,10 @@ export const GRADIO_THEME: MantineThemeOverride = {
           height: "auto",
         },
 
+        ".runPromptButton.runPromptButtonReadOnly": {
+          marginTop: "13px",
+        },
+
         ".actionTabsPanel": {
           width: "400px",
         },
