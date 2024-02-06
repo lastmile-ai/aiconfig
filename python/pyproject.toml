@@ -9,7 +9,7 @@ authors = [
 ]
 description = "Python library for LastMile AI API"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 classifiers = [
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
