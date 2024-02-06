@@ -209,7 +209,7 @@ export default memo(function ParametersRenderer(props: {
             color="dimmed"
             size="sm"
             p="xs"
-            style={{ display: "block", margin: "0 auto", textAlign: "right" }}
+            style={{ display: "block", margin: "0 auto" }}
           >
             Use parameters in your prompt or system prompt with{" "}
             {"{{parameter}}"}

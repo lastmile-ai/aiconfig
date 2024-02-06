@@ -1,12 +1,23 @@
-import { Accordion, Text } from "@mantine/core";
+import { Accordion, Text, createStyles } from "@mantine/core";
 import { JSONObject } from "aiconfig";
-import { memo, useState } from "react";
+import { memo, useContext, useState } from "react";
 import ParametersRenderer from "./ParametersRenderer";
+import AIConfigContext from "../contexts/AIConfigContext";
+import { PROMPT_CELL_LEFT_MARGIN_PX } from "../utils/constants";
 
 type Props = {
   initialValue: JSONObject;
   onUpdateParameters: (newParameters: JSONObject) => void;
 };
+
+const useStyles = createStyles(() => ({
+  parametersContainer: {
+    margin: `16px auto 16px ${PROMPT_CELL_LEFT_MARGIN_PX}px`,
+  },
+  parametersContainerReadonly: {
+    margin: "16px auto",
+  },
+}));
 
 export default memo(function GlobalParametersContainer({
   initialValue,
@@ -14,8 +25,20 @@ export default memo(function GlobalParametersContainer({
 }: Props) {
   const [isParametersDrawerOpen, setIsParametersDrawerOpen] = useState(false);
 
+  const { classes } = useStyles();
+  const { readOnly } = useContext(AIConfigContext);
+
   return (
-    <div className="parametersContainer">
+    // Set local and global classname. Global will override if specified
+    // Local is readonly or not. Global will always have parametersContainer class
+    // and if readonly, will also have parametersContainerReadonly class (to allow overrides)
+    <div
+      className={`${
+        readOnly
+          ? classes.parametersContainerReadonly
+          : classes.parametersContainer
+      } parametersContainer ${readOnly ? "parametersContainerReadonly" : ""}`}
+    >
       <Accordion
         styles={{
           item: { borderBottom: 0 },

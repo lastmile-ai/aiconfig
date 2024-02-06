@@ -39,7 +39,8 @@ AIConfig helps unwind complexity by separating prompts, model parameters, and mo
   <li><a href="#cookbooks">Cookbooks and guides</a></li>
   <ul style="margin-bottom:0; padding-bottom:0;">
     <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Wizard-GPT">CLI Chatbot</a></li>
-    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig">RAG with AIConfig</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-ChromaDB">RAG with ChromaDB</a></li>
+    <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-MongoDB">RAG with MongoDB</a></li>
     <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Basic-Prompt-Routing">Prompt routing</a></li>
     <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI">OpenAI function calling</a></li>
     <li><a href="https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Chain-of-Verification">Chain of Verification</a></li>

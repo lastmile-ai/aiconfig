@@ -33,7 +33,7 @@ export default memo(function RunPromptButton({
       disabled={disabledOrReadOnly}
       p="xs"
       size="xs"
-      className="runPromptButton"
+      className={`runPromptButton ${readOnly ? "runPromptButtonReadOnly" : ""}`}
     >
       {isRunning ? (
         <Flex align="center" justify="center">
