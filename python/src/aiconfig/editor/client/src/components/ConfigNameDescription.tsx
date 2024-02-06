@@ -1,14 +1,9 @@
-import {
-  createStyles,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
-  Title,
-} from "@mantine/core";
+import { createStyles, Stack, Textarea, TextInput, Title } from "@mantine/core";
 import { useClickOutside } from "@mantine/hooks";
 import { memo, useCallback, useContext, useRef, useState } from "react";
 import AIConfigContext from "../contexts/AIConfigContext";
+import { TextRenderer } from "./prompt/TextRenderer";
+import { PROMPT_CELL_LEFT_MARGIN_PX } from "../utils/constants";
 
 type Props = {
   name?: string;
@@ -42,6 +37,11 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
+function isClickableChildElement(element: EventTarget | null) {
+  // Specifically handle markdown links and prism code copy svg elements
+  return element instanceof HTMLAnchorElement || element instanceof SVGElement;
+}
+
 export default memo(function ConfigNameDescription({
   name,
   description,
@@ -67,7 +67,8 @@ export default memo(function ConfigNameDescription({
 
   const onHandleEnter = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      if (event.key === "Enter") {
+      if (event.key === "Enter" && !event.shiftKey) {
+        // Shift+Enter to add new line
         event.stopPropagation();
         setIsEditing(false);
       }
@@ -80,11 +81,16 @@ export default memo(function ConfigNameDescription({
       if (readOnly) {
         return;
       }
-      setIsEditing(true);
-      if (event.target === nameDisplayRef.current) {
+
+      if (event.currentTarget === nameDisplayRef.current) {
         setInitialFocus("name");
-      } else if (event.target === descriptionDisplayRef.current) {
+        setIsEditing(true);
+      } else if (
+        event.currentTarget === descriptionDisplayRef.current &&
+        !isClickableChildElement(event.target)
+      ) {
         setInitialFocus("description");
+        setIsEditing(true);
       }
     },
     [readOnly]
@@ -94,7 +100,7 @@ export default memo(function ConfigNameDescription({
     <Stack
       ref={isEditing ? inputSectionRef : undefined}
       spacing="xs"
-      ml="36px"
+      ml={readOnly ? "auto" : PROMPT_CELL_LEFT_MARGIN_PX}
       mr="0.5em"
     >
       {isEditing ? (
@@ -122,18 +128,25 @@ export default memo(function ConfigNameDescription({
           <Title
             ref={nameDisplayRef}
             onClick={onClickEdit}
-            className={!readOnly ? classes.hoverContainer : undefined}
+            className={
+              !readOnly ? `${classes.hoverContainer} hoverContainer` : undefined
+            }
           >
             {name}
           </Title>
-          <Text
-            ref={descriptionDisplayRef}
-            onClick={onClickEdit}
-            style={{ whiteSpace: "pre-wrap" }}
-            className={!readOnly ? classes.hoverContainer : undefined}
-          >
-            {description}
-          </Text>
+          {description && (
+            <div
+              ref={descriptionDisplayRef}
+              onClick={onClickEdit}
+              className={
+                !readOnly
+                  ? `${classes.hoverContainer} hoverContainer`
+                  : undefined
+              }
+            >
+              <TextRenderer content={description} />
+            </div>
+          )}
         </div>
       )}
     </Stack>

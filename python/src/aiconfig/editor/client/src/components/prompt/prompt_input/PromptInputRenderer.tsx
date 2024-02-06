@@ -1,5 +1,5 @@
 import { PromptInput } from "aiconfig";
-import { memo, useState } from "react";
+import { memo, useCallback, useContext, useState } from "react";
 import { PromptInputSchema } from "../../../utils/promptUtils";
 import PromptInputSchemaRenderer from "./schema_renderer/PromptInputSchemaRenderer";
 import PromptInputConfigRenderer from "./PromptInputConfigRenderer";
@@ -10,6 +10,7 @@ import { Text } from "@mantine/core";
 import JSONRenderer from "../../JSONRenderer";
 import JSONEditorToggleButton from "../../JSONEditorToggleButton";
 import RunPromptButton from "../RunPromptButton";
+import NotificationContext from "../../notifications/NotificationContext";
 
 type Props = {
   input: PromptInput;
@@ -47,7 +48,8 @@ function InputErrorFallback({
     <>
       <Flex direction="column">
         <Text color="red" size="sm">
-          Invalid input format for model. Toggle JSON editor to update
+          Invalid input format for model. Toggle JSON editor to update. Set to
+          {" {}"} in JSON editor and toggle back to reset.
         </Text>
         <Flex>
           <div className={classes.promptInputRendererWrapper}>
@@ -90,6 +92,32 @@ export default memo(function PromptInputRenderer({
     </Flex>
   );
 
+  const { showNotification } = useContext(NotificationContext);
+
+  const runPrompt = useCallback(async () => {
+    if (isRunning) {
+      showNotification({
+        title: "Prompt already running",
+        message:
+          "Cannot run prompt while it is currently running. Click run button to cancel",
+        type: "warning",
+      });
+      return;
+    }
+
+    if (isRunButtonDisabled) {
+      // other prompt running, can't get here if readOnly
+      showNotification({
+        title: "Another prompt is running",
+        message: "Cannot run prompt while another prompt is running",
+        type: "warning",
+      });
+      return;
+    }
+
+    await onRunPrompt();
+  }, [isRunButtonDisabled, isRunning, onRunPrompt, showNotification]);
+
   const runPromptButton = (
     // Wrap with a div to prevent it from expanding to input height
     <div className={classes.promptInputButtonWrapper}>
@@ -97,7 +125,7 @@ export default memo(function PromptInputRenderer({
         isRunning={isRunning}
         disabled={isRunButtonDisabled}
         cancel={onCancelRun}
-        runPrompt={onRunPrompt}
+        runPrompt={runPrompt}
       />
     </div>
   );
@@ -110,11 +138,13 @@ export default memo(function PromptInputRenderer({
             input={input}
             schema={schema}
             onChangeInput={onChangeInput}
+            runPrompt={runPrompt}
           />
         ) : (
           <PromptInputConfigRenderer
             input={input}
             onChangeInput={onChangeInput}
+            runPrompt={runPrompt}
           />
         )}
       </div>

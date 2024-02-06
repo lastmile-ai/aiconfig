@@ -1,4 +1,4 @@
-import { MantineProvider } from "@mantine/core";
+import { MantineProvider, MantineThemeOverride } from "@mantine/core";
 import { AIConfigEditorMode, ThemeMode } from "../shared/types";
 import { LOCAL_THEME } from "./LocalTheme";
 import { GRADIO_THEME } from "./GradioTheme";
@@ -11,6 +11,7 @@ type Props = {
   children: React.ReactNode;
   mode?: AIConfigEditorMode;
   themeMode?: ThemeMode;
+  themeOverride?: MantineThemeOverride;
 };
 
 const THEMES = {
@@ -23,6 +24,7 @@ export default function AIConfigEditorThemeProvider({
   children,
   mode,
   themeMode,
+  themeOverride,
 }: Props) {
   // Use system color scheme by default (don't conditionally call hooks!)
   let preferredColorScheme = useColorScheme();
@@ -34,16 +36,14 @@ export default function AIConfigEditorThemeProvider({
   const theme = useMemo(
     () => ({
       colorScheme: preferredColorScheme,
-      ...THEMES[
-        mode!
-      ] /* mode must be nonnull per conditional wrapper condition */,
+      ...(themeOverride ?? (mode ? THEMES[mode] : {})),
     }),
-    [mode, preferredColorScheme]
+    [mode, preferredColorScheme, themeOverride]
   );
 
   return (
     <ConditionalWrapper
-      condition={mode != null}
+      condition={mode != null || themeMode != null || themeOverride != null}
       wrapper={(children) => (
         <MantineProvider withGlobalStyles withNormalizeCSS theme={theme}>
           {children}

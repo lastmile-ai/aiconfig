@@ -44,7 +44,7 @@ export default memo(function ModelSelector({
       placeholder={`Select ${mode === "gradio" ? "task" : "model"}`}
       limit={100}
       className="ghost"
-      label={mode === "gradio" ? "HuggingFace Task" : "Model"}
+      label={mode === "gradio" ? "Hugging Face Task" : "Model"}
       variant="unstyled"
       maxDropdownHeight={200}
       disabled={readOnly}

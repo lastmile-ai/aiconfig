@@ -1,0 +1,32 @@
+{
+  "name": "New AIConfig -- please rename me",
+  "schema_version": "latest",
+  "metadata": {
+    "models": {
+      "gpt-3.5-turbo": {
+        "model": "gpt-3.5-turbo",
+        "top_p": 1,
+        "temperature": 1
+      }
+    },
+    "default_model": "gpt-3.5-turbo"
+  },
+  "description": "Fill out a description about your AIConfig here.",
+  "prompts": [
+    {
+      "name": "prompt_1",
+      "input": "Type anything you wish."
+    },
+    {
+      "name": "prompt_2",
+      "input": "Try passing data using parameters like {{order_by}}, and chaining prompts together, like this: {{prompt_1.output}}.",
+      "metadata": {
+        "model": "gpt-4",
+        "parameters": {
+          "order_by": "geographic location"
+        }
+      }
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}

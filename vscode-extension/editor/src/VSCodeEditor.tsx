@@ -27,6 +27,7 @@ import {
   notifyDocumentDirty,
   updateWebviewState,
 } from "./utils/vscodeUtils";
+import { VSCODE_THEME } from "./VSCodeTheme";
 
 const useStyles = createStyles(() => ({
   editorBackground: {
@@ -425,6 +426,7 @@ export default function VSCodeEditor() {
       clearOutputs,
       deletePrompt,
       getModels,
+      getServerStatus,
       logEventHandler,
       runPrompt,
       setConfigDescription,
@@ -442,7 +444,12 @@ export default function VSCodeEditor() {
           <Loader size="xl" />
         </Flex>
       ) : (
-        <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} mode={MODE} />
+        <AIConfigEditor
+          aiconfig={aiconfig}
+          callbacks={callbacks}
+          mode={MODE}
+          themeOverride={VSCODE_THEME}
+        />
       )}
     </div>
   );

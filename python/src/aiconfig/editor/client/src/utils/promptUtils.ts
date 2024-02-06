@@ -1,7 +1,10 @@
 import { JSONObject, JSONValue, Prompt } from "aiconfig";
 import { OpenAIChatModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatModelParserPromptSchema";
 import { OpenAIChatVisionModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatVisionModelParserPromptSchema";
-import { DalleImageGenerationParserPromptSchema } from "../shared/prompt_schemas/DalleImageGenerationParserPromptSchema";
+import {
+  Dalle2ImageGenerationParserPromptSchema,
+  Dalle3ImageGenerationParserPromptSchema,
+} from "../shared/prompt_schemas/DalleImageGenerationParserPromptSchema";
 import { PaLMTextParserPromptSchema } from "../shared/prompt_schemas/PaLMTextParserPromptSchema";
 import { PaLMChatParserPromptSchema } from "../shared/prompt_schemas/PaLMChatParserPromptSchema";
 import { AnyscaleEndpointPromptSchema } from "../shared/prompt_schemas/AnyscaleEndpointPromptSchema";
@@ -79,10 +82,10 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "gpt-4-vision-preview": OpenAIChatVisionModelParserPromptSchema,
 
   // DalleImageGenerationParser
-  "dall-e-2": DalleImageGenerationParserPromptSchema,
-  "dall-e-3": DalleImageGenerationParserPromptSchema,
+  "dall-e-2": Dalle2ImageGenerationParserPromptSchema,
+  "dall-e-3": Dalle3ImageGenerationParserPromptSchema,
 
-  "ClaudeBedrockModelParser": ClaudeBedrockPromptSchema,
+  ClaudeBedrockModelParser: ClaudeBedrockPromptSchema,
 
   HuggingFaceImage2TextRemoteInference:
     HuggingFaceImage2TextRemoteInferencePromptSchema,
@@ -149,6 +152,15 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "Text Generation": HuggingFaceTextGenerationRemoteInferencePromptSchema,
   Summarization: HuggingFaceTextSummarizationRemoteInferencePromptSchema,
   Translation: HuggingFaceTextTranslationRemoteInferencePromptSchema,
+
+  "Automatic Speech Recognition (Local)":
+    HuggingFaceAutomaticSpeechRecognitionPromptSchema,
+  "Image-to-Text (Local)": HuggingFaceImage2TextTransformerPromptSchema,
+  "Text-to-Image (Local)": HuggingFaceText2ImageDiffusorPromptSchema,
+  "Text-to-Speech (Local)": HuggingFaceText2SpeechTransformerPromptSchema,
+  "Text Generation (Local)": HuggingFaceTextGenerationTransformerPromptSchema,
+  "Summarization (Local)": HuggingFaceTextSummarizationTransformerPromptSchema,
+  "Translation (Local)": HuggingFaceTextGenerationTransformerPromptSchema,
 };
 
 export type PromptInputSchema =
