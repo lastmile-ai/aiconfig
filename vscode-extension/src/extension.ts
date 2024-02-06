@@ -227,6 +227,16 @@ async function checkRequirements(
   );
 
   return new Promise((resolve, reject) => {
+    /**
+     * Repeat the top hits below for `pip` and `pip3`
+     * 1) Check if python3 is there `which python3` (where)
+     * 2) ^If yes, no problem
+     * 3) Check if `python` --> `which python`
+     * 4) If doesn't have python or python 3 --> yo boy, install this dawg
+     * 5) Make sure the python version is >=3.10
+     *
+     * 7) Extra extra, read all about it! --> Current VS Code python interpreter
+     */
     let checkRequirements = spawn("python3", [
       checkRequirementsScriptPath,
       "--requirements_path",
