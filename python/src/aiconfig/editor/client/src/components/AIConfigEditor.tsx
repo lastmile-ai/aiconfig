@@ -6,6 +6,7 @@ import {
   Tooltip,
   Alert,
   Group,
+  ActionIcon,
 } from "@mantine/core";
 import {
   AIConfig,
@@ -54,7 +55,7 @@ import {
   getDefaultPromptInputForModel,
   getPromptModelName,
 } from "../utils/promptUtils";
-import { IconDeviceFloppy } from "@tabler/icons-react";
+import { IconBraces, IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
 import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
 import DownloadButton from "./global/DownloadButton";
@@ -117,6 +118,7 @@ export type AIConfigCallbacks = {
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
   download?: () => Promise<void>;
+  openInTextEditor?: () => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
@@ -167,6 +169,7 @@ function AIConfigEditorBase({
   const logEventHandler = callbacks?.logEventHandler;
 
   const downloadCallback = callbacks?.download;
+  const openInTextEditorCallback = callbacks?.openInTextEditor;
   const onDownload = useCallback(async () => {
     if (!downloadCallback) {
       return;
@@ -997,6 +1000,16 @@ function AIConfigEditorBase({
               <Group>
                 {downloadCallback && <DownloadButton onDownload={onDownload} />}
                 {shareCallback && <ShareButton onShare={onShare} />}
+                {openInTextEditorCallback && (
+                  <Tooltip label="Open in Text Editor" withArrow>
+                    <ActionIcon
+                      onClick={openInTextEditorCallback}
+                      className="secondaryButton"
+                    >
+                      <IconBraces size="1rem" />
+                    </ActionIcon>
+                  </Tooltip>
+                )}
                 {!readOnly && onClearOutputs && (
                   <Button
                     loading={undefined}
