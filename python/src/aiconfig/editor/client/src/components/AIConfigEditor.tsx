@@ -6,6 +6,7 @@ import {
   Tooltip,
   Alert,
   Group,
+  MantineThemeOverride,
 } from "@mantine/core";
 import {
   AIConfig,
@@ -76,6 +77,11 @@ type Props = {
    * overriding that behavior.
    */
   themeMode?: ThemeMode;
+  /**
+   * Theme override for the editor. If provided, this will override the theme associated
+   * with the provided AIConfigEditorMode.
+   */
+  themeOverride?: MantineThemeOverride;
 };
 
 export type RunPromptStreamEvent =
@@ -1067,7 +1073,11 @@ function AIConfigEditorBase({
 // the theme provider to ensure all components have the proper theme
 export default function AIConfigEditor(props: Props) {
   return (
-    <AIConfigEditorThemeProvider mode={props.mode} themeMode={props.themeMode}>
+    <AIConfigEditorThemeProvider
+      mode={props.mode}
+      themeMode={props.themeMode}
+      themeOverride={props.themeOverride}
+    >
       <NotificationProvider
         showNotification={props.callbacks?.showNotification}
       >
