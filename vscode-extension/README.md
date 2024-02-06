@@ -1,71 +1,51 @@
-# AIConfig Editor README
+# AIConfig Extension for Visual Studio Code
 
-This is the README for your extension "aiconfig". After writing up a brief description, we recommend including the following sections.
+## Overview
 
-## Features
+AIConfig Editor is an open-source playground that supports local and remote models from OpenAI, Anthropic, Meta, Google, HuggingFace, Anyscale, and more.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+![WorkbookUI](https://github.com/lastmile-ai/aiconfig/assets/25641935/963eb31b-ce0f-4aa8-89ff-7c4c78ce24c9)
 
-For example if there is an image subfolder under your extension project workspace:
+This extension is built on [`aiconfig`](https://github.com/lastmile-ai/aiconfig), which is a JSON/YAML-based format for storing prompts and model generation settings.
 
-\!\[feature X\]\(images/feature-x.png\)
+AIConfig consists of 3 parts:
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+1. **AI Workbook** -- notebook editor for both local and remote model experimentation
+2. **.aiconfig.json/yaml** -- the config file containing the prompts and model settings.
+3. **SDK** -- Use the aiconfig file in code with the [AIConfig SDK](https://github.com/lastmile-ai/aiconfig).
 
-## Requirements
+Together, this turns VSCode into a generative AI prompt IDE. You can use same environment and config artifact across the playground and SDK.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+### Quick Start
 
-## Extension Settings
+1. Install the [AIConfig Editor extension](https://marketplace.visualstudio.com/items?itemName=lastmile-ai.vscode-aiconfig).
+2. Create a .env file with your API keys: e.g. `OPENAI_API_KEY='your-key’`
+3. Open Command Palette (`Ctrl`+`Shift`+`P`) and select `AIConfig: Create New` to launch an Untitled aiconfig.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## Key Features
 
-For example:
+- **Stay in flow**. Access all generative AI models in a single place, directly in your IDE.
+- **Universal notebook playground**. Swap between models, chain models together, and create prompt templates.
+- **Access local and remote models in one place**. Out-of-the-box support for text, image, and audio models.
+- **Version control prompts**. Manage prompts right beside your code.
+- **Connect to your own models and endpoints**. [Extend AIConfig](https://aiconfig.lastmileai.dev/docs/extensibility) to work with any model and endpoint.
 
-This extension contributes the following settings:
+## Supported Models
 
-- `myExtension.enable`: Enable/disable this extension.
-- `myExtension.thing`: Set to `blah` to do something.
+This extension supports all major foundation models from major model providers.
 
-## Known Issues
+For more details, please see https://aiconfig.lastmileai.dev/docs/overview/model-parsers/.
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-- [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-- Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-- Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-- Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-- [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-- [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+| Provider                          | Model                                                                                                        | Language | Support                                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------- |
+| OpenAI                            | **GPT3.5**                                                                                                   | Python   | ✅ Built-in                                                                                                 |
+| OpenAI                            | **GPT4**                                                                                                     | Python   | ✅ Built-in                                                                                                 |
+| OpenAI                            | **Dall-E 3**                                                                                                 | Python   | ✅ Built-in                                                                                                 |
+| Azure OpenAI                      | **GPT3.5, GPT4**                                                                                             | Python   | ✅ Built-in                                                                                                 |
+| AWS Bedrock                       | **Claude**                                                                                                   | Python   | ✅ Built-in                                                                                                 |
+| HuggingFace Inference Endpoints   | **Text Generation, Text-to-image, Text-to-speech, Summarization, Translation, Automatic Speech Recognition** | Python   | ✅ Built-in                                                                                                 |
+| Google                            | **PaLM 2**                                                                                                   | Python   | ✅ Built-in                                                                                                 |
+| Google                            | **Gemini**                                                                                                   | Python   | ✅ Built-in                                                                                                 |
+| Meta                              | **Llama 2**                                                                                                  | Python   | 🤝 [Extension](https://github.com/lastmile-ai/aiconfig/tree/main/extensions/llama/python)                   |
+| Meta                              | **Llama Guard**                                                                                              | Python   | 🤝 [Extension](https://github.com/lastmile-ai/aiconfig/tree/main/extensions/llama-guard)                    |
+| HuggingFace Transformer Pipelines | **Text Generation**                                                                                          | Python   | 🤝 [Extension](https://github.com/lastmile-ai/aiconfig/tree/main/extensions/HuggingFaceTransformers/python) |
