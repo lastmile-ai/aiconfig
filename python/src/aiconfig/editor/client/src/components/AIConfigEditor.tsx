@@ -992,7 +992,7 @@ function AIConfigEditorBase({
           </>
         )}
         <div>
-          <Flex justify="flex-end" mt="md" mb="xs">
+          <Flex justify="flex-end" pt="md" mb="xs">
             {
               <Group>
                 {downloadCallback && <DownloadButton onDownload={onDownload} />}
