@@ -292,9 +292,11 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     const openPort = await getPortPromise();
 
+    const pythonPath = "";
+
     // TODO: saqadri - specify parsers_module_path
     let startServer = spawn(
-      "aiconfig",
+      pythonPath + "aiconfig.scripts.aiconfig_cli:main",
       ["start", "--server-port", openPort.toString(), ...modelRegistryPathArgs],
       {
         cwd: getCurrentWorkingDirectory(document),

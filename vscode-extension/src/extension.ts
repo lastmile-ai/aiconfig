@@ -16,6 +16,7 @@ import {
   sanitizeFileName,
   getTodayDateString,
   LASTMILE_BASE_URI,
+  getPythonPath
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
@@ -474,9 +475,10 @@ async function installRequirements(
     "python",
     "requirements.txt"
   );
+  const pythonPath = await getPythonPath();
 
   return new Promise((resolve, _reject) => {
-    const pipInstall = spawn("pip3", [
+    const pipInstall = spawn(pythonPath + " -m pip", [
       "install",
       "-r",
       requirementsPath,
@@ -582,8 +584,10 @@ async function checkRequirements(
  * Checks if Python is installed on the system, and if not, prompts the user to install it.
  */
 async function checkPython() {
+  const pythonPath = await getPythonPath();
   return new Promise((resolve, _reject) => {
-    exec("python3 --version", (error, stdout, stderr) => {
+    
+    exec(pythonPath + " --version", (error, stdout, stderr) => {
       if (error) {
         console.error("Python was not found, can't install requirements");
 
@@ -616,7 +620,10 @@ async function checkPython() {
  */
 async function checkPip() {
   return new Promise((resolve, _reject) => {
-    exec("pip3 --version", (error, stdout, stderr) => {
+    const pythonPath = getPythonPath();
+    // when calling pip using `python -m`, no need to worry about pip vs pip3. 
+    // You're directly specifying which Python environment's pip to use.
+    exec(pythonPath + "-m pip --version", (error, stdout, stderr) => {
       if (error) {
         console.log("pip is not found");
         // Guide for installation
