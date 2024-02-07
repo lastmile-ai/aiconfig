@@ -28,8 +28,9 @@ import {
   updateWebviewState,
 } from "./utils/vscodeUtils";
 import { VSCODE_THEME } from "./VSCodeTheme";
-// TODO: Update package to export AIConfigEditorNotification type
+// TODO: Update package to export AIConfigEditorNotification and ThemeMode types
 import { AIConfigEditorNotification } from "@lastmileai/aiconfig-editor/dist/components/notifications/NotificationProvider";
+import { ThemeMode } from "@lastmileai/aiconfig-editor/dist/shared/types";
 
 const useStyles = createStyles(() => ({
   editorBackground: {
@@ -42,6 +43,7 @@ const MODE = "vscode";
 
 export default function VSCodeEditor() {
   const { vscode } = useContext(WebviewContext);
+  const [themeMode, setThemeMode] = useState<ThemeMode | undefined>();
 
   // TODO: saqadri - does this need to be wrapped in a memo?
   const webviewState = getWebviewState(vscode);
@@ -99,6 +101,11 @@ export default function VSCodeEditor() {
 
         // TODO: saqadri - as soon as content is updated, we have to call
         // /get endpoint so we get the latest content from the server
+        return;
+      }
+      case "set_theme": {
+        const theme = message.theme;
+        setThemeMode(theme);
         return;
       }
       default: {
@@ -459,6 +466,7 @@ export default function VSCodeEditor() {
           callbacks={callbacks}
           mode={MODE}
           themeOverride={VSCODE_THEME}
+          themeMode={themeMode}
         />
       )}
     </div>
