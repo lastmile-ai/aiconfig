@@ -7,7 +7,7 @@ import {
   LogEvent,
   LogEventData,
 } from "@lastmileai/aiconfig-editor";
-import { Flex, Loader, Image, createStyles } from "@mantine/core";
+import { Flex, Loader, createStyles } from "@mantine/core";
 import {
   AIConfig,
   InferenceSettings,
@@ -28,6 +28,8 @@ import {
   updateWebviewState,
 } from "./utils/vscodeUtils";
 import { VSCODE_THEME } from "./VSCodeTheme";
+// TODO: Update package to export AIConfigEditorNotification type
+import { AIConfigEditorNotification } from "@lastmileai/aiconfig-editor/dist/components/notifications/NotificationProvider";
 
 const useStyles = createStyles(() => ({
   editorBackground: {
@@ -281,7 +283,7 @@ export default function VSCodeEditor() {
   const cancel = useCallback(
     async (cancellationToken: string) => {
       // TODO: saqadri - check the status of the response (can be 400 or 422 if cancellation fails)
-      const res = await ufetch.post(ROUTE_TABLE.CANCEL(aiConfigServerUrl), {
+      await ufetch.post(ROUTE_TABLE.CANCEL(aiConfigServerUrl), {
         cancellation_token_id: cancellationToken,
       });
 
@@ -402,6 +404,12 @@ export default function VSCodeEditor() {
     []
   );
 
+  const showNotification = useCallback(
+    (notification: AIConfigEditorNotification) =>
+      vscode?.postMessage({ type: "show_notification", notification }),
+    [vscode]
+  );
+
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
@@ -415,6 +423,7 @@ export default function VSCodeEditor() {
       setConfigDescription,
       setConfigName,
       setParameters,
+      showNotification,
       updateModel,
       updatePrompt,
       // explicitly omitted
@@ -432,6 +441,7 @@ export default function VSCodeEditor() {
       setConfigDescription,
       setConfigName,
       setParameters,
+      showNotification,
       updateModel,
       updatePrompt,
     ]

@@ -251,6 +251,62 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         case "open_in_text_editor":
           vscode.commands.executeCommand("workbench.action.reopenTextEditor");
           return;
+
+        case "show_notification":
+          const notification = e.notification as {
+            // AIConfigEditorNotification
+            title: string;
+            message: string | null;
+            type?: "info" | "success" | "warning" | "error";
+            autoClose?: boolean | number;
+            onClose?: () => void;
+            onOpen?: () => void;
+          };
+
+          let notificationFn;
+          let outputChannelFn;
+          switch (notification.type) {
+            case "info":
+            case "success":
+              notificationFn = vscode.window.showInformationMessage;
+              outputChannelFn = this.extensionOutputChannel.info;
+              break;
+            case "warning":
+              notificationFn = vscode.window.showWarningMessage;
+              outputChannelFn = this.extensionOutputChannel.warn;
+              break;
+            case "error":
+              notificationFn = vscode.window.showErrorMessage;
+              outputChannelFn = this.extensionOutputChannel.error;
+              break;
+            default:
+              notificationFn = vscode.window.showInformationMessage;
+              outputChannelFn = this.extensionOutputChannel.info;
+          }
+
+          const message = notification.message;
+
+          // Notification supports 'details' for modal only. For now, just show title
+          // in notification toast and full message in output channel.
+          const notificationAction = await notificationFn(
+            notification.title,
+            message ? "Details" : undefined
+          );
+
+          if (message) {
+            outputChannelFn(
+              this.prependMessage(
+                `${notification.title} \n ${message}`,
+                document
+              )
+            );
+            // If user clicked "Details", show & focus the output channel
+            if (notificationAction === "Details") {
+              this.extensionOutputChannel.show(/*preserveFocus*/ true);
+            }
+          }
+
+          notification.onClose?.();
       }
     });
 
