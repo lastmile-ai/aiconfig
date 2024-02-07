@@ -27,7 +27,6 @@ export const VSCODE_THEME: MantineThemeOverride = {
     ".ghost": {
       border: "none",
       borderRadius: "4px",
-      padding: "4px",
       margin: "0px",
 
       color: "var(--vscode-editor-foreground)",
