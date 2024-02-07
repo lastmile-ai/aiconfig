@@ -65,6 +65,17 @@ export async function waitUntilServerReady(serverUrl: string) {
   }
 }
 
+export function updateWebviewEditorThemeMode(webview: vscode.Webview) {
+  const isDarkMode =
+    vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark ||
+    vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.HighContrast;
+  // ColorThemeKind.Light or ColorThemeKind.HighContrastLight is light mode
+  webview.postMessage({
+    type: "set_theme",
+    theme: isDarkMode ? "dark" : "light",
+  });
+}
+
 export async function initializeServerState(
   serverUrl: string,
   document: vscode.TextDocument
@@ -284,3 +295,19 @@ export function urlJoin(...args) {
   return normalize(parts);
 }
 //#endregion
+
+
+/**
+ * AIConfig Vscode extension has a dependency on the Python extension. 
+ * This function retrieves and returns the path to the current python interpreter.
+ * @returns the path to the current python interpreter
+ */
+export async function getPythonPath(): Promise<string> {
+  const pythonExtension = vscode.extensions.getExtension("ms-python.python");
+  if (!pythonExtension.isActive) {
+    await pythonExtension.activate();
+  }
+  
+  const pythonPath = pythonExtension.exports.settings.getExecutionDetails().execCommand[0];
+  return pythonPath;
+}
