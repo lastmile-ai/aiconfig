@@ -6,6 +6,7 @@ import {
   getCurrentWorkingDirectory,
   getDocumentFromServer,
   initializeServerState,
+  updateWebviewEditorThemeMode,
   waitUntilServerReady,
 } from "./util";
 import { getNonce } from "./utilities/getNonce";
@@ -312,6 +313,16 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Update webview immediately so we unblock the render; server init should happen in the background.
     updateWebview();
+
+    // Set initial dark/light theme mode for the webview and on changes
+    if (!isWebviewDisposed) {
+      updateWebviewEditorThemeMode(webviewPanel.webview);
+      vscode.window.onDidChangeActiveColorTheme(() => {
+        if (!isWebviewDisposed) {
+          updateWebviewEditorThemeMode(webviewPanel.webview);
+        }
+      });
+    }
 
     // Wait for server ready
     await waitUntilServerReady(editorServer.url);
