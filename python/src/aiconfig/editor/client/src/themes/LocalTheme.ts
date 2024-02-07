@@ -43,7 +43,6 @@ export const LOCAL_THEME: MantineThemeOverride = {
           "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
         border: "none",
         borderRadius: "4px",
-        padding: "4px",
         margin: "0px",
         backgroundColor: "transparent",
       },
