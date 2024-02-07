@@ -72,7 +72,8 @@ export const VSCODE_THEME: MantineThemeOverride = {
         boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
         backgroundColor: "var(--vscode-input-background)",
         ":focus": {
-          outline: "solid 1px #ff1cf7 !important",
+          outline:
+            "solid 1px var(--vscode-inputOption-activeBorder) !important",
           outlineOffset: "-1px",
         },
       },
