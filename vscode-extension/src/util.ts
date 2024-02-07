@@ -65,6 +65,17 @@ export async function waitUntilServerReady(serverUrl: string) {
   }
 }
 
+export function updateWebviewEditorThemeMode(webview: vscode.Webview) {
+  const isDarkMode =
+    vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark ||
+    vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.HighContrast;
+  // ColorThemeKind.Light or ColorThemeKind.HighContrastLight is light mode
+  webview.postMessage({
+    type: "set_theme",
+    theme: isDarkMode ? "dark" : "light",
+  });
+}
+
 export async function initializeServerState(
   serverUrl: string,
   document: vscode.TextDocument
