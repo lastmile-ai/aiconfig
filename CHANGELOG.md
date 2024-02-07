@@ -1,5 +1,75 @@
 # Changelog
 
+## (2024-02-06) Python Version 1.1.20, NPM Version 1.1.9
+
+Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1060
+
+### Features
+
+- **python-sdk:** Created Claude model parser for Bedrock (AWS) library. Added it to core model parsers in `python-aiconfig` ([#1039](https://github.com/lastmile-ai/aiconfig/pull/1039))
+- **python-sdk:** Created variant of Open AI model parser class which uses Azure endpoints. Added it to core model parsers in `python-aiconfig` ([#1034](https://github.com/lastmile-ai/aiconfig/pull/1034))
+- **extension:** Created model parsers for the following HuggingFace tasks, leveraging the HuggingFace remote inference client. Added them to `aiconfig-extension-hugging-face`
+  - Automatic Speech Recognition ([#1020](https://github.com/lastmile-ai/aiconfig/pull/1020))
+  - Image-to-Text ([#1018](https://github.com/lastmile-ai/aiconfig/pull/1018))
+  - Summarization ([#993](https://github.com/lastmile-ai/aiconfig/pull/993))
+  - Text-to-Image ([#1009](https://github.com/lastmile-ai/aiconfig/pull/1009))
+  - Text-to-Speech ([#1015](https://github.com/lastmile-ai/aiconfig/pull/1015))
+  - Translation ([#1004](https://github.com/lastmile-ai/aiconfig/pull/1004))
+- **python-sdk:** Moved Gemini model parser to the main `python-aiconfig` package. `aiconfig-extension-gemini` is now deprecated ([#987](https://github.com/lastmile-ai/aiconfig/pull/987))
+- **editor:** Added Share button, which implements a callback to return a URL redirect to render a read-only version of the AIConfig instance ([#1049](https://github.com/lastmile-ai/aiconfig/pull/1049)). This will be used for Gradio Notebooks so Hugging Face space viewers can share their AIConfig session with others. We will have more details on this when it launches in upcoming weeks!
+- **editor:** Added Download button, which implements a callback to download existing AIConfig session to a local file ([#1061](https://github.com/lastmile-ai/aiconfig/pull/1061)). Like the Share button, this will be implemented for Gradio Notebooks on HuggingFace spaces
+- **editor:** Defined AIConfigEditor prop for setting light/dark mode UI theme ([#1063](https://github.com/lastmile-ai/aiconfig/pull/1063))
+- **editor:** Added prompt input settings schemas for Hugging Face remote inference task names and Claude Bedrock ([#1029](https://github.com/lastmile-ai/aiconfig/pull/1029), [#1050](https://github.com/lastmile-ai/aiconfig/pull/1050))
+
+### Bug Fixes / Tasks
+
+- **python-sdk:** Fixed bug where we were not resolving parameters that referenced earlier prompts if those referenced prompts contained non-text input(s) or output(s) ([#1065](https://github.com/lastmile-ai/aiconfig/pull/1065))
+- **python-sdk:** Refactored OpenAI model parser to use client object instead of directly updating api_key, enabling us create OpenAI Azure ([#999](https://github.com/lastmile-ai/aiconfig/pull/999))
+- **editor:** Disabled interactions for prompt name, model selector, and model settings while in read-only mode ([#1027](https://github.com/lastmile-ai/aiconfig/pull/1027), [#1028](https://github.com/lastmile-ai/aiconfig/pull/1028))
+- **editor:** Hardcode default models for remote inference HuggingFace tasks. Users can still edit the model they want to use, but they aren’t required to define them themselves ([#1048](https://github.com/lastmile-ai/aiconfig/pull/1048))
+- **editor:** Set default `max_new_tokens` value from 20 → 400 for the HuggingFace remote inference Text Generation model parser ([#1047](https://github.com/lastmile-ai/aiconfig/pull/1047))
+- **python-sdk:** Remove unused mocks from `serialize()` tests ([#1064](https://github.com/lastmile-ai/aiconfig/pull/1064))
+
+### Documentation
+
+- [new] Created cookbook for Retrieval Augmented Generation (RAG) with MongoDB Vector Search ([#1011](https://github.com/lastmile-ai/aiconfig/pull/1011))
+- [updated] Fixed typos in the `aiconfig-extension-llama-guard` extension `requirements.txt` file and also improved cookbook ([#998](https://github.com/lastmile-ai/aiconfig/pull/998))
+
+## (2024-01-30) Python Version 1.1.18, NPM Version 1.1.8
+
+Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1060
+
+### Features
+
+- **python-sdk:** Created Claude model parser for Bedrock (AWS) library. Added it to core model parsers in `python-aiconfig` ([#1039](https://github.com/lastmile-ai/aiconfig/pull/1039))
+- **python-sdk:** Created variant of Open AI model parser class which uses Azure endpoints. Added it to core model parsers in `python-aiconfig` ([#1034](https://github.com/lastmile-ai/aiconfig/pull/1034))
+- **extension:** Created model parsers for the following HuggingFace tasks, leveraging the HuggingFace remote inference client. Added them to `aiconfig-extension-hugging-face`
+  - Automatic Speech Recognition ([#1020](https://github.com/lastmile-ai/aiconfig/pull/1020))
+  - Image-to-Text ([#1018](https://github.com/lastmile-ai/aiconfig/pull/1018))
+  - Summarization ([#993](https://github.com/lastmile-ai/aiconfig/pull/993))
+  - Text-to-Image ([#1009](https://github.com/lastmile-ai/aiconfig/pull/1009))
+  - Text-to-Speech ([#1015](https://github.com/lastmile-ai/aiconfig/pull/1015))
+  - Translation ([#1004](https://github.com/lastmile-ai/aiconfig/pull/1004))
+- **python-sdk:** Moved Gemini model parser to the main `python-aiconfig` package. `aiconfig-extension-gemini` is now deprecated ([#987](https://github.com/lastmile-ai/aiconfig/pull/987))
+- **editor:** Added Share button, which implements a callback to return a URL redirect to render a read-only version of the AIConfig instance ([#1049](https://github.com/lastmile-ai/aiconfig/pull/1049)). This will be used for Gradio Notebooks so Hugging Face space viewers can share their AIConfig session with others. We will have more details on this when it launches in upcoming weeks!
+- **editor:** Added Download button, which implements a callback to download existing AIConfig session to a local file ([#1061](https://github.com/lastmile-ai/aiconfig/pull/1061)). Like the Share button, this will be implemented for Gradio Notebooks on HuggingFace spaces
+- **editor:** Defined AIConfigEditor prop for setting light/dark mode UI theme ([#1063](https://github.com/lastmile-ai/aiconfig/pull/1063))
+- **editor:** Added prompt input settings schemas for Hugging Face remote inference task names and Claude Bedrock ([#1029](https://github.com/lastmile-ai/aiconfig/pull/1029), [#1050](https://github.com/lastmile-ai/aiconfig/pull/1050))
+
+### Bug Fixes / Tasks
+
+- **python-sdk:** Fixed bug where we were not resolving parameters that referenced earlier prompts if those referenced prompts contained non-text input(s) or output(s) ([#1065](https://github.com/lastmile-ai/aiconfig/pull/1065))
+- **python-sdk:** Refactored OpenAI model parser to use client object instead of directly updating api_key, enabling us create OpenAI Azure ([#999](https://github.com/lastmile-ai/aiconfig/pull/999))
+- **editor:** Disabled interactions for prompt name, model selector, and model settings while in read-only mode ([#1027](https://github.com/lastmile-ai/aiconfig/pull/1027), [#1028](https://github.com/lastmile-ai/aiconfig/pull/1028))
+- **editor:** Hardcode default models for remote inference HuggingFace tasks. Users can still edit the model they want to use, but they aren’t required to define them themselves ([#1048](https://github.com/lastmile-ai/aiconfig/pull/1048))
+- **editor:** Set default `max_new_tokens` value from 20 → 400 for the HuggingFace remote inference Text Generation model parser ([#1047](https://github.com/lastmile-ai/aiconfig/pull/1047))
+- **python-sdk:** Remove unused mocks from `serialize()` tests ([#1064](https://github.com/lastmile-ai/aiconfig/pull/1064))
+
+### Documentation
+
+- [new] Created cookbook for Retrieval Augmented Generation (RAG) with MongoDB Vector Search ([#1011](https://github.com/lastmile-ai/aiconfig/pull/1011))
+- [updated] Fixed typos in the `aiconfig-extension-llama-guard` extension `requirements.txt` file and also improved cookbook ([#998](https://github.com/lastmile-ai/aiconfig/pull/998))
+
 ## (2024-01-23) Python Version 1.1.15, NPM Version 1.1.7
 
 Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/995
