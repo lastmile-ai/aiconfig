@@ -23,6 +23,19 @@ export const VSCODE_THEME: MantineThemeOverride = {
       maxWidth: "100%",
       minHeight: "100vh",
     },
+    ".mantine-Input-input": {
+      backgroundColor: "var(--vscode-input-background)",
+      color: "var(--vscode-editor-foreground)",
+
+      ":focus": {
+        outline: "solid 1px var(--vscode-inputOption-activeBorder) !important",
+        outlineOffset: "-1px",
+      },
+
+      "::placeholder": {
+        color: "var(--vscode-input-placeholderForeground)",
+      },
+    },
     ".monoFont": {
       fontFamily:
         "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
