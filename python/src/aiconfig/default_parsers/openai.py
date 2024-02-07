@@ -74,7 +74,7 @@ class OpenAIInference(ParameterizedModelParser):
             },
         )
         await ai_config.callback_manager.run_callbacks(event)
-        prompts = []
+        prompts: list[Prompt] = []
 
         # Combine conversation data with any extra keyword args
         conversation_data = {**data}
@@ -154,6 +154,29 @@ class OpenAIInference(ParameterizedModelParser):
                         }
                     ),
                     outputs=assistant_output,
+                )
+                prompts.append(prompt)
+            elif i == 0 and role == "assistant":
+                # If the first message is an assistant message,
+                # build a prompt with an empty input, 
+                # and the assistant response as the output
+
+                # Pull assistant response
+                assistant_output = build_output_data(conversation_data["messages"][i])
+                prompt = Prompt(
+                    name= f"{prompt_name}_{len(prompts) + 1}",
+                    input="",
+                    metadata=PromptMetadata(
+                        model= copy.deepcopy(model_metadata),
+                        parameters= parameters,
+                        remember_chat_context = True
+                    ),
+                    outputs=[                        ExecuteResult(
+                            output_type="execute_result",
+                            execution_count=None,
+                            data=assistant_output,
+                            metadata={},
+                        )],
                 )
                 prompts.append(prompt)
             i += 1
