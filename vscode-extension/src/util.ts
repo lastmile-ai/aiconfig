@@ -16,9 +16,16 @@ export const COMMANDS = {
   HELLO_WORLD: `${EXTENSION_NAME}.helloWorld`,
   CUSTOM_MODEL_REGISTRY_PATH: `${EXTENSION_NAME}.customModelRegistryPath`,
   CREATE_CUSTOM_MODEL_REGISTRY: `${EXTENSION_NAME}.createCustomModelRegistry`,
+  OPEN_CONFIG_FILE: `${EXTENSION_NAME}.openConfigFile`,
   OPEN_MODEL_REGISTRY: `${EXTENSION_NAME}.openModelRegistry`,
   SHARE: `${EXTENSION_NAME}.share`,
 };
+
+export const SUPPORTED_FILE_EXTENSIONS = [".json", ".yaml"];
+
+export function isSupportedConfigExtension(fileName: string) {
+  return SUPPORTED_FILE_EXTENSIONS.includes(path.extname(fileName));
+}
 
 // Note: This is used for the share feature.
 export const LASTMILE_BASE_URI: string = "https://lastmileai.dev/";
