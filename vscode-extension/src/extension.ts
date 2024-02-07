@@ -548,8 +548,10 @@ async function checkRequirements(
     "requirements.txt"
   );
 
+  const pythonPath = await getPythonPath();
+
   return new Promise((resolve, reject) => {
-    let checkRequirements = spawn("python3", [
+    let checkRequirements = spawn(pythonPath, [
       checkRequirementsScriptPath,
       "--requirements_path",
       requirementsPath,
@@ -593,6 +595,7 @@ async function checkPython() {
     exec(pythonPath + " --version", (error, stdout, stderr) => {
       if (error) {
         console.error("Python was not found, can't install requirements");
+        console.error("retrieved python path: " + pythonPath);
 
         // Guide for installation
         vscode.window
