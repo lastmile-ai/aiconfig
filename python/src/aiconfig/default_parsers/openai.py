@@ -156,6 +156,23 @@ class OpenAIInference(ParameterizedModelParser):
                     outputs=assistant_output,
                 )
                 prompts.append(prompt)
+            else:
+                # If the first message is an assistant message, create an empty prompt for it.
+                if i == 0:
+                    assistant_output = build_output_data(conversation_data["messages"][i])
+                    prompt = Prompt(
+                        name=new_prompt_name,
+                        input="",
+                        metadata=PromptMetadata(
+                            **{
+                                "model": copy.deepcopy(model_metadata),
+                                "parameters": parameters,
+                                "remember_chat_context": True,
+                            }
+                        ),
+                        outputs=assistant_output,
+                    )
+                    prompts.append(prompt)
             i += 1
 
         if prompts:
