@@ -4,8 +4,8 @@ import { MantineThemeOverride } from "@mantine/core";
 // the static VSCodeTheme packaged with the editor. We will consolidate later.
 export const VSCODE_THEME: MantineThemeOverride = {
   defaultGradient: {
-    from: "#ff1cf7",
-    to: "#ff1cf7",
+    from: "var(--vscode-button-background)",
+    to: "var(--vscode-button-background)",
     deg: 45,
   },
 
