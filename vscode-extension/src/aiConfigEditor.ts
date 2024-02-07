@@ -5,6 +5,7 @@ import {
   ServerInfo,
   getCurrentWorkingDirectory,
   getDocumentFromServer,
+  getPythonPath,
   initializeServerState,
   updateWebviewEditorThemeMode,
   waitUntilServerReady,
@@ -368,10 +369,13 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     const openPort = await getPortPromise();
 
+    const pythonPath = await getPythonPath();
+
     // TODO: saqadri - specify parsers_module_path
+    // `aiconfig` command not useable here because it relies on python. Instead invoke the module directly.
     let startServer = spawn(
-      "aiconfig",
-      ["start", "--server-port", openPort.toString(), ...modelRegistryPathArgs],
+      pythonPath,
+      ["-m", "aiconfig.scripts.aiconfig_cli", "start", "--server-port", openPort.toString(), ...modelRegistryPathArgs],
       {
         cwd: getCurrentWorkingDirectory(document),
       }
