@@ -6,7 +6,7 @@ flask-cors
 flask[async]
 frozendict
 google-generativeai
-huggingface-hub
+huggingface-hub >= 0.20.3
 hypothesis==6.91.0
 lastmile-utils==0.0.21
 mock
