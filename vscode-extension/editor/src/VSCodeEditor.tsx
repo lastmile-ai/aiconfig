@@ -415,6 +415,10 @@ export default function VSCodeEditor() {
     []
   );
 
+  const openInTextEditor = useCallback(async () => {
+    vscode?.postMessage({ type: "open_in_text_editor" });
+  }, [vscode]);
+
   const showNotification = useCallback(
     (notification: AIConfigEditorNotification) =>
       vscode?.postMessage({ type: "show_notification", notification }),
@@ -430,6 +434,7 @@ export default function VSCodeEditor() {
       getModels,
       getServerStatus,
       logEventHandler,
+      openInTextEditor,
       runPrompt,
       setConfigDescription,
       setConfigName,
@@ -448,6 +453,7 @@ export default function VSCodeEditor() {
       getModels,
       getServerStatus,
       logEventHandler,
+      openInTextEditor,
       runPrompt,
       setConfigDescription,
       setConfigName,
