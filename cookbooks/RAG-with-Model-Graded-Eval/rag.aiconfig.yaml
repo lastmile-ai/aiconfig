@@ -220,7 +220,7 @@ prompts:
   name: generate_1
   outputs: []
 - input: "Given the following question, and answer, does the answer satisfactorily\
-    \ answer the question? \n\nQuestion: {{query1}}\nAnswer: {{generate_baseline.output}}"
+    \ answer the question? \n\nQuestion: {{query1}}\nAnswer: {{generate_1.output}}"
   metadata:
     model: gpt-4
     parameters: {}
@@ -229,7 +229,7 @@ prompts:
   outputs: []
 - input: "Given the following question, context, and answer, does the answer adhere\
     \ strictly to the context? \n\nGive a faithfulness verdict (YES or NO) with an\
-    \ explanation.\n\nQuestion: {{query1}}\nAnswer: {{generate_baseline.output}}\n\
+    \ explanation.\n\nQuestion: {{query1}}\nContext: {{context1}}\nAnswer: {{generate_baseline.output}}\n\
     \nVerdict:\nExplanation:"
   metadata:
     model: gpt-4
@@ -259,8 +259,8 @@ prompts:
   outputs: []
 - input: "Given the following question, context, and answer, does the answer adhere\
     \ strictly to the context? \n\nGive a faithfulness verdict (YES or NO) with an\
-    \ explanation.\n\nQuestion: {{query1}}\nAnswer: {{generate_1.output}}\n\nVerdict:\n\
-    Explanation:"
+    \ explanation.\n\nQuestion: {{query1}}\nContext: {{context1}}\nAnswer: {{generate_1.output}}\n\
+    \nVerdict:\nExplanation:"
   metadata:
     model: gpt-4
     parameters: {}
