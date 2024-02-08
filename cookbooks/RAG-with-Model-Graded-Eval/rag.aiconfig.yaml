@@ -3,62 +3,63 @@ description: ''
 metadata:
   models: {}
   parameters:
-    context: " New England open to neutrals.\nFrom that time nothing entered or left\
-      \ the blockaded coast except swift\nprivateers, or occasional fast-sailing vessels\
-      \ which risked capture\nin the attempt. Toward the close of the year Admiral\
-      \ Warren extended\nhis blockade eastward. Notice of the extension was given\
-      \ at Halifax\nNovember 16, and by the blockading squadron off New London December\
-      \ 2,\nthus closing Long Island Sound to all vessels of every description.[381]\n\
-      \nThe pressure of the blockade was immediately felt. In August[382]\nsuperfine\
-      \ flour sold at Boston for $11.87 a barrel, at Baltimore for\n$6.00, and at\
-      \ Richmond for $4.50. Upland cotton sold at Boston for\ntwenty cents a pound;\
-      \ at Charleston for nine cents. Rice sold at\nPhiladelphia for $12.00 a hundred\
-      \ weight; in Charleston and Savannah\nfor $3.00. Sugar sold in Boston for $18.75\
-      \ a hundred weight; in\nBaltimore for $26.50. Already the American staples were\
-      \ unsalable at\nthe places of their production. No rate of profit could cause\
-      \ cotton,\nrice, or \nwheat to be brought by sea from Charleston or Norfolk\
-      \ to\nBoston. Soon speculation began. The price of imported articles rose to\n\
-      extravagant points. At the end of the year coffee sold for thirty-eight\ncents\
-      \ a pound, after selling for twenty-one cents in August. Tea which\ncould be\
-      \ bought for $1.70 per pound in August, sold for three and four\ndollars in\
-      \ December. Sugar which was quoted at nine dollars a hundred\nweight in New\
-      \ Orleans, and in August sold for twenty-one or twenty-two\ndollars in New York\
-      \ and Philadelphia, stood at forty dollars in\nDecember.\n\nMore sweeping in\
-      \ its effects on exports than on imports, the blockade\nrapidly reduced the\
-      \ means of the people. After the summer of 1813,\nGeorgia alone, owing to its\
-      \ contiguity with Florida, succeeded in\ncontinuing to send out cotton. The\
-      \ exports of New York, which exceeded\n$12,250,000 in 1811, fell to $209,000\
-      \ for the year ending in 1814. The\ndomestic exports of Virginia diminished\
-      \ in four years from $4,800,000\nto $3,000,000 for 1812, $1,\nand supplied the\
-      \ Union\nwith articles of necessary use at prices practically fixed by her own\n\
-      manufacturers. From the whole country specie began to flow toward\nBoston as\
-      \ early as the year 1810, and with astonishing rapidity after\nthe war was declared.\
-      \ The British blockade stimulated the movement,\nand the embargo of December,\
-      \ 1813, which lasted till April, 1814, cut\noff every other resource from the\
-      \ Southern and Western States. Unable\nlonger to send their crops even to New\
-      \ England for a market, they were\nobliged to send specie, and they soon came\
-      \ to the end of their supply.\nThe Massachusetts banks, which reported about\
-      \ $820,000 in specie in\n1809, returned more than $3,680,000 in June, 1812;\
-      \ which rose to\n$5,780,000 in June, 1813, and reached nearly $7,000,000 in\
-      \ June, 1814.\nIn five years the Massachusetts banks alone drew more than six\
-      \ million\ndollars in specie from the Southern and Middle States,[478] besides\n\
+    context: " wheat to be brought by sea from Charleston or Norfolk to\nBoston. Soon\
+      \ speculation began. The price of imported articles rose to\nextravagant points.\
+      \ At the end of the year coffee sold for thirty-eight\ncents a pound, after\
+      \ selling for twenty-one cents in August. Tea which\ncould be bought for $1.70\
+      \ per pound in August, sold for three and four\ndollars in December. Sugar which\
+      \ was quoted at nine dollars a hundred\nweight in New Orleans, and in August\
+      \ sold for twenty-one or twenty-two\ndollars in New York and Philadelphia, stood\
+      \ at forty dollars in\nDecember.\n\nMore sweeping in its effects on exports\
+      \ than on imports, the blockade\nrapidly reduced the means of the people. After\
+      \ the summer of 1813,\nGeorgia alone, owing to its contiguity with Florida,\
+      \ succeeded in\ncontinuing to send out cotton. The exports of New York, which\
+      \ exceeded\n$12,250,000 in 1811, fell to $209,000 for the year ending in 1814.\
+      \ The\ndomestic exports of Virginia diminished in four years from $4,800,000\n\
+      to $3,000,000 for 1812, $1,\nNew England open to neutrals.\nFrom that time nothing\
+      \ entered or left the blockaded coast except swift\nprivateers, or occasional\
+      \ fast-sailing vessels which risked capture\nin the attempt. Toward the close\
+      \ of the year Admiral Warren extended\nhis blockade eastward. Notice of the\
+      \ extension was given at Halifax\nNovember 16, and by the blockading squadron\
+      \ off New London December 2,\nthus closing Long Island Sound to all vessels\
+      \ of every description.[381]\n\nThe pressure of the blockade was immediately\
+      \ felt. In August[382]\nsuperfine flour sold at Boston for $11.87 a barrel,\
+      \ at Baltimore for\n$6.00, and at Richmond for $4.50. Upland cotton sold at\
+      \ Boston for\ntwenty cents a pound; at Charleston for nine cents. Rice sold\
+      \ at\nPhiladelphia for $12.00 a hundred weight; in Charleston and Savannah\n\
+      for $3.00. Sugar sold in Boston for $18.75 a hundred weight; in\nBaltimore for\
+      \ $26.50. Already the American staples were unsalable at\nthe places of their\
+      \ production. No rate of profit could cause cotton,\nrice, or\nand supplied\
+      \ the Union\nwith articles of necessary use at prices practically fixed by her\
+      \ own\nmanufacturers. From the whole country specie began to flow toward\nBoston\
+      \ as early as the year 1810, and with astonishing rapidity after\nthe war was\
+      \ declared. The British blockade stimulated the movement,\nand the embargo of\
+      \ December, 1813, which lasted till April, 1814, cut\noff every other resource\
+      \ from the Southern and Western States. Unable\nlonger to send their crops even\
+      \ to New England for a market, they were\nobliged to send specie, and they soon\
+      \ came to the end of their supply.\nThe Massachusetts banks, which reported\
+      \ about $820,000 in specie in\n1809, returned more than $3,680,000 in June,\
+      \ 1812; which rose to\n$5,780,000 in June, 1813, and reached nearly $7,000,000\
+      \ in June, 1814.\nIn five years the Massachusetts banks alone drew more than\
+      \ six million\ndollars in specie from the Southern and Middle States,[478] besides\n\
       what they sent to Canada in payment for British bills.\n\nNo one knew how much\
-      \ s\nn be given to it.\u201D\n\nAlthough Madison pointed to the notorious supply\
-      \ of food for the\nBritish forces in Canada as one of the motives for imposing\
-      \ an embargo,\nno one supposed that motive to be decisive. Other laws already\
-      \ forbade\nand punished such communication with the enemy; and experience proved\n\
-      that a general embargo would be no more effective than any special\nprohibition.\
-      \ The idea that England could be distressed by an embargo\nseemed still less\
-      \ likely to influence Government. Congress knew that\nRussia, Prussia, Denmark,\
-      \ Sweden and Norway, Spain, and South America\nwere already open to English\
-      \ commerce, and that a few days must decide\nwhether Napoleon could much longer\
-      \ prevent Great Britain from trading\nwith France. The possibility of distressing\
-      \ England by closing Boston\nand Salem, New Bedford and Newport to neutral ships\
-      \ was not to be\nseriously treated.\n\nWhatever was the true motive of the President\u2019\
-      s recommendation,\nCongress instantly approved it. The next day, December 10,\
-      \ the Hou\nr was responsible,\nthe effect was ruinous. The New England banks\
-      \ were financial agents\nof the enemy. The bank capital of Massachusetts including\
-      \ Maine was\nabout twelve and a quarter million dollars; that of Connecticut\n\
+      \ s\n17, 1813; Annals, 1813\u20131814, p. 2781.\n\n[468] Act of Jan. 25, 1814;\
+      \ Annals, 1813\u20131814, p. 2788.\n\n[469] Annals, 1813\u20131814, p. 1965.\n\
+      \n[470] Macon to Nicholson, April 6, 1814; Nicholson MSS.\n\n[471] Gallatin\
+      \ MSS.\n\n[472] Annals, 1813\u20131814, p. 928.\n\n[473] Armstrong to Eppes,\
+      \ Feb. 10, 1814; Niles, vi. 94.\n\n[474] Note to abstract of regular troops\
+      \ in service, January, 1814;\nadjutant-general\u2019s office. MSS. War Department\
+      \ Archives.\n\n[475] Annals, 1813\u20131814, p. 940.\n\n[476] Speech of Timothy\
+      \ Pitkin, Feb. 10, 1814; Annals, 1813\u20131814, p.\n1297.\n\n[477] Considerations\
+      \ on Currency, etc. By Albert Gallatin, 1831.\nStatements II. and III., pp.\
+      \ 101, 103.\n\n[478] Schedule, 1803\u20131837; Senate Document No. 38. Massachusetts\n\
+      Legislature, 1838.\n\n[479] Gallatin\u2019s Considerations, p. 45.\n\n[480]\
+      \ Gallatin\u2019s Considerations, p. 45. Schedules II. and III., pp.\n101, 103.\
+      \ Gallatin\u2019s Writings, iii. 286, 357, 359.\n\n[481] Gallatin\u2019s Writings,\
+      \ iii. 284.\n\n[482] Annals, 1813\u20131814, p. 1787.\n\n[483] Serurier to Bassano,\
+      \ July 21, 1813\nr was responsible,\nthe effect was ruinous. The New England\
+      \ banks were financial agents\nof the enemy. The bank capital of Massachusetts\
+      \ including Maine was\nabout twelve and a quarter million dollars; that of Connecticut\n\
       exceeded three millions. The whole bank capital of New England reached\neighteen\
       \ millions,[477] or nearly one third of the paid bank capital\nof the whole\
       \ country, if Pitkin\u2019s estimate was correct. That nearly\none third of\
@@ -69,100 +70,213 @@ metadata:
       \ for thus, at\nthe most critical moment of the war, throwing the control of\
       \ the\nnational finances into the hands of the Boston Federalists. Against\n\
       the protests of the Federalists, manufactures had been forced upon\nthem by\
-      \ national legislation until New Engl\n17, 1813; Annals, 1813\u20131814, p.\
-      \ 2781.\n"
-    query: in July, flour sold at Boston for _?
+      \ national legislation until New Engl\nhe\nrate was about 7.50 per cent. In\
+      \ the end, the government paid 7.487\nper cent, for the use of these sixteen\
+      \ millions for thirteen years.\nThe terms were not excessive when it was considered\
+      \ that New England\nin effect refused to subscribe. Perhaps the loan could not\
+      \ have been\ntaken at all, had not credit and currency been already expanded\
+      \ to the\ndanger-point, as the allotment showed; for while New England, where\n\
+      most of the specie was held, subscribed less than half a million, and\nBoston\
+      \ took but seventy-five thousand, Pennsylvania, where banking had\nbecome a\
+      \ frenzy, took seven million dollars. New York and Baltimore\ntogether contributed\
+      \ only half a million more than was given by\nPhiladelphia alone. Ten million\
+      \ dollars were taken by Astor, Girard,\nand Parish,--three foreign-born Americans,\
+      \ without whose aid the money\ncould not have been obtained on these terms,\
+      \ if at all. Doubtless they\nwere bold operators; but Americans were supposed\
+      \ to be not wanting in\nthe taste for speculation, and\nevery moment multiplying.\
+      \ Suffocated with\nheat, members were forced to sit day by day in the half-finished\n\
+      Capitol, with a Southern village about them, their nearest neighbor a\nBritish\
+      \ fleet. \u201CDefeated and disgraced everywhere,\u201D said one of the\nstanchest\
+      \ war members describing the scene, \u201CCongress was to impose the\nburden\
+      \ of taxes on a divided people, who had been taught by leaders\nof the war party\
+      \ to look upon a tax-gatherer as a thief, if not to\nshoot him as a burglar.\u201D\
+      [36] According to the same authority, \u201Cthe\ncountry was at the lowest point\
+      \ of depression, where fear is too apt to\nintroduce despair.\u201D In this\
+      \ condition of spirits, Gallatin\u2019s tax-bills\nwere reported to the House\
+      \ June 10,--measures such as the Republican\nparty had, till very lately, not\
+      \ conceived as within the range of its\npossible legislation. They included\
+      \ a direct tax of three million\ndollars; taxes on salt, licenses, spirits,\
+      \ carriages, auctions, sugar\nrefineries; a stamp tax, and a complete machinery\
+      \ for the asses\nlled on Philadelphia and Baltimore.\nThe specie drained to\
+      \ New England could find its way back only by means\nof government loans, which\
+      \ New England refused to make in any large\namount. On the other hand, Boston\
+      \ bought freely British Treasury notes\nat liberal discount, and sent coin to\
+      \ Canada in payment of them.[481]\nProbably New England lent to the British\
+      \ government during the war more\nmoney than she lent to her own. The total\
+      \ amount subscribed in New\nEngland to the United States loans was less than\
+      \ three millions.\n\nThis situation was well understood by Congress. In the\
+      \ debate of\nFebruary, 1814, the approaching dangers were repeatedly pointed\
+      \ out.\nThe alarm was then so great that the Committee of Ways and Means\nreported\
+      \ a bill to incorporate a new national bank with a capital of\nthirty million\
+      \ dollars, while Macon openly advocated the issue of\ngovernment paper,[482]\
+      \ declaring that \u201Cpaper money never was beat.\u201D\nCongress after a diffuse\
+      \ debate passed only a loan bill for twenty-five\nmill\n, for nothing short\
+      \ of a million rations at the Maumee Rapids\ncould serve Harrison\u2019s objects,\
+      \ and after two months of effort not a\nration had been carried within fifty\
+      \ miles of the spot. In Winchester\u2019s\ncamp at Defiance the men were always\
+      \ on half rations, except when they\nhad none at all. During the greater part\
+      \ of December they had no flour,\nbut lived on poor beef and hickory roots.\
+      \ Typhus swept them away by\nscores; their numbers were reduced to about one\
+      \ thousand. The exact\nforce which Harrison had in the field was matter of conjecture,\
+      \ for he\nsent no return of any description to the adjutant-general\u2019s office.[52]\n\
+      The Government gave him _carte blanche_, and he used it.[53] Chaos and\nmisconduct\
+      \ reigned in every department, while he, floundering through\nthe mud along\
+      \ his line of two hundred miles front, sought in vain for\na road.\n\nFor the\
+      \ train of errors and disasters in the northwest Secretary Eustis\nwas chiefly\
+      \ responsible, and his resignation, Dec. 3, 1812, left the\ncampaign in th\n\
+      pecie the country contained. Gallatin afterward\nestimated it at seventeen million\
+      \ dollars,[479] and of that amount the\nbanks of New England in 1814 probably\
+      \ held nearly ten millions. The\nMassachusetts banks, with seven millions in\
+      \ specie, had a bank-note\ncirculation of less than three millions. The Middle,\
+      \ Southern, and\nWestern States must have had a bank-note circulation approaching\
+      \ forty\nmillions in paper, with seven or eight millions in specie to support\n\
+      it,[480] while the paper was constantly increasing in quantity and the\nspecie\
+      \ constantly diminishing. Bank paper, as was believed, could not\nwith safety\
+      \ exceed the proportion of three paper dollars to every\nspecie dollar in the\
+      \ bank vaults; but the banks in 1814 beyond New\nEngland were circulating at\
+      \ least four paper dollars to every silver\nor gold dollar, and in many cases\
+      \ were issuing paper without specie in\ntheir possession.\n\nAlready the banks\
+      \ of New England were pressing their demands on those\nof New York, which in\
+      \ their turn ca\nn be given to it.\u201D\n\nAlthough Madison pointed to the\
+      \ notorious supply of food for the\nBritish forces in Canada as one of the motives\
+      \ for imposing an embargo,\nno one supposed that motive to be decisive. Other\
+      \ laws already forbade\nand punished such communication with the enemy; and\
+      \ experience proved\nthat a general embargo would be no more effective than\
+      \ any special\nprohibition. The idea that England could be distressed by an\
+      \ embargo\nseemed still less likely to influence Government. Congress knew that\n\
+      Russia, Prussia, Denmark, Sweden and Norway, Spain, and South America\nwere\
+      \ already open to English commerce, and that a few days must decide\nwhether\
+      \ Napoleon could much longer prevent Great Britain from trading\nwith France.\
+      \ The possibility of distressing England by closing Boston\nand Salem, New Bedford\
+      \ and Newport to neutral ships was not to be\nseriously treated.\n\nWhatever\
+      \ was the true motive of the President\u2019s recommendation,\nCongress instantly\
+      \ approved it. The next day, December 10, the Hou\ny 4, from\nFranklinton,--\n\
+      \n    \u201CWhen I was directed to take the command in the latter end of\n \
+      \   September, I thought it possible by great exertions to effect the\n    objects\
+      \ of the campaign before the setting in of winter.... The\n    experience of\
+      \ a few days was sufficient to convince me that the\n    supplies of provisions\
+      \ could not be procured for our autumnal\n    advance; and even if this difficulty\
+      \ was removed, another of equal\n    magnitude existed in the want of artillery.\
+      \ There remained then no\n    alternative but to prepare for a winter campaign.\u201D\
+      \n\nAccording to this account he had seen early in October that advance was\n\
+      impossible, yet he wasted millions of money and many of his best troops\nin\
+      \ attempting it. Winter had come, and he was pledged to a winter\ncampaign as\
+      \ impracticable as the autumn campaign had proved to be.\nWithout the control\
+      \ of the Lake, any army beyond the Maumee must starve\nor surrender. The government\
+      \ had already paid a vast price in money and\nmen in order to o\n819,000 for\
+      \ 1813, and $17,581 for the year\nending Sept. 30, 1814. At the close of 1813\
+      \ exports, except from\nGeorgia and New England, ceased.[383]\n\nOn the revenue\
+      \ the blockade acted with equal effect. Owing to the\nincrease of duties and\
+      \ to open ports, the New England States rather\nincreased than diminished their\
+      \ customs receipts. Until the summer of\n1813, when the blockade began in earnest,\
+      \ New York showed the same\nresult; but after that time the receipts fell, until\
+      \ they averaged\nless than $50,000 a month instead of $500,000, which would\
+      \ have been\na normal average if peace had been preserved. Philadelphia suffered\n\
+      sooner. In 1810 the State of Pennsylvania contributed more than\n$200,000 a\
+      \ month to the Treasury; in 1813 it contributed about $25,000\na month. Maryland,\
+      \ where was collected in 1812 no less than $1,780,000\nof net revenue, paid\
+      \ only $182,000 in 1813, and showed an actual excess\nof expenditures in 1814.\
+      \ After the summer, the total net revenue\ncollected in every port of the Unit\n\
+      British Archives.\n\n[376] Armstrong to Pinckney, March 17, 1814; State Papers,\
+      \ Indian\nAffairs, i. 836.\n\n[377] Armstrong to Pinckney, March 20, 1814; State\
+      \ Papers, Indian\nAffairs, i. 837.\n\n[378] Madison to Armstrong, May 20, 1814;\
+      \ Madison\u2019s Works, iii. 399.\nMadison\u2019s Works, iii. 400, 401.\n\n\
+      [379] State Papers, Indian Affairs, i. 826.\n\n[380] State Papers, Indian Affairs,\
+      \ i. 826.\n\n[381] Proclamation and Notice; Niles, v. 264.\n\n[382] Prices Current;\
+      \ Niles, v. 41.\n\n[383] Table No. II.; Pitkin, p. 56.\n\n[384] Table No. I.;\
+      \ Pitkin, p. 415.\n\n[385] Admiral Warren to J.\_W. Croker, May 28, 1813; London\
+      \ \u201CGazette,\u201D\nJuly 6, 1813.\n\n[386] Warren\u2019s Report of May 28,\
+      \ 1813; London \u201CGazette.\u201D\n\n[387] Cockburn to Warren, May 3, 1813;\
+      \ London \u201CGazette,\u201D July 6, 1813.\n\n[388] Cassin to Secretary Jones,\
+      \ June 21, 1813; Niles, iv. 291.\n\n[389] James, ii. 55.\n\n[390] Report of\
+      \ Robert Taylor, July 4, 1813; Niles, iv. 324.\n\n[391] James, ii. 54.\n\n[392]\
+      \ Warren\u2019s Report of June 24, 1813; James, ii. 414.\n\n[393] James, ii.\
+      \ 59.\n when the young men of the country shall be obliged to\n    shut their\
+      \ eyes upon external Nature,--upon the heavens and the\n    earth,--and immerse\
+      \ themselves in close and unwholesome workshops;\n    when they shall be obliged\
+      \ to shut their ears to the bleatings of\n    their own flocks upon their own\
+      \ hills, and to the voice of the lark\n    that cheers them at the plough, that\
+      \ they may open them in dust and\n    smoke and steam, to the perpetual whirl\
+      \ of spools and spindles and\n    the grating of rasps and saws.\u201D\n\nPotter\
+      \ of Rhode Island, where the new manufactures centred, spoke hotly\nagainst\
+      \ the change. Much Federalist capital had been drawn into the\nmanufacturing\
+      \ business as well as into speculation in all articles of\nnecessity which the\
+      \ blockade and the embargo made scarce. At heart\nthe Federalists were not unanimous\
+      \ in wishing for a repeal of the\nrestrictive system, and Potter represented\
+      \ a considerable class whose\ninterests were involved in maintaining high prices.\
+      \ He admitted that\nth\n27, 1814,[152] when the war\nhad lasted two years,--\n\
+      \n    \u201CTwo thirds of the army in Canada are at this moment eating beef\n\
+      \    provided by American contractors, drawn principally from the States\n \
+      \   of Vermont and New York. This circumstance, as well as that of the\n   \
+      \ introduction of large sums of specie into this province, being\n    notorious\
+      \ in the United States, it is to be expected Congress\n    will take steps to\
+      \ deprive us of those resources, and under that\n    apprehension, large droves\
+      \ are daily crossing the lines coming into\n    Lower Canada.\u201D\n\nThis\
+      \ state of things had then lasted during three campaigns, from\nthe beginning\
+      \ of the war. The Indians at Malden, the British army at\nNiagara, the naval\
+      \ station at Kingston were largely fed by the United\nStates. If these supplies\
+      \ could be stopped, Upper Canada must probably\nfall; and they could be easily\
+      \ stopped by interrupting the British line\nof transport anywhere on the St.\
+      \ Lawrence.\n\nThe task was not difficult. Indeed, early in the\nsty. I remarked\
+      \ to him that among our advantages we must\n    doubtless count the fact that\
+      \ the coalition had ten heads, while\n    France had but one. \u2018And what\
+      \ a powerful head!\u2019 replied the\n    President, instantly, with less grace\
+      \ than conviction in his whole\n    countenance.\u201D\n\nThe vigor of Napoleon\
+      \ postponed for a few months the total downfall of\nSerurier\u2019s influence,\
+      \ but it slowly waned, and he became more and more\ngrateful for consideration\
+      \ shown him. The President\u2019s Annual Message,\nDecember 7, met his approval.\
+      \ \u201CAll agree that nothing more energetic or\nmore warlike has yet come\
+      \ from Mr. Madison\u2019s Cabinet.\u201D[484] The secret\nMessage of December\
+      \ 9 and the embargo pleased him more.\n\n    \u201CMr. Monroe assured me three\
+      \ days ago,\u201D continued Serurier, writing\n    December 10, \u201Cthat the\
+      \ Government had been informed of supplies to\n    the extent of nearly thirty\
+      \ thousand barrels of flour furnished\n    to Canada from ports of the United\
+      \ States. A rigorous embargo\n    can alone prevent such crim\ned States outside\
+      \ of New England did\nnot exceed $150,000 a month, or at the rate of $1,800,000\
+      \ a year.[384]\n\nNo ordinary operations of war could affect the United States\
+      \ so\nseverely as this inexorable blockade. Every citizen felt it in every\n\
+      action of his life. The farmer grew crops which he could not sell,\nwhile he\
+      \ paid tenfold prices for every necessity. While the country\nwas bursting with\
+      \ wealth, it was ruined. The blockade was but a part\nof the evil. The whole\
+      \ coast was systematically swept of the means of\nindustry. Especially the Virginians\
+      \ and Marylanders felt the heavy hand\nof England as it was felt nowhere else\
+      \ except on the Niagara River. A\nlarge British squadron occupied Chesapeake\
+      \ Bay, and converted it into\na British naval station. After the month of February,\
+      \ 1813, the coasts\nof Virginia and Maryland enjoyed not a moment\u2019s repose.\
+      \ Considering the\nimmense naval power wielded by England, the Americans were\
+      \ fortunate\nthat their chief losses were confined to the farm-yards and\n \
+      \ signed, and that the United States were to remain alone on the\n    field\
+      \ of battle. It was then that Mr. Madison, abruptly and without\n    having\
+      \ in any way prepared the public for it, addressed to Congress\n    the Message\
+      \ recommending an immediate repeal of the embargo and a\n    partial repeal\
+      \ of the non-importation.\u201D\n\nWhile Serurier explained the suddenness of\
+      \ Madison\u2019s action by the need\nof conciliating the Continental powers\
+      \ and the manufacturing cities of\nEngland, he added that domestic difficulties\
+      \ had a large share in the\ndecision. Contraband trade had become general in\
+      \ the Eastern States.\nA sort of civil war, he said, was beginning between the\
+      \ officers of\ncustoms and the smugglers; the Government also felt serious anxiety\
+      \ for\nthe success of its loan, and began to doubt its ability to maintain\n\
+      payments for the army and navy. Revenue had become necessary. Such\nwas the\
+      \ terror caused by the French news that the capitalists who had\noffered to\
+      \ contract for the loan began to withdra\nions, and an Act for the issue of\
+      \ five million interest-bearing\nTreasury notes, leaving with the President\
+      \ the option to issue five\nmillions more in case he could not borrow it. The\
+      \ legislation was\nevidently insufficient, and satisfied no one. \u201CYou have\
+      \ authorized a\nloan for twenty-five millions,\u201D said Grundy in the debate\
+      \ of April 2,\n\u201Cand have provided for the expenditure of so much money.\
+      \ Where is the\nmoney?\u201D\n\nWithout attempting to answer this question,\
+      \ April 18 Congress\nadjourned.\n\n\n\n\nCHAPTER XVI.\n\n\nWHILE Congress was\
+      \ thus employed, much occurred behind the scenes that\nbore directly on the\
+      \ movements of war. The French minister, Serurier,\nalone made official reports,\
+      \ and his letters became less interesting\nas his importance diminished; but\
+      \ occasionally he still threw a ray\nof light on Madison\u2019s troubles. At\
+      \ midsummer in 1813 he was in high\nspirits.\n\n    \u201CWithin the past week,\u201D\
+      \ Serurier wrote, July 21, 1813,[483] \u201Cwe\n    have received, one after\
+      \ another, news of the fresh successes at"
+    query: '"What was the price of flour sold in Boston in July?'
     remember_chat_context: false
 name: Rag Demo With Model-graded Eval
 prompts:
-- input: 'Answer the following question using the provided context. Question: {{query}}
-    Context: {{context}}'
-  metadata:
-    model:
-      name: gpt-3.5-turbo
-      settings: {}
-    parameters: {}
-  name: generate_baseline
-  outputs:
-  - data: In July, flour sold at Boston for $11.87 a barrel.
-    execution_count: 0
-    metadata:
-      created: 1707342850
-      id: chatcmpl-8pk9qicvDEenHkHyOJZPUivwEYbwm
-      model: gpt-3.5-turbo-0613
-      object: chat.completion.chunk
-      raw_response:
-        content: In July, flour sold at Boston for $11.87 a barrel.
-        role: assistant
-      role: assistant
-    output_type: execute_result
-- input: "Given the following question, and answer, does the answer satisfactorily\
-    \ answer the question? \n\nQuestion: {{query}}\nAnswer: {{generate_baseline.output}}"
-  metadata:
-    model: gpt-4
-    parameters: {}
-    remember_chat_context: false
-  name: evaluate_relevance
-  outputs:
-  - data: Yes, the answer satisfactorily answers the question.
-    execution_count: 0
-    metadata:
-      created: 1707342854
-      id: chatcmpl-8pk9uOnWR9uM4MFKXgR7xUsvCdtfv
-      model: gpt-4-0613
-      object: chat.completion.chunk
-      raw_response:
-        content: Yes, the answer satisfactorily answers the question.
-        role: assistant
-      role: assistant
-    output_type: execute_result
-- input: "Given the following question, context, and answer, does the answer adhere\
-    \ strictly to the context? \n\nGive a faithfulness verdict (YES or NO) with an\
-    \ explanation.\n\nQuestion: {{query}}\nAnswer: {{generate_baseline.output}}\n\n\
-    Verdict:\nExplanation:"
-  metadata:
-    model: gpt-4
-    parameters: {}
-    remember_chat_context: false
-  name: evaluate_faithfulness_baseline
-  outputs:
-  - data: 'NO Explanation: The context does not provide any information on the price
-      at which flour was sold in Boston in July.'
-    execution_count: 0
-    metadata:
-      created: 1707342862
-      id: chatcmpl-8pkA2opsT7yYITM9ZeNEb6Ptmpxni
-      model: gpt-4-0613
-      object: chat.completion.chunk
-      raw_response:
-        content: 'NO Explanation: The context does not provide any information on
-          the price at which flour was sold in Boston in July.'
-        role: assistant
-      role: assistant
-    output_type: execute_result
-- input: 'Given the following answer, is the answer self-consistent and easy to understand?
-    Answer: {{generate_baseline.output}}'
-  metadata:
-    model: gpt-4
-    parameters: {}
-    remember_chat_context: false
-  name: evaluate_coherence
-  outputs:
-  - data: Yes, the answer is self-consistent and easy to understand. It clearly states
-      that in the specified month and location, flour was sold for a specific price.
-    execution_count: 0
-    metadata:
-      created: 1707342885
-      id: chatcmpl-8pkAPsRKRDAkMWTblxgNHkAUvyA7Y
-      model: gpt-4-0613
-      object: chat.completion.chunk
-      raw_response:
-        content: Yes, the answer is self-consistent and easy to understand. It clearly
-          states that in the specified month and location, flour was sold for a specific
-          price.
-        role: assistant
-      role: assistant
-    output_type: execute_result
 - input: 'Answer the following question using the provided context. Review your answer.
     Consider all the claims in your answer. Is each one justified by the context.
     Revise your answer to accord ONLY with the context, paying careful attention to
@@ -171,24 +285,120 @@ prompts:
     state that and nothing else. Question: {{query}} Context: {{context}} ANSWER:
     REVISED ANSWER:'
   metadata:
-    model: gpt-3.5-turbo
+    model:
+      name: gpt-3.5-turbo-16k-0613
+      settings:
+        temperature: 0
     parameters: {}
-  name: generate_improved
+  name: generate
   outputs:
-  - data: Based on the context, there is no specific information provided about the
-      price of flour in July.
+  - data: Based on the provided context, it is not possible to determine the price
+      of flour sold in Boston in July.
     execution_count: 0
     metadata:
-      created: 1707342892
-      id: chatcmpl-8pkAWtSxabIaQgTVHTc7o4XrybUFj
-      model: gpt-3.5-turbo-0613
+      created: 1707414565
+      id: chatcmpl-8q2oXpPiWYLDen6RVZIQSUH2Akaq1
+      model: gpt-3.5-turbo-16k-0613
       object: chat.completion.chunk
       raw_response:
-        content: Based on the context, there is no specific information provided about
-          the price of flour in July.
+        content: Based on the provided context, it is not possible to determine the
+          price of flour sold in Boston in July.
         role: assistant
       role: assistant
     output_type: execute_result
+- input: "Given the following question, and answer, does the answer satisfactorily\
+    \ answer the question? \n\nQuestion: {{query}}\nAnswer: {{generate.output}}"
+  metadata:
+    model: gpt-4
+    parameters: {}
+    remember_chat_context: false
+  name: evaluate_relevance
+  outputs: []
+- input: 'Given the following question, context, and answer, is the answer logically
+    supported by the context? If so, it is considered faithful.
+
+
+    Give a faithfulness verdict (YES or NO) with an explanation.
+
+
+    Question: {{query}}
+
+    Context: {{context}}
+
+    Answer: {{generate.output}}
+
+
+    Verdict:
+
+    Explanation:'
+  metadata:
+    model:
+      name: gpt-4
+      settings: {}
+    parameters: {}
+    remember_chat_context: false
+  name: evaluate_faithfulness
+  outputs:
+  - data: 'NO
+
+      The context gives the price of flour in August but does not mention the price
+      of flour in July.'
+    execution_count: 0
+    metadata:
+      created: 1707414686
+      id: chatcmpl-8q2qUpGQvlslkjw44mbydWQRWBD0O
+      model: gpt-4-0613
+      object: chat.completion.chunk
+      raw_response:
+        content: 'NO
+
+          The context gives the price of flour in August but does not mention the
+          price of flour in July.'
+        role: assistant
+      role: assistant
+    output_type: execute_result
+- input: 'echo precisely
+
+
+    Answer: "one two three"
+
+    '
+  metadata:
+    model: gpt-4
+    parameters: {}
+  name: prompt_7
+  outputs: []
+- input: 'echo precisely
+
+
+    {{generate.output}}'
+  metadata:
+    model: gpt-4
+    parameters: {}
+  name: prompt_8
+  outputs: []
+- input: 'Given the following answer, is the answer self-consistent and easy to understand?
+    Answer: {{generate.output}}'
+  metadata:
+    model: gpt-4
+    parameters: {}
+    remember_chat_context: false
+  name: evaluate_coherence
+  outputs: []
+- input: 'Answer the following question using the provided context. Review your answer.
+    Consider all the claims in your answer. Is each one justified by the context.
+    Revise your answer to accord ONLY with the context, paying careful attention to
+    details. Review your answer again. Does it answer the question? Exclude details
+    that are irrelevant to the question. If you cannot answer the question, simply
+    state that and nothing else. Question: {{query}} Context: {{context}} ANSWER:
+    REVISED ANSWER:'
+  metadata:
+    model:
+      name: gpt-3.5-turbo-16k
+      settings: {}
+    parameters: {}
+  name: generate_improved
+  outputs: []
 - input: "Given the following question, context, and answer, does the answer adhere\
     \ strictly to the context? \n\nGive a faithfulness verdict (YES or NO) with an\
     \ explanation.\n\nQuestion: {{query}}\nAnswer: {{generate_improved.output}}\n\n\
@@ -197,20 +407,5 @@ prompts:
     model: gpt-4
     parameters: {}
   name: evaluate_faithfulness_improved
-  outputs:
-  - data: 'YES Explanation: The answer accurately lines up with the context where
-      there is no specific information provided about the price of flour in July.'
-    execution_count: 0
-    metadata:
-      created: 1707342924
-      id: chatcmpl-8pkB2pDap3Bld3Lc1aEDheOHJs6vP
-      model: gpt-4-0613
-      object: chat.completion.chunk
-      raw_response:
-        content: 'YES Explanation: The answer accurately lines up with the context
-          where there is no specific information provided about the price of flour
-          in July.'
-        role: assistant
-      role: assistant
-    output_type: execute_result
+  outputs: []
 schema_version: latest
