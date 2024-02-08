@@ -116,30 +116,6 @@ prompts:
         role: assistant
       role: assistant
     output_type: execute_result
-- input: "Given the following question, context, and answer, does the answer adhere\
-    \ strictly to the context? \n\nGive a faithfulness verdict (YES or NO) with an\
-    \ explanation.\n\nQuestion: {{query}}\nAnswer: {{generate_baseline.output}}\n\n\
-    Verdict:\nExplanation:"
-  metadata:
-    model: gpt-4
-    parameters: {}
-    remember_chat_context: false
-  name: evaluate_faithfulness_baseline
-  outputs:
-  - data: 'NO Explanation: The context does not provide any information on the price
-      at which flour was sold in Boston in July.'
-    execution_count: 0
-    metadata:
-      created: 1707342862
-      id: chatcmpl-8pkA2opsT7yYITM9ZeNEb6Ptmpxni
-      model: gpt-4-0613
-      object: chat.completion.chunk
-      raw_response:
-        content: 'NO Explanation: The context does not provide any information on
-          the price at which flour was sold in Boston in July.'
-        role: assistant
-      role: assistant
-    output_type: execute_result
 - input: 'Given the following answer, is the answer self-consistent and easy to understand?
     Answer: {{generate_baseline.output}}'
   metadata:
@@ -186,30 +162,6 @@ prompts:
       raw_response:
         content: Based on the context, there is no specific information provided about
           the price of flour in July.
-        role: assistant
-      role: assistant
-    output_type: execute_result
-- input: "Given the following question, context, and answer, does the answer adhere\
-    \ strictly to the context? \n\nGive a faithfulness verdict (YES or NO) with an\
-    \ explanation.\n\nQuestion: {{query}}\nAnswer: {{generate_improved.output}}\n\n\
-    Verdict:\nExplanation:"
-  metadata:
-    model: gpt-4
-    parameters: {}
-  name: evaluate_faithfulness_improved
-  outputs:
-  - data: 'YES Explanation: The answer accurately lines up with the context where
-      there is no specific information provided about the price of flour in July.'
-    execution_count: 0
-    metadata:
-      created: 1707342924
-      id: chatcmpl-8pkB2pDap3Bld3Lc1aEDheOHJs6vP
-      model: gpt-4-0613
-      object: chat.completion.chunk
-      raw_response:
-        content: 'YES Explanation: The answer accurately lines up with the context
-          where there is no specific information provided about the price of flour
-          in July.'
         role: assistant
       role: assistant
     output_type: execute_result
