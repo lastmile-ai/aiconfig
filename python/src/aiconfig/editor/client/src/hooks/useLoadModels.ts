@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
-import { showNotification } from "@mantine/notifications";
+import { useCallback, useContext, useEffect, useState } from "react";
+import NotificationContext from "../components/notifications/NotificationContext";
 
 export default function useLoadModels(
   modelSearch: string,
   getModels?: (search: string) => Promise<string[]>
 ) {
   const [models, setModels] = useState<string[]>([]);
+  const { showNotification } = useContext(NotificationContext);
 
   const loadModels = useCallback(
     async (modelSearch: string) => {
@@ -20,11 +21,11 @@ export default function useLoadModels(
         showNotification({
           title: "Error loading models",
           message,
-          color: "red",
+          type: "error",
         });
       }
     },
-    [getModels]
+    [getModels, showNotification]
   );
 
   useEffect(() => {

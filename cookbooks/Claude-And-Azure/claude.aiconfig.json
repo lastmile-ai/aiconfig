@@ -1,0 +1,69 @@
+{
+  "name": "Exploring Claude",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {
+      "claudev2:1": {
+        "model": "anthropic.claude-v2:1",
+        "max_tokens_to_sample": 1000
+      }
+    },
+    "model_parsers": {
+      "claudev2:1": "ClaudeBedrockModelParser"
+    }
+  },
+  "description": "CHANGE MY VALUE FOR DEMO!",
+  "prompts": [
+    {
+      "name": "multilinguality",
+      "input": "Can you teach me how to say duck in a different language? And, give me a few options.",
+      "metadata": {
+        "model": {
+          "name": "ClaudeBedrockModelParser",
+          "settings": {
+            "max_tokens_to_sample": 500,
+            "model": "anthropic.claude-v2:1",
+            "stream": true
+          }
+        },
+        "parameters": {},
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": " Here are some ways to say duck in other languages:\n\nSpanish: pato\nFrench: canard \nGerman: Ente\nItalian: anatra\nPortuguese: pato\nRussian: \u0443\u0442\u043a\u0430 (utka)\nJapanese: \u30a2\u30d2\u30eb (ahiru)\nMandarin Chinese: \u9e2d\u5b50 (y\u0101zi)\nKorean: \uc624\ub9ac (ori)\n\nI tried to provide a selection of languages for you to choose from. Let me know if you'd like me to translate duck into any other languages as well!",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "name": "pronounciation",
+      "input": "Can you explain how to pronounce the {{language}} one from {{multilinguality.output}}?",
+      "metadata": {
+        "model": {
+          "name": "ClaudeBedrockModelParser",
+          "settings": {
+            "max_tokens_to_sample": 500,
+            "model": "anthropic.claude-v2:1"
+          }
+        },
+        "parameters": {
+          "language": "Chinese"
+        },
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": " Sure, I'm happy to explain how to pronounce the Mandarin Chinese word for duck that you provided. Here's the pronunciation:\n\ny\u0101zi (yah-dzuh)\n\nTo break it down:\n\ny\u0101 - This syllable is pronounced \"yah\", like the start of the English word \"yacht\"\n\nzi - This syllable is pronounced \"dzuh\". The \"z\" makes a \"dz\" sound, as in the English word \"ads\". The \"i\" is short like the vowel sound in the English word \"sit\".\n\nSo putting it together, the full pronunciation is \"yah-dzuh\". The tones are important in Mandarin too. The first syllable \"y\u0101\" has a long rising tone, which goes up in pitch. The second syllable \"zi\" has a neutral tone, so just keep it flat. \n\nI hope this helps explain how to pronounce the Mandarin Chinese word for duck that you provided. Let me know if you need any clarification or want me to pronounce any of the other translations of duck you listed!",
+          "metadata": {}
+        }
+      ]
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}

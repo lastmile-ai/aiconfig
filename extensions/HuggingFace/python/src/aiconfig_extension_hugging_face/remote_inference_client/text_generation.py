@@ -56,6 +56,13 @@ def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
         if key.lower() in supported_keys:
             completion_data[key.lower()] = model_settings[key]
 
+    # Default max_new_tokens is set to 20 at the api layer if not specified. We
+    # increase that to 400 for an improved user experience.
+    # TODO: Once prompt schemas are implemented in the parser, obtain this
+    # default value from the schema.
+    if completion_data.get("max_new_tokens") is None:
+        completion_data["max_new_tokens"] = 400
+
     return completion_data
 
 
@@ -120,7 +127,7 @@ def construct_regular_output(
     return output
 
 
-class HuggingFaceTextGenerationParser(ParameterizedModelParser):
+class HuggingFaceTextGenerationRemoteInference(ParameterizedModelParser):
     """
     A model parser for HuggingFace text generation models.
     """
@@ -132,12 +139,12 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             no_token (bool): Whether or not to require an API token. Set to False if you don't have an api key.
 
         Returns:
-            HuggingFaceTextParser: The HuggingFaceTextParser object.
+            HuggingFaceTextGenerationRemoteInference: The HuggingFaceTextGenerationRemoteInference object.
 
         Usage:
 
         1. Create a new model parser object with the model ID of the model to use.
-                parser = HuggingFaceTextParser("mistralai/Mistral-7B-Instruct-v0.1", use_api_token=False)
+                parser = HuggingFaceTextGenerationRemoteInference("mistralai/Mistral-7B-Instruct-v0.1", use_api_token=False)
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
 
@@ -162,7 +169,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         """
         Returns an identifier for the Model Parser
         """
-        return "HuggingFaceTextGenerationParser"
+        return "HuggingFaceTextGenerationRemoteInference"
 
     async def serialize(
         self,
@@ -285,13 +292,19 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         Returns:
             InferenceResponse: The response from the model.
         """
+        sanitized_options = copy.deepcopy(options)
+        run_override_api_token = getattr(sanitized_options, "api_token", None)
+        # Redact api token from logs if it exists
+        if run_override_api_token:
+            setattr(sanitized_options, "api_token", "hf_********")
+
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_run_start",
                 __name__,
                 {
                     "prompt": prompt,
-                    "options": options,
+                    "options": sanitized_options,
                     "parameters": parameters,
                 },
             )
@@ -301,14 +314,24 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
 
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
         stream = True  # Default value
-        if options is not None and options.stream is not None:
-            stream = options.stream
+        if (
+            sanitized_options is not None
+            and sanitized_options.stream is not None
+        ):
+            stream = sanitized_options.stream
         elif "stream" in completion_data:
             stream = completion_data["stream"]
 
         completion_data["stream"] = stream
 
-        response = self.client.text_generation(**completion_data)
+        # If api token is provided in the options, use it for the client
+        client = self.client
+        if run_override_api_token:
+            client = InferenceClient(
+                self.client.model, token=run_override_api_token
+            )
+
+        response = client.text_generation(**completion_data)
         response_is_detailed = completion_data.get("details", False)
         outputs = []
 
@@ -320,7 +343,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         else:
             # Handles stream callback
             output = construct_stream_output(
-                response, response_is_detailed, options
+                response, response_is_detailed, sanitized_options
             )
             outputs.append(output)
 

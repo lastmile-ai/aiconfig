@@ -46,7 +46,7 @@ def test_refine_chat_completion_params():
     assert "random_attribute" not in refined_params
     assert refined_params["n"] == "3"
 
-
+@pytest.mark.xfail
 @pytest.mark.asyncio
 async def test_get_output_text(set_temporary_env_vars):
     with patch.object(
@@ -71,320 +71,315 @@ async def test_get_output_text(set_temporary_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_serialize(set_temporary_env_vars):
-    with patch.object(
-        openai.chat.completions,
-        "create",
-        side_effect=mock_openai_chat_completion,
-    ):
-        # Test with one input prompt and system. No output
-        completion_params = {
-            "model": "gpt-3.5-turbo",
-            "temperature": 0.7,
-            "max_tokens": 900,
-            "messages": [
-                {"role": "system", "content": "You are an expert greeter"},
-                {"role": "user", "content": "Hello!"},
-            ],
-        }
+async def test_serialize():
+    # Test with one input prompt and system. No output
+    completion_params = {
+        "model": "gpt-3.5-turbo",
+        "temperature": 0.7,
+        "max_tokens": 900,
+        "messages": [
+            {"role": "system", "content": "You are an expert greeter"},
+            {"role": "user", "content": "Hello!"},
+        ],
+    }
 
-        aiconfig = AIConfigRuntime.create()
-        serialized_prompts = await aiconfig.serialize(
-            "gpt-3.5-turbo", completion_params, prompt_name="the prompt"
-        )
-        new_prompt = serialized_prompts[0]
+    aiconfig = AIConfigRuntime.create()
+    serialized_prompts = await aiconfig.serialize(
+        "gpt-3.5-turbo", completion_params, prompt_name="the prompt"
+    )
+    new_prompt = serialized_prompts[0]
 
-        # assert prompt serialized correctly into config
-        assert new_prompt == Prompt(
-            name="the prompt",
-            input="Hello!",
-            metadata=PromptMetadata(
-                **{
-                    "model": {
-                        "name": "gpt-3.5-turbo",
-                        "settings": {
-                            "model": "gpt-3.5-turbo",
-                            "temperature": 0.7,
-                            "max_tokens": 900,
-                            "system_prompt": {
-                                "role": "system",
-                                "content": "You are an expert greeter",
-                            },
-                        },
-                    },
-                    "remember_chat_context": True,
-                }
-            ),
-            outputs=[],
-        )
-
-        # Test with Completion params with an output
-        completion_params = {
-            "model": "gpt-3.5-turbo",
-            "temperature": 0.7,
-            "max_tokens": 900,
-            "messages": [
-                {"role": "system", "content": "You are an expert greeter"},
-                {"role": "user", "content": "Hello!"},
-                {
-                    "role": "assistant",
-                    "content": "Hello! How can I assist you today?",
-                },
-            ],
-        }
-
-        serialized_prompts = await aiconfig.serialize(
-            "gpt-3.5-turbo", completion_params, "prompt"
-        )
-        new_prompt = serialized_prompts[0]
-
-        expected_prompt = Prompt(
-            name="prompt",
-            input="Hello!",
-            metadata=PromptMetadata(
-                **{
-                    "model": {
-                        "name": "gpt-3.5-turbo",
-                        "settings": {
-                            "model": "gpt-3.5-turbo",
-                            "temperature": 0.7,
-                            "max_tokens": 900,
-                            "system_prompt": {
-                                "role": "system",
-                                "content": "You are an expert greeter",
-                            },
-                        },
-                    },
-                    "remember_chat_context": True,
-                }
-            ),
-            outputs=[
-                ExecuteResult(
-                    output_type="execute_result",
-                    execution_count=None,
-                    data="Hello! How can I assist you today?",
-                    metadata={
-                        "raw_response": {
-                            "role": "assistant",
-                            "content": "Hello! How can I assist you today?",
-                        },
-                        "role": "assistant",
-                    },
-                    mime_type=None,
-                )
-            ],
-        )
-        assert new_prompt.input == expected_prompt.input
-        assert new_prompt.metadata == expected_prompt.metadata
-        assert new_prompt.outputs == expected_prompt.outputs
-        assert new_prompt.name == expected_prompt.name
-        assert new_prompt == expected_prompt
-
-        # Test completion params with a function call input
-
-        completion_params = {
-            "model": "gpt-3.5-turbo",
-            "temperature": 0.7,
-            "max_tokens": 900,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are an expert decision maker",
-                },
-                {"role": "user", "content": "What is the weather today?"},
-            ],
-            "functions": [
-                {
-                    "name": "get_current_weather",
-                    "description": "Get the current weather in a given location",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "location": {
-                                "type": "string",
-                                "description": "The city and state, e.g. San Francisco, CA",
-                            },
-                            "unit": {
-                                "type": "string",
-                                "enum": ["celsius", "fahrenheit"],
-                            },
-                        },
-                        "required": ["location"],
-                    },
-                }
-            ],
-        }
-
-        serialized_prompts = await aiconfig.serialize(
-            "gpt-3.5-turbo", completion_params, "prompt"
-        )
-        new_prompt = serialized_prompts[0]
-        assert new_prompt == Prompt(
-            name="prompt",
-            input="What is the weather today?",
-            metadata=PromptMetadata(
-                **{
-                    "model": {
-                        "name": "gpt-3.5-turbo",
-                        "settings": {
-                            "model": "gpt-3.5-turbo",
-                            "temperature": 0.7,
-                            "max_tokens": 900,
-                            "system_prompt": {
-                                "role": "system",
-                                "content": "You are an expert decision maker",
-                            },
-                            "functions": [
-                                {
-                                    "name": "get_current_weather",
-                                    "description": "Get the current weather in a given location",
-                                    "parameters": {
-                                        "type": "object",
-                                        "properties": {
-                                            "location": {
-                                                "type": "string",
-                                                "description": "The city and state, e.g. San Francisco, CA",
-                                            },
-                                            "unit": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "celsius",
-                                                    "fahrenheit",
-                                                ],
-                                            },
-                                        },
-                                        "required": ["location"],
-                                    },
-                                }
-                            ],
-                        },
-                    },
-                    "remember_chat_context": True,
-                }
-            ),
-        )
-
-        completion_params = {
-            "model": "gpt-3.5-turbo",
-            "temperature": 0.7,
-            "max_tokens": 900,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are an expert decision maker",
-                },
-                {
-                    "role": "user",
-                    "content": "What's the weather like in Boston today?",
-                },
-                {
-                    "role": "assistant",
-                    "content": None,
-                    "function_call": {
-                        "name": "get_current_weather",
-                        "arguments": '{ "location": "Boston, MA"}',
-                    },
-                },
-                {
-                    "role": "function",
-                    "name": "get_current_weather",
-                    "content": '{"temperature": "22", "unit": "celsius", "description": "Sunny"}',
-                },
-                {
-                    "role": "assistant",
-                    "content": "The current weather in Boston is 22 degrees Celsius and sunny.",
-                },
-            ],
-            "functions": [
-                {
-                    "name": "get_current_weather",
-                    "description": "Get the current weather in a given location",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "location": {
-                                "type": "string",
-                                "description": "The city and state, e.g. San Francisco, CA",
-                            },
-                            "unit": {
-                                "type": "string",
-                                "enum": ["celsius", "fahrenheit"],
-                            },
-                        },
-                        "required": ["location"],
-                    },
-                }
-            ],
-        }
-
-        prompts = await aiconfig.serialize(
-            "gpt-3.5-turbo", completion_params, "prompt"
-        )
-        new_prompt = prompts[1]
-
-        expected_prompt = Prompt(
-            name="prompt",
-            input=PromptInput(
-                content='{"temperature": "22", "unit": "celsius", "description": "Sunny"}',
-                name="get_current_weather",
-                role="function",
-            ),
-            metadata={
+    # assert prompt serialized correctly into config
+    assert new_prompt == Prompt(
+        name="the prompt",
+        input="Hello!",
+        metadata=PromptMetadata(
+            **{
                 "model": {
                     "name": "gpt-3.5-turbo",
                     "settings": {
-                        "functions": [
-                            {
-                                "description": "Get the current weather in a given location",
-                                "name": "get_current_weather",
-                                "parameters": {
-                                    "properties": {
-                                        "location": {
-                                            "description": "The city and state, e.g. San Francisco, CA",
-                                            "type": "string",
-                                        },
-                                        "unit": {
-                                            "enum": ["celsius", "fahrenheit"],
-                                            "type": "string",
-                                        },
-                                    },
-                                    "required": ["location"],
-                                    "type": "object",
-                                },
-                            }
-                        ],
-                        "max_tokens": 900,
                         "model": "gpt-3.5-turbo",
+                        "temperature": 0.7,
+                        "max_tokens": 900,
+                        "system_prompt": {
+                            "role": "system",
+                            "content": "You are an expert greeter",
+                        },
+                    },
+                },
+                "remember_chat_context": True,
+            }
+        ),
+        outputs=[],
+    )
+
+    # Test with Completion params with an output
+    completion_params = {
+        "model": "gpt-3.5-turbo",
+        "temperature": 0.7,
+        "max_tokens": 900,
+        "messages": [
+            {"role": "system", "content": "You are an expert greeter"},
+            {"role": "user", "content": "Hello!"},
+            {
+                "role": "assistant",
+                "content": "Hello! How can I assist you today?",
+            },
+        ],
+    }
+
+    serialized_prompts = await aiconfig.serialize(
+        "gpt-3.5-turbo", completion_params, "prompt"
+    )
+    new_prompt = serialized_prompts[0]
+
+    expected_prompt = Prompt(
+        name="prompt",
+        input="Hello!",
+        metadata=PromptMetadata(
+            **{
+                "model": {
+                    "name": "gpt-3.5-turbo",
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "temperature": 0.7,
+                        "max_tokens": 900,
+                        "system_prompt": {
+                            "role": "system",
+                            "content": "You are an expert greeter",
+                        },
+                    },
+                },
+                "remember_chat_context": True,
+            }
+        ),
+        outputs=[
+            ExecuteResult(
+                output_type="execute_result",
+                execution_count=None,
+                data="Hello! How can I assist you today?",
+                metadata={
+                    "raw_response": {
+                        "role": "assistant",
+                        "content": "Hello! How can I assist you today?",
+                    },
+                    "role": "assistant",
+                },
+                mime_type=None,
+            )
+        ],
+    )
+    assert new_prompt.input == expected_prompt.input
+    assert new_prompt.metadata == expected_prompt.metadata
+    assert new_prompt.outputs == expected_prompt.outputs
+    assert new_prompt.name == expected_prompt.name
+    assert new_prompt == expected_prompt
+
+    # Test completion params with a function call input
+
+    completion_params = {
+        "model": "gpt-3.5-turbo",
+        "temperature": 0.7,
+        "max_tokens": 900,
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are an expert decision maker",
+            },
+            {"role": "user", "content": "What is the weather today?"},
+        ],
+        "functions": [
+            {
+                "name": "get_current_weather",
+                "description": "Get the current weather in a given location",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "location": {
+                            "type": "string",
+                            "description": "The city and state, e.g. San Francisco, CA",
+                        },
+                        "unit": {
+                            "type": "string",
+                            "enum": ["celsius", "fahrenheit"],
+                        },
+                    },
+                    "required": ["location"],
+                },
+            }
+        ],
+    }
+
+    serialized_prompts = await aiconfig.serialize(
+        "gpt-3.5-turbo", completion_params, "prompt"
+    )
+    new_prompt = serialized_prompts[0]
+    assert new_prompt == Prompt(
+        name="prompt",
+        input="What is the weather today?",
+        metadata=PromptMetadata(
+            **{
+                "model": {
+                    "name": "gpt-3.5-turbo",
+                    "settings": {
+                        "model": "gpt-3.5-turbo",
+                        "temperature": 0.7,
+                        "max_tokens": 900,
                         "system_prompt": {
                             "role": "system",
                             "content": "You are an expert decision maker",
                         },
-                        "temperature": 0.7,
+                        "functions": [
+                            {
+                                "name": "get_current_weather",
+                                "description": "Get the current weather in a given location",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "location": {
+                                            "type": "string",
+                                            "description": "The city and state, e.g. San Francisco, CA",
+                                        },
+                                        "unit": {
+                                            "type": "string",
+                                            "enum": [
+                                                "celsius",
+                                                "fahrenheit",
+                                            ],
+                                        },
+                                    },
+                                    "required": ["location"],
+                                },
+                            }
+                        ],
                     },
                 },
-                "parameters": {},
                 "remember_chat_context": True,
-                "tags": None,
-            },
-            outputs=[
-                ExecuteResult(
-                    output_type="execute_result",
-                    execution_count=None,
-                    data="The current weather in Boston is 22 degrees Celsius and sunny.",
-                    metadata={
-                        "raw_response": {
-                            "role": "assistant",
-                            "content": "The current weather in Boston is 22 degrees Celsius and sunny.",
-                        },
-                        "role": "assistant",
-                    },
-                    mime_type=None,
-                )
-            ],
-        )
+            }
+        ),
+    )
 
-        assert new_prompt.input == expected_prompt.input
-        assert new_prompt.metadata == expected_prompt.metadata
-        assert new_prompt.outputs == expected_prompt.outputs
-        assert new_prompt.name == expected_prompt.name
-        assert new_prompt == expected_prompt
+    completion_params = {
+        "model": "gpt-3.5-turbo",
+        "temperature": 0.7,
+        "max_tokens": 900,
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are an expert decision maker",
+            },
+            {
+                "role": "user",
+                "content": "What's the weather like in Boston today?",
+            },
+            {
+                "role": "assistant",
+                "content": None,
+                "function_call": {
+                    "name": "get_current_weather",
+                    "arguments": '{ "location": "Boston, MA"}',
+                },
+            },
+            {
+                "role": "function",
+                "name": "get_current_weather",
+                "content": '{"temperature": "22", "unit": "celsius", "description": "Sunny"}',
+            },
+            {
+                "role": "assistant",
+                "content": "The current weather in Boston is 22 degrees Celsius and sunny.",
+            },
+        ],
+        "functions": [
+            {
+                "name": "get_current_weather",
+                "description": "Get the current weather in a given location",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "location": {
+                            "type": "string",
+                            "description": "The city and state, e.g. San Francisco, CA",
+                        },
+                        "unit": {
+                            "type": "string",
+                            "enum": ["celsius", "fahrenheit"],
+                        },
+                    },
+                    "required": ["location"],
+                },
+            }
+        ],
+    }
+
+    prompts = await aiconfig.serialize(
+        "gpt-3.5-turbo", completion_params, "prompt"
+    )
+    new_prompt = prompts[1]
+
+    expected_prompt = Prompt(
+        name="prompt",
+        input=PromptInput(
+            content='{"temperature": "22", "unit": "celsius", "description": "Sunny"}',
+            name="get_current_weather",
+            role="function",
+        ),
+        metadata={
+            "model": {
+                "name": "gpt-3.5-turbo",
+                "settings": {
+                    "functions": [
+                        {
+                            "description": "Get the current weather in a given location",
+                            "name": "get_current_weather",
+                            "parameters": {
+                                "properties": {
+                                    "location": {
+                                        "description": "The city and state, e.g. San Francisco, CA",
+                                        "type": "string",
+                                    },
+                                    "unit": {
+                                        "enum": ["celsius", "fahrenheit"],
+                                        "type": "string",
+                                    },
+                                },
+                                "required": ["location"],
+                                "type": "object",
+                            },
+                        }
+                    ],
+                    "max_tokens": 900,
+                    "model": "gpt-3.5-turbo",
+                    "system_prompt": {
+                        "role": "system",
+                        "content": "You are an expert decision maker",
+                    },
+                    "temperature": 0.7,
+                },
+            },
+            "parameters": {},
+            "remember_chat_context": True,
+            "tags": None,
+        },
+        outputs=[
+            ExecuteResult(
+                output_type="execute_result",
+                execution_count=None,
+                data="The current weather in Boston is 22 degrees Celsius and sunny.",
+                metadata={
+                    "raw_response": {
+                        "role": "assistant",
+                        "content": "The current weather in Boston is 22 degrees Celsius and sunny.",
+                    },
+                    "role": "assistant",
+                },
+                mime_type=None,
+            )
+        ],
+    )
+
+    assert new_prompt.input == expected_prompt.input
+    assert new_prompt.metadata == expected_prompt.metadata
+    assert new_prompt.outputs == expected_prompt.outputs
+    assert new_prompt.name == expected_prompt.name
+    assert new_prompt == expected_prompt

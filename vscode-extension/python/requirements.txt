@@ -1,0 +1,6 @@
+# AIConfig
+python-aiconfig>=1.1.19
+
+#Other
+asyncio
+ruamel.yaml

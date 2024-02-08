@@ -1,5 +1,42 @@
 # Changelog
 
+## (2024-01-23) Python Version 1.1.15, NPM Version 1.1.7
+
+Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/995
+
+### Features
+
+- **sdk:** Updated input attachments with `AttachmentDataWithStringValue` type to distinguish the data representation ‘kind’ (`file_uri` or `base64`) ([#929](https://github.com/lastmile-ai/aiconfig/pull/929)). Please note that this can [break existing SDK calls](https://github.com/lastmile-ai/aiconfig/pull/932#discussion_r1456387863) for model parsers that use non-text inputs
+- **editor:** Added telemetry data to log editor usage. Users can [opt-out of telemetry](<(https://aiconfig.lastmileai.dev/docs/editor/#telemetry)>) by setting `allow_usage_data_sharing: False` in the `.aiconfigrc` runtime configuration file ([#869](https://github.com/lastmile-ai/aiconfig/pull/869), [#899](https://github.com/lastmile-ai/aiconfig/pull/899), [#946](https://github.com/lastmile-ai/aiconfig/pull/946))
+- **editor:** Added CLI `rage` command so users can submit bug reports ([#870](https://github.com/lastmile-ai/aiconfig/pull/870))
+- **editor:** Changed streaming format to be output chunks for the running prompt instead of entire AIConfig ([#896](https://github.com/lastmile-ai/aiconfig/pull/896))
+- **editor:** Disabled run button on other prompts if a prompt is currently running ([#907](https://github.com/lastmile-ai/aiconfig/pull/907))
+- **editor:** Made callback handler props optional and no-op if not included ([#941](https://github.com/lastmile-ai/aiconfig/pull/941))
+- **editor:** Added `mode` prop to customize UI themes on client, as well as match user dark/light mode system preferences ([#950](https://github.com/lastmile-ai/aiconfig/pull/950), [#966](https://github.com/lastmile-ai/aiconfig/pull/966))
+- **editor:** Added read-only mode where editing of AIConfig is disabled ([#916](https://github.com/lastmile-ai/aiconfig/pull/916), [#935](https://github.com/lastmile-ai/aiconfig/pull/935), [#936](https://github.com/lastmile-ai/aiconfig/pull/936), [#939](https://github.com/lastmile-ai/aiconfig/pull/939), [#967](https://github.com/lastmile-ai/aiconfig/pull/967), [#961](https://github.com/lastmile-ai/aiconfig/pull/961), [#962](https://github.com/lastmile-ai/aiconfig/pull/962))
+- **eval:** Generalized params to take in arbitrary dict instead of list of arguments ([#951](https://github.com/lastmile-ai/aiconfig/pull/951))
+- **eval:** Created `@metric` decorator to make defining metrics and adding tests easier by only needing to define the evaluation metric implementation inside the inner function ([#988](https://github.com/lastmile-ai/aiconfig/pull/988))
+- **python-sdk:** Refactored `delete_output` to set `outputs` attribute of `Prompt` to `None` rather than an empty list ([#811](https://github.com/lastmile-ai/aiconfig/pull/811))
+
+### Bug Fixes / Tasks
+
+- **editor:** Refactored run prompt server implementation to use `stop_streaming`, `output_chunk`, `aiconfig_chunk`, and `aiconfig` so server can more explicitly pass data to client ([#914](https://github.com/lastmile-ai/aiconfig/pull/914), [#911](https://github.com/lastmile-ai/aiconfig/pull/911))
+- **editor:** Split `RUN_PROMPT` event on client into `RUN_PROMPT_START`, `RUN_PROMPT_CANCEL`, `RUN_PROMPT_SUCCESS`, and `RUN_PROMPT_ERROR` ([#925](https://github.com/lastmile-ai/aiconfig/pull/925), [#922](https://github.com/lastmile-ai/aiconfig/pull/922), [#924](https://github.com/lastmile-ai/aiconfig/pull/924))
+- **editor:** Rearranged default model ordering to be more user-friendly ([#994](https://github.com/lastmile-ai/aiconfig/pull/994))
+- **editor:** Centered the Add Prompt button and fixed styling ([#912](https://github.com/lastmile-ai/aiconfig/pull/912), [#953](https://github.com/lastmile-ai/aiconfig/pull/953))
+- **editor:** Fixed an issue where changing the model for a prompt resulted in the model settings being cleared; now they will persist ([#964](https://github.com/lastmile-ai/aiconfig/pull/964))
+- **editor:** Cleared outputs when first clicking the run button in order to make it clearer that new outputs are created ([#969](https://github.com/lastmile-ai/aiconfig/pull/969))
+- **editor:** Fixed bug to display array objects in model input settings properly ([#902](https://github.com/lastmile-ai/aiconfig/pull/902))
+- **python-sdk:** Fixed issue where we were referencing `PIL.Image` as a type instead of a module in the HuggingFace `image_2_text.py` model parser ([#970](https://github.com/lastmile-ai/aiconfig/pull/970))
+- **editor:** Connected HuggingFace model parser tasks names to schema input renderers ([#900](https://github.com/lastmile-ai/aiconfig/pull/900))
+- **editor:** Fixed `float` model settings schema renderer to `number` ([#989](https://github.com/lastmile-ai/aiconfig/pull/989))
+
+### Documentation
+
+- [new] Added [docs page](https://aiconfig.lastmileai.dev/docs/editor) for AIConfig Editor ([#876](https://github.com/lastmile-ai/aiconfig/pull/876), [#947](https://github.com/lastmile-ai/aiconfig/pull/947))
+- [updated] Renamed “variables” to “parameters” to make it less confusing ([#968](https://github.com/lastmile-ai/aiconfig/pull/968))
+- [updated] Updated Getting Started page with quickstart section, and more detailed instructions for adding API keys ([#956](https://github.com/lastmile-ai/aiconfig/pull/956), [#895](https://github.com/lastmile-ai/aiconfig/pull/895))
+
 ## (2024-01-11) Python Version 1.1.12, NPM Version 1.1.5
 
 We built an AIConfig Editor which is like VSCode + Jupyter notebooks for AIConfig files! You can edit the config prompts, parameters, settings, and most importantly, run them for generating outputs. Source control your AIConfig files by clearing outputs and saving. It’s the most convenient way to work with Generative AI models through a local, user interface. See the [README](https://github.com/lastmile-ai/aiconfig/tree/v1.1.8/python/src/aiconfig/editor#readme) to learn more on how to use it!

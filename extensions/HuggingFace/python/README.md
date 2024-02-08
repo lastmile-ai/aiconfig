@@ -5,15 +5,17 @@ This extension contains AIConfig model parsers with two main subfolders:
 
 ## Usage
 
-### Part 1: Update and test this extention
+### Part 1: Update and test this extension
 
-If you are not testing locally (just using the published extension), ignore this and go to Part 2
+If you are not testing and developing locally (just using the published extension), ignore this and go to Part 2
 
-1. From the `aiconfig/HuggingFace`, run this command: `pip3 install build && cd python && python -m build && pip3 install dist/*.whl`
+1. From the `aiconfig/extensions/HuggingFace`, run this command: `pip3 install build && cd python && python -m build && pip3 install dist/*.whl`
 2. Link your local dev environment to the current dir: `pip3 install -e .`. Afterwards if you do `pip3 list | grep aiconfig`, you should see this linked to your local path. If you ever wish to use the published extension, you will need to first remove the extension: `pip3 uninstall aiconfig-extension-hugging-face && pip3 install aiconfig-extension-hugging-face`
-3. After you're done testing, be sure to delete the generated folder(s) in the `aiconfig/HuggingFace` dir. It'll probalby look something like `python/dist` and `python/<package_name>.egg-info`
+3. After you're done testing, be sure to delete the generated folder(s) in the `aiconfig/HuggingFace` dir. It'll probably look something like `python/dist` and `python/<package_name>.egg-info`
 
 ### Part 2: Importing and using this extension
+
+``pip3 install aiconfig-extension-hugging-face``
 
 1. Import the library to your code: `from aiconfig_extension_hugging_face import <EXTENSION>`.
 2. Import the AIConfig model registery: `from aiconfig import ModelRegistryParser`

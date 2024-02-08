@@ -1,4 +1,4 @@
-import { Container, Flex, Stack, createStyles } from "@mantine/core";
+import { Flex, Stack, createStyles } from "@mantine/core";
 import { memo, useContext } from "react";
 import AIConfigContext from "../../contexts/AIConfigContext";
 import AddPromptButton from "./AddPromptButton";
@@ -46,7 +46,7 @@ export default memo(function PromptsContainer(props: Props) {
   const { readOnly } = useContext(AIConfigContext);
 
   return (
-    <Container maw="80rem" className={classes.promptsContainer}>
+    <div className={`${classes.promptsContainer} promptsContainer`}>
       {!readOnly && (
         <AddPromptButton
           getModels={props.getModels}
@@ -60,10 +60,12 @@ export default memo(function PromptsContainer(props: Props) {
         return (
           <Stack key={prompt._ui.id}>
             <Flex mt="md">
-              {!readOnly && <PromptMenuButton
-                promptId={prompt._ui.id}
-                onDeletePrompt={() => props.onDeletePrompt(prompt._ui.id)}
-              />}
+              {!readOnly && (
+                <PromptMenuButton
+                  promptId={prompt._ui.id}
+                  onDeletePrompt={() => props.onDeletePrompt(prompt._ui.id)}
+                />
+              )}
               <PromptContainer
                 prompt={prompt}
                 getModels={props.getModels}
@@ -92,6 +94,6 @@ export default memo(function PromptsContainer(props: Props) {
           </Stack>
         );
       })}
-    </Container>
+    </div>
   );
 });

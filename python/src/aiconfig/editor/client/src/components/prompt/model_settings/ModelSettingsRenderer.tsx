@@ -15,8 +15,6 @@ type Props = {
 
 const useStyles = createStyles(() => ({
   settingsContainer: {
-    // TODO: Fix max height to be full height if input/output is larger than settings
-    // otherwise bound to some reasonable height
     overflow: "auto",
     paddingTop: "0.5em",
     width: "100%",
@@ -45,7 +43,8 @@ function SettingsErrorFallback({
             }}
           />
         </Flex>
-        Invalid settings format for model. Toggle JSON editor to update
+        Invalid settings format for model. Toggle JSON editor to update. Set to
+        {" {}"} in JSON editor and toggle back to reset.
       </Text>
       <JSONRenderer content={settings} />
     </Flex>

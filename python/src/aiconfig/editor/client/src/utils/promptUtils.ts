@@ -1,17 +1,27 @@
 import { JSONObject, JSONValue, Prompt } from "aiconfig";
 import { OpenAIChatModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatModelParserPromptSchema";
 import { OpenAIChatVisionModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatVisionModelParserPromptSchema";
-import { DalleImageGenerationParserPromptSchema } from "../shared/prompt_schemas/DalleImageGenerationParserPromptSchema";
+import {
+  Dalle2ImageGenerationParserPromptSchema,
+  Dalle3ImageGenerationParserPromptSchema,
+} from "../shared/prompt_schemas/DalleImageGenerationParserPromptSchema";
 import { PaLMTextParserPromptSchema } from "../shared/prompt_schemas/PaLMTextParserPromptSchema";
 import { PaLMChatParserPromptSchema } from "../shared/prompt_schemas/PaLMChatParserPromptSchema";
 import { AnyscaleEndpointPromptSchema } from "../shared/prompt_schemas/AnyscaleEndpointPromptSchema";
 import { HuggingFaceAutomaticSpeechRecognitionPromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionPromptSchema";
+import { HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema";
 import { HuggingFaceImage2TextTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextTransformerPromptSchema";
 import { HuggingFaceText2ImageDiffusorPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageDiffusorPromptSchema";
+import { HuggingFaceText2ImageRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceText2ImageRemoteInferencePromptSchema";
+import { HuggingFaceText2SpeechRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceText2SpeechRemoteInferencePromptSchema";
 import { HuggingFaceText2SpeechTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceText2SpeechTransformerPromptSchema";
 import { HuggingFaceTextGenerationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationTransformerPromptSchema";
 import { HuggingFaceTextSummarizationTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationTransformerPromptSchema";
-import { HuggingFaceTextGenerationParserPromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationParserPromptSchema";
+import { HuggingFaceTextGenerationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextGenerationRemoteInferencePromptSchema";
+import { HuggingFaceTextSummarizationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationRemoteInferencePromptSchema";
+import { HuggingFaceTextTranslationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextTranslationRemoteInferencePromptSchema";
+import { HuggingFaceImage2TextRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextRemoteInferencePromptSchema";
+import { ClaudeBedrockPromptSchema } from "../shared/prompt_schemas/ClaudeBedrockPromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -72,13 +82,34 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "gpt-4-vision-preview": OpenAIChatVisionModelParserPromptSchema,
 
   // DalleImageGenerationParser
-  "dall-e-2": DalleImageGenerationParserPromptSchema,
-  "dall-e-3": DalleImageGenerationParserPromptSchema,
+  "dall-e-2": Dalle2ImageGenerationParserPromptSchema,
+  "dall-e-3": Dalle3ImageGenerationParserPromptSchema,
+
+  ClaudeBedrockModelParser: ClaudeBedrockPromptSchema,
+
+  HuggingFaceImage2TextRemoteInference:
+    HuggingFaceImage2TextRemoteInferencePromptSchema,
+
+  HuggingFaceAutomaticSpeechRecognitionRemoteInference:
+    HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema,
+
+  HuggingFaceText2ImageRemoteInference:
+    HuggingFaceText2ImageRemoteInferencePromptSchema,
+
+  HuggingFaceText2SpeechRemoteInference:
+    HuggingFaceText2SpeechRemoteInferencePromptSchema,
 
   // TODO: core parser and remote inference share the same code, delete
   // hf core parser and keep it in the extension instead
-  // HuggingFaceTextGenerationParser (Core parser and remote inference extension)
-  HuggingFaceTextGenerationParser: HuggingFaceTextGenerationParserPromptSchema,
+  // HuggingFaceTextGenerationRemoteInference (Core parser and remote inference extension)
+  HuggingFaceTextGenerationRemoteInference:
+    HuggingFaceTextGenerationRemoteInferencePromptSchema,
+
+  HuggingFaceTextSummarizationRemoteInference:
+    HuggingFaceTextSummarizationRemoteInferencePromptSchema,
+
+  HuggingFaceTextTranslationRemoteInference:
+    HuggingFaceTextTranslationRemoteInferencePromptSchema,
 
   // PaLMTextParser
   "models/text-bison-001": PaLMTextParserPromptSchema,
@@ -110,6 +141,26 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
     HuggingFaceTextSummarizationTransformerPromptSchema,
   HuggingFaceTextTranslationTransformer:
     HuggingFaceTextGenerationTransformerPromptSchema,
+
+  // Temporary mapping of HF model parsers to task names. This won't be needed
+  // once we have prompt schemas implemented at the parser layer
+  "Automatic Speech Recognition":
+    HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema,
+  "Image-to-Text": HuggingFaceImage2TextRemoteInferencePromptSchema,
+  "Text-to-Image": HuggingFaceText2ImageRemoteInferencePromptSchema,
+  "Text-to-Speech": HuggingFaceText2SpeechRemoteInferencePromptSchema,
+  "Text Generation": HuggingFaceTextGenerationRemoteInferencePromptSchema,
+  Summarization: HuggingFaceTextSummarizationRemoteInferencePromptSchema,
+  Translation: HuggingFaceTextTranslationRemoteInferencePromptSchema,
+
+  "Automatic Speech Recognition (Local)":
+    HuggingFaceAutomaticSpeechRecognitionPromptSchema,
+  "Image-to-Text (Local)": HuggingFaceImage2TextTransformerPromptSchema,
+  "Text-to-Image (Local)": HuggingFaceText2ImageDiffusorPromptSchema,
+  "Text-to-Speech (Local)": HuggingFaceText2SpeechTransformerPromptSchema,
+  "Text Generation (Local)": HuggingFaceTextGenerationTransformerPromptSchema,
+  "Summarization (Local)": HuggingFaceTextSummarizationTransformerPromptSchema,
+  "Translation (Local)": HuggingFaceTextGenerationTransformerPromptSchema,
 };
 
 export type PromptInputSchema =
