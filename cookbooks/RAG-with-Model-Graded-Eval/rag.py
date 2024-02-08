@@ -45,8 +45,10 @@ def retrieve_data(collection, query, k):
 
 
 def serialize_retrieved_data(data):
+    return "\n".join(data["documents"][0])
     # print("Serializing data:", type(data), data)
-    return "\n".join(f"{k}={v}" for k, v in data.items())
+
+    # return "\n".join(f"{k}={v}" for k, v in data.items())
 
 
 async def generate(query, context):
@@ -54,25 +56,28 @@ async def generate(query, context):
     config = AIConfigRuntime.load(aiconfig_path)
     params = {"query": query, "context": context}
     # print("Running generate with params:", params)
-    return await config.run_and_get_output_text(
-        "generate_baseline", params=params
-    )
+    return await config.run_and_get_output_text("generate", params=params)
 
 
 async def run_evals(query, context, answer):
     aiconfig_path = os.path.join(dir_path, "rag.aiconfig.yaml")
     config = AIConfigRuntime.load(aiconfig_path)
-    return [
-        await config.run_and_get_output_text(
+    print("Running evals with:", query, context, answer)
+    return {
+        criterion: await config.run_and_get_output_text(
             f"evaluate_{criterion}",
             params={
                 "query": query,
                 "context": context,
-                "answer": answer,
+                "generate": {"output": answer},
             },
         )
-        for criterion in ["relevance", "faithfulness_baseline", "coherence"]
-    ]
+        for criterion in [
+            # "relevance",
+            "faithfulness",
+            # "coherence"
+        ]
+    }
 
 
 async def run_query(query, collection_name, k):
@@ -87,9 +92,7 @@ async def run_query(query, collection_name, k):
     print("\n\nEvaluating...")
     evals = await run_evals(query, context, result)
     print("Evaluations:")
-    for criterion, score in zip(
-        ["relevance", "faithfulness_baseline", "coherence"], evals
-    ):
+    for criterion, score in evals.items():
         print(f"{criterion}: {score}")
 
 
