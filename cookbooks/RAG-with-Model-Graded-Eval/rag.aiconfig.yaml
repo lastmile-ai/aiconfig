@@ -1,5 +1,14 @@
 $schema: https://json.schemastore.org/aiconfig-1.0
-description: ''
+description: 'Welcome to the RAG with model-graded eval using AIConfig! This is your
+  AI playground inside of VSCode.
+
+
+  Try switching the model below to llama or mixtral:
+
+  * Select `AnyscaleEndpoint` as the model selection
+
+  * Open the settings tab, and enter one of `mistralai/Mixtral-8x7B-Instruct-v0.1`
+  or  `meta-llama/Llama-2-13b-chat-hf` as the model'
 metadata:
   models: {}
   parameters:
@@ -73,7 +82,7 @@ metadata:
       \ 2781.\n"
     query: in July, flour sold at Boston for _?
     remember_chat_context: false
-name: Rag Demo With Model-graded Eval
+name: RAG Demo With Model-graded Eval
 prompts:
 - input: 'Answer the following question using the provided context. Question: {{query}}
     Context: {{context}}'
