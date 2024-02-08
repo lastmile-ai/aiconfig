@@ -259,23 +259,19 @@ prompts:
   outputs: []
 - input: "Given the following question, context, and answer, does the answer adhere\
     \ strictly to the context? \n\nGive a faithfulness verdict (YES or NO) with an\
-    \ explanation.\n\nQuestion: {{query1}}\nAnswer: {{generate_improved.output}}\n\
-    \nVerdict:\nExplanation:"
+    \ explanation.\n\nQuestion: {{query1}}\nAnswer: {{generate_1.output}}\n\nVerdict:\n\
+    Explanation:"
   metadata:
     model: gpt-4
     parameters: {}
   name: evaluate_faithfulness_improved_1
   outputs: []
-- input: 'Given the following question, context, and answer, is the answer succinct?
-    Succinct means it does not contain extraneous information.
+- input: 'Is this text succinct? Succinct means it does not contain extraneous information.
+
+    Give a verdict (YES or NO) with an explanation.
 
 
-    Give a faithfulness verdict (YES or NO) with an explanation.
-
-
-    Question: {{query1}}
-
-    Answer: {{generate_improved.output}}
+    Text: {{generate_1.output}}
 
 
     Verdict:
