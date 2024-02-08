@@ -19,6 +19,7 @@ export const COMMANDS = {
   OPEN_CONFIG_FILE: `${EXTENSION_NAME}.openConfigFile`,
   OPEN_MODEL_REGISTRY: `${EXTENSION_NAME}.openModelRegistry`,
   SHARE: `${EXTENSION_NAME}.share`,
+  SHOW_WELCOME: `${EXTENSION_NAME}.showWelcome`,
 };
 
 export const SUPPORTED_FILE_EXTENSIONS = [".json", ".yaml"];
