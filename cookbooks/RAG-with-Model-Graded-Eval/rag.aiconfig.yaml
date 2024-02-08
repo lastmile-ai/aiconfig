@@ -1,0 +1,216 @@
+$schema: https://json.schemastore.org/aiconfig-1.0
+description: ''
+metadata:
+  models: {}
+  parameters:
+    context: " New England open to neutrals.\nFrom that time nothing entered or left\
+      \ the blockaded coast except swift\nprivateers, or occasional fast-sailing vessels\
+      \ which risked capture\nin the attempt. Toward the close of the year Admiral\
+      \ Warren extended\nhis blockade eastward. Notice of the extension was given\
+      \ at Halifax\nNovember 16, and by the blockading squadron off New London December\
+      \ 2,\nthus closing Long Island Sound to all vessels of every description.[381]\n\
+      \nThe pressure of the blockade was immediately felt. In August[382]\nsuperfine\
+      \ flour sold at Boston for $11.87 a barrel, at Baltimore for\n$6.00, and at\
+      \ Richmond for $4.50. Upland cotton sold at Boston for\ntwenty cents a pound;\
+      \ at Charleston for nine cents. Rice sold at\nPhiladelphia for $12.00 a hundred\
+      \ weight; in Charleston and Savannah\nfor $3.00. Sugar sold in Boston for $18.75\
+      \ a hundred weight; in\nBaltimore for $26.50. Already the American staples were\
+      \ unsalable at\nthe places of their production. No rate of profit could cause\
+      \ cotton,\nrice, or \nwheat to be brought by sea from Charleston or Norfolk\
+      \ to\nBoston. Soon speculation began. The price of imported articles rose to\n\
+      extravagant points. At the end of the year coffee sold for thirty-eight\ncents\
+      \ a pound, after selling for twenty-one cents in August. Tea which\ncould be\
+      \ bought for $1.70 per pound in August, sold for three and four\ndollars in\
+      \ December. Sugar which was quoted at nine dollars a hundred\nweight in New\
+      \ Orleans, and in August sold for twenty-one or twenty-two\ndollars in New York\
+      \ and Philadelphia, stood at forty dollars in\nDecember.\n\nMore sweeping in\
+      \ its effects on exports than on imports, the blockade\nrapidly reduced the\
+      \ means of the people. After the summer of 1813,\nGeorgia alone, owing to its\
+      \ contiguity with Florida, succeeded in\ncontinuing to send out cotton. The\
+      \ exports of New York, which exceeded\n$12,250,000 in 1811, fell to $209,000\
+      \ for the year ending in 1814. The\ndomestic exports of Virginia diminished\
+      \ in four years from $4,800,000\nto $3,000,000 for 1812, $1,\nand supplied the\
+      \ Union\nwith articles of necessary use at prices practically fixed by her own\n\
+      manufacturers. From the whole country specie began to flow toward\nBoston as\
+      \ early as the year 1810, and with astonishing rapidity after\nthe war was declared.\
+      \ The British blockade stimulated the movement,\nand the embargo of December,\
+      \ 1813, which lasted till April, 1814, cut\noff every other resource from the\
+      \ Southern and Western States. Unable\nlonger to send their crops even to New\
+      \ England for a market, they were\nobliged to send specie, and they soon came\
+      \ to the end of their supply.\nThe Massachusetts banks, which reported about\
+      \ $820,000 in specie in\n1809, returned more than $3,680,000 in June, 1812;\
+      \ which rose to\n$5,780,000 in June, 1813, and reached nearly $7,000,000 in\
+      \ June, 1814.\nIn five years the Massachusetts banks alone drew more than six\
+      \ million\ndollars in specie from the Southern and Middle States,[478] besides\n\
+      what they sent to Canada in payment for British bills.\n\nNo one knew how much\
+      \ s\nn be given to it.\u201D\n\nAlthough Madison pointed to the notorious supply\
+      \ of food for the\nBritish forces in Canada as one of the motives for imposing\
+      \ an embargo,\nno one supposed that motive to be decisive. Other laws already\
+      \ forbade\nand punished such communication with the enemy; and experience proved\n\
+      that a general embargo would be no more effective than any special\nprohibition.\
+      \ The idea that England could be distressed by an embargo\nseemed still less\
+      \ likely to influence Government. Congress knew that\nRussia, Prussia, Denmark,\
+      \ Sweden and Norway, Spain, and South America\nwere already open to English\
+      \ commerce, and that a few days must decide\nwhether Napoleon could much longer\
+      \ prevent Great Britain from trading\nwith France. The possibility of distressing\
+      \ England by closing Boston\nand Salem, New Bedford and Newport to neutral ships\
+      \ was not to be\nseriously treated.\n\nWhatever was the true motive of the President\u2019\
+      s recommendation,\nCongress instantly approved it. The next day, December 10,\
+      \ the Hou\nr was responsible,\nthe effect was ruinous. The New England banks\
+      \ were financial agents\nof the enemy. The bank capital of Massachusetts including\
+      \ Maine was\nabout twelve and a quarter million dollars; that of Connecticut\n\
+      exceeded three millions. The whole bank capital of New England reached\neighteen\
+      \ millions,[477] or nearly one third of the paid bank capital\nof the whole\
+      \ country, if Pitkin\u2019s estimate was correct. That nearly\none third of\
+      \ the national resources should be withdrawn from the aid\nof government was\
+      \ serious enough; but in reality the loss was much\ngreater, for New England\
+      \ held a still larger proportion of the specie\non which the bank circulation\
+      \ of other States depended.\n\nThe system of commercial restrictions was responsible\
+      \ for thus, at\nthe most critical moment of the war, throwing the control of\
+      \ the\nnational finances into the hands of the Boston Federalists. Against\n\
+      the protests of the Federalists, manufactures had been forced upon\nthem by\
+      \ national legislation until New Engl\n17, 1813; Annals, 1813\u20131814, p.\
+      \ 2781.\n"
+    query: in July, flour sold at Boston for _?
+    remember_chat_context: false
+name: Rag Demo With Model-graded Eval
+prompts:
+- input: 'Answer the following question using the provided context. Question: {{query}}
+    Context: {{context}}'
+  metadata:
+    model:
+      name: gpt-3.5-turbo
+      settings: {}
+    parameters: {}
+  name: generate_baseline
+  outputs:
+  - data: In July, flour sold at Boston for $11.87 a barrel.
+    execution_count: 0
+    metadata:
+      created: 1707342850
+      id: chatcmpl-8pk9qicvDEenHkHyOJZPUivwEYbwm
+      model: gpt-3.5-turbo-0613
+      object: chat.completion.chunk
+      raw_response:
+        content: In July, flour sold at Boston for $11.87 a barrel.
+        role: assistant
+      role: assistant
+    output_type: execute_result
+- input: "Given the following question, and answer, does the answer satisfactorily\
+    \ answer the question? \n\nQuestion: {{query}}\nAnswer: {{generate_baseline.output}}"
+  metadata:
+    model: gpt-4
+    parameters: {}
+    remember_chat_context: false
+  name: evaluate_relevance
+  outputs:
+  - data: Yes, the answer satisfactorily answers the question.
+    execution_count: 0
+    metadata:
+      created: 1707342854
+      id: chatcmpl-8pk9uOnWR9uM4MFKXgR7xUsvCdtfv
+      model: gpt-4-0613
+      object: chat.completion.chunk
+      raw_response:
+        content: Yes, the answer satisfactorily answers the question.
+        role: assistant
+      role: assistant
+    output_type: execute_result
+- input: "Given the following question, context, and answer, does the answer adhere\
+    \ strictly to the context? \n\nGive a faithfulness verdict (YES or NO) with an\
+    \ explanation.\n\nQuestion: {{query}}\nAnswer: {{generate_baseline.output}}\n\n\
+    Verdict:\nExplanation:"
+  metadata:
+    model: gpt-4
+    parameters: {}
+    remember_chat_context: false
+  name: evaluate_faithfulness_baseline
+  outputs:
+  - data: 'NO Explanation: The context does not provide any information on the price
+      at which flour was sold in Boston in July.'
+    execution_count: 0
+    metadata:
+      created: 1707342862
+      id: chatcmpl-8pkA2opsT7yYITM9ZeNEb6Ptmpxni
+      model: gpt-4-0613
+      object: chat.completion.chunk
+      raw_response:
+        content: 'NO Explanation: The context does not provide any information on
+          the price at which flour was sold in Boston in July.'
+        role: assistant
+      role: assistant
+    output_type: execute_result
+- input: 'Given the following answer, is the answer self-consistent and easy to understand?
+    Answer: {{generate_baseline.output}}'
+  metadata:
+    model: gpt-4
+    parameters: {}
+    remember_chat_context: false
+  name: evaluate_coherence
+  outputs:
+  - data: Yes, the answer is self-consistent and easy to understand. It clearly states
+      that in the specified month and location, flour was sold for a specific price.
+    execution_count: 0
+    metadata:
+      created: 1707342885
+      id: chatcmpl-8pkAPsRKRDAkMWTblxgNHkAUvyA7Y
+      model: gpt-4-0613
+      object: chat.completion.chunk
+      raw_response:
+        content: Yes, the answer is self-consistent and easy to understand. It clearly
+          states that in the specified month and location, flour was sold for a specific
+          price.
+        role: assistant
+      role: assistant
+    output_type: execute_result
+- input: 'Answer the following question using the provided context. Review your answer.
+    Consider all the claims in your answer. Is each one justified by the context.
+    Revise your answer to accord ONLY with the context, paying careful attention to
+    details. Review your answer again. Does it answer the question? Exclude details
+    that are irrelevant to the question. If you cannot answer the question, simply
+    state that and nothing else. Question: {{query}} Context: {{context}} ANSWER:
+    REVISED ANSWER:'
+  metadata:
+    model: gpt-3.5-turbo
+    parameters: {}
+  name: generate_improved
+  outputs:
+  - data: Based on the context, there is no specific information provided about the
+      price of flour in July.
+    execution_count: 0
+    metadata:
+      created: 1707342892
+      id: chatcmpl-8pkAWtSxabIaQgTVHTc7o4XrybUFj
+      model: gpt-3.5-turbo-0613
+      object: chat.completion.chunk
+      raw_response:
+        content: Based on the context, there is no specific information provided about
+          the price of flour in July.
+        role: assistant
+      role: assistant
+    output_type: execute_result
+- input: "Given the following question, context, and answer, does the answer adhere\
+    \ strictly to the context? \n\nGive a faithfulness verdict (YES or NO) with an\
+    \ explanation.\n\nQuestion: {{query}}\nAnswer: {{generate_improved.output}}\n\n\
+    Verdict:\nExplanation:"
+  metadata:
+    model: gpt-4
+    parameters: {}
+  name: evaluate_faithfulness_improved
+  outputs:
+  - data: 'YES Explanation: The answer accurately lines up with the context where
+      there is no specific information provided about the price of flour in July.'
+    execution_count: 0
+    metadata:
+      created: 1707342924
+      id: chatcmpl-8pkB2pDap3Bld3Lc1aEDheOHJs6vP
+      model: gpt-4-0613
+      object: chat.completion.chunk
+      raw_response:
+        content: 'YES Explanation: The answer accurately lines up with the context
+          where there is no specific information provided about the price of flour
+          in July.'
+        role: assistant
+      role: assistant
+    output_type: execute_result
+schema_version: latest
