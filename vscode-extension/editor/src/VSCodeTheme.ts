@@ -69,6 +69,12 @@ export const VSCODE_THEME: MantineThemeOverride = {
       backgroundColor: "var(--vscode-notebook-cellBorderColor)",
       border: "0.25rem solid var(--vscode-button-background)",
     },
+    ".mantine-Tabs-tab[data-active]": {
+      borderBottom: "solid 1px var(--vscode-list-focusOutline)",
+      ":hover": {
+        borderBottom: "solid 1px var(--vscode-list-focusOutline)",
+      },
+    },
     ".monoFont": {
       fontFamily:
         "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
