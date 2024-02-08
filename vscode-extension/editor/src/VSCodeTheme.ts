@@ -37,6 +37,15 @@ export const VSCODE_THEME: MantineThemeOverride = {
         },
       },
     },
+    ".mantine-Checkbox-input": {
+      "&:checked": {
+        backgroundColor: "var(--vscode-button-background)",
+        borderColor: "var(--vscode-notebook-cellBorderColor)",
+      },
+      "&:hover": {
+        background: "var(--vscode-button-hoverBackground)",
+      },
+    },
     ".mantine-Input-input": {
       backgroundColor: "var(--vscode-input-background)",
       borderColor: "var(--vscode-notebook-cellBorderColor)",
@@ -58,6 +67,27 @@ export const VSCODE_THEME: MantineThemeOverride = {
       borderColor: "var(--vscode-notebook-cellBorderColor)",
       borderRadius: "0px",
       color: "var(--vscode-menu-foreground)",
+    },
+    ".mantine-Slider-bar": {
+      backgroundColor: "var(--vscode-button-background)",
+    },
+    ".mantine-Slider-thumb": {
+      // Intentionally flip border/background to have color around the center
+      // Since border is null (i.e. will match sidePanel background). We need
+      // a background since high contrast dark buttons have null color
+      backgroundColor: "var(--vscode-notebook-cellBorderColor)",
+      border: "0.25rem solid var(--vscode-button-background)",
+    },
+    ".mantine-Tabs-tab": {
+      "&:hover": {
+        backgroundColor: "var(--vscode-inputOption-hoverBackground)",
+      },
+    },
+    ".mantine-Tabs-tab[data-active]": {
+      borderBottom: "solid 1px var(--vscode-list-focusOutline)",
+      ":hover": {
+        borderBottom: "solid 1px var(--vscode-list-focusOutline)",
+      },
     },
     ".monoFont": {
       fontFamily:
