@@ -2,9 +2,11 @@
   "name": "vscode-aiconfig",
   "repository": "https://github.com/lastmile-ai/aiconfig",
   "publisher": "lastmile-ai",
+  "author": "LastMile AI",
   "displayName": "AIConfig Editor",
   "description": "AIConfig notebook editor that turns VSCode into a generative AI studio.",
-  "version": "0.0.3",
+  "version": "0.0.6",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -46,6 +48,10 @@
       {
         "command": "vscode-aiconfig.openModelRegistry",
         "title": "AIConfig: Open Custom Model Registry File"
+      },
+      {
+        "command": "vscode-aiconfig.showWelcome",
+        "title": "AIConfig: Welcome"
       }
     ],
     "customEditors": [
