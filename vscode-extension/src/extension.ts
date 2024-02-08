@@ -500,7 +500,7 @@ async function installDependencies(
 /**
  * Installs the packages in the requirements.txt file needed for the AIConfig extension to work.
  */
-async function installRequirements(
+export async function installRequirements(
   context: vscode.ExtensionContext,
   progress: vscode.Progress<{
     message?: string | undefined;
@@ -569,7 +569,7 @@ async function installRequirements(
 /**
  * Runs the check_requirements.py script to check if any requirements need to be updated or installed.
  */
-async function checkRequirements(
+export async function checkRequirements(
   context: vscode.ExtensionContext,
   outputChannel: vscode.LogOutputChannel
 ) {
