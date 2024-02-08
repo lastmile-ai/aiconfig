@@ -44,13 +44,27 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(COMMANDS.SHOW_WELCOME, () => {
-      const panel = vscode.window.createWebviewPanel(
-        "welcomePage",
-        "Welcome",
-        vscode.ViewColumn.One,
-        {}
+      let readmePath = path.join(
+        context.extensionPath,
+        "src",
+        "welcomePage.md"
       );
-      panel.webview.html = getWelcomePageWebviewContent(context.extensionPath);
+      // // let readme = fs.readFileSync(readmePath, "utf8");
+      // // Open raw markdown (not needed)
+      // //let document = await vscode.workspace.openTextDocument({ content: readme, language: 'markdown' });
+      // //vscode.window.showTextDocument(document);
+      // // Open markdown in preview mode
+      vscode.commands.executeCommand(
+        "markdown.showPreview",
+        vscode.Uri.file(readmePath)
+      );
+      // const panel = vscode.window.createWebviewPanel(
+      //   "welcomePage",
+      //   "Welcome",
+      //   vscode.ViewColumn.One,
+      //   {}
+      // );
+      // panel.webview.html = getWelcomePageWebviewContent(context.extensionPath);
     })
   );
 
