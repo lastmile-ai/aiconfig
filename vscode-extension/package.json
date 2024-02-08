@@ -40,6 +40,10 @@
         "title": "AIConfig: Create Custom Model Registry"
       },
       {
+        "command": "vscode-aiconfig.openConfigFile",
+        "title": "AIConfig: Open AIConfig File"
+      },
+      {
         "command": "vscode-aiconfig.openModelRegistry",
         "title": "AIConfig: Open Custom Model Registry File"
       }
