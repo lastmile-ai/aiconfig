@@ -3,7 +3,7 @@ description: ''
 metadata:
   models: {}
   parameters:
-    context: " New England open to neutrals.\nFrom that time nothing entered or left\
+    context1: " New England open to neutrals.\nFrom that time nothing entered or left\
       \ the blockaded coast except swift\nprivateers, or occasional fast-sailing vessels\
       \ which risked capture\nin the attempt. Toward the close of the year Admiral\
       \ Warren extended\nhis blockade eastward. Notice of the extension was given\
@@ -71,12 +71,12 @@ metadata:
       the protests of the Federalists, manufactures had been forced upon\nthem by\
       \ national legislation until New Engl\n17, 1813; Annals, 1813\u20131814, p.\
       \ 2781.\n"
-    query: in July, flour sold at Boston for _?
+    query1: in July, flour sold at Boston for _?
     remember_chat_context: false
 name: Rag Demo With Model-graded Eval
 prompts:
-- input: 'Answer the following question using the provided context. Question: {{query}}
-    Context: {{context}}'
+- input: 'Answer the following question using the provided context. Question: {{query1}}
+    Context: {{context1}}'
   metadata:
     model:
       name: gpt-3.5-turbo
@@ -97,7 +97,7 @@ prompts:
       role: assistant
     output_type: execute_result
 - input: "Given the following question, and answer, does the answer satisfactorily\
-    \ answer the question? \n\nQuestion: {{query}}\nAnswer: {{generate_baseline.output}}"
+    \ answer the question? \n\nQuestion: {{query1}}\nAnswer: {{generate_baseline.output}}"
   metadata:
     model: gpt-4
     parameters: {}
@@ -118,8 +118,8 @@ prompts:
     output_type: execute_result
 - input: "Given the following question, context, and answer, does the answer adhere\
     \ strictly to the context? \n\nGive a faithfulness verdict (YES or NO) with an\
-    \ explanation.\n\nQuestion: {{query}}\nAnswer: {{generate_baseline.output}}\n\n\
-    Verdict:\nExplanation:"
+    \ explanation.\n\nQuestion: {{query1}}\nAnswer: {{generate_baseline.output}}\n\
+    \nVerdict:\nExplanation:"
   metadata:
     model: gpt-4
     parameters: {}
@@ -163,13 +163,13 @@ prompts:
         role: assistant
       role: assistant
     output_type: execute_result
-- input: 'Answer the following question using the provided context. Review your answer.
-    Consider all the claims in your answer. Is each one justified by the context.
-    Revise your answer to accord ONLY with the context, paying careful attention to
-    details. Review your answer again. Does it answer the question? Exclude details
-    that are irrelevant to the question. If you cannot answer the question, simply
-    state that and nothing else. Question: {{query}} Context: {{context}} ANSWER:
-    REVISED ANSWER:'
+- input: "Answer the following question using the provided context. Review your answer.\
+    \ Consider all the claims in your answer. Is each one justified by the context.\
+    \ Revise your answer to accord ONLY with the context, paying careful attention\
+    \ to details. Review your answer again. Does it answer the question? Exclude details\
+    \ that are irrelevant to the question. If you cannot answer the question, simply\
+    \ state that and nothing else. Question: {{query1}}\nContext: {{context}} \nANSWER:\
+    \ \nREVISED ANSWER:"
   metadata:
     model: gpt-3.5-turbo
     parameters: {}
@@ -191,8 +191,8 @@ prompts:
     output_type: execute_result
 - input: "Given the following question, context, and answer, does the answer adhere\
     \ strictly to the context? \n\nGive a faithfulness verdict (YES or NO) with an\
-    \ explanation.\n\nQuestion: {{query}}\nAnswer: {{generate_improved.output}}\n\n\
-    Verdict:\nExplanation:"
+    \ explanation.\n\nQuestion: {{query1}}\nAnswer: {{generate_improved.output}}\n\
+    \nVerdict:\nExplanation:"
   metadata:
     model: gpt-4
     parameters: {}
@@ -220,7 +220,7 @@ prompts:
     Give a faithfulness verdict (YES or NO) with an explanation.
 
 
-    Question: {{query}}
+    Question: {{query1}}
 
     Answer: {{generate_improved.output}}
 
