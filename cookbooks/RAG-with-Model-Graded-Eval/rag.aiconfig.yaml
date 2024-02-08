@@ -1,4 +1,5 @@
 $schema: https://json.schemastore.org/aiconfig-1.0
+/$schema: https://json.schemastore.org/aiconfig-1.0
 description: ''
 metadata:
   models: {}
@@ -210,6 +211,43 @@ metadata:
     remember_chat_context: false
 name: Rag Demo With Model-graded Eval
 prompts:
+- input: 'Answer the following question using the provided context. Question: {{query0}}
+    Context: {{context0}}'
+  metadata:
+    model: gpt-3.5-turbo
+    parameters: {}
+  name: generate_0
+  outputs: []
+- input: "Given the following question, and answer, does the answer satisfactorily\
+    \ answer the question? \n\nQuestion: {{query0}}\nAnswer: {{generate_0.output}}"
+  metadata:
+    model: gpt-4
+    parameters: {}
+  name: evaluate_relevance_0
+  outputs: []
+- input: "Given the following question, context, and answer, does the answer adhere\
+    \ strictly to the context? \n\nGive a faithfulness verdict (YES or NO) with an\
+    \ explanation.\n\nQuestion: {{query0}}\nContext: {{context0}}\nAnswer: {{generate_0.output}}\n\
+    \nVerdict:\nExplanation:"
+  metadata:
+    model: gpt-4
+    parameters: {}
+  name: evaluate_faithfulness_0
+  outputs: []
+- input: 'Given the following answer, is the answer self-consistent and easy to understand?
+    Answer: {{generate_0.output}}'
+  metadata:
+    model: gpt-4
+    parameters: {}
+  name: evaluate_coherence_0
+  outputs: []
+- input: 'Given the following answer, is the answer self-consistent and easy to understand?
+    Answer: {{generate_0.output}}'
+  metadata:
+    model: gpt-4
+    parameters: {}
+  name: evaluate_succinctness_0
+  outputs: []
 - input: 'Answer the following question using the provided context. Question: {{query1}}
     Context: {{context1}}'
   metadata:
