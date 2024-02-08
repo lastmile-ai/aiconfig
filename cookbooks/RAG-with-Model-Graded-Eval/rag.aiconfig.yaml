@@ -213,4 +213,24 @@ prompts:
         role: assistant
       role: assistant
     output_type: execute_result
+- input: 'Given the following question, context, and answer, is the answer succinct?
+    Succinct means it does not contain extraneous information.
+
+
+    Give a faithfulness verdict (YES or NO) with an explanation.
+
+
+    Question: {{query}}
+
+    Answer: {{generate_improved.output}}
+
+
+    Verdict:
+
+    Explanation:'
+  metadata:
+    model: gpt-4
+    parameters: {}
+  name: evaluate_succinctness
+  outputs: []
 schema_version: latest
