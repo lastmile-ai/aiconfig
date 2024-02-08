@@ -216,6 +216,7 @@ prompts:
   metadata:
     model: gpt-3.5-turbo
     parameters: {}
+    remember_chat_context: false    
   name: generate_0
   outputs: []
 - input: "Given the following question, and answer, does the answer satisfactorily\
@@ -223,6 +224,7 @@ prompts:
   metadata:
     model: gpt-4
     parameters: {}
+    remember_chat_context: false    
   name: evaluate_relevance_0
   outputs: []
 - input: "Given the following question, context, and answer, does the answer adhere\
@@ -232,6 +234,7 @@ prompts:
   metadata:
     model: gpt-4
     parameters: {}
+    remember_chat_context: false    
   name: evaluate_faithfulness_0
   outputs: []
 - input: 'Given the following answer, is the answer self-consistent and easy to understand?
@@ -239,6 +242,7 @@ prompts:
   metadata:
     model: gpt-4
     parameters: {}
+    remember_chat_context: false    
   name: evaluate_coherence_0
   outputs: []
 - input: 'Given the following answer, is the answer self-consistent and easy to understand?
@@ -246,6 +250,7 @@ prompts:
   metadata:
     model: gpt-4
     parameters: {}
+    remember_chat_context: false    
   name: evaluate_succinctness_0
   outputs: []
 - input: 'Answer the following question using the provided context. Question: {{query1}}
@@ -255,6 +260,7 @@ prompts:
       name: gpt-3.5-turbo
       settings: {}
     parameters: {}
+    remember_chat_context: false    
   name: generate_1
   outputs: []
 - input: "Given the following question, and answer, does the answer satisfactorily\
@@ -293,6 +299,7 @@ prompts:
   metadata:
     model: gpt-3.5-turbo
     parameters: {}
+    remember_chat_context: false    
   name: generate_improved_1
   outputs: []
 - input: "Given the following question, context, and answer, does the answer adhere\
@@ -302,6 +309,7 @@ prompts:
   metadata:
     model: gpt-4
     parameters: {}
+    remember_chat_context: false
   name: evaluate_faithfulness_improved_1
   outputs: []
 - input: 'Is this text succinct? Succinct means it does not contain extraneous information.
@@ -318,6 +326,7 @@ prompts:
   metadata:
     model: gpt-4
     parameters: {}
+    remember_chat_context: false    
   name: evaluate_succinctness_1
   outputs: []
 schema_version: latest
