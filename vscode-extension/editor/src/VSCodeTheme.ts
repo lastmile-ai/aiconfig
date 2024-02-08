@@ -23,6 +23,20 @@ export const VSCODE_THEME: MantineThemeOverride = {
       maxWidth: "100%",
       minHeight: "100vh",
     },
+    ".mantine-Autocomplete-dropdown": {
+      backgroundColor: "var(--vscode-menu-background)",
+      border: "1px solid",
+      borderColor: "var(--vscode-notebook-cellBorderColor)",
+      borderRadius: "0px",
+      color: "var(--vscode-menu-foreground)",
+
+      ".mantine-Autocomplete-item": {
+        backgroundColor: "var(--vscode-menu-background)",
+        "&:hover": {
+          backgroundColor: "var(--vscode-inputOption-hoverBackground)",
+        },
+      },
+    },
     ".mantine-Input-input": {
       backgroundColor: "var(--vscode-input-background)",
       borderColor: "var(--vscode-notebook-cellBorderColor)",
@@ -37,6 +51,13 @@ export const VSCODE_THEME: MantineThemeOverride = {
       "::placeholder": {
         color: "var(--vscode-input-placeholderForeground)",
       },
+    },
+    ".mantine-Menu-dropdown": {
+      color: "var(--vscode-menu-foreground)",
+      backgroundColor: "var(--vscode-menu-background)",
+      border: "1px solid",
+      borderRadius: "0px",
+      borderColor: "var(--vscode-notebook-cellBorderColor)",
     },
     ".monoFont": {
       fontFamily:
