@@ -37,6 +37,15 @@ export const VSCODE_THEME: MantineThemeOverride = {
         },
       },
     },
+    ".mantine-Checkbox-input": {
+      "&:checked": {
+        backgroundColor: "var(--vscode-button-background)",
+        borderColor: "var(--vscode-notebook-cellBorderColor)",
+      },
+      "&:hover": {
+        background: "var(--vscode-button-hoverBackground)",
+      },
+    },
     ".mantine-Input-input": {
       backgroundColor: "var(--vscode-input-background)",
       borderColor: "var(--vscode-notebook-cellBorderColor)",
