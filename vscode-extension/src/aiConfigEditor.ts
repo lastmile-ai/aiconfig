@@ -5,7 +5,9 @@ import {
   ServerInfo,
   getCurrentWorkingDirectory,
   getDocumentFromServer,
+  getPythonPath,
   initializeServerState,
+  updateWebviewEditorThemeMode,
   waitUntilServerReady,
 } from "./util";
 import { getNonce } from "./utilities/getNonce";
@@ -251,11 +253,86 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         case "open_in_text_editor":
           vscode.commands.executeCommand("workbench.action.reopenTextEditor");
           return;
+
+        case "show_notification":
+          const notification = e.notification as {
+            // AIConfigEditorNotification
+            title: string;
+            message: string | null;
+            type?: "info" | "success" | "warning" | "error";
+            autoClose?: boolean | number;
+            onClose?: () => void;
+            onOpen?: () => void;
+          };
+
+          let notificationFn;
+          let outputChannelFn;
+          switch (notification.type) {
+            case "info":
+            case "success":
+              notificationFn = vscode.window.showInformationMessage;
+              outputChannelFn = this.extensionOutputChannel.info;
+              break;
+            case "warning":
+              notificationFn = vscode.window.showWarningMessage;
+              outputChannelFn = this.extensionOutputChannel.warn;
+              break;
+            case "error":
+              notificationFn = vscode.window.showErrorMessage;
+              outputChannelFn = this.extensionOutputChannel.error;
+              break;
+            default:
+              notificationFn = vscode.window.showInformationMessage;
+              outputChannelFn = this.extensionOutputChannel.info;
+          }
+
+          const message = notification.message;
+
+          // Notification supports 'details' for modal only. For now, just show title
+          // in notification toast and full message in output channel.
+          const notificationAction = await notificationFn(
+            notification.title,
+            message ? "Details" : undefined
+          );
+
+          if (message) {
+            outputChannelFn(
+              this.prependMessage(
+                `${notification.title} \n ${message}`,
+                document
+              )
+            );
+            // If user clicked "Details", show & focus the output channel
+            if (notificationAction === "Details") {
+              this.extensionOutputChannel.show(/*preserveFocus*/ true);
+            }
+          }
+
+          notification.onClose?.();
       }
     });
 
     // Update webview immediately so we unblock the render; server init should happen in the background.
     updateWebview();
+
+    // Set initial dark/light theme mode for the webview and on theme changes. Also, on tab activation.
+    if (!isWebviewDisposed) {
+      updateWebviewEditorThemeMode(webviewPanel.webview);
+
+      vscode.window.onDidChangeActiveColorTheme(() => {
+        if (!isWebviewDisposed) {
+          updateWebviewEditorThemeMode(webviewPanel.webview);
+        }
+      });
+
+      webviewPanel.onDidChangeViewState((e) => {
+        if (e.webviewPanel.active) {
+          if (!isWebviewDisposed) {
+            updateWebviewEditorThemeMode(webviewPanel.webview);
+          }
+        }
+      });
+    }
 
     // Wait for server ready
     await waitUntilServerReady(editorServer.url);
@@ -292,10 +369,13 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     const openPort = await getPortPromise();
 
+    const pythonPath = await getPythonPath();
+
     // TODO: saqadri - specify parsers_module_path
+    // `aiconfig` command not useable here because it relies on python. Instead invoke the module directly.
     let startServer = spawn(
-      "aiconfig",
-      ["start", "--server-port", openPort.toString(), ...modelRegistryPathArgs],
+      pythonPath,
+      ["-m", "aiconfig.scripts.aiconfig_cli", "start", "--server-port", openPort.toString(), ...modelRegistryPathArgs],
       {
         cwd: getCurrentWorkingDirectory(document),
       }

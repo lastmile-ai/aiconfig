@@ -3,13 +3,13 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "python-aiconfig"
-version = "1.1.17"
+version = "1.1.21"
 authors = [
   { name="Sarmad Qadri", email="sarmad@lastmileai.dev" },
 ]
 description = "Python library for LastMile AI API"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 classifiers = [
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",

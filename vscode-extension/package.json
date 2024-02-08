@@ -40,6 +40,10 @@
         "title": "AIConfig: Create Custom Model Registry"
       },
       {
+        "command": "vscode-aiconfig.openConfigFile",
+        "title": "AIConfig: Open AIConfig File"
+      },
+      {
         "command": "vscode-aiconfig.openModelRegistry",
         "title": "AIConfig: Open Custom Model Registry File"
       }
@@ -104,5 +108,8 @@
     "oboe": "^2.1.5",
     "portfinder": "^1.0.32",
     "ufetch": "^1.6.0"
-  }
+  },
+  "extensionDependencies": [
+    "ms-python.python"
+  ]
 }

@@ -7,7 +7,7 @@ import {
   LogEvent,
   LogEventData,
 } from "@lastmileai/aiconfig-editor";
-import { Flex, Loader, Image, createStyles } from "@mantine/core";
+import { Flex, Loader, createStyles } from "@mantine/core";
 import {
   AIConfig,
   InferenceSettings,
@@ -27,6 +27,10 @@ import {
   notifyDocumentDirty,
   updateWebviewState,
 } from "./utils/vscodeUtils";
+import { VSCODE_THEME } from "./VSCodeTheme";
+// TODO: Update package to export AIConfigEditorNotification and ThemeMode types
+import { AIConfigEditorNotification } from "@lastmileai/aiconfig-editor/dist/components/notifications/NotificationProvider";
+import { ThemeMode } from "@lastmileai/aiconfig-editor/dist/shared/types";
 
 const useStyles = createStyles(() => ({
   editorBackground: {
@@ -47,6 +51,10 @@ export default function VSCodeEditor() {
   const [aiconfig, setAIConfig] = useState<AIConfig | undefined>();
   const [aiConfigServerUrl, setAIConfigServerUrl] = useState<string>(
     webviewState?.serverUrl ?? ""
+  );
+
+  const [themeMode, setThemeMode] = useState<ThemeMode | undefined>(
+    webviewState?.theme
   );
 
   const { classes } = useStyles();
@@ -96,6 +104,12 @@ export default function VSCodeEditor() {
 
         // TODO: saqadri - as soon as content is updated, we have to call
         // /get endpoint so we get the latest content from the server
+        return;
+      }
+      case "set_theme": {
+        const theme = message.theme;
+        setThemeMode(theme);
+        updateWebviewState(vscode, { theme });
         return;
       }
       default: {
@@ -280,7 +294,7 @@ export default function VSCodeEditor() {
   const cancel = useCallback(
     async (cancellationToken: string) => {
       // TODO: saqadri - check the status of the response (can be 400 or 422 if cancellation fails)
-      const res = await ufetch.post(ROUTE_TABLE.CANCEL(aiConfigServerUrl), {
+      await ufetch.post(ROUTE_TABLE.CANCEL(aiConfigServerUrl), {
         cancellation_token_id: cancellationToken,
       });
 
@@ -401,6 +415,16 @@ export default function VSCodeEditor() {
     []
   );
 
+  const openInTextEditor = useCallback(async () => {
+    vscode?.postMessage({ type: "open_in_text_editor" });
+  }, [vscode]);
+
+  const showNotification = useCallback(
+    (notification: AIConfigEditorNotification) =>
+      vscode?.postMessage({ type: "show_notification", notification }),
+    [vscode]
+  );
+
   const callbacks: AIConfigCallbacks = useMemo(
     () => ({
       addPrompt,
@@ -410,10 +434,12 @@ export default function VSCodeEditor() {
       getModels,
       getServerStatus,
       logEventHandler,
+      openInTextEditor,
       runPrompt,
       setConfigDescription,
       setConfigName,
       setParameters,
+      showNotification,
       updateModel,
       updatePrompt,
       // explicitly omitted
@@ -425,11 +451,14 @@ export default function VSCodeEditor() {
       clearOutputs,
       deletePrompt,
       getModels,
+      getServerStatus,
       logEventHandler,
+      openInTextEditor,
       runPrompt,
       setConfigDescription,
       setConfigName,
       setParameters,
+      showNotification,
       updateModel,
       updatePrompt,
     ]
@@ -442,7 +471,13 @@ export default function VSCodeEditor() {
           <Loader size="xl" />
         </Flex>
       ) : (
-        <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} mode={MODE} />
+        <AIConfigEditor
+          aiconfig={aiconfig}
+          callbacks={callbacks}
+          mode={MODE}
+          themeOverride={VSCODE_THEME}
+          themeMode={themeMode}
+        />
       )}
     </div>
   );
