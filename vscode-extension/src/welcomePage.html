@@ -2,7 +2,145 @@
 <html lang="en">
 
 <body>
-    <h1>Welcome to my extension!</h1>
-</body>
+    <h1>Welcome to AIConfig Editor!</h1>
 
+    AIConfig Editor is a tool that allows you to <b>create, edit, and manage AIConfig files</b>. 
+    This acts as an open-source playground that supports local and remote models from 
+    OpenAI, Anthropic, Meta, Google, HuggingFace, Anyscale, and more.<br>
+    <b> Tip:</b> To learn more about AIConfigs and why they're useful, check out the FAQ 
+    section at the bottom of this page.
+    <br>
+    <p>
+        <img src="https://s3.amazonaws.com/lastmileai.aiconfig.public/playing_around_with_editor.png" alt="Playing around with the editor" width="700" height="250">
+    </p>
+
+    <h2>Commands</h2>
+
+    Get started by trying out some of these commands! Press ("CMD" + "SHIFT" + P) 
+    to open the command palette and type in "AIConfig":
+
+    <ul>
+        <li>"AIConfig: Create New" -> Creates a new file (in JSON or YAML format)</li>
+        <li>"AIConfig: Share (get permalink)" -> Creates a link to read-only state of your AIConfig file. Use this to share with others :D</li>
+        <li>"AIConfig: Welcome" -> Opens this window that you can refer to again!</li>
+    </ul>
+
+    You can also open existing files that end in ".aiconfig.json" or ".aiconfig.yaml" 
+    (note that there are two periods in the filename!). <br>
+    Example: "my_cool_file.aiconfig.json"
+
+    <h2>API Keys</h2>
+    Some models require API keys in order to run them. 
+    If you want to run any of the models below, please create a ".env" file in
+    the root of your project and add the following keys:
+    
+    <ul>
+        <li>
+            <a href="https://ai.google.dev/tutorials/setup">GOOGLE_API_KEY</a>=your_key_here
+            <ol style="list-style-type: lower-alpha; padding-bottom: 0;">
+                <li>Used for Gemini</li>
+            </ol>
+        </li>
+        <li>
+            <a href="https://platform.openai.com/api-keys">OPENAI_API_KEY</a>=your_key_here
+            <ol style="list-style-type: lower-alpha; padding-bottom: 0;">
+                <li>Used for OpenAI models like ChatGPT and Dall-E</li>
+            </ol>
+        </li>
+        <li>
+            <a href="https://huggingface.co/settings/tokens">HUGGING_FACE_API_TOKEN</a>=your_token_here
+            <ol style="list-style-type: lower-alpha; padding-bottom: 0;">
+                <li>Used for any models <a href="https://huggingface.co/models">hosted on Hugging Face</a></li>
+            </ol>
+        </li>
+    </ul>
+
+    For example, your .env file should look similar to this:
+    <img src="https://s3.amazonaws.com/lastmileai.aiconfig.public/api_key_example.png" alt="Example .env file" width="400" height="50">
+
+    <h2>General Debugging Tips</h2>
+    Whenever you encounter errors, they should show up in the Output channel. Access it by:<br>
+    "CMD" + "Shift" + P -> Type and enter "Output: Show Output Channels" -> Type and enter "AIConfig"
+
+    <h1> FAQ </h1>
+    <p>
+        <b>Q: I'm seeing a blank page when I run "AIConfig: Create New"</b> <br>
+        A: This likely means either:
+        <ol>
+            <li>Missing or outdated python modules
+                <ol style="list-style-type: lower-alpha; padding-bottom: 0;">
+                    <li>Make sure you're on version >= 0.0.6 for AIConfig Editor extension</li>
+                    <li>Type `pip3 list | grep aiconfig` in terminal and make sure you have `python-aiconfig` >= 1.1.22. 
+                        If it's not on >=1.1.22, run `pip3 install python-aiconfig --force-reinstall`</li>
+                    <li>Check the output channel for more info (see General Debugging Tips) above</li> 
+                </ol>
+            </li>
+            <li>You are running AIConfig Editor with the wrong Python interpreter
+                <ol style="list-style-type: lower-alpha; padding-bottom: 0;">
+                    <li>Make sure you have Python >=3.10 installed</li>
+                    <li>After you try to create a new file, and viewing blank screen, 
+                        open command palette ("CMD" + "SHIFT" + P) and run the command
+                        `AIConfig: Initialize Extension` to ensure everything is 
+                        properly configured</li>
+                </ol>
+            </li>
+        </ol>
+    </p>
+
+    <p>
+        <b>Q: Got this error: "Failed to start aiconfig server. You can view the aiconfig but cannot modify it."</b> <br>
+        A: This can happen when trying to open a config file. You can usually fix this by:
+        <ol>
+            <li>Re-opening the file
+                <ol style="list-style-type: lower-alpha; padding-bottom: 0;">
+                    <li>If you still see this error but the file opens and works, you can ignore this for now</li>
+                </ol>
+            </li>
+            <li>Running the steps to make sure your Python pacakges are properly initialized and up-to-date
+                <ol style="list-style-type: lower-alpha; padding-bottom: 0;">
+                    <li>Follow instructions for "I'm seeing a blank page" issue from above</li>
+                </ol>
+            </li>
+        </ol>
+    </p>
+    <p>
+        <b>Q: What is AIConfig?</b> <br>
+
+        A: AIConfig files are files in JSON or YAML format where you can define the 
+        structure of generative AI workflows. Each AIConfig file contains a set 
+        of prompts which define what AI model to use and what data (ex: input 
+        settings, prompt parameters) to pass into the model when calling it. It 
+        also contains the output for that call if it exists.
+        
+        AIConfigs are pretty gnarley because they let you:
+
+        <ol>
+            <li>Use any model
+                <ol style="list-style-type: lower-alpha; padding-bottom: 0;">
+                    <li>OpenAI: ChatGPT and Dall-E</li>
+                    <li>Google: Gemini</li>
+                    <li>Anthropic: Claude</li>
+                    <li>HuggingFace: Text-to-Image, Image-to-Text, Automatic Speech Recognition, Text-to-Speech, etc.</li>
+                    <li>and many more!</li>
+                </ol>
+            </li>
+            <li>Chain prompts together
+                <ol style="list-style-type: lower-alpha; padding-bottom: 0;">
+                    <li>You can use the output of one prompt as the input to another</li>
+                </ol>
+            </li>
+            <li>Decouple AI configuration from application code
+                <ol style="list-style-type: lower-alpha; padding-bottom: 0;">
+                    <li>Normally if you want to use AI model APIs in code, 
+                        you need to call into them directly. But with AIConfig, 
+                        that's all handled for you, so you only need to 
+                        use <a href="https://aiconfig.lastmileai.dev/docs/gradio-workbook#build-apps-inspired-by-spaces">
+                        2 lines in your application code
+                        </a> to get the results you need 
+                    </li>
+                </ol>
+            </li>
+        </ol>  
+    </p>
+</body>
 </html>
