@@ -78,6 +78,11 @@ export const VSCODE_THEME: MantineThemeOverride = {
       backgroundColor: "var(--vscode-notebook-cellBorderColor)",
       border: "0.25rem solid var(--vscode-button-background)",
     },
+    ".mantine-Tabs-tab": {
+      "&:hover": {
+        backgroundColor: "var(--vscode-inputOption-hoverBackground)",
+      },
+    },
     ".mantine-Tabs-tab[data-active]": {
       borderBottom: "solid 1px var(--vscode-list-focusOutline)",
       ":hover": {
