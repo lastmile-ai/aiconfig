@@ -59,6 +59,16 @@ export const VSCODE_THEME: MantineThemeOverride = {
       borderRadius: "0px",
       color: "var(--vscode-menu-foreground)",
     },
+    ".mantine-Slider-bar": {
+      backgroundColor: "var(--vscode-button-background)",
+    },
+    ".mantine-Slider-thumb": {
+      // Intentionally flip border/background to have color around the center
+      // Since border is null (i.e. will match sidePanel background). We need
+      // a background since high contrast dark buttons have null color
+      backgroundColor: "var(--vscode-notebook-cellBorderColor)",
+      border: "0.25rem solid var(--vscode-button-background)",
+    },
     ".monoFont": {
       fontFamily:
         "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
