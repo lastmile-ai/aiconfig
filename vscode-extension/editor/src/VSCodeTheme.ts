@@ -23,6 +23,42 @@ export const VSCODE_THEME: MantineThemeOverride = {
       maxWidth: "100%",
       minHeight: "100vh",
     },
+    ".mantine-Autocomplete-dropdown": {
+      backgroundColor: "var(--vscode-menu-background)",
+      border: "1px solid",
+      borderColor: "var(--vscode-notebook-cellBorderColor)",
+      borderRadius: "0px",
+      color: "var(--vscode-menu-foreground)",
+
+      ".mantine-Autocomplete-item": {
+        backgroundColor: "var(--vscode-menu-background)",
+        "&:hover": {
+          backgroundColor: "var(--vscode-inputOption-hoverBackground)",
+        },
+      },
+    },
+    ".mantine-Input-input": {
+      backgroundColor: "var(--vscode-input-background)",
+      borderColor: "var(--vscode-notebook-cellBorderColor)",
+      borderRadius: "0px",
+      color: "var(--vscode-editor-foreground)",
+
+      ":focus": {
+        outline: "solid 1px var(--vscode-inputOption-activeBorder) !important",
+        outlineOffset: "-1px",
+      },
+
+      "::placeholder": {
+        color: "var(--vscode-input-placeholderForeground)",
+      },
+    },
+    ".mantine-Menu-dropdown": {
+      backgroundColor: "var(--vscode-menu-background)",
+      border: "1px solid",
+      borderColor: "var(--vscode-notebook-cellBorderColor)",
+      borderRadius: "0px",
+      color: "var(--vscode-menu-foreground)",
+    },
     ".monoFont": {
       fontFamily:
         "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
@@ -72,7 +108,8 @@ export const VSCODE_THEME: MantineThemeOverride = {
         boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
         backgroundColor: "var(--vscode-input-background)",
         ":focus": {
-          outline: "solid 1px #ff1cf7 !important",
+          outline:
+            "solid 1px var(--vscode-inputOption-activeBorder) !important",
           outlineOffset: "-1px",
         },
       },
