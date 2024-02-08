@@ -206,7 +206,7 @@ metadata:
       \ narrow pass of the river, musketry and artillery began to open\non Wilkinson\
       \ from the British bank. Progress became slow. November 7,\nMacomb was landed\
       \ on "
-    query0: in July, flour sold at Boston for _?
+    query0: What was the price of flour sold in Boston?
     query1: When and why did the british Blockade happen?
     remember_chat_context: false
 name: Rag Demo With Model-graded Eval
