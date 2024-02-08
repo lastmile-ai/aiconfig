@@ -19,6 +19,7 @@ import {
   AIConfigEditorManager,
   AIConfigEditorState,
 } from "./aiConfigEditorManager";
+import { checkRequirements, installRequirements } from "./extension";
 
 /**
  * Provider for AIConfig editors.
@@ -370,6 +371,17 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     const openPort = await getPortPromise();
 
     const pythonPath = await getPythonPath();
+
+    const requirementsInstalled = await checkRequirements(
+      this.context,
+      this.extensionOutputChannel
+    );
+    if (requirementsInstalled) {
+      this.extensionOutputChannel.append(" -- SUCCESS");
+    } else {
+      this.extensionOutputChannel.appendLine("Update required. Installing dependencies");
+
+      const installationResult = await installRequirements();
 
     // TODO: saqadri - specify parsers_module_path
     // `aiconfig` command not useable here because it relies on python. Instead invoke the module directly.

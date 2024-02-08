@@ -16,7 +16,9 @@ import {
   sanitizeFileName,
   getTodayDateString,
   LASTMILE_BASE_URI,
-  getPythonPath
+  getPythonPath,
+  isSupportedConfigExtension,
+  SUPPORTED_FILE_EXTENSIONS,
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
@@ -35,12 +37,12 @@ export function activate(context: vscode.ExtensionContext) {
     log: true,
   });
 
-  let setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
+  const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
     installDependencies(context, extensionOutputChannel);
   });
   context.subscriptions.push(setupCommand);
 
-  let createAIConfigJSONCommand = vscode.commands.registerCommand(
+  const createAIConfigJSONCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_NEW_JSON,
     async () => {
       return await createNewAIConfig(context, aiconfigEditorManager, "json");
@@ -48,7 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createAIConfigJSONCommand);
 
-  let createAIConfigYAMLCommand = vscode.commands.registerCommand(
+  const createAIConfigYAMLCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_NEW_YAML,
     async () => {
       return await createNewAIConfig(context, aiconfigEditorManager, "yaml");
@@ -56,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createAIConfigYAMLCommand);
 
-  let shareModelParserCommand = vscode.commands.registerCommand(
+  const shareModelParserCommand = vscode.commands.registerCommand(
     COMMANDS.SHARE,
     async () => {
       return await shareAIConfig(context, aiconfigEditorManager);
@@ -64,7 +66,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(shareModelParserCommand);
 
-  let customModelParserCommand = vscode.commands.registerCommand(
+  const customModelParserCommand = vscode.commands.registerCommand(
     COMMANDS.CUSTOM_MODEL_REGISTRY_PATH,
     async () => {
       return await registerCustomModelRegistry(aiconfigEditorManager);
@@ -72,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(customModelParserCommand);
 
-  let createCustomModelRegistryCommand = vscode.commands.registerCommand(
+  const createCustomModelRegistryCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_CUSTOM_MODEL_REGISTRY,
     async () => {
       return await createCustomModelRegistry(context, aiconfigEditorManager);
@@ -80,7 +82,15 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createCustomModelRegistryCommand);
 
-  let openModelParserCommand = vscode.commands.registerCommand(
+  const openConfigFileCommand = vscode.commands.registerCommand(
+    COMMANDS.OPEN_CONFIG_FILE,
+    async () => {
+      return await openConfigFile();
+    }
+  );
+  context.subscriptions.push(openConfigFileCommand);
+
+  const openModelParserCommand = vscode.commands.registerCommand(
     COMMANDS.OPEN_MODEL_REGISTRY,
     async () => {
       return await openModelRegistry(context, aiconfigEditorManager);
@@ -179,6 +189,36 @@ async function createNewAIConfig(
 }
 
 /**
+ *
+ */
+async function openConfigFile() {
+  let defaultUri;
+  const activeDocument = vscode.window.activeTextEditor?.document;
+
+  if (activeDocument && isSupportedConfigExtension(activeDocument.fileName)) {
+    defaultUri = activeDocument.uri;
+  }
+
+  const openUri = await vscode.window.showOpenDialog({
+    defaultUri,
+    filters: {
+      // Allow opening .json and .yaml files regardless of .aiconfig. sub-extension
+      "AIConfig Extension": SUPPORTED_FILE_EXTENSIONS,
+    },
+  });
+
+  if (openUri) {
+    const doc = await vscode.workspace.openTextDocument(openUri[0]);
+
+    await vscode.commands.executeCommand(
+      "vscode.openWith",
+      doc.uri,
+      AIConfigEditorProvider.viewType
+    );
+  }
+}
+
+/**
  * Opens the currently registered custom model registry file in the editor.
  * If none is found, prompts the user to create a new one or use a pre-existing one.
  */
@@ -186,8 +226,8 @@ async function openModelRegistry(
   context: vscode.ExtensionContext,
   aiconfigEditorManager: AIConfigEditorManager
 ) {
-  let config = vscode.workspace.getConfiguration(EXTENSION_NAME);
-  let savedModelRegistryPath = config.get<string>("modelRegistryPath");
+  const config = vscode.workspace.getConfiguration(EXTENSION_NAME);
+  const savedModelRegistryPath = config.get<string>("modelRegistryPath");
   if (!savedModelRegistryPath) {
     vscode.window
       .showWarningMessage(
@@ -204,7 +244,7 @@ async function openModelRegistry(
     return;
   }
 
-  let doc = await vscode.workspace.openTextDocument(savedModelRegistryPath);
+  const doc = await vscode.workspace.openTextDocument(savedModelRegistryPath);
   if (doc) {
     vscode.window.showTextDocument(doc);
   } else {
@@ -460,7 +500,7 @@ async function installDependencies(
 /**
  * Installs the packages in the requirements.txt file needed for the AIConfig extension to work.
  */
-async function installRequirements(
+export async function installRequirements(
   context: vscode.ExtensionContext,
   progress: vscode.Progress<{
     message?: string | undefined;
@@ -478,7 +518,6 @@ async function installRequirements(
   const pythonPath = await getPythonPath();
 
   return new Promise((resolve, _reject) => {
-
     const pipInstall = spawn(pythonPath, [
       "-m",
       "pip",
@@ -530,7 +569,7 @@ async function installRequirements(
 /**
  * Runs the check_requirements.py script to check if any requirements need to be updated or installed.
  */
-async function checkRequirements(
+export async function checkRequirements(
   context: vscode.ExtensionContext,
   outputChannel: vscode.LogOutputChannel
 ) {
@@ -591,7 +630,6 @@ async function checkRequirements(
 async function checkPython() {
   const pythonPath = await getPythonPath();
   return new Promise((resolve, _reject) => {
-    
     exec(pythonPath + " --version", (error, stdout, stderr) => {
       if (error) {
         console.error("Python was not found, can't install requirements");
@@ -627,7 +665,7 @@ async function checkPython() {
 async function checkPip() {
   const pythonPath = await getPythonPath();
   return new Promise((resolve, _reject) => {
-    // when calling pip using `python -m`, no need to worry about pip vs pip3. 
+    // when calling pip using `python -m`, no need to worry about pip vs pip3.
     // You're directly specifying which Python environment's pip to use.
     exec(pythonPath + " -m pip --version", (error, stdout, stderr) => {
       if (error) {
