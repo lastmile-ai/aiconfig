@@ -85,7 +85,8 @@ prompts:
   name: generate
   outputs: []
 - input: "Given the following question, and answer, does the answer satisfactorily\
-    \ answer the question? \n\nQuestion: {{query}}\nAnswer: {{generate.output}}"
+    \ answer the question? \n\nGive a relevance verdict (YES or NO) with an explanation.\n\
+    \nQuestion: {{query}}\nAnswer: {{generate.output}}\n\nVerdict:\nExplanation:"
   metadata:
     model: gpt-4
     parameters: {}
@@ -103,7 +104,15 @@ prompts:
   name: evaluate_faithfulness
   outputs: []
 - input: 'Given the following answer, is the answer self-consistent and easy to understand?
-    Answer: {{generate.output}}'
+    Answer: {{generate.output}}
+
+
+    Give a relevance verdict (YES or NO) with an explanation.
+
+
+    Verdict:
+
+    Explanation:'
   metadata:
     model: gpt-4
     parameters: {}
@@ -111,7 +120,15 @@ prompts:
   name: evaluate_coherence
   outputs: []
 - input: 'Given the following answer, is the answer self-consistent and easy to understand?
-    Answer: {{generate.output}}'
+    Answer: {{generate.output}}
+
+
+    Give a succinctness verdict (YES or NO) with an explanation.
+
+
+    Verdict:
+
+    Explanation:'
   metadata:
     model: gpt-4
     parameters: {}
