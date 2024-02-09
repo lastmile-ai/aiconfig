@@ -31,6 +31,7 @@ type Props = {
     promptId: string,
     newParameters: Record<string, unknown>
   ) => void;
+  onUpdatePromptMetadata: (promptId: string, newMetadata: JSONObject) => void;
   defaultConfigModelName?: string;
   isRunButtonDisabled?: boolean;
 };
@@ -48,6 +49,7 @@ export default memo(function PromptContainer({
   onUpdateModel,
   onUpdateModelSettings,
   onUpdateParameters,
+  onUpdatePromptMetadata,
   isRunButtonDisabled = false,
 }: Props) {
   const promptId = prompt._ui.id;
@@ -70,6 +72,11 @@ export default memo(function PromptContainer({
   const updateParameters = useCallback(
     (parameters: JSONObject) => onUpdateParameters(promptId, parameters),
     [promptId, onUpdateParameters]
+  );
+
+  const updatePromptMetadata = useCallback(
+    (metadata: JSONObject) => onUpdatePromptMetadata(promptId, metadata),
+    [promptId, onUpdatePromptMetadata]
   );
 
   const runPrompt = useCallback(
@@ -171,6 +178,7 @@ export default memo(function PromptContainer({
           promptSchema={promptSchema}
           onUpdateModelSettings={updateModelSettings}
           onUpdateParameters={updateParameters}
+          onUpdatePromptMetadata={updatePromptMetadata}
         />
       </div>
     </Flex>

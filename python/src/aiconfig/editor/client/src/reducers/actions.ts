@@ -15,9 +15,10 @@ export type MutateAIConfigAction =
   | SetDescriptionAction
   | SetNameAction
   | UpdatePromptInputAction
-  | UpdatePromptNameAction
+  | UpdatePromptMetadataAction
   | UpdatePromptModelAction
   | UpdatePromptModelSettingsAction
+  | UpdatePromptNameAction
   | UpdatePromptParametersAction
   | UpdateGlobalParametersAction;
 
@@ -71,6 +72,12 @@ export type UpdatePromptInputAction = {
   type: "UPDATE_PROMPT_INPUT";
   id: string;
   input: PromptInput;
+};
+
+export type UpdatePromptMetadataAction = {
+  type: "UPDATE_PROMPT_METADATA";
+  id: string;
+  metadata: JSONObject;
 };
 
 export type UpdatePromptNameAction = {
