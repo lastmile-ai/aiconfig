@@ -62,14 +62,12 @@ npm install aiconfig
 
 You must specify your [OpenAI API Key](https://platform.openai.com/account/api-keys). Open your Terminal and add this line, replacing ‘your-api-key-here’ with your API key: `export OPENAI_API_KEY='your-api-key-here'`.
 
-### Open AIConfig Editor
+### Open AIConfig Editor in VS Code
 
-AIConfig Editor helps you visually create and edit the prompts and model parameters stored as AIConfigs.
+[AIConfig Editor](https://marketplace.visualstudio.com/items?itemName=lastmile-ai.vscode-aiconfig) helps you visually create and edit the prompts and model parameters stored as AIConfigs.
 
-1. Open your Terminal
-2. Run this command: `aiconfig edit --aiconfig-path=travel.aiconfig.json`
-
-This will open AIConfig Editor in your default browser at http://localhost:8080/ and create a new AIConfig JSON file `travel.aiconfig.json` in your current directory.
+1. Install the [AIConfig Editor for VS Code](https://marketplace.visualstudio.com/items?itemName=lastmile-ai.vscode-aiconfig)
+2. Open the `travel.aiconfig.json` file in VS Code. This will automatically open the AIConfig Editor in VS Code.
 
 ### Run Prompts in the Editor
 
