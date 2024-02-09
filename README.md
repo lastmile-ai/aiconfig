@@ -74,7 +74,7 @@ You must specify your [OpenAI API Key](https://platform.openai.com/account/api-k
 With AIConfig Editor, you can create and run prompts with complex chaining and variables. The editor auto-saves every 15 seconds and you can manually save with the Save button. Your updates will be reflected in the AIConfig JSON file. See this example of a prompt chain created with the editor:
 
 <div align="center"><picture>
-  <img alt="aiconfig" src="https://github.com/lastmile-ai/aiconfig/assets/81494782/6f564fc8-65fd-4e25-9ef8-699e1601d3e6" width="800"/>
+  <img alt="aiconfig" src="https://github.com/lastmile-ai/aiconfig/assets/129882602/1dff39d5-d7fc-40f5-8143-22173dac713f" width="800"/>
 </picture></div>
 
 <br>
