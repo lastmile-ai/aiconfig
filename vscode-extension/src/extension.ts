@@ -42,6 +42,18 @@ export function activate(context: vscode.ExtensionContext) {
   });
   context.subscriptions.push(setupCommand);
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand(COMMANDS.SHOW_WELCOME, () => {
+      const panel = vscode.window.createWebviewPanel(
+        "welcomePage",
+        "Welcome",
+        vscode.ViewColumn.One,
+        {}
+      );
+      panel.webview.html = getWelcomePageWebviewContent(context.extensionPath);
+    })
+  );
+
   const createAIConfigJSONCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_NEW_JSON,
     async () => {
@@ -132,6 +144,15 @@ export function activate(context: vscode.ExtensionContext) {
 // This method is called when your extension is deactivated
 export function deactivate() {
   console.log("Deactivated AIConfig extension");
+}
+
+/**
+ * Read the HTML content for the Welcome Page
+ */
+function getWelcomePageWebviewContent(extensionPath: string) {
+  const filePath = path.join(extensionPath, "src", "welcomePage.html");
+  const fileContent = fs.readFileSync(filePath, "utf8");
+  return fileContent;
 }
 
 /**
