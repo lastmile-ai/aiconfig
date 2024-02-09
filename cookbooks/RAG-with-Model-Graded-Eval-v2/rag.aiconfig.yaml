@@ -80,10 +80,52 @@ prompts:
     \ {{query}} \nContext: {{context}}"
   metadata:
     model:
-      name: gpt-3.5-turbo-16k-0613
+      name: gpt-4
       settings: {}
     parameters: {}
     remember_chat_context: false
+  name: generate_v1
+  outputs:
+  - data: The price of flour sold in Boston was $11.87 a barrel in August.
+    execution_count: 0
+    metadata:
+      created: 1707439800
+      id: chatcmpl-8q9NY0YI6dDvzeFEebWIQZaOyLPwQ
+      model: gpt-3.5-turbo-16k-0613
+      object: chat.completion.chunk
+      raw_response:
+        content: The price of flour sold in Boston was $11.87 a barrel in August.
+        role: assistant
+      role: assistant
+    output_type: execute_result
+- input: "Answer the following question using the provided context. \n\nQuestion:\
+    \ {{query}} \nContext: {{context}}\n\nReview your answer and the context. Is the\
+    \ answer strictly justified by the context? If necessary, revise your answer.\n\
+    \nReview your best answer so far. Is it succinct, or does it contain extra information?\
+    \ If necessary, revise your answer.\n\nReview your best answer so far again. Does\
+    \ it actually answer the question? If necessary, revise your answer again.\n\n\
+    Review your best answer so far one last time. Is it easy to unerstand? If necessary,\
+    \ reviews your answer a final time.\n\n\nOutput ONLY YOUR BEST ANSWER.\n\nBEST\
+    \ ANSWER:"
+  metadata:
+    model:
+      name: gpt-3.5-turbo-16k-0613
+      settings: {}
+    parameters: {}
+  name: generate_v2
+  outputs: []
+- input: "Answer the following question using the provided context. \n\nQuestion:\
+    \ {{query}} \nContext: {{context}}\n\nReview your answer and the context. Is the\
+    \ answer strictly justified by the context? If necessary, revise your answer.\n\
+    \nReview your best answer so far. Is it succinct, or does it contain extra information?\
+    \ If necessary, revise your answer.\n\nReview your best answer so far again. Does\
+    \ it actually answer the question? If necessary, revise your answer again.\n\n\
+    Review your best answer so far one last time. Is it easy to unerstand? If necessary,\
+    \ reviews your answer a final time.\n\n\nOutput ONLY YOUR BEST ANSWER.\n\nBEST\
+    \ ANSWER:"
+  metadata:
+    model: gpt-4
+    parameters: {}
   name: generate
   outputs: []
 - input: "Given the following question, and answer, does the answer satisfactorily\
