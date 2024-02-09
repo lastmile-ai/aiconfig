@@ -149,6 +149,17 @@ export default function aiconfigReducer(
         input: action.input,
       }));
     }
+    case "UPDATE_PROMPT_METADATA": {
+      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
+        ...prompt,
+        metadata: {
+          ...action.metadata,
+          // Keep existing model and parameters metadata (managed by separate actions)
+          model: prompt.metadata?.model,
+          parameters: prompt.metadata?.parameters,
+        },
+      }));
+    }
     case "UPDATE_PROMPT_NAME": {
       // Validate that no prompt has a name that conflicts with this one:
       const existingPromptNames = dirtyState.prompts.map(
