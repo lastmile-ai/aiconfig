@@ -82,7 +82,10 @@
           "description": "Path to the custom model registry file."
         }
       }
-    }
+    },
+    "markdown.previewScripts": [
+      "./src/markdownCommands.js"
+    ]
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",

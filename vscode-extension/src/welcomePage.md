@@ -12,7 +12,7 @@ Get started by trying out some of these commands! Press ("CMD" + "SHIFT" + P) to
 <!-- Not able to get below line to work for executing VSCode Command -->
 <!-- - [`AIConfig: Create New`](command:vscode-aiconfig.createAIConfigJSON) -> Creates a new file (in JSON or YAML format) -->
 
-- `AIConfig: Create New` -> Creates a new file (in JSON or YAML format)
+- [`AIConfig: Create New`](command:vscode-aiconfig.createAIConfigJSON) -> Creates a new file (in JSON or YAML format)
 - `AIConfig: Share (get permalink)` -> Creates a link to read-only state of your AIConfig file. Use this to share with others :D
 - `AIConfig: Welcome` -> Opens this window that you can refer to again!
 
