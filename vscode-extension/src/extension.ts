@@ -2,7 +2,6 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 
-import * as AWS from "aws-sdk";
 import { ufetch } from "ufetch";
 import { exec, spawn } from "child_process";
 import fs from "fs";
@@ -724,35 +723,44 @@ async function shareAIConfig(
   const fileName: string = activeEditor.document.fileName;
   const sanitizedFileName: string = sanitizeFileName(fileName);
 
-  // Use empty accessKeyId and secretAccessKey so bucket can be accessed publicly
-  AWS.config.update({
-    accessKeyId: "",
-    secretAccessKey: "",
-  });
-  const s3 = new AWS.S3();
-
+  // TODO: Add back once CORS is resolved
+  // const policyResponse = await fetch(
+  //   "https://lastmileai.dev/api/upload/publicpolicy"
+  // );
+  // const policy = await policyResponse.json();
+  const uploadUrl = "https://s3.amazonaws.com/lastmileai.aiconfig.public/";
   const randomPath = Math.round(Math.random() * 10000);
-  const bucket: string = "lastmileai.aiconfig.public";
   const uploadKey: string = `aiconfigs/${getTodayDateString()}/${randomPath}/${sanitizedFileName}`;
-  const configString = activeEditor.document.getText();
 
   // TODO: Will also need to check for yaml files and change the contentType accordingly
   const contentType = "application/json";
 
-  const input = {
-    ACL: "public-read",
-    ContentType: contentType,
-    // TODO: Check if we can just pass in fileName itself? Don't think so
-    Body: configString,
-    Bucket: bucket,
-    Key: uploadKey,
-  };
-  await s3.putObject(input).promise();
+  const formData = new FormData();
+  formData.append("key", uploadKey);
+  formData.append("acl", "public-read");
+  formData.append("Content-Type", contentType);
+  formData.append("success_action_status", "201");
+  const configString = activeEditor.document.getText();
+  const fileBlob = new Blob([configString], {
+    type: contentType,
+  });
+  formData.append("file", fileBlob);
 
-  const s3Url: string = `https://s3.amazonaws.com/${bucket}/${uploadKey.replace(
-    /[ ]/g,
-    "%20"
-  )}`;
+  // See this about changing to use XMLHTTPRequest to show upload progress as well
+  // https://medium.com/@cpatarun/tracking-file-upload-progress-to-amazon-s3-from-the-browser-71be6712c63d
+  await fetch(uploadUrl, {
+    method: "POST",
+    mode: "cors",
+    // TODO: Investigate whether this is needed, since it's used in AttachmentUploader (https://github.com/lastmile-ai/aiconfig/blob/a741af3221976caa73a32e57a8833af7a3148390/python/src/aiconfig/editor/client/src/components/prompt/prompt_input/attachments/AttachmentUploader.tsx#L61C5-L62C1)
+    // but causes the code here to error on compile
+    // cache: "no-cache",
+    body: formData,
+    headers: {
+      Authorization: "",
+    },
+  });
+
+  const s3Url: string = `${uploadUrl}${uploadKey.replace(/[ ]/g, "%20")}`;
 
   const lastmileUploadUrl: string = LASTMILE_BASE_URI + "api/aiconfig/upload";
   const response = await ufetch.post(lastmileUploadUrl, {
