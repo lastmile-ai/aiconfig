@@ -16,9 +16,17 @@ export const COMMANDS = {
   HELLO_WORLD: `${EXTENSION_NAME}.helloWorld`,
   CUSTOM_MODEL_REGISTRY_PATH: `${EXTENSION_NAME}.customModelRegistryPath`,
   CREATE_CUSTOM_MODEL_REGISTRY: `${EXTENSION_NAME}.createCustomModelRegistry`,
+  OPEN_CONFIG_FILE: `${EXTENSION_NAME}.openConfigFile`,
   OPEN_MODEL_REGISTRY: `${EXTENSION_NAME}.openModelRegistry`,
   SHARE: `${EXTENSION_NAME}.share`,
+  SHOW_WELCOME: `${EXTENSION_NAME}.showWelcome`,
 };
+
+export const SUPPORTED_FILE_EXTENSIONS = [".json", ".yaml"];
+
+export function isSupportedConfigExtension(fileName: string) {
+  return SUPPORTED_FILE_EXTENSIONS.includes(path.extname(fileName));
+}
 
 // Note: This is used for the share feature.
 export const LASTMILE_BASE_URI: string = "https://lastmileai.dev/";
@@ -65,33 +73,25 @@ export async function waitUntilServerReady(serverUrl: string) {
   }
 }
 
-export async function initializeServerState(
+export function updateWebviewEditorThemeMode(webview: vscode.Webview) {
+  const isDarkMode =
+    vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark ||
+    vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.HighContrast;
+  // ColorThemeKind.Light or ColorThemeKind.HighContrastLight is light mode
+  webview.postMessage({
+    type: "set_theme",
+    theme: isDarkMode ? "dark" : "light",
+  });
+}
+
+export async function updateServerState(
   serverUrl: string,
   document: vscode.TextDocument
 ) {
-  try {
-    return await ufetch.post(
-      EDITOR_SERVER_ROUTE_TABLE.LOAD_CONTENT(serverUrl),
-      {
-        content: document.getText(),
-        mode: getModeFromDocument(document),
-      }
-    );
-  } catch (e) {
-    // Code that should run in response to the hello message command
-    vscode.window
-      .showErrorMessage(
-        "Failed to start aiconfig server. You can view the aiconfig but cannot modify it.",
-        ...["Retry"]
-      )
-      .then((selection) => {
-        if (selection === "Retry") {
-          initializeServerState(serverUrl, document);
-        }
-      });
-
-    return;
-  }
+  return await ufetch.post(EDITOR_SERVER_ROUTE_TABLE.LOAD_CONTENT(serverUrl), {
+    content: document.getText(),
+    mode: getModeFromDocument(document),
+  });
 }
 
 // Figure out what kind of AIConfig this is that we are loading
@@ -284,3 +284,19 @@ export function urlJoin(...args) {
   return normalize(parts);
 }
 //#endregion
+
+/**
+ * AIConfig Vscode extension has a dependency on the Python extension.
+ * This function retrieves and returns the path to the current python interpreter.
+ * @returns the path to the current python interpreter
+ */
+export async function getPythonPath(): Promise<string> {
+  const pythonExtension = vscode.extensions.getExtension("ms-python.python");
+  if (!pythonExtension.isActive) {
+    await pythonExtension.activate();
+  }
+
+  const pythonPath =
+    pythonExtension.exports.settings.getExecutionDetails().execCommand[0];
+  return pythonPath;
+}

@@ -2,9 +2,11 @@
   "name": "vscode-aiconfig",
   "repository": "https://github.com/lastmile-ai/aiconfig",
   "publisher": "lastmile-ai",
+  "author": "LastMile AI",
   "displayName": "AIConfig Editor",
   "description": "AIConfig notebook editor that turns VSCode into a generative AI studio.",
-  "version": "0.0.3",
+  "version": "0.0.6",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -40,8 +42,16 @@
         "title": "AIConfig: Create Custom Model Registry"
       },
       {
+        "command": "vscode-aiconfig.openConfigFile",
+        "title": "AIConfig: Open AIConfig File"
+      },
+      {
         "command": "vscode-aiconfig.openModelRegistry",
         "title": "AIConfig: Open Custom Model Registry File"
+      },
+      {
+        "command": "vscode-aiconfig.showWelcome",
+        "title": "AIConfig: Welcome"
       }
     ],
     "customEditors": [
@@ -100,9 +110,11 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "aws-sdk": "^2.1547.0",
     "oboe": "^2.1.5",
     "portfinder": "^1.0.32",
     "ufetch": "^1.6.0"
-  }
+  },
+  "extensionDependencies": [
+    "ms-python.python"
+  ]
 }

@@ -2,7 +2,6 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 
-import * as AWS from "aws-sdk";
 import { ufetch } from "ufetch";
 import { exec, spawn } from "child_process";
 import fs from "fs";
@@ -16,6 +15,9 @@ import {
   sanitizeFileName,
   getTodayDateString,
   LASTMILE_BASE_URI,
+  getPythonPath,
+  isSupportedConfigExtension,
+  SUPPORTED_FILE_EXTENSIONS,
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
@@ -34,12 +36,26 @@ export function activate(context: vscode.ExtensionContext) {
     log: true,
   });
 
-  let setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
+  const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
     installDependencies(context, extensionOutputChannel);
   });
   context.subscriptions.push(setupCommand);
 
-  let createAIConfigJSONCommand = vscode.commands.registerCommand(
+  context.subscriptions.push(
+    vscode.commands.registerCommand(COMMANDS.SHOW_WELCOME, async () => {
+      const welcomeFilePath = path.join(
+        context.extensionPath,
+        "src",
+        "welcomePage.md"
+      );
+      await vscode.commands.executeCommand(
+        "markdown.showPreview",
+        vscode.Uri.file(welcomeFilePath)
+      );
+    })
+  );
+
+  const createAIConfigJSONCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_NEW_JSON,
     async () => {
       return await createNewAIConfig(context, aiconfigEditorManager, "json");
@@ -47,7 +63,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createAIConfigJSONCommand);
 
-  let createAIConfigYAMLCommand = vscode.commands.registerCommand(
+  const createAIConfigYAMLCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_NEW_YAML,
     async () => {
       return await createNewAIConfig(context, aiconfigEditorManager, "yaml");
@@ -55,7 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createAIConfigYAMLCommand);
 
-  let shareModelParserCommand = vscode.commands.registerCommand(
+  const shareModelParserCommand = vscode.commands.registerCommand(
     COMMANDS.SHARE,
     async () => {
       return await shareAIConfig(context, aiconfigEditorManager);
@@ -63,7 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(shareModelParserCommand);
 
-  let customModelParserCommand = vscode.commands.registerCommand(
+  const customModelParserCommand = vscode.commands.registerCommand(
     COMMANDS.CUSTOM_MODEL_REGISTRY_PATH,
     async () => {
       return await registerCustomModelRegistry(aiconfigEditorManager);
@@ -71,7 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(customModelParserCommand);
 
-  let createCustomModelRegistryCommand = vscode.commands.registerCommand(
+  const createCustomModelRegistryCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_CUSTOM_MODEL_REGISTRY,
     async () => {
       return await createCustomModelRegistry(context, aiconfigEditorManager);
@@ -79,7 +95,15 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createCustomModelRegistryCommand);
 
-  let openModelParserCommand = vscode.commands.registerCommand(
+  const openConfigFileCommand = vscode.commands.registerCommand(
+    COMMANDS.OPEN_CONFIG_FILE,
+    async () => {
+      return await openConfigFile();
+    }
+  );
+  context.subscriptions.push(openConfigFileCommand);
+
+  const openModelParserCommand = vscode.commands.registerCommand(
     COMMANDS.OPEN_MODEL_REGISTRY,
     async () => {
       return await openModelRegistry(context, aiconfigEditorManager);
@@ -178,6 +202,36 @@ async function createNewAIConfig(
 }
 
 /**
+ *
+ */
+async function openConfigFile() {
+  let defaultUri;
+  const activeDocument = vscode.window.activeTextEditor?.document;
+
+  if (activeDocument && isSupportedConfigExtension(activeDocument.fileName)) {
+    defaultUri = activeDocument.uri;
+  }
+
+  const openUri = await vscode.window.showOpenDialog({
+    defaultUri,
+    filters: {
+      // Allow opening .json and .yaml files regardless of .aiconfig. sub-extension
+      "AIConfig Extension": SUPPORTED_FILE_EXTENSIONS,
+    },
+  });
+
+  if (openUri) {
+    const doc = await vscode.workspace.openTextDocument(openUri[0]);
+
+    await vscode.commands.executeCommand(
+      "vscode.openWith",
+      doc.uri,
+      AIConfigEditorProvider.viewType
+    );
+  }
+}
+
+/**
  * Opens the currently registered custom model registry file in the editor.
  * If none is found, prompts the user to create a new one or use a pre-existing one.
  */
@@ -185,8 +239,8 @@ async function openModelRegistry(
   context: vscode.ExtensionContext,
   aiconfigEditorManager: AIConfigEditorManager
 ) {
-  let config = vscode.workspace.getConfiguration(EXTENSION_NAME);
-  let savedModelRegistryPath = config.get<string>("modelRegistryPath");
+  const config = vscode.workspace.getConfiguration(EXTENSION_NAME);
+  const savedModelRegistryPath = config.get<string>("modelRegistryPath");
   if (!savedModelRegistryPath) {
     vscode.window
       .showWarningMessage(
@@ -203,7 +257,7 @@ async function openModelRegistry(
     return;
   }
 
-  let doc = await vscode.workspace.openTextDocument(savedModelRegistryPath);
+  const doc = await vscode.workspace.openTextDocument(savedModelRegistryPath);
   if (doc) {
     vscode.window.showTextDocument(doc);
   } else {
@@ -474,9 +528,12 @@ async function installRequirements(
     "python",
     "requirements.txt"
   );
+  const pythonPath = await getPythonPath();
 
   return new Promise((resolve, _reject) => {
-    const pipInstall = spawn("pip3", [
+    const pipInstall = spawn(pythonPath, [
+      "-m",
+      "pip",
       "install",
       "-r",
       requirementsPath,
@@ -543,8 +600,10 @@ async function checkRequirements(
     "requirements.txt"
   );
 
+  const pythonPath = await getPythonPath();
+
   return new Promise((resolve, reject) => {
-    let checkRequirements = spawn("python3", [
+    let checkRequirements = spawn(pythonPath, [
       checkRequirementsScriptPath,
       "--requirements_path",
       requirementsPath,
@@ -582,10 +641,12 @@ async function checkRequirements(
  * Checks if Python is installed on the system, and if not, prompts the user to install it.
  */
 async function checkPython() {
+  const pythonPath = await getPythonPath();
   return new Promise((resolve, _reject) => {
-    exec("python3 --version", (error, stdout, stderr) => {
+    exec(pythonPath + " --version", (error, stdout, stderr) => {
       if (error) {
         console.error("Python was not found, can't install requirements");
+        console.error("retrieved python path: " + pythonPath);
 
         // Guide for installation
         vscode.window
@@ -615,8 +676,11 @@ async function checkPython() {
  * Checks if pip is installed on the system, and if not, prompts the user to install it.
  */
 async function checkPip() {
+  const pythonPath = await getPythonPath();
   return new Promise((resolve, _reject) => {
-    exec("pip3 --version", (error, stdout, stderr) => {
+    // when calling pip using `python -m`, no need to worry about pip vs pip3.
+    // You're directly specifying which Python environment's pip to use.
+    exec(pythonPath + " -m pip --version", (error, stdout, stderr) => {
       if (error) {
         console.log("pip is not found");
         // Guide for installation
@@ -659,35 +723,44 @@ async function shareAIConfig(
   const fileName: string = activeEditor.document.fileName;
   const sanitizedFileName: string = sanitizeFileName(fileName);
 
-  // Use empty accessKeyId and secretAccessKey so bucket can be accessed publicly
-  AWS.config.update({
-    accessKeyId: "",
-    secretAccessKey: "",
-  });
-  const s3 = new AWS.S3();
-
+  // TODO: Add back once CORS is resolved
+  // const policyResponse = await fetch(
+  //   "https://lastmileai.dev/api/upload/publicpolicy"
+  // );
+  // const policy = await policyResponse.json();
+  const uploadUrl = "https://s3.amazonaws.com/lastmileai.aiconfig.public/";
   const randomPath = Math.round(Math.random() * 10000);
-  const bucket: string = "lastmileai.aiconfig.public";
   const uploadKey: string = `aiconfigs/${getTodayDateString()}/${randomPath}/${sanitizedFileName}`;
-  const configString = activeEditor.document.getText();
 
   // TODO: Will also need to check for yaml files and change the contentType accordingly
   const contentType = "application/json";
 
-  const input = {
-    ACL: "public-read",
-    ContentType: contentType,
-    // TODO: Check if we can just pass in fileName itself? Don't think so
-    Body: configString,
-    Bucket: bucket,
-    Key: uploadKey,
-  };
-  await s3.putObject(input).promise();
+  const formData = new FormData();
+  formData.append("key", uploadKey);
+  formData.append("acl", "public-read");
+  formData.append("Content-Type", contentType);
+  formData.append("success_action_status", "201");
+  const configString = activeEditor.document.getText();
+  const fileBlob = new Blob([configString], {
+    type: contentType,
+  });
+  formData.append("file", fileBlob);
 
-  const s3Url: string = `https://s3.amazonaws.com/${bucket}/${uploadKey.replace(
-    /[ ]/g,
-    "%20"
-  )}`;
+  // See this about changing to use XMLHTTPRequest to show upload progress as well
+  // https://medium.com/@cpatarun/tracking-file-upload-progress-to-amazon-s3-from-the-browser-71be6712c63d
+  await fetch(uploadUrl, {
+    method: "POST",
+    mode: "cors",
+    // TODO: Investigate whether this is needed, since it's used in AttachmentUploader (https://github.com/lastmile-ai/aiconfig/blob/a741af3221976caa73a32e57a8833af7a3148390/python/src/aiconfig/editor/client/src/components/prompt/prompt_input/attachments/AttachmentUploader.tsx#L61C5-L62C1)
+    // but causes the code here to error on compile
+    // cache: "no-cache",
+    body: formData,
+    headers: {
+      Authorization: "",
+    },
+  });
+
+  const s3Url: string = `${uploadUrl}${uploadKey.replace(/[ ]/g, "%20")}`;
 
   const lastmileUploadUrl: string = LASTMILE_BASE_URI + "api/aiconfig/upload";
   const response = await ufetch.post(lastmileUploadUrl, {

@@ -1,6 +1,6 @@
 import { WebviewApi } from "vscode-webview";
 import { ClientAIConfig } from "@lastmileai/aiconfig-editor/dist/shared/types";
-import { JSONObject, JSONValue } from "aiconfig";
+import { JSONValue } from "aiconfig";
 
 /**
  * State that gets serialized and restored when the webview is recreated.
@@ -12,6 +12,7 @@ import { JSONObject, JSONValue } from "aiconfig";
 export type WebviewState = {
   aiconfigState?: ClientAIConfig;
   serverUrl?: string;
+  theme?: "light" | "dark";
 };
 
 /**
