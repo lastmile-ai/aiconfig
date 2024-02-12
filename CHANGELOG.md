@@ -1,5 +1,31 @@
 # Changelog
 
+## (2024-02-08) Python Version 1.1.22, NPM Version 1.1.9
+
+## Features
+
+- **vscode:** Now utilizes the user's Python interpreter in the VS Code environment when installing dependencies for the AIConfig Editor extension. [PR #1151](https://github.com/lastmile-ai/aiconfig/pull/1151)
+- **vscode:** Added a command for opening an AIConfig file directly. [PR #1164](https://github.com/lastmile-ai/aiconfig/pull/1164)
+- **vscode:** Added a VS Code command for displaying a Welcome Page on how to use the extension effectively. [PR #1194](https://github.com/lastmile-ai/aiconfig/pull/1194)
+
+## Bug Fixes / Tasks
+
+- **Python SDK:**
+  - **AIConfig Format Support:** Added support for AIConfig format issue for chats starting with an assistant (AI) message by making the initial prompt input empty. [PR #1158](https://github.com/lastmile-ai/aiconfig/pull/1158)
+  - **Dependency Management:** Pinned google-generativeai module version to >=0.3.1 in `requirements.txt` files. [PR #1171](https://github.com/lastmile-ai/aiconfig/pull/1171)
+  - **Python Version Requirement:** Defined all `pyproject.toml` files to require Python version >= 3.10. [PR #1146](https://github.com/lastmile-ai/aiconfig/pull/1146)
+- **VS Code:**
+  - **Extension Dependencies:** Removed the Hugging Face extension from VS Code extension dependencies. [PR #1167](https://github.com/lastmile-ai/aiconfig/pull/1167)
+  - **Editor Component Theming:** Fixed color scheming in the AIConfig editor component to match VS Code settings. [PR #1168](https://github.com/lastmile-ai/aiconfig/pull/1168), [PR #1176](https://github.com/lastmile-ai/aiconfig/pull/1176)
+  - **Share Command Fix:** Fixed an issue where the Share command was not working for unsigned AWS S3 credentials. [PR #1213](https://github.com/lastmile-ai/aiconfig/pull/1213)
+  - **Notification Issue:** Fixed an issue where a notification, “Failed to start aiconfig server,” would show when closing a config with unsaved changes. [PR #1201](https://github.com/lastmile-ai/aiconfig/pull/1201)
+
+## Documentation
+
+- **Tutorials and Guides:**
+  - Created a getting-started tutorial for Gradio Notebooks. [Documentation](https://aiconfig.lastmileai.dev/docs/gradio-notebook)
+  - Created a cookbook for RAG with model-graded evaluation. [PR #1169](https://github.com/lastmile-ai/aiconfig/pull/1169), [PR #1200](https://github.com/lastmile-ai/aiconfig/pull/1200)
+
 ## (2024-01-23) Python Version 1.1.15, NPM Version 1.1.7
 
 Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/995
