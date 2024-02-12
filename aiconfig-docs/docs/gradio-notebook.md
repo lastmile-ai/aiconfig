@@ -123,7 +123,7 @@ Reasons for Downloading:
 1. **Lock in edits to your Space.** Refreshing your Space does not save changes. You need to upload the downloaded `aiconfig.json` file to your Space repo to lock in the state. Make sure you name your `aiconfig.json` file as `my_app.aiconfig.json` - it’s referenced in `app.py`.
 2. **Build apps inspired by your Space.** HuggingFace Spaces offer cool demos, but building an app with the tested models and prompts is challenging. However, by downloading the `aiconfig.json` file, you can use the prompts (and models) from your Space in your code with the [AIConfig SDK](https://github.com/lastmile-ai/aiconfig).
 
-### Share Norkbook
+### Share Notebook
 
 Click **Share Notebook** to get a link to a read-only copy of your Space to share with the rest of the world!
 

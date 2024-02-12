@@ -6,7 +6,7 @@ import {
   getCurrentWorkingDirectory,
   getDocumentFromServer,
   getPythonPath,
-  initializeServerState,
+  updateServerState,
   updateWebviewEditorThemeMode,
   waitUntilServerReady,
 } from "./util";
@@ -145,23 +145,59 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
             return;
           }
 
+          // TODO: Should we skip events with no content changes?
+          // if (e.contentChanges.length === 0) {
+          //   console.log(
+          //     `changeDocumentSubscription ${e.document.uri} - skipping event because there are no content changes`
+          //   );
+          //   return;
+          // }
+
           // TODO: saqadri - instead of sending the entire document to the webview,
           // can ask it to reload the document from the server
 
           // Update webview immediately, and server state should be updated in the background.
+          console.log(
+            `changeDocumentSubscription ${e.document.uri} -- updating webview`
+          );
           updateWebview();
 
           // Notify server of updated document
           if (editorServer) {
-            console.log("changeDocumentSubscription -- updating server");
-
             // TODO: saqadri - decide if we want to await here or just fire and forget
-            await initializeServerState(editorServer.url, e.document);
-          }
+            try {
+              console.log("changeDocumentSubscription -- updating server");
+              await updateServerState(editorServer.url, e.document);
+            } catch (e) {
+              if (isWebviewDisposed) {
+                // Ignore errors caused by closing the webview while the server update
+                // request is in flight (e.g. closing config w/ unsaved changes will
+                // emit onDidChangeTextDocument with reverted unsaved changes)
+                // See #1201 for full details.
+                console.info(
+                  "Ignoring server update error due to webview disposal"
+                );
+                return;
+              }
 
-          console.log(
-            `changeDocumentSubscription ${e.document.uri} -- updating webview`
-          );
+              vscode.window
+                .showErrorMessage(
+                  "Failed to update aiconfig server. You can view the aiconfig but cannot modify it.",
+                  ...["Details", "Retry"]
+                )
+                .then((selection) => {
+                  if (selection === "Details") {
+                    this.extensionOutputChannel.error(
+                      e?.message ?? JSON.stringify(e)
+                    );
+                    this.extensionOutputChannel.show(/*preserveFocus*/ true);
+                  }
+                  if (selection === "Retry") {
+                    updateServerState(editorServer.url, e.document);
+                  }
+                });
+            }
+          }
         }
       }
     );
@@ -200,17 +236,17 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Make sure we get rid of the listener when our editor is closed.
     webviewPanel.onDidDispose(() => {
+      isWebviewDisposed = true;
       console.log(`${document.fileName}: Webview disposed`);
+
       changeDocumentSubscription.dispose();
       willSaveDocumentSubscription.dispose();
 
-      // TODO: saqadri -- terminate the editor server process.
       if (editorServer) {
         console.log("Killing editor server process");
         editorServer.proc.kill();
+        editorServer = null;
       }
-
-      isWebviewDisposed = true;
     });
 
     // Receive message from the webview.
@@ -339,7 +375,24 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     await waitUntilServerReady(editorServer.url);
 
     // Now set up the server with the latest document content
-    await initializeServerState(editorServer.url, document);
+    try {
+      await updateServerState(editorServer.url, document);
+    } catch (e) {
+      vscode.window
+        .showErrorMessage(
+          "Failed to start aiconfig server. You can view the aiconfig but cannot modify it.",
+          ...["Details", "Retry"]
+        )
+        .then((selection) => {
+          if (selection === "Details") {
+            this.extensionOutputChannel.error(e?.message ?? JSON.stringify(e));
+            this.extensionOutputChannel.show(/*preserveFocus*/ true);
+          }
+          if (selection === "Retry") {
+            updateServerState(editorServer.url, document);
+          }
+        });
+    }
 
     // Inform the webview of the server URL
     if (!isWebviewDisposed) {
@@ -387,7 +440,14 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     // `aiconfig` command not useable here because it relies on python. Instead invoke the module directly.
     let startServer = spawn(
       pythonPath,
-      ["-m", "aiconfig.scripts.aiconfig_cli", "start", "--server-port", openPort.toString(), ...modelRegistryPathArgs],
+      [
+        "-m",
+        "aiconfig.scripts.aiconfig_cli",
+        "start",
+        "--server-port",
+        openPort.toString(),
+        ...modelRegistryPathArgs,
+      ],
       {
         cwd: getCurrentWorkingDirectory(document),
       }
