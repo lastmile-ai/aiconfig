@@ -182,6 +182,7 @@ function AIConfigEditorBase({
     }
     try {
       await downloadCallback();
+      logEventHandler?.("DOWNLOAD_BUTTON_CLICKED");
     } catch (err: unknown) {
       const message = (err as RequestCallbackError).message ?? null;
       showNotification({
@@ -190,7 +191,7 @@ function AIConfigEditorBase({
         type: "error",
       });
     }
-  }, [downloadCallback, showNotification]);
+  }, [downloadCallback, logEventHandler, showNotification]);
 
   const shareCallback = callbacks?.share;
   const onShare = useCallback(async () => {
@@ -199,6 +200,7 @@ function AIConfigEditorBase({
     }
     try {
       const { share_url: shareUrl } = await shareCallback();
+      logEventHandler?.("SHARE_BUTTON_CLICKED");
       return shareUrl;
     } catch (err: unknown) {
       const message = (err as RequestCallbackError).message ?? null;
@@ -208,7 +210,7 @@ function AIConfigEditorBase({
         type: "error",
       });
     }
-  }, [shareCallback, showNotification]);
+  }, [logEventHandler, shareCallback, showNotification]);
 
   const saveCallback = callbacks?.save;
   const onSave = useCallback(async () => {
