@@ -27,6 +27,9 @@ from aiconfig.util.params import resolve_prompt
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
 
+# TODO: add conversation history support
+# TODO: update this in future to Serverless Endpoint once OpenAI format becomes their standard. See https://github.com/lastmile-ai/aiconfig/issues/1232
+
 
 # Step 1: define Helpers
 def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
