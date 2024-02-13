@@ -248,7 +248,7 @@ class HuggingFaceConversationalRemoteInference(ParameterizedModelParser):
                 self.client.model, token=run_override_api_token
             )
 
-        response = client.translation(**completion_data)
+        response = client.conversational(**completion_data)
 
         # HF Conversational api doesn't support multiple outputs. Expect only one output.
         # Output spec: response is literal string
