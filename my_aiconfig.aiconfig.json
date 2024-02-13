@@ -9,12 +9,44 @@
   "prompts": [
     {
       "name": "prompt_1",
-      "input": "",
+      "input": "hello\n",
       "metadata": {
-        "model": "gpt-4",
+        "model": {
+          "name": "HuggingFaceConversationalRemoteInference",
+          "settings": {}
+        },
         "parameters": {}
       },
-      "outputs": []
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": {
+            "generated_text": " Hello! How are you? I just got back from walking my dog. Do you have any pets?",
+            "conversation": {
+              "generated_responses": [
+                " Hello! How are you? I just got back from walking my dog. Do you have any pets?"
+              ],
+              "past_user_inputs": [
+                "hello\n"
+              ]
+            }
+          },
+          "metadata": {
+            "raw_response": {
+              "generated_text": " Hello! How are you? I just got back from walking my dog. Do you have any pets?",
+              "conversation": {
+                "generated_responses": [
+                  " Hello! How are you? I just got back from walking my dog. Do you have any pets?"
+                ],
+                "past_user_inputs": [
+                  "hello\n"
+                ]
+              }
+            }
+          }
+        }
+      ]
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
