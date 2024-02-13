@@ -22,6 +22,7 @@ import { HuggingFaceTextSummarizationRemoteInferencePromptSchema } from "../shar
 import { HuggingFaceTextTranslationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextTranslationRemoteInferencePromptSchema";
 import { HuggingFaceImage2TextRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextRemoteInferencePromptSchema";
 import { ClaudeBedrockPromptSchema } from "../shared/prompt_schemas/ClaudeBedrockPromptSchema";
+import { HuggingFaceConversationalRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceConversationalRemoteInferencePromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -90,6 +91,9 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   HuggingFaceImage2TextRemoteInference:
     HuggingFaceImage2TextRemoteInferencePromptSchema,
 
+  HuggingFaceConversationalRemoteInference:
+    HuggingFaceConversationalRemoteInferencePromptSchema,
+
   HuggingFaceAutomaticSpeechRecognitionRemoteInference:
     HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema,
 
@@ -152,6 +156,7 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "Text Generation": HuggingFaceTextGenerationRemoteInferencePromptSchema,
   Summarization: HuggingFaceTextSummarizationRemoteInferencePromptSchema,
   Translation: HuggingFaceTextTranslationRemoteInferencePromptSchema,
+  Conversational: HuggingFaceConversationalRemoteInferencePromptSchema,
 
   "Automatic Speech Recognition (Local)":
     HuggingFaceAutomaticSpeechRecognitionPromptSchema,
