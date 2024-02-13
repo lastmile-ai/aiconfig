@@ -65,13 +65,23 @@ export function aiConfigToClientConfig(aiconfig: AIConfig): ClientAIConfig {
 
 export type LogEvent =
   | "ADD_PROMPT"
+  | "CLEAR_OUTPUTS"
+  | "DELETE_PROMPT"
   | "DOWNLOAD_BUTTON_CLICKED"
   | "RUN_PROMPT_CANCELED"
   | "RUN_PROMPT_ERROR"
   | "RUN_PROMPT_START"
   | "RUN_PROMPT_SUCCESS"
   | "SAVE_BUTTON_CLICKED"
-  | "SHARE_BUTTON_CLICKED";
+  | "SET_DESCRIPTION"
+  | "SET_NAME"
+  | "SHARE_BUTTON_CLICKED"
+  | "UPDATE_GLOBAL_PARAMETERS"
+  | "UPDATE_PROMPT_INPUT"
+  | "UPDATE_PROMPT_MODEL"
+  | "UPDATE_PROMPT_MODEL_SETTINGS"
+  | "UPDATE_PROMPT_NAME"
+  | "UPDATE_PROMPT_PARAMETERS";
 
 // TODO: schematize this
 export type LogEventData = JSONObject;
