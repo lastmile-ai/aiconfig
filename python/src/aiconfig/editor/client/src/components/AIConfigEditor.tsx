@@ -1017,19 +1017,7 @@ function AIConfigEditorBase({
         <div>
           <Flex justify="flex-end" pt="md" mb="xs">
             {
-              <Group>
-                {downloadCallback && <DownloadButton onDownload={onDownload} />}
-                {shareCallback && <ShareButton onShare={onShare} />}
-                {openInTextEditorCallback && (
-                  <Tooltip label="Open in Text Editor" withArrow>
-                    <ActionIcon
-                      onClick={openInTextEditorCallback}
-                      className="secondaryButton"
-                    >
-                      <IconBraces size="1rem" />
-                    </ActionIcon>
-                  </Tooltip>
-                )}
+              <Group spacing="xs">
                 {!readOnly && onClearOutputs && (
                   <Button
                     loading={undefined}
@@ -1039,6 +1027,32 @@ function AIConfigEditorBase({
                   >
                     Clear Outputs
                   </Button>
+                )}
+                {(downloadCallback || shareCallback) && (
+                  <div>
+                    {downloadCallback && (
+                      <DownloadButton
+                        onDownload={onDownload}
+                        isGrouped={shareCallback != null}
+                      />
+                    )}
+                    {shareCallback && (
+                      <ShareButton
+                        onShare={onShare}
+                        isGrouped={downloadCallback != null}
+                      />
+                    )}
+                  </div>
+                )}
+                {openInTextEditorCallback && (
+                  <Tooltip label="Open in Text Editor" withArrow>
+                    <ActionIcon
+                      onClick={openInTextEditorCallback}
+                      className="secondaryButton"
+                    >
+                      <IconBraces size="1rem" />
+                    </ActionIcon>
+                  </Tooltip>
                 )}
                 {!readOnly && saveCallback && (
                   <Tooltip
