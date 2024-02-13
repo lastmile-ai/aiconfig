@@ -28,43 +28,37 @@ if TYPE_CHECKING:
 # Step 1: define Helpers
 def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
     """
-    Refines the completion params for the HF text translation api. Removes any unsupported params.
-    See https://github.com/huggingface/huggingface_hub/blob/main/src/huggingface_hub/inference/_client.py#L1703
-    for supported params. Note that client params DO NOT match API docs here:
-    https://huggingface.co/docs/api-inference/detailed_parameters#translation-task
+    Refines the completion params for the HF conversational api. Removes any unsupported params.
+    Api Ref: https://github.com/huggingface/huggingface_hub/blob/main/src/huggingface_hub/inference/_client.py#L338
+    Doc Ref: https://huggingface.co/docs/huggingface_hub/package_reference/inference_client#huggingface_hub.InferenceClient.conversational
     """
 
     supported_keys = {
         "model",
-        "src_lang",
-        "tgt_lang",
     }
 
-    completion_data = {}
+    completion_data: dict[str, Any] = {}
+
     for key in model_settings:
         if key.lower() in supported_keys:
             completion_data[key.lower()] = model_settings[key]
 
+    if "model" in completion_data:
+        # HF is in the process of revamping their libraries. Default behaviour of Converstaional is broken
+        # This temporary fix is reccomended by HF https://github.com/huggingface/huggingface_hub/issues/2023#issuecomment-1935760040
+        completion_data["model"] = (
+            f"https://api-inference.huggingface.co/pipeline/conversational/{completion_data['model']}"
+        )
+    else:
+        # manually set default model because, otherwise this will fail. see comment above.
+        # see this thread for more info: https://github.com/huggingface/huggingface_hub/issues/2023
+        completion_data["model"] = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
+
     return completion_data
 
-
-def construct_output(response: str) -> Output:
-    metadata: dict[str, str] = {"raw_response": response}
-
-    output = ExecuteResult(
-        **{
-            "output_type": "execute_result",
-            "data": response,
-            "execution_count": 0,
-            "metadata": metadata,
-        }
-    )
-    return output
-
-
-class HuggingFaceTextTranslationRemoteInference(ParameterizedModelParser):
+class HuggingFaceConversationalRemoteInference(ParameterizedModelParser):
     """
-    A model parser for HuggingFace text translation models.
+    A model parser for HuggingFace conversational models.
     """
 
     def __init__(self, model_id: str = None, use_api_token=False):
@@ -74,12 +68,12 @@ class HuggingFaceTextTranslationRemoteInference(ParameterizedModelParser):
             no_token (bool): Whether or not to require an API token. Set to False if you don't have an api key.
 
         Returns:
-            HuggingFaceTextTranslationRemoteInference: The HuggingFaceTextTranslationRemoteInference object.
+            HuggingFaceConversationalRemoteInference: The HuggingFaceConversationalRemoteInference object.
 
         Usage:
 
         1. Create a new model parser object with the model ID of the model to use.
-                parser = HuggingFaceTextTranslationRemoteInference("Helsinki-NLP/opus-mt-en-zh", use_api_token=False)
+                parser = HuggingFaceConversationalRemoteInference("facebook/blenderbot-400M-distill", use_api_token=False)
         2. Add the model parser to the registry.
                 config.register_model_parser(parser)
 
@@ -104,7 +98,7 @@ class HuggingFaceTextTranslationRemoteInference(ParameterizedModelParser):
         """
         Returns an identifier for the Model Parser
         """
-        return "HuggingFaceTextTranslationRemoteInference"
+        return "HuggingFaceConversationalRemoteInference"
 
     async def serialize(
         self,
@@ -137,7 +131,7 @@ class HuggingFaceTextTranslationRemoteInference(ParameterizedModelParser):
             )
         )
 
-        # assume data is completion params for HF text translation
+        # assume data is completion params for HF conversational
         data = copy.deepcopy(data)
         prompt_input = data["text"]
 
@@ -256,7 +250,7 @@ class HuggingFaceTextTranslationRemoteInference(ParameterizedModelParser):
 
         response = client.translation(**completion_data)
 
-        # HF Text Translation api doesn't support multiple outputs. Expect only one output.
+        # HF Conversational api doesn't support multiple outputs. Expect only one output.
         # Output spec: response is literal string
         outputs = [construct_output(response)]
 
