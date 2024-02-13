@@ -1,3 +1,4 @@
+# Local Model Inference
 from aiconfig_extension_hugging_face import (
     HuggingFaceAutomaticSpeechRecognitionTransformer,
     HuggingFaceImage2TextTransformer,
@@ -7,8 +8,16 @@ from aiconfig_extension_hugging_face import (
     HuggingFaceTextSummarizationTransformer,
     HuggingFaceTextTranslationTransformer,
 )
-from aiconfig_extension_hugging_face.remote_inference_client.text_generation import (
+
+# Remote Inference
+from aiconfig_extension_hugging_face import (
+    HuggingFaceAutomaticSpeechRecognitionRemoteInference,
+    HuggingFaceImage2TextRemoteInference,
+    HuggingFaceText2ImageRemoteInference,
+    HuggingFaceText2SpeechRemoteInference,
     HuggingFaceTextGenerationRemoteInference,
+    HuggingFaceTextSummarizationRemoteInference,
+    HuggingFaceTextTranslationRemoteInference,
 )
 
 from aiconfig import AIConfigRuntime
@@ -46,7 +55,39 @@ def register_model_parsers() -> None:
     )
 
     # Register remote inference client for text generation
+    automatic_speech_recognition_remote = (
+        HuggingFaceAutomaticSpeechRecognitionRemoteInference()
+    )
+    AIConfigRuntime.register_model_parser(
+        automatic_speech_recognition_remote, "Automatic Speech Recognition"
+    )
+
+    image_to_text_remote = HuggingFaceImage2TextRemoteInference()
+    AIConfigRuntime.register_model_parser(
+        image_to_text_remote, "Image-to-Text"
+    )
+
+    text_to_image_remote = HuggingFaceText2ImageRemoteInference()
+    AIConfigRuntime.register_model_parser(
+        text_to_image_remote, "Text-to-Image"
+    )
+
+    text_to_speech_remote = HuggingFaceText2SpeechRemoteInference()
+    AIConfigRuntime.register_model_parser(
+        text_to_speech_remote, "Text-to-Speech"
+    )
+
     text_generation_remote = HuggingFaceTextGenerationRemoteInference()
     AIConfigRuntime.register_model_parser(
-        text_generation_remote, text_generation_remote.id()
+        text_generation_remote, "Text Generation"
+    )
+
+    text_summarization_remote = HuggingFaceTextSummarizationRemoteInference()
+    AIConfigRuntime.register_model_parser(
+        text_summarization_remote, "Summarization"
+    )
+
+    text_translation_remote = HuggingFaceTextTranslationRemoteInference()
+    AIConfigRuntime.register_model_parser(
+        text_translation_remote, "Translation"
     )
