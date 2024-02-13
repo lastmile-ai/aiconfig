@@ -52,9 +52,23 @@ def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
     else:
         # manually set default model because, otherwise this will fail. see comment above.
         # see this thread for more info: https://github.com/huggingface/huggingface_hub/issues/2023
-        completion_data["model"] = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
+        completion_data["model"] = "https://api-inference.huggingface.co/pipeline/conversational/facebook/blenderbot-400M-distill"
 
     return completion_data
+
+def construct_output(response: str) -> Output:
+    metadata: dict[str, str] = {"raw_response": response}
+
+    output = ExecuteResult(
+        **{
+            "output_type": "execute_result",
+            "data": response,
+            "execution_count": 0,
+            "metadata": metadata,
+        }
+    )
+    return output
+
 
 class HuggingFaceConversationalRemoteInference(ParameterizedModelParser):
     """
