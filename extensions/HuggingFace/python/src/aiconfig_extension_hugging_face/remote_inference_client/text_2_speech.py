@@ -47,6 +47,13 @@ def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
         if key.lower() in supported_keys:
             completion_data[key.lower()] = model_settings[key]
 
+    # The default model is suno/bark, which requires HF Pro subscription
+    # Instead, default to a free model (which supports remote inference) with
+    # the next most "likes" in HF
+    # https://huggingface.co/models?pipeline_tag=text-to-speech&sort=likes
+    if completion_data.get("model") is None:
+        completion_data["model"] = "facebook/fastspeech2-en-ljspeech"
+
     return completion_data
 
 
