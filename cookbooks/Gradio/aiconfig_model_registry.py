@@ -12,6 +12,7 @@ from aiconfig_extension_hugging_face import (
 # Remote Inference
 from aiconfig_extension_hugging_face import (
     HuggingFaceAutomaticSpeechRecognitionRemoteInference,
+    HuggingFaceConversationalRemoteInference,
     HuggingFaceImage2TextRemoteInference,
     HuggingFaceText2ImageRemoteInference,
     HuggingFaceText2SpeechRemoteInference,
@@ -91,3 +92,5 @@ def register_model_parsers() -> None:
     AIConfigRuntime.register_model_parser(
         text_translation_remote, "Translation"
     )
+    p = HuggingFaceConversationalRemoteInference()
+    AIConfigRuntime.register_model_parser(p, p.id())

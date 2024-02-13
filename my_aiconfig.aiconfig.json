@@ -9,12 +9,36 @@
   "prompts": [
     {
       "name": "prompt_1",
-      "input": "",
+      "input": "tell me more\n",
       "metadata": {
-        "model": "gpt-4",
+        "model": {
+          "name": "HuggingFaceConversationalRemoteInference",
+          "settings": {
+            "model": "google/flan-t5-large"
+          }
+        },
         "parameters": {}
       },
-      "outputs": []
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "|im_start|>user tell me more |im_end|> |im_start|>assistant tell me more",
+          "metadata": {
+            "raw_response": {
+              "generated_text": "|im_start|>user tell me more |im_end|> |im_start|>assistant tell me more",
+              "conversation": {
+                "generated_responses": [
+                  "|im_start|>user tell me more |im_end|> |im_start|>assistant tell me more"
+                ],
+                "past_user_inputs": [
+                  "tell me more\n"
+                ]
+              }
+            }
+          }
+        }
+      ]
     }
   ],
   "$schema": "https://json.schemastore.org/aiconfig-1.0"
