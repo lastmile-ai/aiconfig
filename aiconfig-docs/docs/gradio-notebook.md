@@ -214,7 +214,7 @@ AIConfig comes with a Python & Node SDK that lets you use an AIConfig file in ap
 
 You can easily build generative apps inspired by your work in Gradio Notebook Spaces! Both Space creators and Space viewers can download the `aiconfig.json` file to capture the state of their Space.
 
-Use the `aiconfig.json` file in your code with the [AIConfig SDK](https://github.com/lastmile-ai/aiconfig) in 2 lines.
+Use the `aiconfig.json` file in your code with the [AIConfig SDK](https://github.com/lastmile-ai/aiconfig) in 2 lines:
 
 ```python
 config = await AIConfigRuntime.load('my_app.aiconfig.json')
