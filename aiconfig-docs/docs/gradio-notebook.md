@@ -12,7 +12,7 @@ import constants from '@site/core/tabConstants';
 
 You can:
 
-- Use any model, and a combination of models, in a single space
+- Use any model, and a combination of models, in a single Space
 - Play around with models in any format (text, audio image) and ordering
 - Share Space output results with friends
 
@@ -33,12 +33,12 @@ You can:
   - [requirements.txt](https://huggingface.co/spaces/lastmileai/gradio-notebook-template/blob/main/requirements.txt)
 
 :::caution
-Please ensure the `sdk_version` in your Space's `README.md` is set to `sdk_version: 4.16.0` or lower due to compatibilty issues in higher `gradio` package versions
+Please ensure the `sdk_version` in your Space's `README.md` is set to `sdk_version: 4.16.0` or lower due to compatibilty issues in higher `gradio` package versions. See https://huggingface.co/spaces/lastmileai/gradio-notebook-template/blob/main/README.md for example.
 :::
 
 ### 2. Design your Space
 
-Use the playground UI in your space to setup your models and prompts that you want on your space.
+Use the playground UI in your Space to setup your models and prompts that you want on your Space.
 
 - **Add a new cell with '+'.** Gradio Notebooks are made up cells. Each cell allows you to prompt a specific model.
 - **Select the model for your cell.** First, choose the [Hugging Face Task](#supported-models) for this cell. Then, click on the Cell Settings panel to select a model for that task. The model needs to available on the [Hugging Face Inference API](https://huggingface.co/docs/api-inference/index) - check the model card on Hugging Face.
@@ -166,7 +166,7 @@ Using local models will download the models to your Space, using up Space resour
 :::
 
 These local parsers can be used by adding them to the `ModelParserRegistry` for your Space. To do so:
-- add a `model_parsers.py` file in your space repo
+- add a `model_parsers.py` file in your Space repo
 - in the file, import the relevant model parser from `aiconfig_extension_hugging_face`
 - register the model parser in a `register_model_parsers` function
 
