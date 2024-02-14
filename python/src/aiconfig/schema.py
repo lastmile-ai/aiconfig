@@ -819,6 +819,11 @@ Cannot update model. There are two things you are trying: \
             model_settings: InferenceSettings = (
                 prompt.metadata.model.settings or {}
             )
+            # TODO (rossdanlm): This is a hack so that when Hugging Face task
+            # (defined as model_name) is switched, the "model" field in setting
+            # is also updated and set to None.
+            if hasattr(model_settings, "model"):
+                model_settings["model"] = None
             prompt.metadata.model = ModelMetadata(
                 name=model_name, settings=model_settings
             )
