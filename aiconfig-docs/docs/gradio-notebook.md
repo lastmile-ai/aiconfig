@@ -144,7 +144,8 @@ model_output = await config.run('prompt_1')
 
 ## Supported Models
 
-- **Gradio Notebooks support models which use the [Hugging Face Inference API](https://huggingface.co/docs/api-inference/index).** [Hugging Face Tasks](https://huggingface.co/tasks) that are supported:
+### Inference API
+**Gradio Notebooks support models which use the [Hugging Face Inference API](https://huggingface.co/docs/api-inference/index).** [Hugging Face Tasks](https://huggingface.co/tasks) that are supported:
   - [Text Generation](https://huggingface.co/tasks/text-generation)
   - [Summarization](https://huggingface.co/tasks/summarization)
   - [Translation](https://huggingface.co/tasks/translation)
@@ -152,7 +153,33 @@ model_output = await config.run('prompt_1')
   - [Text-to-Speech](https://huggingface.co/tasks/text-to-speech)
   - [Text-to-Image](https://huggingface.co/tasks/text-to-image)
   - [Image-to-Text](https://huggingface.co/tasks/image-to-text)
-- **Want to access other models?** Model parsers exist for local models, add them to the `ModelParserRegistry` in `app.py`. Have questions? Chat with us on [Discord](https://discord.com/invite/xBhNKTetGx).
+
+### Local Models
+Model parsers also exist for local models associated with most of the above tasks (via Hugging Face Transformers and Diffusers library). 
+
+:::danger
+Using local models will download the models to your space, using up space resources, even if the space user is not an owner of the space. Downloading the models will also require a significant wait when running a cell if they have not already been downloaded to your space. Please be aware of these considerations when using local models.
+:::
+
+These local parsers can be used by adding them to the `ModelParserRegistry` for your space. To do so:
+- add a `model_parsers.py` file in your space repo
+- in the file, import the relevant model parser from `aiconfig_extension_hugging_face`
+- register the model parser in a `register_model_parsers` function
+
+See https://huggingface.co/spaces/lastmileai/gradio_notebook_local_model/blob/main/model_parsers.py for an example `model_parsers.py` file. You can copy this file to your own space and uncomment the desired local parsers.
+
+Once the `model_parsers.py` file is created, simply reference it in `app.py`:
+```
+import gradio as gr
+from gradio_notebook import GradioNotebook
+
+with gr.Blocks() as demo:
+    GradioNotebook(parsers_path="./model_parsers.py")
+
+demo.queue().launch()
+```
+
+If a `parsers_path` is not specified for the `GradioNotebook` component, it will look for a `model_parsers.py` by default.
 
 ## Community & Support
 
