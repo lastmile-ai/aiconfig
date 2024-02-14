@@ -12,7 +12,7 @@ import constants from '@site/core/tabConstants';
 
 You can:
 
-- Use any model, and a combination of models, in a single space
+- Use any model, and a combination of models, in a single Space
 - Play around with models in any format (text, audio image) and ordering
 - Share Space output results with friends
 
@@ -32,9 +32,13 @@ You can:
   - [app.py](https://huggingface.co/spaces/lastmileai/gradio-notebook-template/blob/main/app.py)
   - [requirements.txt](https://huggingface.co/spaces/lastmileai/gradio-notebook-template/blob/main/requirements.txt)
 
+:::caution
+Please ensure the `sdk_version` in your Space's `README.md` is set to `sdk_version: 4.16.0` or lower due to compatibilty issues in higher `gradio` package versions. See https://huggingface.co/spaces/lastmileai/gradio-notebook-template/blob/main/README.md for example.
+:::
+
 ### 2. Design your Space
 
-Use the playground UI in your space to setup your models and prompts that you want on your space.
+Use the playground UI in your Space to setup your models and prompts that you want on your Space.
 
 - **Add a new cell with '+'.** Gradio Notebooks are made up cells. Each cell allows you to prompt a specific model.
 - **Select the model for your cell.** First, choose the [Hugging Face Task](#supported-models) for this cell. Then, click on the Cell Settings panel to select a model for that task. The model needs to available on the [Hugging Face Inference API](https://huggingface.co/docs/api-inference/index) - check the model card on Hugging Face.
@@ -144,7 +148,8 @@ model_output = await config.run('prompt_1')
 
 ## Supported Models
 
-- **Gradio Notebooks support models which use the [Hugging Face Inference API](https://huggingface.co/docs/api-inference/index).** [Hugging Face Tasks](https://huggingface.co/tasks) that are supported:
+### Inference API
+**Gradio Notebooks support models which use the [Hugging Face Inference API](https://huggingface.co/docs/api-inference/index).** [Hugging Face Tasks](https://huggingface.co/tasks) that are supported:
   - [Text Generation](https://huggingface.co/tasks/text-generation)
   - [Summarization](https://huggingface.co/tasks/summarization)
   - [Translation](https://huggingface.co/tasks/translation)
@@ -152,7 +157,33 @@ model_output = await config.run('prompt_1')
   - [Text-to-Speech](https://huggingface.co/tasks/text-to-speech)
   - [Text-to-Image](https://huggingface.co/tasks/text-to-image)
   - [Image-to-Text](https://huggingface.co/tasks/image-to-text)
-- **Want to access other models?** Model parsers exist for local models, add them to the `ModelParserRegistry` in `app.py`. Have questions? Chat with us on [Discord](https://discord.com/invite/xBhNKTetGx).
+
+### Local Models
+Model parsers also exist for local models associated with most of the above tasks (via Hugging Face Transformers and Diffusers library). 
+
+:::danger
+Using local models will download the models to your Space, using up Space resources, even if the Space user is not an owner of the Space. Downloading the models will also require a significant wait when running a cell if they have not already been downloaded to your Space. Please be aware of these considerations when using local models.
+:::
+
+These local parsers can be used by adding them to the `ModelParserRegistry` for your Space. To do so:
+- add a `model_parsers.py` file in your Space repo
+- in the file, import the relevant model parser from `aiconfig_extension_hugging_face`
+- register the model parser in a `register_model_parsers` function
+
+See https://huggingface.co/spaces/lastmileai/gradio_notebook_local_model/blob/main/model_parsers.py for an example `model_parsers.py` file. You can copy this file to your own Space and uncomment the desired local parsers.
+
+Once the `model_parsers.py` file is created, simply reference it in `app.py`:
+```
+import gradio as gr
+from gradio_notebook import GradioNotebook
+
+with gr.Blocks() as demo:
+    GradioNotebook(parsers_path="./model_parsers.py")
+
+demo.queue().launch()
+```
+
+If a `parsers_path` is not specified for the `GradioNotebook` component, it will look for a `model_parsers.py` by default.
 
 ## Community & Support
 
