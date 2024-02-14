@@ -67,6 +67,7 @@ export default memo(function ShareButton({
       <Button
         loaderPosition="center"
         loading={isLoading}
+        loaderProps={{ size: "sm" }}
         onClick={onClick}
         size="xs"
         variant="filled"

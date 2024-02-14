@@ -1,6 +1,6 @@
 {
   "name": "gradio_notebook",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "Gradio UI packages",
   "type": "module",
   "author": "",
@@ -22,7 +22,7 @@
     "@gradio/client": "^0.10.1",
     "@gradio/statustracker": "0.4.0",
     "@gradio/utils": "0.2.0",
-    "@lastmileai/aiconfig-editor": "^0.1.26",
+    "@lastmileai/aiconfig-editor": "^0.1.28",
     "@mantine/core": "^6.0.7",
     "@tabler/icons-react": "^2.44.0",
     "@types/uuid": "^9.0.7",
