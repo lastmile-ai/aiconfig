@@ -17,7 +17,6 @@ Just a heads up, the process for getting local development setup for the first t
 ### Setting up Gradio repo
 
 1. Go to the project where this is defined. Ex: `~/Projects/gradio-workbook`
-2. Delete this entire repo! `rm -rf gradioworkbook`
 3. Gradio uses `pip` and `python` for executing commands so you must symlink `python` and `pip` (aliasing is not enough) to `python3` and `pip3`:
    - `python3 -m pip install --upgrade --force pip` ([source](https://stackoverflow.com/a/55494352))
    - force `python` to be symlinked to `python3` ([instructions](https://stackoverflow.com/a/71957847))
