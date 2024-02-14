@@ -101,12 +101,17 @@ Click the download button on the top right to download the `aiconfig.json` file 
 
 Reasons for Downloading:
 
-1. **Lock in edits to your Space.** Refreshing your Space does not save changes. You need to upload the downloaded `aiconfig.json` file to your Space repo to lock in the state. Make sure you name your `aiconfig.json` file as `my_app.aiconfig.json` - it’s referenced in `app.py`.
-2. **Build apps inspired by your Space.** HuggingFace Spaces offer cool demos, but building an app with the tested models and prompts is challenging. However, by downloading the `aiconfig.json` file, you can use the prompts (and models) from your Space in your code with the [AIConfig SDK](https://github.com/lastmile-ai/aiconfig).
+1. **Save your changes to your Space**
+
+- Refreshing your Space does not save changes. You need to upload the downloaded `aiconfig.json` file to your Space repo to lock in the state. Make sure you name your `aiconfig.json` file as `my_app.aiconfig.json` - it’s referenced in `app.py`.
+
+2. **Build apps inspired by your Space**
+
+- HuggingFace Spaces offer cool demos, but building an app with the tested models and prompts is challenging. However, by downloading the `aiconfig.json` file, you can use the prompts (and models) from your Space in your code with the [AIConfig SDK](https://github.com/lastmile-ai/aiconfig).
 
 ### Share Notebook
 
-Click **Share Notebook** to get a link to a read-only copy of your Space to share with the rest of the world!
+Click the share button on the top right to get a link to a read-only copy of your Space to share with the rest of the world!
 
 ![sharing](https://github.com/lastmile-ai/aiconfig/assets/81494782/ceadc825-9df3-4192-b033-117ee1d40590)
 
@@ -160,20 +165,21 @@ Anyone who now visits your Space will see the state represented by `my_app.aicon
 
 **Gradio Notebooks support models which use the [Hugging Face Inference API](https://huggingface.co/docs/api-inference/index).** [Hugging Face Tasks](https://huggingface.co/tasks) that are supported:
 
-- [Text Generation](https://huggingface.co/tasks/text-generation)
-- [Summarization](https://huggingface.co/tasks/summarization)
-- [Translation](https://huggingface.co/tasks/translation)
 - [Automatic Speech Recognition (ASR)](https://huggingface.co/tasks/automatic-speech-recognition)
-- [Text-to-Speech](https://huggingface.co/tasks/text-to-speech)
-- [Text-to-Image](https://huggingface.co/tasks/text-to-image)
+- [Conversational](https://huggingface.co/tasks/conversational)
 - [Image-to-Text](https://huggingface.co/tasks/image-to-text)
+- [Summarization](https://huggingface.co/tasks/summarization)
+- [Text-to-Image](https://huggingface.co/tasks/text-to-image)
+- [Text-to-Speech](https://huggingface.co/tasks/text-to-speech)
+- [Text Generation](https://huggingface.co/tasks/text-generation)
+- [Translation](https://huggingface.co/tasks/translation)
 
 #### Local Models
 
-Model parsers also exist for local models associated with most of the above tasks (via Hugging Face Transformers and Diffusers library).
+Local models associated with most of the above tasks are also supported via Hugging Face Transformers and Diffusers library.
 
 :::danger
-Using local models will download the models to your Space, using up Space resources, even if the Space user is not an owner of the Space. Downloading the models will also require a significant wait when running a cell if they have not already been downloaded to your Space. Please be aware of these considerations when using local models.
+Using local models will download the models to your Space, using up Space resources, even if the Space user is not an owner of the Space. Downloading the models will also require a significant wait when running a cell if they have not already been downloaded to your Space. Please be aware of these considerations when using local models. We are working on changing this behavior.
 :::
 
 These local parsers can be used by adding them to the `ModelParserRegistry` for your Space. To do so:
