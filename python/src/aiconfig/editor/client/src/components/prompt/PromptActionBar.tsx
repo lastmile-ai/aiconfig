@@ -109,7 +109,12 @@ export default memo(function PromptActionBar({
           </Tabs>
         </Container>
       ) : (
-        <Flex direction="column" justify="space-between" h="100%">
+        <Flex
+          className="promptActionBarClosed"
+          direction="column"
+          justify="space-between"
+          h="100%"
+        >
           <Flex direction="row" justify="center" mt="0.5em">
             <ActionIcon size="sm" onClick={() => setIsExpanded(true)}>
               <IconClearAll />

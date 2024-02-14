@@ -110,7 +110,6 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "aws-sdk": "^2.1547.0",
     "oboe": "^2.1.5",
     "portfinder": "^1.0.32",
     "ufetch": "^1.6.0"

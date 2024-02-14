@@ -182,6 +182,7 @@ function AIConfigEditorBase({
     }
     try {
       await downloadCallback();
+      logEventHandler?.("DOWNLOAD_BUTTON_CLICKED");
     } catch (err: unknown) {
       const message = (err as RequestCallbackError).message ?? null;
       showNotification({
@@ -190,7 +191,7 @@ function AIConfigEditorBase({
         type: "error",
       });
     }
-  }, [downloadCallback, showNotification]);
+  }, [downloadCallback, logEventHandler, showNotification]);
 
   const shareCallback = callbacks?.share;
   const onShare = useCallback(async () => {
@@ -199,6 +200,7 @@ function AIConfigEditorBase({
     }
     try {
       const { share_url: shareUrl } = await shareCallback();
+      logEventHandler?.("SHARE_BUTTON_CLICKED");
       return shareUrl;
     } catch (err: unknown) {
       const message = (err as RequestCallbackError).message ?? null;
@@ -208,7 +210,7 @@ function AIConfigEditorBase({
         type: "error",
       });
     }
-  }, [shareCallback, showNotification]);
+  }, [logEventHandler, shareCallback, showNotification]);
 
   const saveCallback = callbacks?.save;
   const onSave = useCallback(async () => {
@@ -276,6 +278,7 @@ function AIConfigEditorBase({
       };
 
       dispatch(action);
+      logEventHandler?.("UPDATE_PROMPT_INPUT");
 
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
@@ -311,7 +314,7 @@ function AIConfigEditorBase({
         onError(err);
       }
     },
-    [debouncedUpdatePrompt, dispatch, showNotification]
+    [debouncedUpdatePrompt, dispatch, logEventHandler, showNotification]
   );
 
   const onChangePromptName = useCallback(
@@ -347,19 +350,21 @@ function AIConfigEditorBase({
           // PromptName component maintains local state for the name to show in the UI
           // We cannot update client config state until the name is successfully set server-side
           // or else we could end up referencing a prompt name that is not set server-side
-          () =>
+          () => {
             dispatch({
               type: "UPDATE_PROMPT_NAME",
               id: promptId,
               name: newName,
-            }),
+            });
+            logEventHandler?.("UPDATE_PROMPT_NAME");
+          },
           onError
         );
       } catch (err: unknown) {
         onError(err);
       }
     },
-    [debouncedUpdatePrompt, showNotification]
+    [debouncedUpdatePrompt, logEventHandler, showNotification]
   );
 
   const updateModelCallback = callbacks?.updateModel;
@@ -400,6 +405,7 @@ function AIConfigEditorBase({
         id: promptId,
         modelSettings: newModelSettings,
       });
+      logEventHandler?.("UPDATE_PROMPT_MODEL_SETTINGS");
 
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
@@ -434,7 +440,7 @@ function AIConfigEditorBase({
         onError(err);
       }
     },
-    [debouncedUpdateModel, dispatch, showNotification]
+    [debouncedUpdateModel, dispatch, logEventHandler, showNotification]
   );
 
   const onUpdatePromptModel = useCallback(
@@ -450,6 +456,7 @@ function AIConfigEditorBase({
         id: promptId,
         modelName: newModel,
       });
+      logEventHandler?.("UPDATE_PROMPT_MODEL", { model: newModel });
 
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
@@ -477,7 +484,7 @@ function AIConfigEditorBase({
         onError(err);
       }
     },
-    [dispatch, debouncedUpdateModel, showNotification]
+    [dispatch, debouncedUpdateModel, logEventHandler, showNotification]
   );
 
   const setParametersCallback = callbacks?.setParameters;
@@ -514,6 +521,7 @@ function AIConfigEditorBase({
         type: "UPDATE_GLOBAL_PARAMETERS",
         parameters: newParameters,
       });
+      logEventHandler?.("UPDATE_GLOBAL_PARAMETERS");
 
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
@@ -534,7 +542,7 @@ function AIConfigEditorBase({
         onError(err);
       }
     },
-    [debouncedSetParameters, dispatch, showNotification]
+    [debouncedSetParameters, dispatch, logEventHandler, showNotification]
   );
 
   const onUpdatePromptParameters = useCallback(
@@ -550,6 +558,7 @@ function AIConfigEditorBase({
         id: promptId,
         parameters: newParameters,
       });
+      logEventHandler?.("UPDATE_PROMPT_PARAMETERS");
 
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
@@ -572,7 +581,7 @@ function AIConfigEditorBase({
         onError(err);
       }
     },
-    [debouncedSetParameters, dispatch, showNotification]
+    [debouncedSetParameters, dispatch, logEventHandler, showNotification]
   );
 
   const addPromptCallback = callbacks?.addPrompt;
@@ -646,6 +655,7 @@ function AIConfigEditorBase({
         type: "DELETE_PROMPT",
         id: promptId,
       });
+      logEventHandler?.("DELETE_PROMPT");
 
       try {
         const prompt = getPrompt(stateRef.current, promptId);
@@ -662,7 +672,7 @@ function AIConfigEditorBase({
         });
       }
     },
-    [deletePromptCallback, dispatch, showNotification]
+    [deletePromptCallback, dispatch, logEventHandler, showNotification]
   );
 
   const clearOutputsCallback = callbacks?.clearOutputs;
@@ -676,6 +686,8 @@ function AIConfigEditorBase({
     dispatch({
       type: "CLEAR_OUTPUTS",
     });
+    logEventHandler?.("CLEAR_OUTPUTS");
+
     try {
       await clearOutputsCallback();
     } catch (err: unknown) {
@@ -686,7 +698,7 @@ function AIConfigEditorBase({
         type: "error",
       });
     }
-  }, [clearOutputsCallback, dispatch, showNotification]);
+  }, [clearOutputsCallback, dispatch, logEventHandler, showNotification]);
 
   const runPromptCallback = callbacks?.runPrompt;
 
@@ -842,6 +854,7 @@ function AIConfigEditorBase({
         type: "SET_NAME",
         name,
       });
+      logEventHandler?.("SET_NAME");
 
       await debouncedSetName(name, (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
@@ -852,7 +865,7 @@ function AIConfigEditorBase({
         });
       });
     },
-    [debouncedSetName, showNotification]
+    [debouncedSetName, logEventHandler, showNotification]
   );
 
   const setDescriptionCallback = callbacks?.setConfigDescription;
@@ -885,6 +898,7 @@ function AIConfigEditorBase({
         type: "SET_DESCRIPTION",
         description,
       });
+      logEventHandler?.("SET_DESCRIPTION");
 
       await debouncedSetDescription(description, (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
@@ -895,7 +909,7 @@ function AIConfigEditorBase({
         });
       });
     },
-    [debouncedSetDescription, showNotification]
+    [debouncedSetDescription, logEventHandler, showNotification]
   );
 
   const getState = useCallback(() => stateRef.current, []);
@@ -1003,19 +1017,7 @@ function AIConfigEditorBase({
         <div>
           <Flex justify="flex-end" pt="md" mb="xs">
             {
-              <Group>
-                {downloadCallback && <DownloadButton onDownload={onDownload} />}
-                {shareCallback && <ShareButton onShare={onShare} />}
-                {openInTextEditorCallback && (
-                  <Tooltip label="Open in Text Editor" withArrow>
-                    <ActionIcon
-                      onClick={openInTextEditorCallback}
-                      className="secondaryButton"
-                    >
-                      <IconBraces size="1rem" />
-                    </ActionIcon>
-                  </Tooltip>
-                )}
+              <Group spacing="xs">
                 {!readOnly && onClearOutputs && (
                   <Button
                     loading={undefined}
@@ -1025,6 +1027,32 @@ function AIConfigEditorBase({
                   >
                     Clear Outputs
                   </Button>
+                )}
+                {(downloadCallback || shareCallback) && (
+                  <div>
+                    {downloadCallback && (
+                      <DownloadButton
+                        onDownload={onDownload}
+                        isGrouped={shareCallback != null}
+                      />
+                    )}
+                    {shareCallback && (
+                      <ShareButton
+                        onShare={onShare}
+                        isGrouped={downloadCallback != null}
+                      />
+                    )}
+                  </div>
+                )}
+                {openInTextEditorCallback && (
+                  <Tooltip label="Open in Text Editor" withArrow>
+                    <ActionIcon
+                      onClick={openInTextEditorCallback}
+                      className="secondaryButton"
+                    >
+                      <IconBraces size="1rem" />
+                    </ActionIcon>
+                  </Tooltip>
                 )}
                 {!readOnly && saveCallback && (
                   <Tooltip

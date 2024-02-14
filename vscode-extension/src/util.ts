@@ -84,33 +84,14 @@ export function updateWebviewEditorThemeMode(webview: vscode.Webview) {
   });
 }
 
-export async function initializeServerState(
+export async function updateServerState(
   serverUrl: string,
   document: vscode.TextDocument
 ) {
-  try {
-    return await ufetch.post(
-      EDITOR_SERVER_ROUTE_TABLE.LOAD_CONTENT(serverUrl),
-      {
-        content: document.getText(),
-        mode: getModeFromDocument(document),
-      }
-    );
-  } catch (e) {
-    // Code that should run in response to the hello message command
-    vscode.window
-      .showErrorMessage(
-        "Failed to start aiconfig server. You can view the aiconfig but cannot modify it.",
-        ...["Retry"]
-      )
-      .then((selection) => {
-        if (selection === "Retry") {
-          initializeServerState(serverUrl, document);
-        }
-      });
-
-    return;
-  }
+  return await ufetch.post(EDITOR_SERVER_ROUTE_TABLE.LOAD_CONTENT(serverUrl), {
+    content: document.getText(),
+    mode: getModeFromDocument(document),
+  });
 }
 
 // Figure out what kind of AIConfig this is that we are loading
@@ -304,9 +285,8 @@ export function urlJoin(...args) {
 }
 //#endregion
 
-
 /**
- * AIConfig Vscode extension has a dependency on the Python extension. 
+ * AIConfig Vscode extension has a dependency on the Python extension.
  * This function retrieves and returns the path to the current python interpreter.
  * @returns the path to the current python interpreter
  */
@@ -315,7 +295,8 @@ export async function getPythonPath(): Promise<string> {
   if (!pythonExtension.isActive) {
     await pythonExtension.activate();
   }
-  
-  const pythonPath = pythonExtension.exports.settings.getExecutionDetails().execCommand[0];
+
+  const pythonPath =
+    pythonExtension.exports.settings.getExecutionDetails().execCommand[0];
   return pythonPath;
 }
