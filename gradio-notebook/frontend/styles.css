@@ -1,0 +1,82 @@
+/* 
+* Gradio applies higher-specificity styles which override our mantine styles in many cases. We
+* can override the important ones here with more specific styles
+*/
+
+
+/*
+ * Add the right padding that mantine adds when right content (e.g. info icon) is shown, overriding
+ * the gradio padding styles so the info icon doesn't overlap token text
+ */
+.hfTokenInput.mantine-InputWrapper-root.mantine-TextInput-root input {
+    padding-right: 1.875rem;
+}
+
+/* 
+* For all buttons, excluding menu dropdown and .ghost class buttons, apply the gradio color
+* styles
+*/
+.mantine-Button-root.mantine-UnstyledButton-root:not(.ghost):not([aria-haspopup="menu"]){
+    background: linear-gradient(to bottom right, #ffedd5, #fdba74 100%);
+    border: 1px solid #fed7aa;
+    box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.05);
+    color: #ea580c !important;
+    font-size: 16px;/* var(--button-large-text-size) */
+    font-weight: 600; /* var(--button-large-text-weight) */
+    padding: 0 1.25rem;
+}
+
+/*
+ * Same as above, only on hover
+ */ 
+.mantine-Button-root.mantine-UnstyledButton-root:not(.ghost):not([aria-haspopup="menu"]):hover{
+    background: linear-gradient(to bottom right, #ffedd5, #fed7aa);
+}
+
+/*
+ * Same as above, only on disabled. See gradio styles for these colors, specifically
+ * .secondary[disabled] since .primary doesn't make enough of a contrast
+ */ 
+ .mantine-Button-root.mantine-UnstyledButton-root:not(.ghost):not([aria-haspopup="menu"]):disabled{
+    background: linear-gradient(to bottom right, #e5e7eb,  #e5e7eb);/* var(--button-secondary-background-fill-hover) */
+    border-color: #e5e7eb; /* var(--button-secondary-border-color-hover) */
+    color: #374151 !important; /* var(--button-secondary-text-color-hover) */
+    cursor: not-allowed;
+    pointer-events: auto; /* mantine sets to disabled, we want the cursor to show per gradio styles */
+}
+
+/*
+ * For all buttons, excluding menu dropdown, .ghost class buttons, and .runPromptButton, apply
+ * this dark text color (from gradio text) so the text can be seen over orange button background
+ * regardless of theme
+ */
+.mantine-Button-root.mantine-UnstyledButton-root:not(.ghost):not([aria-haspopup="menu"]):not(.runPromptButton) {
+    color: #374151;
+}
+
+/*
+ * Specifically set the .runPromptButton to have the desired styles specified in our custom gradio theme
+ */
+.mantine-Button-root.mantine-UnstyledButton-root.runPromptButton {
+    border-radius: 8px;
+    height: auto;
+    margin: 4px;
+    margin-top: 30px;
+    padding: 0.625rem !important;
+}
+
+.mantine-Menu-dropdown {
+    border: 0.0625rem solid #373A40;
+}
+
+.mantine-Tabs-tabsList {
+    gap: 12px;
+}
+
+.mantine-TextInput-input[data-with-icon] {
+    padding-left: 2.25rem;
+}
+
+.mantine-Title-root.mantine-Text-root {
+    font-size: 2rem;
+}
