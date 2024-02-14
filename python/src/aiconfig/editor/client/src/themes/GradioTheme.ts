@@ -51,6 +51,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
             color: "#ea580c !important",
             fontSize: "16px" /* var(--button-large-text-size) */,
             fontWeight: 600 /* var(--button-large-text-weight) */,
+            minHeight: "36px",
             padding: "0 1.25rem",
           },
 
@@ -150,7 +151,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
         ".ghost": {
           input: {
             border: `1px solid ${inputBorderColor}`,
-            maxHeight: "16px",
+            minHeight: "36px",
             fontFamily:
               "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
             borderRadius: "8px",
@@ -164,6 +165,16 @@ export const GRADIO_THEME: MantineThemeOverride = {
               backgroundColor: "transparent",
             },
           },
+        },
+
+        ".buttonGroupLeft": {
+          borderBottomRightRadius: 0,
+          borderTopRightRadius: 0,
+        },
+
+        ".buttonGroupRight": {
+          borderBottomLeftRadius: 0,
+          borderTopLeftRadius: 0,
         },
 
         ".cellStyle": {
@@ -216,6 +227,10 @@ export const GRADIO_THEME: MantineThemeOverride = {
               outline: "solid 1px #E85921 !important",
               outlineOffset: "-1px",
             },
+          },
+
+          ".promptActionBarClosed": {
+            minWidth: "32px",
           },
         },
 
