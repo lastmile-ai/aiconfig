@@ -97,6 +97,24 @@ export const GRADIO_THEME: MantineThemeOverride = {
             color: "#374151",
           },
 
+        /*
+         * Fix loading spinner color for buttons and loaders rendered in buttons
+         */
+        "button.mantine-Button-root > div.mantine-Button-inner > span.mantine-Button-label > div > svg":
+          {
+            stroke: "#E85921",
+          },
+
+        "button.mantine-Button-root > div.mantine-Button-inner": {
+          "span.mantine-Button-centerLoader > svg": {
+            stroke: "#E85921",
+          },
+        },
+
+        "button.mantine-Button-root[data-loading]::before": {
+          backgroundColor: "rgba(26, 27, 30, 0.2)",
+        },
+
         ".mantine-Checkbox-root": {
           ".mantine-Checkbox-input": {
             borderColor: inputBorderColor,
@@ -274,6 +292,11 @@ export const GRADIO_THEME: MantineThemeOverride = {
           margin: "33px 4px 4px 4px",
           padding: "0.625rem !important",
           height: "auto",
+
+          // Make the icon filled when running spinner is shown
+          "div.mantine-Button-inner > span.mantine-Button-label > div > svg": {
+            fill: "#E85921",
+          },
         },
 
         ".runPromptButton.runPromptButtonReadOnly": {
