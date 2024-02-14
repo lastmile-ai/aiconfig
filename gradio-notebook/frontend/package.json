@@ -1,0 +1,48 @@
+{
+  "name": "gradio_notebook",
+  "version": "0.2.9",
+  "description": "Gradio UI packages",
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "private": false,
+  "main_changeset": true,
+  "exports": {
+    ".": "./Index.svelte",
+    "./example": "./Example.svelte",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node config/index.js --mode build",
+    "dev": "node config/index.js --mode dev"
+  },
+  "dependencies": {
+    "@datadog/browser-logs": "^5.8.0",
+    "@gradio/atoms": "0.3.0",
+    "@gradio/client": "^0.10.1",
+    "@gradio/statustracker": "0.4.0",
+    "@gradio/utils": "0.2.0",
+    "@lastmileai/aiconfig-editor": "^0.1.26",
+    "@mantine/core": "^6.0.7",
+    "@tabler/icons-react": "^2.44.0",
+    "@types/uuid": "^9.0.7",
+    "@vitejs/plugin-react": "^4.2.1",
+    "aiconfig": "^1.1.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "svelte": "^4.2.8",
+    "svelte-preprocess-react": "^0.16.0",
+    "vite-plugin-commonjs": "^0.10.1"
+  },
+  "devDependencies": {
+    "@originjs/vite-plugin-commonjs": "^1.0.3",
+    "@rollup/plugin-sucrase": "^5.0.1",
+    "@sveltejs/vite-plugin-svelte": "^3.0.1",
+    "@types/react": "^18.2.48",
+    "@types/which": "^3.0.0",
+    "rollup-plugin-ignore": "^1.0.10",
+    "sucrase": "^3.34.0",
+    "vite": "^5.0.11",
+    "which": "4.0.0"
+  }
+}

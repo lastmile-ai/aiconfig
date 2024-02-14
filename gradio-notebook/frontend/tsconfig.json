@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "es2017",
+    /**
+          Svelte Preprocess cannot figure out whether you have a value or a type, so tell TypeScript
+          to enforce using `import type` instead of `import` for Types.
+         */
+    "verbatimModuleSyntax": true,
+    /**
+          To have warnings/errors of the Svelte compiler at the correct position,
+          enable source maps by default.
+         */
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "allowJs": false,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "include": ["**/*.d.ts", "**/*.ts", "**/*.tsx", "**/*.svelte"]
+}
