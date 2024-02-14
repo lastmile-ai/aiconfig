@@ -8,13 +8,20 @@ import constants from '@site/core/tabConstants';
 
 # Gradio Notebooks
 
-[Gradio Notebook](https://huggingface.co/spaces/lastmileai/gradio-notebook-template) is a Gradio custom component that creates a notebook playground on Hugging Face Spaces with only [8-lines of code](https://huggingface.co/spaces/lastmileai/gradio-notebook-template/blob/main/app.py)!
+[Gradio Notebook](https://huggingface.co/spaces/lastmileai/gradio-notebook-template) is a notebook component for generative AI that offers the fastest way to create a Hugging Face space ([in < 10 lines of code](<(https://huggingface.co/spaces/lastmileai/gradio-notebook-template/blob/main/app.py)>)), and a familiar notebook interface for interacting with any combination of text, image and audio models in a single space.
 
 You can:
 
-- Use any model (and chain models together!) in a single Space
-- Play around with models in any format (text, audio image)
-- Share Space results with friends
+- Use any combination of text, image, or audio models in a single space, and even chain models together.
+- Experiment with models using a pre-built notebook UI, which is a familiar, intuitive interface for multimodal interaction.
+- Share space outputs with friends via a shareable URL.
+- Download your space config (prompts and model settings) as an aiconfig JSON file, and use it in your application via the [AIConfig SDK](#gradio-notebook-api).
+
+## 5-minute Video Tutorial
+
+<div align="center">
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/FlwINB9RmKk?si=j6UeGZhYOpmjA678" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+</div>
 
 ## Examples
 
@@ -31,11 +38,17 @@ You can:
 
 ## Start here if you are a ...
 
-- [Creator](#for-space-creators)
-- [Viewer](#features)
-- [Gradio Notebook API (for Developers)](#gradio-notebook-api)
+- [Hugging Face Space Creator](#for-space-creators)
+- [Space Viewer](#features)
+- [Developer (Gradio Notebook API)](#gradio-notebook-api)
 
 ## Features
+
+<div align="center">
+  <picture>
+    ![Demo](https://s3.amazonaws.com/publicdata.lastmileai.com/Gradio_Post.gif)
+  </picture>
+</div>
 
 ### Gradio Notebook Structure
 
@@ -65,7 +78,7 @@ You can set global parameters for your entire notebook. Click on **Global Parame
 
 <div align="center">
   <picture>
-    <img alt="notebook" src="https://github.com/lastmile-ai/aiconfig/assets/81494782/631f33ac-cf66-4e40-a7aa-c28d37b2ffad" width="800"/>
+    ![Parameters](https://github.com/lastmile-ai/aiconfig/assets/25641935/008ad009-4799-4239-9597-f13358728cb3)
   </picture>
 </div>
 
@@ -88,7 +101,7 @@ The image_gen prompt below uses the output of the prompt_1 using handlebars synt
 
 <div align="center">
   <picture>
-    <img alt="notebook" src="https://github.com/lastmile-ai/aiconfig/assets/81494782/78636283-79d3-43b9-ab13-d0cd1513b38f" width="800"/>
+    ![Chaining](https://github.com/lastmile-ai/aiconfig/assets/25641935/f0a8db93-b08e-4562-8b15-d3a586ad6b09)
   </picture>
 </div>
 
@@ -113,7 +126,11 @@ Reasons for Downloading:
 
 Click the share button on the top right to get a link to a read-only copy of your Space to share with the rest of the world!
 
-![sharing](https://github.com/lastmile-ai/aiconfig/assets/81494782/ceadc825-9df3-4192-b033-117ee1d40590)
+<div align="center">
+  <picture>
+    ![Sharing](https://github.com/lastmile-ai/aiconfig/assets/25641935/43df45b3-594b-402b-8ec2-79ffed1c40ef)
+  </picture>
+</div>
 
 ## For Space creators
 
