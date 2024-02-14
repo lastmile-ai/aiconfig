@@ -241,6 +241,15 @@ export const GRADIO_THEME: MantineThemeOverride = {
             boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
             backgroundColor: inputBackgroundColor,
           },
+
+          // Override gradio-containiner ol styles with mantine's
+          ".outputsContainer > ol": {
+            marginBlockStart: "1em",
+            marginBlockEnd: "1em",
+            marginInlineStart: "0px",
+            marginInlineEnd: "0px",
+            paddingInlineStart: "40px",
+          },
         },
 
         ".sidePanel": {
