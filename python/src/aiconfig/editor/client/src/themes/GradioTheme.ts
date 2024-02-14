@@ -24,6 +24,13 @@ export const GRADIO_THEME: MantineThemeOverride = {
 
     return {
       "div.editorBackground": {
+        a: {
+          // Change links back to mantine color instead of gradio override
+          color: `${
+            theme.colorScheme === "light" ? "#1c7ed6" : "#4dabf7"
+          } !important`,
+        },
+
         background: theme.colorScheme === "light" ? "white" : "#0b0f19",
         borderRadius: "8px",
         // Gradio component is iframed so height should be in relation to
