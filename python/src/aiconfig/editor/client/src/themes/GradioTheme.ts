@@ -90,6 +90,24 @@ export const GRADIO_THEME: MantineThemeOverride = {
             color: "#374151",
           },
 
+        ".mantine-Checkbox-root": {
+          ".mantine-Checkbox-input": {
+            borderColor: inputBorderColor,
+
+            "&:checked": {
+              background:
+                "linear-gradient(to bottom right, #ffedd5, #fdba74 100%)",
+            },
+            "&:hover": {
+              background: "linear-gradient(to bottom right, #ffedd5, #fed7aa)",
+            },
+          },
+
+          ".mantine-Checkbox-icon": {
+            color: "#E85921",
+          },
+        },
+
         ".mantine-Input-input:focus": {
           outline: "solid 1px #E85921 !important",
           outlineOffset: "-1px",
