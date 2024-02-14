@@ -243,12 +243,9 @@ export const GRADIO_THEME: MantineThemeOverride = {
           },
 
           // Override gradio-container ol styles with mantine's
-          ".outputsContainer > ol": {
-            marginBlockStart: "1em",
-            marginBlockEnd: "1em",
-            marginInlineStart: "0px",
-            marginInlineEnd: "0px",
-            paddingInlineStart: "40px",
+          ".outputContainer > ol": {
+            margin: "1em 0",
+            paddingLeft: "40px",
           },
         },
 
