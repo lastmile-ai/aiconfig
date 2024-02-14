@@ -168,13 +168,14 @@ export default function aiconfigReducer(
     }
     case "UPDATE_PROMPT_MODEL": {
       return reduceReplacePrompt(dirtyState, action.id, (prompt) => {
-        // TODO: Consolidate settings based on schema union, server-side
-        // For now, just keep all the settings to match the server-side implementation
-        let modelSettings;
-        const promptModel = prompt.metadata?.model;
-        if (promptModel && typeof promptModel !== "string") {
-          modelSettings = promptModel.settings;
-        }
+        // TODO (rossdan): Uncomment below once we are able to handle updating model names for HF tasks or sub-classes
+        // // TODO: Consolidate settings based on schema union, server-side
+        // // For now, just keep all the settings to match the server-side implementation
+        // let modelSettings;
+        // const promptModel = prompt.metadata?.model;
+        // if (promptModel && typeof promptModel !== "string") {
+        //   modelSettings = promptModel.settings;
+        // }
         return {
           ...prompt,
           metadata: {
@@ -182,7 +183,8 @@ export default function aiconfigReducer(
             model: action.modelName
               ? {
                   name: action.modelName,
-                  settings: modelSettings,
+                  // TODO (rossdanlm): For now just clearing the model settings whenever new model name is selected
+                  settings: undefined,
                 }
               : undefined,
           },

@@ -20,6 +20,7 @@ export const HuggingFaceText2ImageDiffusorPromptSchema: PromptSchema = {
       model: {
         type: "string",
         description: `Hugging Face model to use`,
+        default: "runwayml/stable-diffusion-v1-5",
       },
       height: {
         type: "integer",
