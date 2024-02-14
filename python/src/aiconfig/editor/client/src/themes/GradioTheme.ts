@@ -24,6 +24,13 @@ export const GRADIO_THEME: MantineThemeOverride = {
 
     return {
       "div.editorBackground": {
+        a: {
+          // Change links back to mantine color instead of gradio override
+          color: `${
+            theme.colorScheme === "light" ? "#1c7ed6" : "#4dabf7"
+          } !important`,
+        },
+
         background: theme.colorScheme === "light" ? "white" : "#0b0f19",
         borderRadius: "8px",
         // Gradio component is iframed so height should be in relation to
@@ -89,6 +96,42 @@ export const GRADIO_THEME: MantineThemeOverride = {
           {
             color: "#374151",
           },
+
+        /*
+         * Fix loading spinner color for buttons and loaders rendered in buttons
+         */
+        "button.mantine-Button-root > div.mantine-Button-inner > span.mantine-Button-label > div > svg":
+          {
+            stroke: "#E85921",
+          },
+
+        "button.mantine-Button-root > div.mantine-Button-inner": {
+          "span.mantine-Button-centerLoader > svg": {
+            stroke: "#E85921",
+          },
+        },
+
+        "button.mantine-Button-root[data-loading]::before": {
+          backgroundColor: "rgba(26, 27, 30, 0.2)",
+        },
+
+        ".mantine-Checkbox-root": {
+          ".mantine-Checkbox-input": {
+            borderColor: inputBorderColor,
+
+            "&:checked": {
+              background:
+                "linear-gradient(to bottom right, #ffedd5, #fdba74 100%)",
+            },
+            "&:hover": {
+              background: "linear-gradient(to bottom right, #ffedd5, #fed7aa)",
+            },
+          },
+
+          ".mantine-Checkbox-icon": {
+            color: "#E85921",
+          },
+        },
 
         ".mantine-Input-input:focus": {
           outline: "solid 1px #E85921 !important",
@@ -198,6 +241,12 @@ export const GRADIO_THEME: MantineThemeOverride = {
             boxShadow: "0px 1px 4px 0px rgba(0, 0, 0, 0.05) inset",
             backgroundColor: inputBackgroundColor,
           },
+
+          // Override gradio-container ol styles with mantine's
+          ".outputContainer > ol": {
+            margin: "1em 0",
+            paddingLeft: "40px",
+          },
         },
 
         ".sidePanel": {
@@ -249,6 +298,11 @@ export const GRADIO_THEME: MantineThemeOverride = {
           margin: "33px 4px 4px 4px",
           padding: "0.625rem !important",
           height: "auto",
+
+          // Make the icon filled when running spinner is shown
+          "div.mantine-Button-inner > span.mantine-Button-label > div > svg": {
+            fill: "#E85921",
+          },
         },
 
         ".runPromptButton.runPromptButtonReadOnly": {

@@ -103,5 +103,11 @@ const OutputRenderer = memo(function Output({ output }: { output: Output }) {
 });
 
 export default memo(function PromptOutputsRenderer({ outputs }: Props) {
-  return outputs.map((output, i) => <OutputRenderer key={i} output={output} />);
+  return (
+    <Flex direction="column" className="outputContainer">
+      {outputs.map((output, i) => (
+        <OutputRenderer key={i} output={output} />
+      ))}
+    </Flex>
+  );
 });

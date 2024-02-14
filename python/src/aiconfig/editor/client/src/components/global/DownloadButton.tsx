@@ -39,6 +39,7 @@ export default memo(function DownloadButton({
       <Button
         loaderPosition="center"
         loading={isDownloading}
+        loaderProps={{ size: "sm" }}
         onClick={onClick}
         size="xs"
         variant="filled"
