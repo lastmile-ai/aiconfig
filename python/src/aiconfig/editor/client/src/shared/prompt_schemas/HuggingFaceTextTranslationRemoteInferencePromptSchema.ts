@@ -16,7 +16,7 @@ export const HuggingFaceTextTranslationRemoteInferencePromptSchema: PromptSchema
           type: "string",
           description: `Hugging Face model to use. Can be a model ID hosted on the Hugging Face Hub or a URL 
         to a deployed Inference Endpoint`,
-        default: "t5-small",
+          default: "facebook/mbart-large-50-many-to-many-mmt",
         },
         src_lang: {
           type: "string",
