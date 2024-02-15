@@ -244,8 +244,10 @@ function AIConfigEditorBase({
       async (
         promptName: string,
         newPrompt: Prompt,
-        onSuccess: (aiconfigRes: AIConfig) => void,
-        onError: (err: unknown) => void
+        callbacks: {
+          onSuccess?: (aiconfigRes: AIConfig) => void;
+          onError?: (err: unknown) => void;
+        }
       ) => {
         try {
           const serverConfigRes = await updatePromptCallback(
@@ -253,10 +255,10 @@ function AIConfigEditorBase({
             newPrompt
           );
           if (serverConfigRes?.aiconfig) {
-            onSuccess(serverConfigRes.aiconfig);
+            callbacks?.onSuccess?.(serverConfigRes.aiconfig);
           }
         } catch (err: unknown) {
-          onError(err);
+          callbacks?.onError?.(err);
         }
       },
       DEBOUNCE_MS
@@ -302,13 +304,15 @@ function AIConfigEditorBase({
             ...prompt,
             input: newPromptInput,
           },
-          (config) =>
-            dispatch({
-              type: "CONSOLIDATE_AICONFIG",
-              action,
-              config,
-            }),
-          onError
+          {
+            onSuccess: (config) =>
+              dispatch({
+                type: "CONSOLIDATE_AICONFIG",
+                action,
+                config,
+              }),
+            onError,
+          }
         );
       } catch (err: unknown) {
         onError(err);
@@ -350,15 +354,17 @@ function AIConfigEditorBase({
           // PromptName component maintains local state for the name to show in the UI
           // We cannot update client config state until the name is successfully set server-side
           // or else we could end up referencing a prompt name that is not set server-side
-          () => {
-            dispatch({
-              type: "UPDATE_PROMPT_NAME",
-              id: promptId,
-              name: newName,
-            });
-            logEventHandler?.("UPDATE_PROMPT_NAME");
-          },
-          onError
+          {
+            onSuccess: () => {
+              dispatch({
+                type: "UPDATE_PROMPT_NAME",
+                id: promptId,
+                name: newName,
+              });
+              logEventHandler?.("UPDATE_PROMPT_NAME");
+            },
+            onError,
+          }
         );
       } catch (err: unknown) {
         onError(err);
@@ -391,6 +397,57 @@ function AIConfigEditorBase({
       DEBOUNCE_MS
     );
   }, [updateModelCallback]);
+
+  const onUpdatePromptMetadata = useCallback(
+    async (promptId: string, newMetadata: JSONObject) => {
+      if (!debouncedUpdatePrompt) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
+      dispatch({
+        type: "UPDATE_PROMPT_METADATA",
+        id: promptId,
+        metadata: newMetadata,
+      });
+
+      const onError = (err: unknown) => {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error updating prompt metadata",
+          message,
+          type: "error",
+        });
+      };
+
+      try {
+        const statePrompt = getPrompt(stateRef.current, promptId);
+        if (!statePrompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        const prompt = clientPromptToAIConfigPrompt(statePrompt);
+
+        await debouncedUpdatePrompt(
+          prompt.name,
+          {
+            ...prompt,
+            metadata: {
+              ...newMetadata,
+              model: prompt.metadata?.model,
+              parameters: prompt.metadata?.parameters,
+            },
+          },
+          {
+            onError,
+          }
+        );
+      } catch (err: unknown) {
+        onError(err);
+      }
+    },
+    [debouncedUpdatePrompt, showNotification]
+  );
 
   const onUpdatePromptModelSettings = useCallback(
     async (promptId: string, newModelSettings: JSONObject) => {
@@ -1098,6 +1155,7 @@ function AIConfigEditorBase({
           onChangePromptName={onChangePromptName}
           onDeletePrompt={onDeletePrompt}
           onRunPrompt={onRunPrompt}
+          onUpdatePromptMetadata={onUpdatePromptMetadata}
           onUpdatePromptModel={onUpdatePromptModel}
           onUpdatePromptModelSettings={onUpdatePromptModelSettings}
           onUpdatePromptParameters={onUpdatePromptParameters}
