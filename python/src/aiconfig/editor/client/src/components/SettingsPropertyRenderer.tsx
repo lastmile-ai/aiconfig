@@ -68,6 +68,26 @@ export default function SettingsPropertyRenderer({
     initialValue ?? defaultValue
   );
 
+  // If the default value (i.e. default from schema) changes, update the property value if
+  // it matches the prev default. This will handle cases such as changing the prompt model
+  // when the model settings tab is open with no changes made to the relevant settings
+  const [prevDefaultValue, setPrevDefaultValue] = useState(defaultValue);
+  if (prevDefaultValue !== defaultValue && initialValue == null) {
+    setPrevDefaultValue(defaultValue);
+    setPropertyValue(defaultValue);
+  }
+
+  // If the initial value (i.e. value from config) changes, update the property value
+  // This will handle cases such as changing the prompt model when the model settings
+  // tab is open with changes made to the relevant settings
+  const [prevInitialValue, setPrevInitialValue] = useState<JSONValue | null>(
+    initialValue
+  );
+  if (prevInitialValue !== initialValue && initialValue !== propertyValue) {
+    setPrevInitialValue(initialValue);
+    setPropertyValue(initialValue ?? defaultValue);
+  }
+
   let propertyControl;
 
   const setAndPropagateValue = useCallback(
