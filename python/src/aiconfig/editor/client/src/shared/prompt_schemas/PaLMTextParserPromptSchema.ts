@@ -59,12 +59,4 @@ export const PaLMTextParserPromptSchema: PromptSchema = {
       },
     },
   },
-  prompt_metadata: {
-    type: "object",
-    properties: {
-      remember_chat_context: {
-        type: "boolean",
-      },
-    },
-  },
 };
