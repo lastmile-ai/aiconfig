@@ -334,6 +334,7 @@ export default function SettingsPropertyRenderer({
             setAndPropagateValue(event.currentTarget.checked)
           }
           disabled={readOnly}
+          styles={{ inner: { alignSelf: "center" } }}
         />
       );
       break;
