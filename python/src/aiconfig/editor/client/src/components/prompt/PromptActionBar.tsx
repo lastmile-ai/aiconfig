@@ -17,6 +17,7 @@ type Props = {
   promptSchema?: PromptSchema;
   onUpdateModelSettings: (settings: Record<string, unknown>) => void;
   onUpdateParameters: (parameters: JSONObject) => void;
+  onUpdatePromptMetadata: (metadata: JSONObject) => void;
 };
 
 // Don't default to config-level model settings since that could be confusing
@@ -25,6 +26,22 @@ function getModelSettings(prompt: ClientPrompt) {
   if (typeof prompt.metadata?.model !== "string") {
     return prompt.metadata?.model?.settings;
   }
+}
+
+function getMetadata(prompt: ClientPrompt) {
+  const metadata = { ...prompt.metadata };
+
+  // Model and parameters handled as their own tabs
+  delete metadata.model;
+  delete metadata.parameters;
+
+  // Tags are set to null by default by python sdk. For now, exclude if null
+  // We may want to add special UI for tags later
+  if (metadata.tags === null) {
+    delete metadata.tags;
+  }
+
+  return metadata;
 }
 
 function getPromptParameters(prompt: ClientPrompt) {
@@ -45,8 +62,10 @@ export default memo(function PromptActionBar({
   promptSchema,
   onUpdateModelSettings,
   onUpdateParameters,
+  onUpdatePromptMetadata,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<string | null>("settings");
   // TODO: Handle drag-to-resize
   const modelSettingsSchema = promptSchema?.model_settings;
   const promptMetadataSchema = promptSchema?.prompt_metadata;
@@ -67,7 +86,12 @@ export default memo(function PromptActionBar({
           <ActionIcon size="sm" onClick={() => setIsExpanded(false)} mt="0.5em">
             <IconClearAll />
           </ActionIcon>
-          <Tabs defaultValue="settings" mb="1em">
+          <Tabs
+            defaultValue="settings"
+            value={selectedTab}
+            mb="1em"
+            onTabChange={setSelectedTab}
+          >
             <Tabs.List>
               <Tabs.Tab value="settings">Settings</Tabs.Tab>
               {checkParametersSupported(prompt) && (
@@ -75,37 +99,44 @@ export default memo(function PromptActionBar({
               )}
             </Tabs.List>
 
-            <Tabs.Panel value="settings" className="actionTabsPanel">
-              <ScrollArea
-                h={maxContentHeightPx}
-                type="auto"
-                style={{ overflowY: "auto" }}
-              >
-                <ModelSettingsRenderer
-                  settings={getModelSettings(prompt)}
-                  schema={modelSettingsSchema}
-                  onUpdateModelSettings={onUpdateModelSettings}
-                />
-                <PromptMetadataRenderer
-                  prompt={prompt}
-                  schema={promptMetadataSchema}
-                />
-              </ScrollArea>
-            </Tabs.Panel>
-
-            {checkParametersSupported(prompt) && (
-              <Tabs.Panel value="parameters" className="actionTabsPanel">
-                <ParametersRenderer
-                  initialValue={getPromptParameters(prompt)}
-                  onUpdateParameters={onUpdateParameters}
-                  maxHeight={
-                    maxContentHeightPx
-                      ? maxContentHeightPx - ADD_PARAMETER_BOTTOM_HEIGHT
-                      : undefined
-                  }
-                />
+            {selectedTab === "settings" && (
+              <Tabs.Panel value="settings" className="actionTabsPanel">
+                <ScrollArea
+                  h={maxContentHeightPx}
+                  type="auto"
+                  style={{ overflowY: "auto" }}
+                >
+                  <ModelSettingsRenderer
+                    settings={getModelSettings(prompt)}
+                    schema={modelSettingsSchema}
+                    onUpdateModelSettings={onUpdateModelSettings}
+                  />
+                  {/* For now, just render metadata if a schema is explicitly provided */}
+                  {promptMetadataSchema && (
+                    <PromptMetadataRenderer
+                      metadata={getMetadata(prompt)}
+                      onUpdatePromptMetadata={onUpdatePromptMetadata}
+                      schema={promptMetadataSchema}
+                    />
+                  )}
+                </ScrollArea>
               </Tabs.Panel>
             )}
+
+            {selectedTab === "parameters" &&
+              checkParametersSupported(prompt) && (
+                <Tabs.Panel value="parameters" className="actionTabsPanel">
+                  <ParametersRenderer
+                    initialValue={getPromptParameters(prompt)}
+                    onUpdateParameters={onUpdateParameters}
+                    maxHeight={
+                      maxContentHeightPx
+                        ? maxContentHeightPx - ADD_PARAMETER_BOTTOM_HEIGHT
+                        : undefined
+                    }
+                  />
+                </Tabs.Panel>
+              )}
           </Tabs>
         </Container>
       ) : (
