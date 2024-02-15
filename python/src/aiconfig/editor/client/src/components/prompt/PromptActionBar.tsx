@@ -17,6 +17,7 @@ type Props = {
   promptSchema?: PromptSchema;
   onUpdateModelSettings: (settings: Record<string, unknown>) => void;
   onUpdateParameters: (parameters: JSONObject) => void;
+  onUpdatePromptMetadata: (metadata: JSONObject) => void;
 };
 
 // Don't default to config-level model settings since that could be confusing
@@ -25,6 +26,22 @@ function getModelSettings(prompt: ClientPrompt) {
   if (typeof prompt.metadata?.model !== "string") {
     return prompt.metadata?.model?.settings;
   }
+}
+
+function getMetadata(prompt: ClientPrompt) {
+  const metadata = { ...prompt.metadata };
+
+  // Model and parameters handled as their own tabs
+  delete metadata.model;
+  delete metadata.parameters;
+
+  // Tags are set to null by default by python sdk. For now, exclude if null
+  // We may want to add special UI for tags later
+  if (metadata.tags === null) {
+    delete metadata.tags;
+  }
+
+  return metadata;
 }
 
 function getPromptParameters(prompt: ClientPrompt) {
@@ -45,6 +62,7 @@ export default memo(function PromptActionBar({
   promptSchema,
   onUpdateModelSettings,
   onUpdateParameters,
+  onUpdatePromptMetadata,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
   // TODO: Handle drag-to-resize
@@ -86,10 +104,14 @@ export default memo(function PromptActionBar({
                   schema={modelSettingsSchema}
                   onUpdateModelSettings={onUpdateModelSettings}
                 />
-                <PromptMetadataRenderer
-                  prompt={prompt}
-                  schema={promptMetadataSchema}
-                />
+                {/* For now, just render metadata if a schema is explicitly provided */}
+                {promptMetadataSchema && (
+                  <PromptMetadataRenderer
+                    metadata={getMetadata(prompt)}
+                    onUpdatePromptMetadata={onUpdatePromptMetadata}
+                    schema={promptMetadataSchema}
+                  />
+                )}
               </ScrollArea>
             </Tabs.Panel>
 
