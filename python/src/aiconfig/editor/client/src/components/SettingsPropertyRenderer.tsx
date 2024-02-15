@@ -68,6 +68,18 @@ export default function SettingsPropertyRenderer({
     initialValue ?? defaultValue
   );
 
+  // If the default value (i.e. default from schema) changes, update the property value if
+  // the config value is not set. This will handle cases such as changing the prompt model
+  // selector when the model settings tab is open
+  // NOTE: We can't do the same for initialValue vs prevInitialValue because initialValue
+  // (config value) is updated on debounced propertyValue changes and that would cause issues
+  // with overwriting user changes with config value as they type
+  const [prevDefaultValue, setPrevDefaultValue] = useState(defaultValue);
+  if (prevDefaultValue !== defaultValue && initialValue == null) {
+    setPrevDefaultValue(defaultValue);
+    setPropertyValue(defaultValue);
+  }
+
   let propertyControl;
 
   const setAndPropagateValue = useCallback(
