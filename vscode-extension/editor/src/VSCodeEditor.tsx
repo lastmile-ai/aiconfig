@@ -57,6 +57,12 @@ export default function VSCodeEditor() {
     webviewState?.theme
   );
 
+  // Default to readOnly until we receive a message from the extension host
+  // confirming it is safe to edit the content
+  const [isReadOnly, setIsReadOnly] = useState<boolean>(
+    webviewState?.isReadOnly ?? true
+  );
+
   const { classes } = useStyles();
 
   const updateContent = useCallback(async (text: string) => {
@@ -94,6 +100,14 @@ export default function VSCodeEditor() {
 
         // Update our webview's content
         updateContent(text);
+        return;
+      }
+      case "set_readonly_state": {
+        const isReadOnlyState = message.isReadOnly;
+        if (isReadOnlyState != null && isReadOnlyState !== isReadOnly) {
+          setIsReadOnly(isReadOnlyState);
+          updateWebviewState(vscode, { isReadOnly: isReadOnlyState });
+        }
         return;
       }
       case "set_server_url": {
@@ -475,6 +489,7 @@ export default function VSCodeEditor() {
           aiconfig={aiconfig}
           callbacks={callbacks}
           mode={MODE}
+          readOnly={isReadOnly}
           themeOverride={VSCODE_THEME}
           themeMode={themeMode}
         />
