@@ -4,6 +4,7 @@ import { ClientPrompt } from "../../shared/types";
 import {
   PromptSchema,
   checkParametersSupported,
+  getPromptModelName,
 } from "../../utils/promptUtils";
 import { ActionIcon, Container, Flex, ScrollArea, Tabs } from "@mantine/core";
 import { IconClearAll } from "@tabler/icons-react";
@@ -13,6 +14,7 @@ import { JSONObject } from "aiconfig";
 import { PROMPT_CONTAINER_HEIGHT_MAP } from "./PromptContainer";
 
 type Props = {
+  defaultConfigModelName?: string;
   prompt: ClientPrompt;
   promptSchema?: PromptSchema;
   onUpdateModelSettings: (settings: Record<string, unknown>) => void;
@@ -58,6 +60,7 @@ const MIN_ACTION_BAR_HEIGHT = 300;
 const ADD_PARAMETER_BOTTOM_HEIGHT = 46;
 
 export default memo(function PromptActionBar({
+  defaultConfigModelName,
   prompt,
   promptSchema,
   onUpdateModelSettings,
@@ -107,6 +110,7 @@ export default memo(function PromptActionBar({
                   style={{ overflowY: "auto" }}
                 >
                   <ModelSettingsRenderer
+                    model={getPromptModelName(prompt, defaultConfigModelName)}
                     settings={getModelSettings(prompt)}
                     schema={modelSettingsSchema}
                     onUpdateModelSettings={onUpdateModelSettings}

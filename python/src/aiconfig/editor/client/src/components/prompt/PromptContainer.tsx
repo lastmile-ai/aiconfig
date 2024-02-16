@@ -174,6 +174,7 @@ export default memo(function PromptContainer({
       </Card>
       <div className="sidePanel">
         <PromptActionBar
+          defaultConfigModelName={defaultConfigModelName}
           prompt={prompt}
           promptSchema={promptSchema}
           onUpdateModelSettings={updateModelSettings}
