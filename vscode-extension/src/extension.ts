@@ -21,6 +21,8 @@ import {
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
+// Import the API
+import { ActiveEnvironmentPathChangeEvent, PythonExtension } from '@vscode/python-extension';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -37,7 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
-    installDependencies(context, extensionOutputChannel);
+    initialize(context);
   });
   context.subscriptions.push(setupCommand);
 
@@ -411,6 +413,24 @@ async function handleCustomModelRegistryUpdate(
   vscode.window.showInformationMessage(
     `Updated model registry for open aiconfigs to ${modelRegistryPath}`
   );
+}
+
+async function initialize(context: vscode.ExtensionContext) {
+
+  // Load the Python extension API. See api ref: https://github.com/microsoft/vscode-python/wiki/Python-Environment-APIs
+  // VSCode Does not let you "block" on selecting a Python interpreter, callback required.
+  const pythonApi: PythonExtension = await PythonExtension.api();
+  context.subscriptions.push(
+      pythonApi.environments.onDidChangeActiveEnvironmentPath((e: ActiveEnvironmentPathChangeEvent) => {
+          const currentActivePython = e.path;
+          console.log("Python environment changed to: " + e.path);
+      }),
+
+  );
+  
+  // On initialization, ask the user to select a Python interpreter. 
+  await vscode.commands.executeCommand('python.setInterpreter');
+
 }
 
 /**
