@@ -41,7 +41,8 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
-    installDependencies(context, extensionOutputChannel);
+    initialize(context);
+    // installDependencies(context, extensionOutputChannel);
   });
   context.subscriptions.push(setupCommand);
 
@@ -418,6 +419,9 @@ async function handleCustomModelRegistryUpdate(
 }
 
 async function initialize(context: vscode.ExtensionContext) {
+    // Create an output channel for the extension
+
+
 
   // Load the Python extension API. See api ref: https://github.com/microsoft/vscode-python/wiki/Python-Environment-APIs
   // VSCode Does not let you "block" on selecting a Python interpreter, callback required.
@@ -425,8 +429,12 @@ async function initialize(context: vscode.ExtensionContext) {
   context.subscriptions.push(
       pythonApi.environments.onDidChangeActiveEnvironmentPath((e: ActiveEnvironmentPathChangeEvent) => {
           const currentActivePython = e.path;
+          const extensionOutputChannel = vscode.window.createOutputChannel("AIConfig", {
+            log: true,
+          });
           console.log("Python environment changed to: " + e.path);
-      }),
+          installDependencies(context, extensionOutputChannel);
+        }),
 
   );
   
