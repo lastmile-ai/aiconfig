@@ -72,10 +72,7 @@ export class AIConfigEditorManager {
 
   removeEditorByUri(uri: string) {
     this.editorsByUri.delete(uri);
-    if (
-      this.activeEditorUri === uri ||
-      this.activeEditor?.document?.uri.toString() === uri
-    ) {
+    if (this.activeEditorUri === uri || this.activeEditor?.document?.uri.toString() === uri) {
       this.activeEditor = null;
       this.activeEditorUri = null;
     }

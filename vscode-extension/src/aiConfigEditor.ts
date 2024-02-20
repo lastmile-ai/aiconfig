@@ -15,10 +15,7 @@ import { getUri } from "./utilities/getUri";
 
 import { spawn } from "child_process";
 import { getPortPromise } from "portfinder";
-import {
-  AIConfigEditorManager,
-  AIConfigEditorState,
-} from "./aiConfigEditorManager";
+import { AIConfigEditorManager, AIConfigEditorState } from "./aiConfigEditorManager";
 
 /**
  * Provider for AIConfig editors.
@@ -32,15 +29,8 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     extensionOutputChannel: vscode.LogOutputChannel,
     aiconfigEditorManager: AIConfigEditorManager
   ): vscode.Disposable {
-    const provider = new AIConfigEditorProvider(
-      context,
-      extensionOutputChannel,
-      aiconfigEditorManager
-    );
-    const providerRegistration = vscode.window.registerCustomEditorProvider(
-      AIConfigEditorProvider.viewType,
-      provider
-    );
+    const provider = new AIConfigEditorProvider(context, extensionOutputChannel, aiconfigEditorManager);
+    const providerRegistration = vscode.window.registerCustomEditorProvider(AIConfigEditorProvider.viewType, provider);
     return providerRegistration;
   }
 
@@ -71,14 +61,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     // Start the AIConfig editor server process.
     editorServer = await this.startEditorServer(document);
 
-    this.aiconfigEditorManager.addEditor(
-      new AIConfigEditorState(
-        document,
-        webviewPanel,
-        editorServer,
-        this.aiconfigEditorManager
-      )
-    );
+    this.aiconfigEditorManager.addEditor(new AIConfigEditorState(document, webviewPanel, editorServer, this.aiconfigEditorManager));
 
     // Setup initial content for the webview
     webviewPanel.webview.options = {
@@ -92,10 +75,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         vscode.Uri.joinPath(this.context.extensionUri, "editor", "static"),
       ],
     };
-    webviewPanel.webview.html = this.getHtmlForWebview(
-      webviewPanel.webview,
-      editorServer
-    );
+    webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, editorServer);
 
     function updateWebview() {
       if (isWebviewDisposed) {
@@ -124,114 +104,89 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     let isWebviewDisposed = false;
 
-    const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(
-      async (e) => {
-        if (e.document.uri.toString() === document.uri.toString()) {
-          if (isInternalDocumentChange) {
-            console.log(
-              `changeDocumentSubscription ${e.document.uri} - skipping event because it was triggered by the webview`
-            );
+    const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(async (e) => {
+      if (e.document.uri.toString() === document.uri.toString()) {
+        if (isInternalDocumentChange) {
+          console.log(`changeDocumentSubscription ${e.document.uri} - skipping event because it was triggered by the webview`);
 
-            // Reset the internal document change flag
-            isInternalDocumentChange = false;
-            return;
-          }
+          // Reset the internal document change flag
+          isInternalDocumentChange = false;
+          return;
+        }
 
-          if (isWebviewDisposed) {
-            console.warn(
-              `changeDocumentSubscription ${e.document.uri} - skipping event because webview has been disposed`
-            );
-            return;
-          }
+        if (isWebviewDisposed) {
+          console.warn(`changeDocumentSubscription ${e.document.uri} - skipping event because webview has been disposed`);
+          return;
+        }
 
-          // TODO: Should we skip events with no content changes?
-          // if (e.contentChanges.length === 0) {
-          //   console.log(
-          //     `changeDocumentSubscription ${e.document.uri} - skipping event because there are no content changes`
-          //   );
-          //   return;
-          // }
+        // TODO: Should we skip events with no content changes?
+        // if (e.contentChanges.length === 0) {
+        //   console.log(
+        //     `changeDocumentSubscription ${e.document.uri} - skipping event because there are no content changes`
+        //   );
+        //   return;
+        // }
 
-          // TODO: saqadri - instead of sending the entire document to the webview,
-          // can ask it to reload the document from the server
+        // TODO: saqadri - instead of sending the entire document to the webview,
+        // can ask it to reload the document from the server
 
-          // Update webview immediately, and server state should be updated in the background.
-          console.log(
-            `changeDocumentSubscription ${e.document.uri} -- updating webview`
-          );
-          updateWebview();
+        // Update webview immediately, and server state should be updated in the background.
+        console.log(`changeDocumentSubscription ${e.document.uri} -- updating webview`);
+        updateWebview();
 
-          // Notify server of updated document
-          if (editorServer) {
-            // TODO: saqadri - decide if we want to await here or just fire and forget
-            try {
-              console.log("changeDocumentSubscription -- updating server");
-              await updateServerState(editorServer.url, e.document);
-            } catch (e) {
-              if (isWebviewDisposed) {
-                // Ignore errors caused by closing the webview while the server update
-                // request is in flight (e.g. closing config w/ unsaved changes will
-                // emit onDidChangeTextDocument with reverted unsaved changes)
-                // See #1201 for full details.
-                console.info(
-                  "Ignoring server update error due to webview disposal"
-                );
-                return;
-              }
-
-              vscode.window
-                .showErrorMessage(
-                  "Failed to update aiconfig server. You can view the aiconfig but cannot modify it.",
-                  ...["Details", "Retry"]
-                )
-                .then((selection) => {
-                  if (selection === "Details") {
-                    this.extensionOutputChannel.error(
-                      e?.message ?? JSON.stringify(e)
-                    );
-                    this.extensionOutputChannel.show(/*preserveFocus*/ true);
-                  }
-                  if (selection === "Retry") {
-                    updateServerState(editorServer.url, e.document);
-                  }
-                });
+        // Notify server of updated document
+        if (editorServer) {
+          // TODO: saqadri - decide if we want to await here or just fire and forget
+          try {
+            console.log("changeDocumentSubscription -- updating server");
+            await updateServerState(editorServer.url, e.document);
+          } catch (e) {
+            if (isWebviewDisposed) {
+              // Ignore errors caused by closing the webview while the server update
+              // request is in flight (e.g. closing config w/ unsaved changes will
+              // emit onDidChangeTextDocument with reverted unsaved changes)
+              // See #1201 for full details.
+              console.info("Ignoring server update error due to webview disposal");
+              return;
             }
+
+            vscode.window
+              .showErrorMessage("Failed to update aiconfig server. You can view the aiconfig but cannot modify it.", ...["Details", "Retry"])
+              .then((selection) => {
+                if (selection === "Details") {
+                  this.extensionOutputChannel.error(e?.message ?? JSON.stringify(e));
+                  this.extensionOutputChannel.show(/*preserveFocus*/ true);
+                }
+                if (selection === "Retry") {
+                  updateServerState(editorServer.url, e.document);
+                }
+              });
           }
         }
       }
-    );
+    });
 
-    const willSaveDocumentSubscription =
-      vscode.workspace.onWillSaveTextDocument((e) => {
-        if (e.document.uri.toString() === document.uri.toString()) {
-          console.log(`${e.document.fileName}: willSaveDocument`);
+    const willSaveDocumentSubscription = vscode.workspace.onWillSaveTextDocument((e) => {
+      if (e.document.uri.toString() === document.uri.toString()) {
+        console.log(`${e.document.fileName}: willSaveDocument`);
 
-          // Get the latest document state from the server before saving to disk
-          e.waitUntil(
-            new Promise((resolve, _reject) => {
-              console.log(`willSaveDocument - inside promise`);
-              if (!editorServer) {
-                // TODO: saqadri - show error message
-                return [];
-              }
+        // Get the latest document state from the server before saving to disk
+        e.waitUntil(
+          new Promise((resolve, _reject) => {
+            console.log(`willSaveDocument - inside promise`);
+            if (!editorServer) {
+              // TODO: saqadri - show error message
+              return [];
+            }
 
-              getDocumentFromServer(editorServer.url, e.document).then(
-                (newDocumentText) => {
-                  console.log(
-                    `${e.document.fileName}: willSaveDocument - creating textedit`
-                  );
-                  resolve([
-                    vscode.TextEdit.replace(
-                      new vscode.Range(0, 0, e.document.lineCount, 0),
-                      newDocumentText
-                    ),
-                  ]);
-                }
-              );
-            })
-          );
-        }
-      });
+            getDocumentFromServer(editorServer.url, e.document).then((newDocumentText) => {
+              console.log(`${e.document.fileName}: willSaveDocument - creating textedit`);
+              resolve([vscode.TextEdit.replace(new vscode.Range(0, 0, e.document.lineCount, 0), newDocumentText)]);
+            });
+          })
+        );
+      }
+    });
 
     // Make sure we get rid of the listener when our editor is closed.
     webviewPanel.onDidDispose(() => {
@@ -273,15 +228,10 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
             return;
           }
 
-          const newDocumentText = await getDocumentFromServer(
-            editorServer.url,
-            document
-          );
+          const newDocumentText = await getDocumentFromServer(editorServer.url, document);
 
           isInternalDocumentChange = true;
-          console.log(
-            `pre- isInternalDocumentChange=${isInternalDocumentChange}`
-          );
+          console.log(`pre- isInternalDocumentChange=${isInternalDocumentChange}`);
           this.updateTextDocument(document, newDocumentText);
 
           return;
@@ -326,18 +276,10 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
           // Notification supports 'details' for modal only. For now, just show title
           // in notification toast and full message in output channel.
-          const notificationAction = await notificationFn(
-            notification.title,
-            message ? "Details" : undefined
-          );
+          const notificationAction = await notificationFn(notification.title, message ? "Details" : undefined);
 
           if (message) {
-            outputChannelFn(
-              this.prependMessage(
-                `${notification.title} \n ${message}`,
-                document
-              )
-            );
+            outputChannelFn(this.prependMessage(`${notification.title} \n ${message}`, document));
             // If user clicked "Details", show & focus the output channel
             if (notificationAction === "Details") {
               this.extensionOutputChannel.show(/*preserveFocus*/ true);
@@ -378,10 +320,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       await updateServerState(editorServer.url, document);
     } catch (e) {
       vscode.window
-        .showErrorMessage(
-          "Failed to start aiconfig server. You can view the aiconfig but cannot modify it.",
-          ...["Details", "Retry"]
-        )
+        .showErrorMessage("Failed to start aiconfig server. You can view the aiconfig but cannot modify it.", ...["Details", "Retry"])
         .then((selection) => {
           if (selection === "Details") {
             this.extensionOutputChannel.error(e?.message ?? JSON.stringify(e));
@@ -406,19 +345,13 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     return `${document.fileName}: ${message}`;
   }
 
-  private async startEditorServer(
-    document: vscode.TextDocument
-  ): Promise<ServerInfo> {
-    this.extensionOutputChannel.info(
-      this.prependMessage("Starting editor server", document)
-    );
+  private async startEditorServer(document: vscode.TextDocument): Promise<ServerInfo> {
+    this.extensionOutputChannel.info(this.prependMessage("Starting editor server", document));
 
     // If there is a custom model registry path, pass it to the server
     let config = vscode.workspace.getConfiguration(EXTENSION_NAME);
     let modelRegistryPath = config.get<string>("modelRegistryPath");
-    const modelRegistryPathArgs = modelRegistryPath
-      ? ["--parsers-module-path", modelRegistryPath]
-      : [];
+    const modelRegistryPathArgs = modelRegistryPath ? ["--parsers-module-path", modelRegistryPath] : [];
 
     const openPort = await getPortPromise();
 
@@ -428,14 +361,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     // `aiconfig` command not useable here because it relies on python. Instead invoke the module directly.
     let startServer = spawn(
       pythonPath,
-      [
-        "-m",
-        "aiconfig.scripts.aiconfig_cli",
-        "start",
-        "--server-port",
-        openPort.toString(),
-        ...modelRegistryPathArgs,
-      ],
+      ["-m", "aiconfig.scripts.aiconfig_cli", "start", "--server-port", openPort.toString(), ...modelRegistryPathArgs],
       {
         cwd: getCurrentWorkingDirectory(document),
       }
@@ -453,39 +379,26 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     });
 
     startServer.on("spawn", () => {
-      this.extensionOutputChannel.info(
-        this.prependMessage(
-          `Started server at port=${openPort}, pid=${startServer.pid}`,
-          document
-        )
-      );
+      this.extensionOutputChannel.info(this.prependMessage(`Started server at port=${openPort}, pid=${startServer.pid}`, document));
       console.log(`server spawned: ${startServer.pid}`);
     });
 
     startServer.on("close", (code) => {
       if (code !== 0) {
         this.extensionOutputChannel.error(
-          this.prependMessage(
-            `Server at port=${openPort}, pid=${startServer.pid} was terminated unexpectedly with exit code ${code}`,
-            document
-          )
+          this.prependMessage(`Server at port=${openPort}, pid=${startServer.pid} was terminated unexpectedly with exit code ${code}`, document)
         );
         console.error(`server terminated unexpectedly: exit code=${code}`);
       } else {
         this.extensionOutputChannel.info(
-          this.prependMessage(
-            `Server at port=${openPort}, pid=${startServer.pid} was terminated successfully.`,
-            document
-          )
+          this.prependMessage(`Server at port=${openPort}, pid=${startServer.pid} was terminated successfully.`, document)
         );
         console.log(`server terminated successfully`);
       }
     });
 
     startServer.on("error", (err) => {
-      this.extensionOutputChannel.error(
-        this.prependMessage(JSON.stringify(err), document)
-      );
+      this.extensionOutputChannel.error(this.prependMessage(JSON.stringify(err), document));
       // TODO: saqadri - add "restart" option with error message
     });
 
@@ -500,20 +413,9 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
   /**
    * Get the static html used for the editor webviews.
    */
-  private getHtmlForWebview(
-    webview: vscode.Webview,
-    editorServer: ServerInfo
-  ): string {
+  private getHtmlForWebview(webview: vscode.Webview, editorServer: ServerInfo): string {
     // The JS file from the React build output
-    const scriptUri = getUri(
-      webview,
-      this.context.extensionUri,
-      "editor",
-      "build",
-      "static",
-      "js",
-      "main.js"
-    );
+    const scriptUri = getUri(webview, this.context.extensionUri, "editor", "build", "static", "js", "main.js");
 
     // Use a nonce to whitelist which scripts can be run
     const nonce = getNonce();
@@ -543,11 +445,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     const edit = new vscode.WorkspaceEdit();
 
     // TODO: saqadri - figure out a way to update the document piecemeal
-    edit.replace(
-      document.uri,
-      new vscode.Range(0, 0, document.lineCount, 0),
-      newText
-    );
+    edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), newText);
 
     return vscode.workspace.applyEdit(edit);
   }
