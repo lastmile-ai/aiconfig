@@ -91,6 +91,11 @@
           "description": "Path to the custom model registry file."
         }
       }
+    },
+    "configurationDefaults": {
+      "workbench.editorAssociations": {
+        "{git,gitlens,sapling-diff}:/**/*.{aiconfig.json, aiconfig.yaml}": "default"
+      }
     }
   },
   "scripts": {
