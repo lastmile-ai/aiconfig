@@ -139,6 +139,8 @@ export const OpenAIChatModelParserPromptSchema: PromptSchema = {
     properties: {
       remember_chat_context: {
         type: "boolean",
+        default: true,
+        description: `If true, the context from previous prompts for this model will be included in the context for this prompt`,
       },
     },
   },

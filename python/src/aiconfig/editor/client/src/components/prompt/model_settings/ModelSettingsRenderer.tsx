@@ -8,6 +8,7 @@ import JSONEditorToggleButton from "../../JSONEditorToggleButton";
 import { ErrorBoundary, useErrorBoundary } from "react-error-boundary";
 
 type Props = {
+  model?: string;
   settings?: JSONObject;
   schema?: GenericPropertiesSchema;
   onUpdateModelSettings: (settings: Record<string, unknown>) => void;
@@ -52,6 +53,7 @@ function SettingsErrorFallback({
 }
 
 export default memo(function ModelSettingsRenderer({
+  model,
   settings,
   schema,
   onUpdateModelSettings,
@@ -75,6 +77,8 @@ export default memo(function ModelSettingsRenderer({
           {/* // Only show the toggle if there is a schema to toggle between JSON and custom schema renderer */}
           {schema && rawJSONToggleButton}
           <JSONRenderer
+            // Use the model name as the key to force re-mount / updated state when model changes
+            key={model}
             content={settings}
             onChange={(val) =>
               onUpdateModelSettings(val as Record<string, unknown>)
@@ -93,6 +97,8 @@ export default memo(function ModelSettingsRenderer({
         >
           {rawJSONToggleButton}
           <ModelSettingsSchemaRenderer
+            // Use the model name as the key to force re-mount / updated state when model changes
+            key={model}
             settings={settings}
             schema={schema}
             onUpdateModelSettings={onUpdateModelSettings}
