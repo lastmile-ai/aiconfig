@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { ChildProcessWithoutNullStreams } from "child_process";
+import { type ChildProcessWithoutNullStreams, execSync } from "child_process";
 import { setTimeout } from "timers/promises";
 import { ufetch } from "ufetch";
 
@@ -299,4 +299,25 @@ export async function getPythonPath(): Promise<string> {
   const pythonPath =
     pythonExtension.exports.settings.getExecutionDetails().execCommand[0];
   return pythonPath;
+}
+
+/**
+ * Checks if the specified Python interpreter is version 3.10 or higher.
+ * @param pythonPath The path to the Python interpreter.
+ * @returns A promise that resolves to a boolean indicating if the version is >= 3.10.
+ */
+
+function isPythonVersionAtLeast310(pythonPath: string): boolean {
+  try {
+    // Execute the Python interpreter with the command to get its version
+    const command = `${pythonPath} -c "import sys; print(sys.version_info >= (3, 10))"`;
+    const output = execSync(command).toString().replace(/\s+/g, '').trim();
+    console.debug(`||||[${output}]`);
+
+    // Extract the version number from the output
+    return output === "True";
+  } catch (error) {
+    console.debug("Error checking Python version:", error);
+    return false;
+  }
 }
