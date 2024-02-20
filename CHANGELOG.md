@@ -1,14 +1,35 @@
 # Changelog
 
+## (2024-02-20) Python Version 1.1.26, NPM Version 1.1.9
+
+Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1264
+
+### Features
+
+- **editor:** Added support for modifying general prompt metadata, such as `remember_chat_context`, below model settings ([#1205](https://github.com/lastmile-ai/aiconfig/pull/1205))
+- **editor:** Added logging events for share and download button clicks as well as any actions that edit the config ([#1217](https://github.com/lastmile-ai/aiconfig/pull/1217), [#1220](https://github.com/lastmile-ai/aiconfig/pull/1220))
+- **extensions:** Created conversational model parser to Hugging Face remote inference extension and added input model schema to editor client ([#1229](https://github.com/lastmile-ai/aiconfig/pull/1229), [#1230](https://github.com/lastmile-ai/aiconfig/pull/1230))
+
+### Bug Fixes / Tasks
+
+- **editor:** Updated ‘model’ value in model settings to clear when the model for a prompt (which can include general group of models such as Hugging Face Tasks which require the model field to specify a specific model name) is updated ([#1245](https://github.com/lastmile-ai/aiconfig/pull/1245), [#1257](https://github.com/lastmile-ai/aiconfig/pull/1257))
+- **extensions:** Set default model names for the Hugging Face remote inference model parsers for Summarization, Translation, Automatic Speech Recognition and Text-to-Speech tasks ([#1246](https://github.com/lastmile-ai/aiconfig/pull/1246), [#1221](https://github.com/lastmile-ai/aiconfig/pull/1221))
+- **gradio-notebook:** Fixed styles for checkboxes, markdown links, loading spinners and output lists, as well as general cleanup to buttons and input sizing ([#1248](https://github.com/lastmile-ai/aiconfig/pull/1248), [#1249](https://github.com/lastmile-ai/aiconfig/pull/1249), [#1250](https://github.com/lastmile-ai/aiconfig/pull/1250), [#1251](https://github.com/lastmile-ai/aiconfig/pull/1251), [#1252](https://github.com/lastmile-ai/aiconfig/pull/1252), [#1231](https://github.com/lastmile-ai/aiconfig/pull/1231))
+- **python-sdk:** Fixed [dependency issue](https://github.com/lastmile-ai/lastmile-utils/issues/32) to no longer pin pydantic to 2.4.2 so that `aiconfig-editor` can be compatible with other libraries ([#1225](https://github.com/lastmile-ai/aiconfig/pull/1225))
+
+### Documentation
+
+- [updated] Added new content to Gradio Notebooks documentation, including 5-mins tutorial video, local model support, more streamlined content format, and warnings for discovered issues with Gradio SDK version ([#1247](https://github.com/lastmile-ai/aiconfig/pull/1247), [#1234](https://github.com/lastmile-ai/aiconfig/pull/1234), [#1243](https://github.com/lastmile-ai/aiconfig/pull/1243), [#1238](https://github.com/lastmile-ai/aiconfig/pull/1238))
+
 ## (2024-02-12) Python Version 1.1.22, NPM Version 1.1.9
 
-## Features
+### Features
 
 - **vscode:** Now utilizes the user's Python interpreter in the VS Code environment when installing dependencies for the AIConfig Editor extension. [PR #1151](https://github.com/lastmile-ai/aiconfig/pull/1151)
 - **vscode:** Added a command for opening an AIConfig file directly. [PR #1164](https://github.com/lastmile-ai/aiconfig/pull/1164)
 - **vscode:** Added a VS Code command for displaying a Welcome Page on how to use the extension effectively. [PR #1194](https://github.com/lastmile-ai/aiconfig/pull/1194)
 
-## Bug Fixes / Tasks
+### Bug Fixes / Tasks
 
 - **Python SDK:**
   - **AIConfig Format Support:** Added support for AIConfig format issue for chats starting with an assistant (AI) message by making the initial prompt input empty. [PR #1158](https://github.com/lastmile-ai/aiconfig/pull/1158)
@@ -20,7 +41,7 @@
   - **Share Command Fix:** Fixed an issue where the Share command was not working for unsigned AWS S3 credentials. [PR #1213](https://github.com/lastmile-ai/aiconfig/pull/1213)
   - **Notification Issue:** Fixed an issue where a notification, “Failed to start aiconfig server,” would show when closing a config with unsaved changes. [PR #1201](https://github.com/lastmile-ai/aiconfig/pull/1201)
 
-## Documentation
+### Documentation
 
 - **Tutorials and Guides:**
   - Created a getting-started tutorial for Gradio Notebooks. [Documentation](https://aiconfig.lastmileai.dev/docs/gradio-notebook)
