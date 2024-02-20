@@ -307,7 +307,7 @@ export async function getPythonPath(): Promise<string> {
  * @returns A promise that resolves to a boolean indicating if the version is >= 3.10.
  */
 
-function isPythonVersionAtLeast310(pythonPath: string): boolean {
+export function isPythonVersionAtLeast310(pythonPath: string): boolean {
   try {
     // Execute the Python interpreter with the command to get its version
     const command = `${pythonPath} -c "import sys; print(sys.version_info >= (3, 10))"`;
@@ -321,3 +321,15 @@ function isPythonVersionAtLeast310(pythonPath: string): boolean {
     return false;
   }
 }
+
+export function showGuideForInstallation(message: string): void {
+  // Guide for installation
+  vscode.window.showErrorMessage(message, ...["Install Python", "Retry"]).then((selection) => {
+    if (selection === "Install Python") {
+      vscode.env.openExternal(vscode.Uri.parse("https://www.python.org/downloads/"));
+    } else if (selection === "Retry") {
+      vscode.commands.executeCommand(COMMANDS.INIT);
+    }
+  });
+}
+
