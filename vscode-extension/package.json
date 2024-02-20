@@ -19,39 +19,48 @@
     "commands": [
       {
         "command": "vscode-aiconfig.init",
-        "title": "AIConfig: Initialize Extension"
+        "title": "Initialize Extension",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.createAIConfigJSON",
-        "title": "AIConfig: Create New (JSON)"
+        "title": "Create New (JSON)",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.createAIConfigYAML",
-        "title": "AIConfig: Create New (YAML)"
+        "title": "Create New (YAML)",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.share",
-        "title": "AIConfig: Share (get permalink)"
+        "title": "Share (get permalink)",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.customModelRegistryPath",
-        "title": "AIConfig: Set Custom Model Registry File Path"
+        "title": "Set Custom Model Registry File Path",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.createCustomModelRegistry",
-        "title": "AIConfig: Create Custom Model Registry"
+        "title": "Create Custom Model Registry",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.openConfigFile",
-        "title": "AIConfig: Open AIConfig File"
+        "title": "Open AIConfig File",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.openModelRegistry",
-        "title": "AIConfig: Open Custom Model Registry File"
+        "title": "Open Custom Model Registry File",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.showWelcome",
-        "title": "AIConfig: Welcome"
+        "title": "Welcome",
+        "category": "AIConfig"
       }
     ],
     "customEditors": [
