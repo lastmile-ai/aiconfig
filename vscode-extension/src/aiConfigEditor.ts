@@ -124,6 +124,55 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     let isWebviewDisposed = false;
 
+    function updateServerWithRetry(
+      serverUrl: string,
+      document: vscode.TextDocument
+    ) {
+      updateServerState(serverUrl, document)
+        .then(() => {
+          // In case of previous failure, reset to editable state
+          webviewPanel.webview.postMessage({
+            type: "set_readonly_state",
+            isReadOnly: false,
+          });
+        })
+        .catch((e) => {
+          if (isWebviewDisposed) {
+            // Ignore errors caused by closing the webview while the server update
+            // request is in flight (e.g. closing config w/ unsaved changes will
+            // emit onDidChangeTextDocument with reverted unsaved changes)
+            // See #1201 for full details.
+            console.info(
+              "Ignoring server update error due to webview disposal"
+            );
+            return;
+          }
+
+          webviewPanel.webview.postMessage({
+            type: "set_readonly_state",
+            isReadOnly: true,
+          });
+
+          vscode.window
+            .showErrorMessage(
+              "Failed to update aiconfig server. You can view the aiconfig but cannot modify it.",
+              ...["Details", "Retry"]
+            )
+            .then((selection) => {
+              if (selection === "Details") {
+                this.extensionOutputChannel.error(
+                  e?.message ?? JSON.stringify(e)
+                );
+                this.extensionOutputChannel.show(/*preserveFocus*/ true);
+              }
+
+              if (selection === "Retry") {
+                updateServerWithRetry(serverUrl, document);
+              }
+            });
+        });
+    }
+
     const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(
       async (e) => {
         if (e.document.uri.toString() === document.uri.toString()) {
@@ -163,39 +212,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
           // Notify server of updated document
           if (editorServer) {
-            // TODO: saqadri - decide if we want to await here or just fire and forget
-            try {
-              console.log("changeDocumentSubscription -- updating server");
-              await updateServerState(editorServer.url, e.document);
-            } catch (e) {
-              if (isWebviewDisposed) {
-                // Ignore errors caused by closing the webview while the server update
-                // request is in flight (e.g. closing config w/ unsaved changes will
-                // emit onDidChangeTextDocument with reverted unsaved changes)
-                // See #1201 for full details.
-                console.info(
-                  "Ignoring server update error due to webview disposal"
-                );
-                return;
-              }
-
-              vscode.window
-                .showErrorMessage(
-                  "Failed to update aiconfig server. You can view the aiconfig but cannot modify it.",
-                  ...["Details", "Retry"]
-                )
-                .then((selection) => {
-                  if (selection === "Details") {
-                    this.extensionOutputChannel.error(
-                      e?.message ?? JSON.stringify(e)
-                    );
-                    this.extensionOutputChannel.show(/*preserveFocus*/ true);
-                  }
-                  if (selection === "Retry") {
-                    updateServerState(editorServer.url, e.document);
-                  }
-                });
-            }
+            await updateServerWithRetry(editorServer.url, e.document);
           }
         }
       }
@@ -374,24 +391,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     await waitUntilServerReady(editorServer.url);
 
     // Now set up the server with the latest document content
-    try {
-      await updateServerState(editorServer.url, document);
-    } catch (e) {
-      vscode.window
-        .showErrorMessage(
-          "Failed to start aiconfig server. You can view the aiconfig but cannot modify it.",
-          ...["Details", "Retry"]
-        )
-        .then((selection) => {
-          if (selection === "Details") {
-            this.extensionOutputChannel.error(e?.message ?? JSON.stringify(e));
-            this.extensionOutputChannel.show(/*preserveFocus*/ true);
-          }
-          if (selection === "Retry") {
-            updateServerState(editorServer.url, document);
-          }
-        });
-    }
+    await this.startServerWithRetry(editorServer.url, document, webviewPanel);
 
     // Inform the webview of the server URL
     if (!isWebviewDisposed) {
@@ -400,6 +400,45 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         url: editorServer.url,
       });
     }
+  }
+
+  private startServerWithRetry(
+    serverUrl: string,
+    document: vscode.TextDocument,
+    webviewPanel: vscode.WebviewPanel
+  ) {
+    updateServerState(serverUrl, document)
+      .then(() => {
+        // In case of previous failure, reset to editable state
+        webviewPanel.webview.postMessage({
+          type: "set_readonly_state",
+          isReadOnly: false,
+        });
+      })
+      .catch((e) => {
+        webviewPanel.webview.postMessage({
+          type: "set_readonly_state",
+          isReadOnly: true,
+        });
+
+        vscode.window
+          .showErrorMessage(
+            "Failed to start aiconfig server. You can view the aiconfig but cannot modify it.",
+            ...["Details", "Retry"]
+          )
+          .then((selection) => {
+            if (selection === "Details") {
+              this.extensionOutputChannel.error(
+                e?.message ?? JSON.stringify(e)
+              );
+              this.extensionOutputChannel.show(/*preserveFocus*/ true);
+            }
+
+            if (selection === "Retry") {
+              this.startServerWithRetry(serverUrl, document, webviewPanel);
+            }
+          });
+      });
   }
 
   private prependMessage(message: string, document: vscode.TextDocument) {
