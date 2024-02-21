@@ -21,6 +21,8 @@ import {
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
+// Import the API
+import { ActiveEnvironmentPathChangeEvent, PythonExtension } from "@vscode/python-extension";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -305,6 +307,28 @@ async function handleCustomModelRegistryUpdate(
   await Promise.allSettled(promises);
 
   vscode.window.showInformationMessage(`Updated model registry for open aiconfigs to ${modelRegistryPath}`);
+}
+
+async function initialize(context: vscode.ExtensionContext, outputChannel: vscode.LogOutputChannel) {
+  const pythonApi: PythonExtension = await PythonExtension.api();
+
+  await new Promise( (resolve, reject) => {
+    // Setup a temporary listener for changes
+    const subscription = pythonApi.environments.onDidChangeActiveEnvironmentPath((e: ActiveEnvironmentPathChangeEvent) => {
+      console.log("Python environment changed to: " + e.path);
+      subscription.dispose(); // Cleanup the listener
+      resolve(e.path); // Resolve the promise with the new path
+    });
+
+  // On initialization, ask the user to select a Python interpreter.
+  
+    vscode.commands.executeCommand("python.setInterpreter")
+    ;
+  
+  });
+  console.debug("Python interpreter selected: ", await getPythonPath());
+
+  installDependencies(context, outputChannel);
 }
 
 /**
