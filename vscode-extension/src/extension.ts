@@ -45,7 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(COMMANDS.SHOW_WELCOME, () => {
       const welcomeFilePath = path.join(
         context.extensionPath,
-        "src",
+        "media",
         "welcomePage.md"
       );
       vscode.commands.executeCommand(
