@@ -18,7 +18,8 @@ import {
   getPythonPath,
   isSupportedConfigExtension,
   SUPPORTED_FILE_EXTENSIONS,
-  isPythonVersionAtLeast310
+  isPythonVersionAtLeast310,
+  showGuideForInstallation,
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
@@ -657,28 +658,16 @@ async function checkPython() {
       if (error) {
         console.error("Python was not found, can't install requirements");
         console.error("retrieved python path: " + pythonPath);
+        console.error("error: " + error);
 
         // Guide for installation
-        vscode.window
-          .showErrorMessage(
-            "Python is not installed",
-            ...["Install Python", "Retry"]
-          )
-          .then((selection) => {
-            if (selection === "Install Python") {
-              vscode.env.openExternal(
-                vscode.Uri.parse("https://www.python.org/downloads/")
-              );
-            } else if (selection === "Retry") {
-              vscode.commands.executeCommand(COMMANDS.INIT);
-            }
-          });
+        showGuideForInstallation("Specified Python Interpreter is not valid");
         resolve(false);
       }
       else if(!isPythonVersionAtLeast310(pythonPath)){
+        showGuideForInstallation("Python version is not 3.10 or higher. Please upgrade to Python 3.10 or higher.");
         console.error("Python version is not 3.10 or higher. Please upgrade to Python 3.10 or higher.");
         resolve(false);
-        // show guide for installation
       } 
       else if(stdout) {
         resolve(true);
