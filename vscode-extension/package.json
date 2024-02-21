@@ -58,6 +58,11 @@
         "category": "AIConfig"
       },
       {
+        "command": "vscode-aiconfig.setupEnvironmentVariables",
+        "title": "Setup Environment Variables",
+        "category": "AIConfig"
+      },
+      {
         "command": "vscode-aiconfig.showWelcome",
         "title": "Welcome",
         "category": "AIConfig"
@@ -122,10 +127,13 @@
           {
 						"id": "setupEnvironmentVariables",
 						"title": "Setup Environment Variables",
-						"description": "This creates an .env file (or uses it if it already exists) to define environment varialbes needed to run AI models. Ex: OpenAI models read from the `OPENAI_API_KEY` variable",
+						"description": "This creates an .env file (or uses it if it already exists) to define environment varialbes needed to run AI models. Ex: OpenAI models read from the `OPENAI_API_KEY` variable\n[Setup Environment Variables](command:vscode-aiconfig.setupEnvironmentVariables)",
 						"media": {
               "markdown": "media/welcomePage.md"
-						}
+						},
+            "completionEvents": [
+							"onCommand:vscode-aiconfig.setupEnvironmentVariables"
+						]
 					},
           {
 						"id": "createAIConfig",

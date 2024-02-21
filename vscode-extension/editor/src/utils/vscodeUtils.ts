@@ -11,6 +11,7 @@ import { JSONValue } from "aiconfig";
  */
 export type WebviewState = {
   aiconfigState?: ClientAIConfig;
+  isReadOnly?: boolean;
   serverUrl?: string;
   theme?: "light" | "dark";
 };
