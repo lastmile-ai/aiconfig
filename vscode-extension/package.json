@@ -96,7 +96,56 @@
       "workbench.editorAssociations": {
         "{git,gitlens,sapling-diff}:/**/*.{aiconfig.json, aiconfig.yaml}": "default"
       }
-    }
+    },
+    "walkthroughs": [
+      {
+        "id": "vscode-aiconfig.welcomeWalkthrough",
+        "title": "Getting Started with AIConfig Editor",
+        "description": "Get started with some basic commands!",
+        "steps": [
+          {
+						"id": "selectInterpreter",
+						"title": "Select your Python Interpreter",
+						"description": "This defines the Python environment that you will use in your VS Code session. It keeps track of which modules you've installed",
+						"media": {
+              "markdown": "src/welcomePage.md"
+						}
+					},
+          {
+						"id": "installDependencies",
+						"title": "Install dependencies",
+						"description": "This installs the Python libraries required to use the AIConfig editor and SDK",
+						"media": {
+              "markdown": "src/welcomePage.md"
+						}
+					},
+          {
+						"id": "setupEnvironmentVariables",
+						"title": "Setup Environment Variables",
+						"description": "This creates an .env file (or uses it if it already exists) to define environment varialbes needed to run AI models. Ex: Open AI models read from the `OPENAI_API_KEY` variable",
+						"media": {
+              "markdown": "src/welcomePage.md"
+						}
+					},
+          {
+						"id": "createAIConfig",
+						"title": "Create an AIConfig file",
+						"description": "You can do this either in JSON or YAML format. This file defines the AI models and workflow you want to use in your project.\n[JSON](command:vscode-aiconfig.createAIConfigJSON) [YAML](command:vscode-aiconfig.createAIConfigYAML)",
+						"media": {
+              "markdown": "src/welcomePage.md"
+						}
+					},
+          {
+						"id": "showWelcome",
+						"title": "[Optional] Read full tutorial",
+						"description": "Read the full tutorial on the [Welcome page](command:vscode-aiconfig.showWelcome) to learn about all the things you can do with AIConfig!",
+						"media": {
+              "markdown": "src/welcomePage.md"
+						}
+					}
+        ]
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
