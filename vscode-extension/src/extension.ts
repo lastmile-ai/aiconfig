@@ -18,18 +18,20 @@ import {
   getPythonPath,
   isSupportedConfigExtension,
   SUPPORTED_FILE_EXTENSIONS,
+  isPythonVersionAtLeast310,
+  showGuideForInstallation,
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
+// Import the API
+import { ActiveEnvironmentPathChangeEvent, PythonExtension } from "@vscode/python-extension";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
-  console.log(
-    `Congratulations, your extension ${EXTENSION_NAME} is now active!`
-  );
+  console.log(`Congratulations, your extension ${EXTENSION_NAME} is now active!`);
 
   // Create an output channel for the extension
   const extensionOutputChannel = vscode.window.createOutputChannel("AIConfig", {
@@ -37,102 +39,65 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
-    installDependencies(context, extensionOutputChannel);
+    initialize(context, extensionOutputChannel);
   });
   context.subscriptions.push(setupCommand);
 
   context.subscriptions.push(
     vscode.commands.registerCommand(COMMANDS.SHOW_WELCOME, async () => {
-      const welcomeFilePath = path.join(
-        context.extensionPath,
-        "src",
-        "welcomePage.md"
-      );
-      await vscode.commands.executeCommand(
-        "markdown.showPreview",
-        vscode.Uri.file(welcomeFilePath)
-      );
+      const welcomeFilePath = path.join(context.extensionPath, "src", "welcomePage.md");
+      await vscode.commands.executeCommand("markdown.showPreview", vscode.Uri.file(welcomeFilePath));
     })
   );
 
-  const createAIConfigJSONCommand = vscode.commands.registerCommand(
-    COMMANDS.CREATE_NEW_JSON,
-    async () => {
-      return await createNewAIConfig(context, aiconfigEditorManager, "json");
-    }
-  );
+  const createAIConfigJSONCommand = vscode.commands.registerCommand(COMMANDS.CREATE_NEW_JSON, async () => {
+    return await createNewAIConfig(context, aiconfigEditorManager, "json");
+  });
   context.subscriptions.push(createAIConfigJSONCommand);
 
-  const createAIConfigYAMLCommand = vscode.commands.registerCommand(
-    COMMANDS.CREATE_NEW_YAML,
-    async () => {
-      return await createNewAIConfig(context, aiconfigEditorManager, "yaml");
-    }
-  );
+  const createAIConfigYAMLCommand = vscode.commands.registerCommand(COMMANDS.CREATE_NEW_YAML, async () => {
+    return await createNewAIConfig(context, aiconfigEditorManager, "yaml");
+  });
   context.subscriptions.push(createAIConfigYAMLCommand);
 
-  const shareModelParserCommand = vscode.commands.registerCommand(
-    COMMANDS.SHARE,
-    async () => {
-      return await shareAIConfig(context, aiconfigEditorManager);
-    }
-  );
+  const shareModelParserCommand = vscode.commands.registerCommand(COMMANDS.SHARE, async () => {
+    return await shareAIConfig(context, aiconfigEditorManager);
+  });
   context.subscriptions.push(shareModelParserCommand);
 
-  const customModelParserCommand = vscode.commands.registerCommand(
-    COMMANDS.CUSTOM_MODEL_REGISTRY_PATH,
-    async () => {
-      return await registerCustomModelRegistry(aiconfigEditorManager);
-    }
-  );
+  const customModelParserCommand = vscode.commands.registerCommand(COMMANDS.CUSTOM_MODEL_REGISTRY_PATH, async () => {
+    return await registerCustomModelRegistry(aiconfigEditorManager);
+  });
   context.subscriptions.push(customModelParserCommand);
 
-  const createCustomModelRegistryCommand = vscode.commands.registerCommand(
-    COMMANDS.CREATE_CUSTOM_MODEL_REGISTRY,
-    async () => {
-      return await createCustomModelRegistry(context, aiconfigEditorManager);
-    }
-  );
+  const createCustomModelRegistryCommand = vscode.commands.registerCommand(COMMANDS.CREATE_CUSTOM_MODEL_REGISTRY, async () => {
+    return await createCustomModelRegistry(context, aiconfigEditorManager);
+  });
   context.subscriptions.push(createCustomModelRegistryCommand);
 
-  const openConfigFileCommand = vscode.commands.registerCommand(
-    COMMANDS.OPEN_CONFIG_FILE,
-    async () => {
-      return await openConfigFile();
-    }
-  );
+  const openConfigFileCommand = vscode.commands.registerCommand(COMMANDS.OPEN_CONFIG_FILE, async () => {
+    return await openConfigFile();
+  });
   context.subscriptions.push(openConfigFileCommand);
 
-  const openModelParserCommand = vscode.commands.registerCommand(
-    COMMANDS.OPEN_MODEL_REGISTRY,
-    async () => {
-      return await openModelRegistry(context, aiconfigEditorManager);
-    }
-  );
+  const openModelParserCommand = vscode.commands.registerCommand(COMMANDS.OPEN_MODEL_REGISTRY, async () => {
+    return await openModelRegistry(context, aiconfigEditorManager);
+  });
   context.subscriptions.push(openModelParserCommand);
 
   // Run the setup command on activation
   vscode.commands.executeCommand(COMMANDS.INIT);
 
   // Register our custom editor providers
-  const aiconfigEditorManager: AIConfigEditorManager =
-    new AIConfigEditorManager();
+  const aiconfigEditorManager: AIConfigEditorManager = new AIConfigEditorManager();
 
-  context.subscriptions.push(
-    AIConfigEditorProvider.register(
-      context,
-      extensionOutputChannel,
-      aiconfigEditorManager
-    )
-  );
+  context.subscriptions.push(AIConfigEditorProvider.register(context, extensionOutputChannel, aiconfigEditorManager));
 
   // Also handle file renames/moves -- inform the EditorManager of the change
   context.subscriptions.push(
     vscode.workspace.onDidRenameFiles((e) => {
       e.files.forEach(async (file) => {
-        const editor = aiconfigEditorManager.getEditorByUri(
-          file.oldUri.toString()
-        );
+        const editor = aiconfigEditorManager.getEditorByUri(file.oldUri.toString());
         if (editor) {
           aiconfigEditorManager.removeEditorByUri(file.oldUri.toString());
           aiconfigEditorManager.addEditor(editor, file.newUri.toString());
@@ -150,14 +115,8 @@ export function deactivate() {
 /**
  * Creates a new AIConfig file in the editor.
  */
-async function createNewAIConfig(
-  context: vscode.ExtensionContext,
-  aiconfigEditorManager: AIConfigEditorManager,
-  mode: "json" | "yaml" = "json"
-) {
-  const workspaceUri = vscode.workspace.workspaceFolders
-    ? vscode.workspace.workspaceFolders[0].uri
-    : null;
+async function createNewAIConfig(context: vscode.ExtensionContext, aiconfigEditorManager: AIConfigEditorManager, mode: "json" | "yaml" = "json") {
+  const workspaceUri = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : null;
   const untitledUri = workspaceUri
     ? workspaceUri.with({
         scheme: "untitled",
@@ -166,17 +125,9 @@ async function createNewAIConfig(
     : vscode.Uri.parse(`untitled:untitled.aiconfig.${mode}`);
 
   // Specify the initial content here
-  const newAIConfigJSON = vscode.Uri.joinPath(
-    context.extensionUri,
-    "static",
-    "untitled.aiconfig.json"
-  );
+  const newAIConfigJSON = vscode.Uri.joinPath(context.extensionUri, "static", "untitled.aiconfig.json");
 
-  const newAIConfigYAML = vscode.Uri.joinPath(
-    context.extensionUri,
-    "static",
-    "untitled.aiconfig.yaml"
-  );
+  const newAIConfigYAML = vscode.Uri.joinPath(context.extensionUri, "static", "untitled.aiconfig.yaml");
 
   const fileContentPath = mode === "json" ? newAIConfigJSON : newAIConfigYAML;
 
@@ -194,11 +145,7 @@ async function createNewAIConfig(
     viewColumn: vscode.ViewColumn.One,
   });
 
-  await vscode.commands.executeCommand(
-    "vscode.openWith",
-    doc.uri,
-    AIConfigEditorProvider.viewType
-  );
+  await vscode.commands.executeCommand("vscode.openWith", doc.uri, AIConfigEditorProvider.viewType);
 }
 
 /**
@@ -223,11 +170,7 @@ async function openConfigFile() {
   if (openUri) {
     const doc = await vscode.workspace.openTextDocument(openUri[0]);
 
-    await vscode.commands.executeCommand(
-      "vscode.openWith",
-      doc.uri,
-      AIConfigEditorProvider.viewType
-    );
+    await vscode.commands.executeCommand("vscode.openWith", doc.uri, AIConfigEditorProvider.viewType);
   }
 }
 
@@ -235,18 +178,12 @@ async function openConfigFile() {
  * Opens the currently registered custom model registry file in the editor.
  * If none is found, prompts the user to create a new one or use a pre-existing one.
  */
-async function openModelRegistry(
-  context: vscode.ExtensionContext,
-  aiconfigEditorManager: AIConfigEditorManager
-) {
+async function openModelRegistry(context: vscode.ExtensionContext, aiconfigEditorManager: AIConfigEditorManager) {
   const config = vscode.workspace.getConfiguration(EXTENSION_NAME);
   const savedModelRegistryPath = config.get<string>("modelRegistryPath");
   if (!savedModelRegistryPath) {
     vscode.window
-      .showWarningMessage(
-        "No custom model registry path has been set. Please set one first.",
-        ...["Create", "Use Existing"]
-      )
+      .showWarningMessage("No custom model registry path has been set. Please set one first.", ...["Create", "Use Existing"])
       .then((selection) => {
         if (selection === "Create") {
           createCustomModelRegistry(context, aiconfigEditorManager);
@@ -262,10 +199,7 @@ async function openModelRegistry(
     vscode.window.showTextDocument(doc);
   } else {
     vscode.window
-      .showErrorMessage(
-        `Error opening model registry file ${savedModelRegistryPath}`,
-        ...["Create New", "Use Existing"]
-      )
+      .showErrorMessage(`Error opening model registry file ${savedModelRegistryPath}`, ...["Create New", "Use Existing"])
       .then((selection) => {
         if (selection === "Create") {
           createCustomModelRegistry(context, aiconfigEditorManager);
@@ -279,26 +213,18 @@ async function openModelRegistry(
 /**
  * Creates a new custom model registry file and registers it with the extension.
  */
-async function createCustomModelRegistry(
-  context: vscode.ExtensionContext,
-  aiconfigEditorManager: AIConfigEditorManager
-) {
+async function createCustomModelRegistry(context: vscode.ExtensionContext, aiconfigEditorManager: AIConfigEditorManager) {
   let closestDirectory = null;
   const activeEditor = aiconfigEditorManager.getActiveEditor();
   if (activeEditor?.document && !activeEditor.document.isUntitled) {
     closestDirectory = path.dirname(activeEditor.document.fileName);
   } else if (vscode.window.activeTextEditor?.document) {
-    closestDirectory = path.dirname(
-      vscode.window.activeTextEditor.document.fileName
-    );
+    closestDirectory = path.dirname(vscode.window.activeTextEditor.document.fileName);
   } else {
     closestDirectory = getCurrentWorkingDirectory(null);
   }
 
-  let defaultModelRegistryPath = path.join(
-    closestDirectory,
-    "aiconfig_model_registry.py"
-  );
+  let defaultModelRegistryPath = path.join(closestDirectory, "aiconfig_model_registry.py");
 
   const modelRegistryPath = await vscode.window.showInputBox({
     prompt: "Enter the path to create the model registry file",
@@ -318,46 +244,28 @@ async function createCustomModelRegistry(
   }
 
   // Create the model registry file from the sample
-  const sampleModelRegistryPath = vscode.Uri.joinPath(
-    context.extensionUri,
-    "static",
-    "example_aiconfig_model_registry.py"
-  );
+  const sampleModelRegistryPath = vscode.Uri.joinPath(context.extensionUri, "static", "example_aiconfig_model_registry.py");
 
   try {
-    await vscode.workspace.fs.copy(
-      sampleModelRegistryPath,
-      vscode.Uri.file(modelRegistryPath),
-      { overwrite: false }
-    );
+    await vscode.workspace.fs.copy(sampleModelRegistryPath, vscode.Uri.file(modelRegistryPath), { overwrite: false });
   } catch (err) {
-    vscode.window.showErrorMessage(
-      `Error creating new file ${modelRegistryPath}. Error is ${err}`
-    );
+    vscode.window.showErrorMessage(`Error creating new file ${modelRegistryPath}. Error is ${err}`);
   }
 
   const doc = await vscode.workspace.openTextDocument(modelRegistryPath);
   if (doc) {
     vscode.window.showTextDocument(doc);
-    vscode.window.showInformationMessage(
-      "Please customize your new model registry."
-    );
+    vscode.window.showInformationMessage("Please customize your new model registry.");
   }
 
   let config = vscode.workspace.getConfiguration(EXTENSION_NAME);
-  await handleCustomModelRegistryUpdate(
-    config,
-    aiconfigEditorManager,
-    modelRegistryPath
-  );
+  await handleCustomModelRegistryUpdate(config, aiconfigEditorManager, modelRegistryPath);
 }
 
 /**
  * Registers (and persists) the custom model registry path with the extension and all open aiconfig editors.
  */
-async function registerCustomModelRegistry(
-  aiconfigEditorManager: AIConfigEditorManager
-) {
+async function registerCustomModelRegistry(aiconfigEditorManager: AIConfigEditorManager) {
   let config = vscode.workspace.getConfiguration(EXTENSION_NAME);
   let savedModelRegistryPath = config.get<string>("modelRegistryPath");
 
@@ -384,42 +292,51 @@ async function handleCustomModelRegistryUpdate(
   modelRegistryPath: string
 ) {
   // TODO: saqadri - ask the user if they want us to apply the setting globally
-  await config.update(
-    "modelRegistryPath",
-    modelRegistryPath,
-    vscode.ConfigurationTarget.Workspace
-  );
+  await config.update("modelRegistryPath", modelRegistryPath, vscode.ConfigurationTarget.Workspace);
 
-  vscode.window.showInformationMessage(
-    `Custom model registry path updated to ${modelRegistryPath}`
-  );
+  vscode.window.showInformationMessage(`Custom model registry path updated to ${modelRegistryPath}`);
 
   // Now go through all the open AIConfig documents and update the model registry for their servers
   const aiconfigEditors = aiconfigEditorManager.getRegisteredEditors();
   const promises: Promise<string>[] = [];
   for (const editor of aiconfigEditors) {
     if (editor.editorServer) {
-      promises.push(
-        updateModelRegistryPath(editor.editorServer.url, modelRegistryPath)
-      );
+      promises.push(updateModelRegistryPath(editor.editorServer.url, modelRegistryPath));
     }
   }
 
   // TODO: saqadri - this by itself isn't enough -- we also need to reload the aiconfigs
   await Promise.allSettled(promises);
 
-  vscode.window.showInformationMessage(
-    `Updated model registry for open aiconfigs to ${modelRegistryPath}`
-  );
+  vscode.window.showInformationMessage(`Updated model registry for open aiconfigs to ${modelRegistryPath}`);
+}
+
+async function initialize(context: vscode.ExtensionContext, outputChannel: vscode.LogOutputChannel) {
+  const pythonApi: PythonExtension = await PythonExtension.api();
+
+  await new Promise( (resolve, reject) => {
+    // Setup a temporary listener for changes
+    const subscription = pythonApi.environments.onDidChangeActiveEnvironmentPath((e: ActiveEnvironmentPathChangeEvent) => {
+      console.log("Python environment changed to: " + e.path);
+      subscription.dispose(); // Cleanup the listener
+      resolve(e.path); // Resolve the promise with the new path
+    });
+
+  // On initialization, ask the user to select a Python interpreter.
+  
+    vscode.commands.executeCommand("python.setInterpreter")
+    ;
+  
+  });
+  console.debug("Python interpreter selected: ", await getPythonPath());
+
+  installDependencies(context, outputChannel);
 }
 
 /**
  * Installs the dependencies required for the AIConfig extension to work
  */
-async function installDependencies(
-  context: vscode.ExtensionContext,
-  outputChannel: vscode.LogOutputChannel
-) {
+async function installDependencies(context: vscode.ExtensionContext, outputChannel: vscode.LogOutputChannel) {
   vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
@@ -464,10 +381,7 @@ async function installDependencies(
       });
 
       // Check if requirements need to be installed
-      const requirementsInstalled = await checkRequirements(
-        context,
-        outputChannel
-      );
+      const requirementsInstalled = await checkRequirements(context, outputChannel);
       if (requirementsInstalled) {
         outputChannel.append(" -- SUCCESS");
         // Requirements are already installed
@@ -484,17 +398,10 @@ async function installDependencies(
           message: "Installing dependencies",
         });
 
-        const installationResult = await installRequirements(
-          context,
-          progress,
-          cancellationToken,
-          outputChannel
-        );
+        const installationResult = await installRequirements(context, progress, cancellationToken, outputChannel);
         if (!installationResult) {
           // The installation encountered issues -- the installRequirements function will have already shown an error message
-          outputChannel.error(
-            "Failed to install dependencies. Please try again."
-          );
+          outputChannel.error("Failed to install dependencies. Please try again.");
           return;
         } else {
           // Installation was successful
@@ -523,22 +430,11 @@ async function installRequirements(
   outputChannel: vscode.LogOutputChannel
 ) {
   const extensionPath = context.extensionPath;
-  const requirementsPath = path.join(
-    extensionPath,
-    "python",
-    "requirements.txt"
-  );
+  const requirementsPath = path.join(extensionPath, "python", "requirements.txt");
   const pythonPath = await getPythonPath();
 
   return new Promise((resolve, _reject) => {
-    const pipInstall = spawn(pythonPath, [
-      "-m",
-      "pip",
-      "install",
-      "-r",
-      requirementsPath,
-      "--upgrade",
-    ]);
+    const pipInstall = spawn(pythonPath, ["-m", "pip", "install", "-r", requirementsPath, "--upgrade"]);
 
     pipInstall.stdout.on("data", (data) => {
       progress.report({
@@ -557,18 +453,10 @@ async function installRequirements(
       if (code !== 0) {
         console.log(`pip install process exited with code ${code}`);
         vscode.window
-          .showErrorMessage(
-            `Failed to install dependencies. Pip exited with code ${code}. Please try again later`,
-            ...["Retry"]
-          )
+          .showErrorMessage(`Failed to install dependencies. Pip exited with code ${code}. Please try again later`, ...["Retry"])
           .then((selection) => {
             if (selection === "Retry") {
-              installRequirements(
-                context,
-                progress,
-                cancellationToken,
-                outputChannel
-              );
+              installRequirements(context, progress, cancellationToken, outputChannel);
             }
           });
         resolve(false);
@@ -582,32 +470,16 @@ async function installRequirements(
 /**
  * Runs the check_requirements.py script to check if any requirements need to be updated or installed.
  */
-async function checkRequirements(
-  context: vscode.ExtensionContext,
-  outputChannel: vscode.LogOutputChannel
-) {
+async function checkRequirements(context: vscode.ExtensionContext, outputChannel: vscode.LogOutputChannel) {
   const extensionPath = context.extensionPath;
-  const checkRequirementsScriptPath = path.join(
-    extensionPath,
-    "python",
-    "src",
-    "check_requirements.py"
-  );
+  const checkRequirementsScriptPath = path.join(extensionPath, "python", "src", "check_requirements.py");
 
-  const requirementsPath = path.join(
-    extensionPath,
-    "python",
-    "requirements.txt"
-  );
+  const requirementsPath = path.join(extensionPath, "python", "requirements.txt");
 
   const pythonPath = await getPythonPath();
 
   return new Promise((resolve, reject) => {
-    let checkRequirements = spawn(pythonPath, [
-      checkRequirementsScriptPath,
-      "--requirements_path",
-      requirementsPath,
-    ]);
+    let checkRequirements = spawn(pythonPath, [checkRequirementsScriptPath, "--requirements_path", requirementsPath]);
 
     checkRequirements.stdout.on("data", (data) => {
       outputChannel.info(`check_requirements: ${data}`);
@@ -649,22 +521,14 @@ async function checkPython() {
         console.error("retrieved python path: " + pythonPath);
 
         // Guide for installation
-        vscode.window
-          .showErrorMessage(
-            "Python is not installed",
-            ...["Install Python", "Retry"]
-          )
-          .then((selection) => {
-            if (selection === "Install Python") {
-              vscode.env.openExternal(
-                vscode.Uri.parse("https://www.python.org/downloads/")
-              );
-            } else if (selection === "Retry") {
-              vscode.commands.executeCommand(COMMANDS.INIT);
-            }
-          });
+        showGuideForInstallation("Specified Python Interpreter is not valid");
         resolve(false);
-      } else {
+      } else if (stdout) {
+        if (!isPythonVersionAtLeast310(pythonPath)) {
+          console.error("Python version is not 3.10 or higher. Please upgrade to Python 3.10 or higher.");
+          showGuideForInstallation("Specified Python Interpreter version is not 3.10 or higher. Please upgrade to Python 3.10 or higher.");
+          resolve(false);
+        }
         resolve(true);
         console.log("Python is installed");
       }
@@ -685,15 +549,10 @@ async function checkPip() {
         console.log("pip is not found");
         // Guide for installation
         vscode.window
-          .showErrorMessage(
-            "pip is not installed, but is needed for AIConfig installation",
-            ...["Install pip", "Retry"]
-          )
+          .showErrorMessage("pip is not installed, but is needed for AIConfig installation", ...["Install pip", "Retry"])
           .then((selection) => {
             if (selection === "Install pip") {
-              vscode.env.openExternal(
-                vscode.Uri.parse("https://pip.pypa.io/en/stable/installation/")
-              );
+              vscode.env.openExternal(vscode.Uri.parse("https://pip.pypa.io/en/stable/installation/"));
             } else if (selection === "Retry") {
               vscode.commands.executeCommand(COMMANDS.INIT);
             }
@@ -707,16 +566,11 @@ async function checkPip() {
   });
 }
 
-async function shareAIConfig(
-  context: vscode.ExtensionContext,
-  aiconfigEditorManager: AIConfigEditorManager
-) {
+async function shareAIConfig(context: vscode.ExtensionContext, aiconfigEditorManager: AIConfigEditorManager) {
   // Get the current active aiconfig editor
   const activeEditor = aiconfigEditorManager.getActiveEditor();
   if (!activeEditor) {
-    vscode.window.showErrorMessage(
-      "No AIConfig file is currently open in the editor. Please open the file you want to share and try again."
-    );
+    vscode.window.showErrorMessage("No AIConfig file is currently open in the editor. Please open the file you want to share and try again.");
     return;
   }
 
@@ -770,37 +624,25 @@ async function shareAIConfig(
   if (response?.id !== null && response?.id !== undefined) {
     const permalink: string = LASTMILE_BASE_URI + `aiconfig/${response?.id}`;
 
-    vscode.window
-      .showInformationMessage(
-        "Would you like to open or copy the link?",
-        ...["Open", "Copy Link"]
-      )
-      .then((selection) => {
-        if (selection === "Open") {
-          vscode.env.openExternal(vscode.Uri.parse(permalink));
-        } else if (selection === "Copy Link") {
-          vscode.env.clipboard.writeText(permalink).then(
-            () => {
-              vscode.window.showInformationMessage(
-                "Link copied to clipboard. Happy sharing!"
-              );
-            },
-            (err) => {
-              vscode.window.showErrorMessage("Failed to copy link: " + err);
-            }
-          );
-        }
-      });
+    vscode.window.showInformationMessage("Would you like to open or copy the link?", ...["Open", "Copy Link"]).then((selection) => {
+      if (selection === "Open") {
+        vscode.env.openExternal(vscode.Uri.parse(permalink));
+      } else if (selection === "Copy Link") {
+        vscode.env.clipboard.writeText(permalink).then(
+          () => {
+            vscode.window.showInformationMessage("Link copied to clipboard. Happy sharing!");
+          },
+          (err) => {
+            vscode.window.showErrorMessage("Failed to copy link: " + err);
+          }
+        );
+      }
+    });
   } else {
-    vscode.window
-      .showErrorMessage(
-        "Failed to upload AIConfig to get a shareable permalink.",
-        ...["Retry"]
-      )
-      .then((selection) => {
-        if (selection === "Retry") {
-          shareAIConfig(context, aiconfigEditorManager);
-        }
-      });
+    vscode.window.showErrorMessage("Failed to upload AIConfig to get a shareable permalink.", ...["Retry"]).then((selection) => {
+      if (selection === "Retry") {
+        shareAIConfig(context, aiconfigEditorManager);
+      }
+    });
   }
 }

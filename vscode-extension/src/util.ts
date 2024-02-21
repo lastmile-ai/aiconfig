@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { ChildProcessWithoutNullStreams } from "child_process";
+import { type ChildProcessWithoutNullStreams, execSync } from "child_process";
 import { setTimeout } from "timers/promises";
 import { ufetch } from "ufetch";
 
@@ -34,14 +34,10 @@ export const LASTMILE_BASE_URI: string = "https://lastmileai.dev/";
 const EDITOR_SERVER_API_ENDPOINT = `/api`;
 
 export const EDITOR_SERVER_ROUTE_TABLE = {
-  TO_STRING: (hostUrl: string) =>
-    urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/to_string"),
-  SERVER_STATUS: (hostUrl: string) =>
-    urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/server_status"),
-  LOAD_CONTENT: (hostUrl: string) =>
-    urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_content"),
-  LOAD_MODEL_PARSER_MODULE: (hostUrl: string) =>
-    urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_model_parser_module"),
+  TO_STRING: (hostUrl: string) => urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/to_string"),
+  SERVER_STATUS: (hostUrl: string) => urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/server_status"),
+  LOAD_CONTENT: (hostUrl: string) => urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_content"),
+  LOAD_MODEL_PARSER_MODULE: (hostUrl: string) => urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_model_parser_module"),
 };
 
 export type ServerInfo = {
@@ -51,9 +47,7 @@ export type ServerInfo = {
 
 export async function isServerReady(serverUrl: string) {
   try {
-    const res = await ufetch.get(
-      EDITOR_SERVER_ROUTE_TABLE.SERVER_STATUS(serverUrl)
-    );
+    const res = await ufetch.get(EDITOR_SERVER_ROUTE_TABLE.SERVER_STATUS(serverUrl));
 
     const status = res.status;
 
@@ -75,8 +69,7 @@ export async function waitUntilServerReady(serverUrl: string) {
 
 export function updateWebviewEditorThemeMode(webview: vscode.Webview) {
   const isDarkMode =
-    vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark ||
-    vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.HighContrast;
+    vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark || vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.HighContrast;
   // ColorThemeKind.Light or ColorThemeKind.HighContrastLight is light mode
   webview.postMessage({
     type: "set_theme",
@@ -84,10 +77,7 @@ export function updateWebviewEditorThemeMode(webview: vscode.Webview) {
   });
 }
 
-export async function updateServerState(
-  serverUrl: string,
-  document: vscode.TextDocument
-) {
+export async function updateServerState(serverUrl: string, document: vscode.TextDocument) {
   return await ufetch.post(EDITOR_SERVER_ROUTE_TABLE.LOAD_CONTENT(serverUrl), {
     content: document.getText(),
     mode: getModeFromDocument(document),
@@ -95,9 +85,7 @@ export async function updateServerState(
 }
 
 // Figure out what kind of AIConfig this is that we are loading
-export function getModeFromDocument(
-  document: vscode.TextDocument
-): "json" | "yaml" {
+export function getModeFromDocument(document: vscode.TextDocument): "json" | "yaml" {
   // determine mode from file path
   const documentPath = document.fileName;
   const ext = path.extname(documentPath)?.toLowerCase();
@@ -109,32 +97,20 @@ export function getModeFromDocument(
   return "json";
 }
 
-export async function getDocumentFromServer(
-  serverUrl: string,
-  document: vscode.TextDocument
-): Promise<string> {
-  const res = await ufetch.post(
-    EDITOR_SERVER_ROUTE_TABLE.TO_STRING(serverUrl),
-    {
-      mode: getModeFromDocument(document),
-      include_outputs: true,
-    }
-  );
+export async function getDocumentFromServer(serverUrl: string, document: vscode.TextDocument): Promise<string> {
+  const res = await ufetch.post(EDITOR_SERVER_ROUTE_TABLE.TO_STRING(serverUrl), {
+    mode: getModeFromDocument(document),
+    include_outputs: true,
+  });
 
   // TODO: saqadri - handle error cases
   return res.aiconfig_string;
 }
 
-export async function updateModelRegistryPath(
-  serverUrl: string,
-  customModelRegistryPath: string
-): Promise<string> {
-  const res = await ufetch.post(
-    EDITOR_SERVER_ROUTE_TABLE.LOAD_MODEL_PARSER_MODULE(serverUrl),
-    {
-      path: customModelRegistryPath,
-    }
-  );
+export async function updateModelRegistryPath(serverUrl: string, customModelRegistryPath: string): Promise<string> {
+  const res = await ufetch.post(EDITOR_SERVER_ROUTE_TABLE.LOAD_MODEL_PARSER_MODULE(serverUrl), {
+    path: customModelRegistryPath,
+  });
 
   // TODO: saqadri - handle error cases
   return res;
@@ -270,11 +246,7 @@ function normalize(strArray) {
   // replace ? and & in parameters with &
   const [beforeHash, afterHash] = str.split("#");
   const parts = beforeHash.split(/(?:\?|&)+/).filter(Boolean);
-  str =
-    parts.shift() +
-    (parts.length > 0 ? "?" : "") +
-    parts.join("&") +
-    (afterHash && afterHash.length > 0 ? "#" + afterHash : "");
+  str = parts.shift() + (parts.length > 0 ? "?" : "") + parts.join("&") + (afterHash && afterHash.length > 0 ? "#" + afterHash : "");
 
   return str;
 }
@@ -296,7 +268,37 @@ export async function getPythonPath(): Promise<string> {
     await pythonExtension.activate();
   }
 
-  const pythonPath =
-    pythonExtension.exports.settings.getExecutionDetails().execCommand[0];
+  const pythonPath = pythonExtension.exports.settings.getExecutionDetails().execCommand[0];
   return pythonPath;
 }
+
+/**
+ * Checks if the specified Python interpreter is version 3.10 or higher.
+ * @param pythonPath The path to the Python interpreter.
+ * @returns A promise that resolves to a boolean indicating if the version is >= 3.10.
+ */
+
+export function isPythonVersionAtLeast310(pythonPath: string): boolean {
+  try {
+    // Use Python to check compatible version
+    const command = `${pythonPath} -c "import sys; print(sys.version_info >= (3, 10))"`;
+    const output = execSync(command).toString().replace(/\s+/g, '').trim(); //replace newlines & whitespace
+
+    return output === "True";
+  } catch (error) {
+    console.debug("Error checking Python version:", error);
+    return false;
+  }
+}
+
+export function showGuideForInstallation(message: string): void {
+  // Guide for installation
+  vscode.window.showErrorMessage(message, ...["Install Python", "Retry"]).then((selection) => {
+    if (selection === "Install Python") {
+      vscode.env.openExternal(vscode.Uri.parse("https://www.python.org/downloads/"));
+    } else if (selection === "Retry") {
+      vscode.commands.executeCommand(COMMANDS.INIT);
+    }
+  });
+}
+
