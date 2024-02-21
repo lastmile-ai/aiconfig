@@ -55,6 +55,15 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      COMMANDS.SETUP_ENVIRONMENT_VARIABLES,
+      () => {
+        vscode.window.showInformationMessage("Will implement next PR");
+      }
+    )
+  );
+
   const createAIConfigJSONCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_NEW_JSON,
     async () => {
