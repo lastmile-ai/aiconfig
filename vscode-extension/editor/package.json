@@ -26,7 +26,7 @@
   "dependencies": {
     "@datadog/browser-logs": "^5.7.0",
     "@emotion/react": "^11.11.1",
-    "@lastmileai/aiconfig-editor": "^0.1.21",
+    "@lastmileai/aiconfig-editor": "^0.2.0",
     "@mantine/carousel": "^6.0.7",
     "@mantine/core": "^6.0.7",
     "@mantine/dates": "^6.0.16",
