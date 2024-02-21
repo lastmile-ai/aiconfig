@@ -18,6 +18,7 @@ import {
   getPythonPath,
   isSupportedConfigExtension,
   SUPPORTED_FILE_EXTENSIONS,
+  isPythonVersionAtLeast310,
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
@@ -673,6 +674,12 @@ async function checkPython() {
             }
           });
         resolve(false);
+      } else if (!isPythonVersionAtLeast310(pythonPath)) {
+        console.error(
+          "Python version is not 3.10 or higher. Please upgrade to Python 3.10 or higher."
+        );
+        resolve(false);
+        // show guide for installation
       } else {
         resolve(true);
         console.log("Python is installed");
