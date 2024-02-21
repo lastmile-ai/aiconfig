@@ -138,7 +138,7 @@
           {
 						"id": "createAIConfig",
 						"title": "Create an AIConfig file",
-						"description": "You can do this either in JSON or YAML format. This file defines the AI models and workflow you want to use in your project.\n[JSON](command:vscode-aiconfig.createAIConfigJSON) [YAML](command:vscode-aiconfig.createAIConfigYAML)",
+						"description": "You can do this either in JSON or YAML format. This file defines the AI models and workflow you want to use in your project.\n[Create .aiconfig.json file](command:vscode-aiconfig.createAIConfigJSON)\n[Create .aiconfig.yaml file](command:vscode-aiconfig.createAIConfigYAML)",
 						"media": {
               "markdown": "media/welcomePage.md"
 						}
