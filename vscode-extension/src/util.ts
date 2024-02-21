@@ -290,3 +290,15 @@ export function isPythonVersionAtLeast310(pythonPath: string): boolean {
     return false;
   }
 }
+
+export function showGuideForInstallation(message: string): void {
+  // Guide for installation
+  vscode.window.showErrorMessage(message, ...["Install Python", "Retry"]).then((selection) => {
+    if (selection === "Install Python") {
+      vscode.env.openExternal(vscode.Uri.parse("https://www.python.org/downloads/"));
+    } else if (selection === "Retry") {
+      vscode.commands.executeCommand(COMMANDS.INIT);
+    }
+  });
+}
+
