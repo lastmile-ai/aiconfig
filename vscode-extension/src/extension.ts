@@ -42,17 +42,26 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(setupCommand);
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.SHOW_WELCOME, async () => {
+    vscode.commands.registerCommand(COMMANDS.SHOW_WELCOME, () => {
       const welcomeFilePath = path.join(
         context.extensionPath,
-        "src",
+        "media",
         "welcomePage.md"
       );
-      await vscode.commands.executeCommand(
+      vscode.commands.executeCommand(
         "markdown.showPreview",
         vscode.Uri.file(welcomeFilePath)
       );
     })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      COMMANDS.SETUP_ENVIRONMENT_VARIABLES,
+      () => {
+        vscode.window.showInformationMessage("Will implement next PR");
+      }
+    )
   );
 
   const createAIConfigJSONCommand = vscode.commands.registerCommand(

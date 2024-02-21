@@ -19,39 +19,53 @@
     "commands": [
       {
         "command": "vscode-aiconfig.init",
-        "title": "AIConfig: Initialize Extension"
+        "title": "Initialize Extension",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.createAIConfigJSON",
-        "title": "AIConfig: Create New (JSON)"
+        "title": "Create New (JSON)",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.createAIConfigYAML",
-        "title": "AIConfig: Create New (YAML)"
+        "title": "Create New (YAML)",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.share",
-        "title": "AIConfig: Share (get permalink)"
+        "title": "Share (get permalink)",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.customModelRegistryPath",
-        "title": "AIConfig: Set Custom Model Registry File Path"
+        "title": "Set Custom Model Registry File Path",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.createCustomModelRegistry",
-        "title": "AIConfig: Create Custom Model Registry"
+        "title": "Create Custom Model Registry",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.openConfigFile",
-        "title": "AIConfig: Open AIConfig File"
+        "title": "Open AIConfig File",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.openModelRegistry",
-        "title": "AIConfig: Open Custom Model Registry File"
+        "title": "Open Custom Model Registry File",
+        "category": "AIConfig"
+      },
+      {
+        "command": "vscode-aiconfig.setupEnvironmentVariables",
+        "title": "Setup Environment Variables",
+        "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.showWelcome",
-        "title": "AIConfig: Welcome"
+        "title": "Welcome",
+        "category": "AIConfig"
       }
     ],
     "customEditors": [
@@ -87,7 +101,59 @@
       "workbench.editorAssociations": {
         "{git,gitlens,sapling-diff}:/**/*.{aiconfig.json, aiconfig.yaml}": "default"
       }
-    }
+    },
+    "walkthroughs": [
+      {
+        "id": "vscode-aiconfig.welcomeWalkthrough",
+        "title": "Getting Started with AIConfig Editor",
+        "description": "Get started with some basic commands!",
+        "steps": [
+          {
+						"id": "selectInterpreter",
+						"title": "Select your Python Interpreter",
+						"description": "This defines the Python environment that you will use in your VS Code session. It keeps track of which modules you've installed",
+						"media": {
+              "markdown": "media/welcomePage.md"
+						}
+					},
+          {
+						"id": "installDependencies",
+						"title": "Install dependencies",
+						"description": "This installs the Python libraries required to use the AIConfig editor and SDK",
+						"media": {
+              "markdown": "media/welcomePage.md"
+						}
+					},
+          {
+						"id": "setupEnvironmentVariables",
+						"title": "Setup Environment Variables",
+						"description": "This creates an .env file (or uses it if it already exists) to define environment varialbes needed to run AI models. Ex: OpenAI models read from the `OPENAI_API_KEY` variable\n[Setup Environment Variables](command:vscode-aiconfig.setupEnvironmentVariables)",
+						"media": {
+              "markdown": "media/welcomePage.md"
+						},
+            "completionEvents": [
+							"onCommand:vscode-aiconfig.setupEnvironmentVariables"
+						]
+					},
+          {
+						"id": "createAIConfig",
+						"title": "Create an AIConfig file",
+						"description": "You can do this either in JSON or YAML format. This file defines the AI models and workflow you want to use in your project.\n[JSON](command:vscode-aiconfig.createAIConfigJSON) [YAML](command:vscode-aiconfig.createAIConfigYAML)",
+						"media": {
+              "markdown": "media/welcomePage.md"
+						}
+					},
+          {
+						"id": "showWelcome",
+						"title": "[Optional] Read full tutorial",
+						"description": "Read the full tutorial on the [Welcome page](command:vscode-aiconfig.showWelcome) to learn about all the things you can do with AIConfig!",
+						"media": {
+              "markdown": "media/welcomePage.md"
+						}
+					}
+        ]
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",

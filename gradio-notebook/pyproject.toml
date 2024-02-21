@@ -8,7 +8,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gradio_notebook"
-version = "0.0.14"
+version = "0.0.15"
 description = "Notebook for interacting with models in AIConfig"
 readme = "README.md"
 license = "MIT"
