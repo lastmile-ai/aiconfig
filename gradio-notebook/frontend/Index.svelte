@@ -369,9 +369,21 @@
 
   async function handleShare() {
     const client = await getClient();
+    // Component is hosted in an iframe so window.location.href will have the deployed
+    // application URL, e.g. https://lastmileai-gradio-notebook-template.hf.space/
+    // instead of the space URL, e.g. https://huggingface.co/spaces/lastmileai/gradio-notebook-template
+    // parent.window.location.href is not accessible because it is cross-origin;
+    // document.referrer is exactly huggingface.co/ and not the full space URL.
+    // From manual checking, it appears __gradio_space__ is added to the iframe window so we can
+    // try to construct the space url best-effort by appending that to the space domain
+    let workspaceUrl = window.location.href;
+    if ((window as any).__gradio_space__) {
+      workspaceUrl = `https://huggingface.co/spaces/${(window as any).__gradio_space__}`;
+    }
+
     const res = (await client.predict("/share_config_impl", undefined, {
       session_id: sessionId,
-      workspace_url: window.location.href,
+      workspace_url: workspaceUrl,
     })) as EventAPIResponse;
     return JSON.parse(res.data[0]);
   }
