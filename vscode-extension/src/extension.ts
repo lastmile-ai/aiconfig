@@ -39,7 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
-    installDependencies(context, extensionOutputChannel);
+    initialize(context, extensionOutputChannel);
   });
   context.subscriptions.push(setupCommand);
 
