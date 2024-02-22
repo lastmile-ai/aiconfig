@@ -18,6 +18,8 @@ import {
   getPythonPath,
   isSupportedConfigExtension,
   SUPPORTED_FILE_EXTENSIONS,
+  isPythonVersionAtLeast310,
+  showGuideForPythonInstallation,
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
@@ -58,8 +60,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       COMMANDS.SETUP_ENVIRONMENT_VARIABLES,
-      () => {
-        vscode.window.showInformationMessage("Will implement next PR");
+      async () => {
+        await setupEnvironmentVariables(context);
       }
     )
   );
@@ -656,23 +658,22 @@ async function checkPython() {
       if (error) {
         console.error("Python was not found, can't install requirements");
         console.error("retrieved python path: " + pythonPath);
+        console.error("error: " + error);
 
         // Guide for installation
-        vscode.window
-          .showErrorMessage(
-            "Python is not installed",
-            ...["Install Python", "Retry"]
-          )
-          .then((selection) => {
-            if (selection === "Install Python") {
-              vscode.env.openExternal(
-                vscode.Uri.parse("https://www.python.org/downloads/")
-              );
-            } else if (selection === "Retry") {
-              vscode.commands.executeCommand(COMMANDS.INIT);
-            }
-          });
+        showGuideForPythonInstallation(
+          "Specified Python Interpreter is not valid"
+        );
         resolve(false);
+      } else if (!isPythonVersionAtLeast310(pythonPath)) {
+        showGuideForPythonInstallation(
+          "Python version is not 3.10 or higher. Please upgrade to Python 3.10 or higher."
+        );
+        console.error(
+          "Python version is not 3.10 or higher. Please upgrade to Python 3.10 or higher."
+        );
+        resolve(false);
+        // show guide for installation
       } else {
         resolve(true);
         console.log("Python is installed");
@@ -714,6 +715,98 @@ async function checkPip() {
       }
     });
   });
+}
+
+/**
+ * Creates an .env file (or opens it if it already exists) to define environment variables
+ * 1) If .env file exists:
+ *    a) Add helper lines on how to add common API keys (if not currently present)
+ * 2) If .env file doesn't exist
+ *    b) Add template file containing helper lines from 1a above
+ */
+async function setupEnvironmentVariables(context: vscode.ExtensionContext) {
+  // Use home dir because env variables should be global. I get the argument
+  // for having in the workspace dir. I personally feel this is more
+  // annoying to setup every time you create a new project when using the
+  // same API keys, but I can do whatever option you want, not hard to
+  // implement
+  const homedir = require("os").homedir(); // This is cross-platform: https://stackoverflow.com/a/9081436
+  const defaultEnvPath = path.join(homedir, ".env");
+
+  const envPath = await vscode.window.showInputBox({
+    prompt: "Enter the path of your .env file",
+    value: defaultEnvPath,
+    validateInput: (text) => {
+      if (!text) {
+        return "File path is required";
+      } else if (!text.endsWith(".env")) {
+        return "File path must end in .env file";
+      }
+      // TODO: Check that file path is a "/.env" file (linux) or "\.env" (Windows)
+
+      // TODO: Check that env path is contained within workspace hierarchy
+      // (Ex: can't have .env file in a sibling dir otherwise AIConfig
+      // loadenv can't read it)
+      return null;
+    },
+  });
+
+  if (!envPath) {
+    vscode.window.showInformationMessage(
+      "Environment variable setup cancelled"
+    );
+    return;
+  }
+
+  const envTemplatePath = vscode.Uri.joinPath(
+    context.extensionUri,
+    "static",
+    "env_template.env"
+  );
+
+  if (fs.existsSync(envPath)) {
+    const helperText = (
+      await vscode.workspace.fs.readFile(envTemplatePath)
+    ).toString();
+
+    // TODO: Check if we already appended the template text to existing .env
+    // file before. If we did, don't do it again
+    fs.appendFile(envPath, "\n\n" + helperText, function (err) {
+      if (err) {
+        throw err;
+      }
+      console.log(
+        `Added .env template text from ${envTemplatePath.fsPath} to ${envPath}`
+      );
+    });
+  } else {
+    // Create the .env file from the sample
+    try {
+      await vscode.workspace.fs.copy(
+        envTemplatePath,
+        vscode.Uri.file(envPath),
+        { overwrite: false }
+      );
+    } catch (err) {
+      vscode.window.showErrorMessage(
+        `Error creating new file ${envTemplatePath}: ${err}`
+      );
+    }
+  }
+
+  // Open the env file that was either was created or already existed
+  const doc = await vscode.workspace.openTextDocument(envPath);
+  if (doc) {
+    vscode.window.showTextDocument(doc, {
+      preview: false,
+      // Tried using vscode.ViewColumn.Active but that overrides existing
+      // walkthrough window
+      viewColumn: vscode.ViewColumn.Beside,
+    });
+    vscode.window.showInformationMessage(
+      "Please define your environment variables."
+    );
+  }
 }
 
 async function shareAIConfig(
