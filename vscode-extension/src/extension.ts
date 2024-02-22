@@ -20,6 +20,7 @@ import {
   SUPPORTED_FILE_EXTENSIONS,
   isPythonVersionAtLeast310,
   showGuideForPythonInstallation,
+  setupEnvironmentVariables,
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
@@ -718,98 +719,6 @@ async function checkPip() {
       }
     });
   });
-}
-
-/**
- * Creates an .env file (or opens it if it already exists) to define environment variables
- * 1) If .env file exists:
- *    a) Add helper lines on how to add common API keys (if not currently present)
- * 2) If .env file doesn't exist
- *    b) Add template file containing helper lines from 1a above
- */
-async function setupEnvironmentVariables(context: vscode.ExtensionContext) {
-  // Use home dir because env variables should be global. I get the argument
-  // for having in the workspace dir. I personally feel this is more
-  // annoying to setup every time you create a new project when using the
-  // same API keys, but I can do whatever option you want, not hard to
-  // implement
-  const homedir = require("os").homedir(); // This is cross-platform: https://stackoverflow.com/a/9081436
-  const defaultEnvPath = path.join(homedir, ".env");
-
-  const envPath = await vscode.window.showInputBox({
-    prompt: "Enter the path of your .env file",
-    value: defaultEnvPath,
-    validateInput: (text) => {
-      if (!text) {
-        return "File path is required";
-      } else if (!text.endsWith(".env")) {
-        return "File path must end in .env file";
-      }
-      // TODO: Check that file path is a "/.env" file (linux) or "\.env" (Windows)
-
-      // TODO: Check that env path is contained within workspace hierarchy
-      // (Ex: can't have .env file in a sibling dir otherwise AIConfig
-      // loadenv can't read it)
-      return null;
-    },
-  });
-
-  if (!envPath) {
-    vscode.window.showInformationMessage(
-      "Environment variable setup cancelled"
-    );
-    return;
-  }
-
-  const envTemplatePath = vscode.Uri.joinPath(
-    context.extensionUri,
-    "static",
-    "env_template.env"
-  );
-
-  if (fs.existsSync(envPath)) {
-    const helperText = (
-      await vscode.workspace.fs.readFile(envTemplatePath)
-    ).toString();
-
-    // TODO: Check if we already appended the template text to existing .env
-    // file before. If we did, don't do it again
-    fs.appendFile(envPath, "\n\n" + helperText, function (err) {
-      if (err) {
-        throw err;
-      }
-      console.log(
-        `Added .env template text from ${envTemplatePath.fsPath} to ${envPath}`
-      );
-    });
-  } else {
-    // Create the .env file from the sample
-    try {
-      await vscode.workspace.fs.copy(
-        envTemplatePath,
-        vscode.Uri.file(envPath),
-        { overwrite: false }
-      );
-    } catch (err) {
-      vscode.window.showErrorMessage(
-        `Error creating new file ${envTemplatePath}: ${err}`
-      );
-    }
-  }
-
-  // Open the env file that was either was created or already existed
-  const doc = await vscode.workspace.openTextDocument(envPath);
-  if (doc) {
-    vscode.window.showTextDocument(doc, {
-      preview: false,
-      // Tried using vscode.ViewColumn.Active but that overrides existing
-      // walkthrough window
-      viewColumn: vscode.ViewColumn.Beside,
-    });
-    vscode.window.showInformationMessage(
-      "Please define your environment variables."
-    );
-  }
 }
 
 async function shareAIConfig(
