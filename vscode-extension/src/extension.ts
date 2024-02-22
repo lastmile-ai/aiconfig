@@ -764,18 +764,33 @@ async function setupEnvironmentVariables(context: vscode.ExtensionContext) {
     return;
   }
 
+  const envTemplatePath = vscode.Uri.joinPath(
+    context.extensionUri,
+    "static",
+    "env_template.env"
+  );
+
   if (fs.existsSync(envPath)) {
-    vscode.window.showInformationMessage(
-      "Env file already exists, will implement next PR"
-    );
+    var helperText: string = "\ntest, will change next PR";
+    // fs.readFile(envTemplatePath.fsPath, function read(err, data) {
+    //   if (err) {
+    //     throw err;
+    //   }
+    //   helperText = "\n" + data.toString();
+    // });
+
+    // TODO: Check if we already appended the template text to existing .env
+    // file before. If we did, don't do it again
+    fs.appendFile(envPath, helperText, function (err) {
+      if (err) {
+        throw err;
+      }
+      console.log(
+        `Added .env template text from ${envTemplatePath.fsPath} to ${envPath}`
+      );
+    });
   } else {
     // Create the .env file from the sample
-    const envTemplatePath = vscode.Uri.joinPath(
-      context.extensionUri,
-      "static",
-      "env_template.env"
-    );
-
     try {
       await vscode.workspace.fs.copy(
         envTemplatePath,
@@ -787,19 +802,20 @@ async function setupEnvironmentVariables(context: vscode.ExtensionContext) {
         `Error creating new file ${envTemplatePath}: ${err}`
       );
     }
+  }
 
-    const doc = await vscode.workspace.openTextDocument(envPath);
-    if (doc) {
-      vscode.window.showTextDocument(doc, {
-        preview: false,
-        // Tried using vscode.ViewColumn.Active but that overrides existing
-        // walkthrough window
-        viewColumn: vscode.ViewColumn.Beside,
-      });
-      vscode.window.showInformationMessage(
-        "Please define your environment variables."
-      );
-    }
+  // Open the env file that was either was created or already existed
+  const doc = await vscode.workspace.openTextDocument(envPath);
+  if (doc) {
+    vscode.window.showTextDocument(doc, {
+      preview: false,
+      // Tried using vscode.ViewColumn.Active but that overrides existing
+      // walkthrough window
+      viewColumn: vscode.ViewColumn.Beside,
+    });
+    vscode.window.showInformationMessage(
+      "Please define your environment variables."
+    );
   }
 }
 
