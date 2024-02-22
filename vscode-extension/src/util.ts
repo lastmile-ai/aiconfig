@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { ChildProcessWithoutNullStreams } from "child_process";
+import { type ChildProcessWithoutNullStreams, execSync } from "child_process";
 import { setTimeout } from "timers/promises";
 import { ufetch } from "ufetch";
 
@@ -18,6 +18,7 @@ export const COMMANDS = {
   CREATE_CUSTOM_MODEL_REGISTRY: `${EXTENSION_NAME}.createCustomModelRegistry`,
   OPEN_CONFIG_FILE: `${EXTENSION_NAME}.openConfigFile`,
   OPEN_MODEL_REGISTRY: `${EXTENSION_NAME}.openModelRegistry`,
+  SETUP_ENVIRONMENT_VARIABLES: `${EXTENSION_NAME}.setupEnvironmentVariables`,
   SHARE: `${EXTENSION_NAME}.share`,
   SHOW_WELCOME: `${EXTENSION_NAME}.showWelcome`,
 };
@@ -299,4 +300,25 @@ export async function getPythonPath(): Promise<string> {
   const pythonPath =
     pythonExtension.exports.settings.getExecutionDetails().execCommand[0];
   return pythonPath;
+}
+
+/**
+ * Checks if the specified Python interpreter is version 3.10 or higher.
+ * @param pythonPath The path to the Python interpreter.
+ * @returns A promise that resolves to a boolean indicating if the version is >= 3.10.
+ */
+
+export function isPythonVersionAtLeast310(pythonPath: string): boolean {
+  try {
+    // Use Python to check compatible version
+    // This approach circumvents the complexity of parsing version strings from `python --version`,
+    // which can vary in format and require custom parsing and comparison logic to handle different version schemes (e.g., major, minor, micro).
+    const command = `${pythonPath} -c "import sys; print(sys.version_info >= (3, 10))"`;
+    const output = execSync(command).toString().replace(/\s+/g, "").trim(); //replace newlines & whitespace
+
+    return output === "True";
+  } catch (error) {
+    console.debug("Error checking Python version:", error);
+    return false;
+  }
 }

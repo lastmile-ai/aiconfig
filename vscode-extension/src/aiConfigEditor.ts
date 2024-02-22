@@ -193,13 +193,12 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
             return;
           }
 
-          // TODO: Should we skip events with no content changes?
-          // if (e.contentChanges.length === 0) {
-          //   console.log(
-          //     `changeDocumentSubscription ${e.document.uri} - skipping event because there are no content changes`
-          //   );
-          //   return;
-          // }
+          if (e.contentChanges.length === 0) {
+            console.log(
+              `changeDocumentSubscription ${e.document.uri} - skipping event because there are no content changes`
+            );
+            return;
+          }
 
           // TODO: saqadri - instead of sending the entire document to the webview,
           // can ask it to reload the document from the server

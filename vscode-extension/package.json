@@ -58,6 +58,11 @@
         "category": "AIConfig"
       },
       {
+        "command": "vscode-aiconfig.setupEnvironmentVariables",
+        "title": "Setup Environment Variables",
+        "category": "AIConfig"
+      },
+      {
         "command": "vscode-aiconfig.showWelcome",
         "title": "Welcome",
         "category": "AIConfig"
@@ -122,15 +127,18 @@
           {
 						"id": "setupEnvironmentVariables",
 						"title": "Setup Environment Variables",
-						"description": "This creates an .env file (or uses it if it already exists) to define environment varialbes needed to run AI models. Ex: OpenAI models read from the `OPENAI_API_KEY` variable",
+						"description": "This creates an .env file (or uses it if it already exists) to define environment varialbes needed to run AI models. Ex: OpenAI models read from the `OPENAI_API_KEY` variable\n[Setup Environment Variables](command:vscode-aiconfig.setupEnvironmentVariables)",
 						"media": {
               "markdown": "media/welcomePage.md"
-						}
+						},
+            "completionEvents": [
+							"onCommand:vscode-aiconfig.setupEnvironmentVariables"
+						]
 					},
           {
 						"id": "createAIConfig",
-						"title": "Create an AIConfig file",
-						"description": "You can do this either in JSON or YAML format. This file defines the AI models and workflow you want to use in your project.\n[JSON](command:vscode-aiconfig.createAIConfigJSON) [YAML](command:vscode-aiconfig.createAIConfigYAML)",
+						"title": "Create your first AIConfig",
+						"description": "You can do this either in JSON or YAML format. This file defines the AI models and workflow you want to use in your project.\n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON:\n[Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
 						"media": {
               "markdown": "media/welcomePage.md"
 						}
