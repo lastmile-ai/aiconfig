@@ -60,7 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       COMMANDS.SETUP_ENVIRONMENT_VARIABLES,
       () => {
-        vscode.window.showInformationMessage("Will implement next PR");
+        setupEnvironmentVariables();
       }
     )
   );
@@ -721,6 +721,95 @@ async function checkPip() {
       }
     });
   });
+}
+
+/**
+ * Creates an .env file (or opens it if it already exists) to define environment variables
+ * 1) If .env file exists:
+ *    a) Add helper lines on how to add common API keys (if not currently present)
+ * 2) If .env file doesn't exist
+ *    b) Add template file containing helper lines from 1a above
+ */
+async function setupEnvironmentVariables() {
+  // Use home dir because env variables should be global. I get the argument
+  // for having in the workspace dir. I personally feel this is more
+  // annoying to setup every time you create a new project when using the
+  // same API keys, but I can do whatever option you want, not hard to
+  // implement
+  const homedir = require("os").homedir(); // This is cross-platform: https://stackoverflow.com/a/9081436
+  const defaultEnvPath = path.join(homedir, ".env");
+
+  const envPath = await vscode.window.showInputBox({
+    prompt: "Enter the path of your .env file",
+    value: defaultEnvPath,
+    validateInput: (text) => {
+      if (!text) {
+        return "File path is required";
+      } else if (!text.endsWith(".env")) {
+        return "File path must end in .env file";
+      }
+      // TODO: Check that env path is contained within workspace hierarchy
+      // (Ex: can't have .env file in a sibling dir otherwise AIConfig
+      // loadenv can't read it)
+      return null;
+    },
+  });
+
+  if (!envPath) {
+    vscode.window.showInformationMessage(
+      "Environment variable setup cancelled"
+    );
+    return;
+  }
+
+  if (fs.existsSync(envPath)) {
+    // Append some lines in code to help guide users
+    // https://ai.google.dev/tutorials/setup
+    // https://platform.openai.com/api-keys
+    // Also add HF one
+    vscode.window.showInformationMessage(
+      "Env file already exists, will implement next PR"
+    );
+  } else {
+    // File doesn't exist in path
+    vscode.window.showInformationMessage(
+      "Env file does not already, will implement next PR"
+    );
+  }
+
+  // // Create the model registry file from the sample
+  // const sampleModelRegistryPath = vscode.Uri.joinPath(
+  //   context.extensionUri,
+  //   "static",
+  //   "example_aiconfig_model_registry.py"
+  // );
+
+  // try {
+  //   await vscode.workspace.fs.copy(
+  //     sampleModelRegistryPath,
+  //     vscode.Uri.file(modelRegistryPath),
+  //     { overwrite: false }
+  //   );
+  // } catch (err) {
+  //   vscode.window.showErrorMessage(
+  //     `Error creating new file ${modelRegistryPath}. Error is ${err}`
+  //   );
+  // }
+
+  // const doc = await vscode.workspace.openTextDocument(modelRegistryPath);
+  // if (doc) {
+  //   vscode.window.showTextDocument(doc);
+  //   vscode.window.showInformationMessage(
+  //     "Please customize your new model registry."
+  //   );
+  // }
+
+  // let config = vscode.workspace.getConfiguration(EXTENSION_NAME);
+  // await handleCustomModelRegistryUpdate(
+  //   config,
+  //   aiconfigEditorManager,
+  //   modelRegistryPath
+  // );
 }
 
 async function shareAIConfig(
