@@ -337,3 +337,113 @@ export function showGuideForPythonInstallation(message: string): void {
       }
     });
 }
+
+/**
+ * Creates an .env file (or opens it if it already exists) to define environment variables
+ * 1) If .env file exists:
+ *    a) Add helper lines on how to add common API keys (if not currently present)
+ * 2) If .env file doesn't exist
+ *    b) Add template file containing helper lines from 1a above
+ */
+export async function setupEnvironmentVariables(
+  context: vscode.ExtensionContext
+) {
+  // Use home dir because env variables should be global. I get the argument
+  // for having in the workspace dir. I personally feel this is more
+  // annoying to setup every time you create a new project when using the
+  // same API keys, but I can do whatever option you want, not hard to
+  // implement
+  const homedir = require("os").homedir(); // This is cross-platform: https://stackoverflow.com/a/9081436
+  const defaultEnvPath = path.join(homedir, ".env");
+
+  const workspacePath = vscode.workspace.workspaceFolders
+    ? vscode.workspace.workspaceFolders[0].uri.fsPath
+    : null;
+
+  const envPath = await vscode.window.showInputBox({
+    prompt: "Enter the path of your .env file",
+    value: defaultEnvPath,
+    validateInput: (input) => validateEnvPath(input, workspacePath),
+  });
+
+  if (!envPath) {
+    vscode.window.showInformationMessage(
+      "Environment variable setup cancelled"
+    );
+    return;
+  }
+
+  const envTemplatePath = vscode.Uri.joinPath(
+    context.extensionUri,
+    "static",
+    "env_template.env"
+  );
+
+  if (fs.existsSync(envPath)) {
+    const helperText = (
+      await vscode.workspace.fs.readFile(envTemplatePath)
+    ).toString();
+
+    // TODO: Check if we already appended the template text to existing .env
+    // file before. If we did, don't do it again
+    fs.appendFile(envPath, "\n\n" + helperText, function (err) {
+      if (err) {
+        throw err;
+      }
+      console.log(
+        `Added .env template text from ${envTemplatePath.fsPath} to ${envPath}`
+      );
+    });
+  } else {
+    // Create the .env file from the sample
+    try {
+      await vscode.workspace.fs.copy(
+        envTemplatePath,
+        vscode.Uri.file(envPath),
+        { overwrite: false }
+      );
+    } catch (err) {
+      vscode.window.showErrorMessage(
+        `Error creating new file ${envTemplatePath}: ${err}`
+      );
+    }
+  }
+
+  // Open the env file that was either was created or already existed
+  const doc = await vscode.workspace.openTextDocument(envPath);
+  if (doc) {
+    vscode.window.showTextDocument(doc, {
+      preview: false,
+      // Tried using vscode.ViewColumn.Active but that overrides existing
+      // walkthrough window
+      viewColumn: vscode.ViewColumn.Beside,
+    });
+    vscode.window.showInformationMessage(
+      "Please define your environment variables."
+    );
+  }
+}
+
+function validateEnvPath(
+  inputPath: string,
+  workspacePath: string | null
+): string | null {
+  if (!inputPath) {
+    return "File path is required";
+  } else if (!inputPath.endsWith(".env")) {
+    return 'File path must end in ".env"';
+  } else if (path.basename(inputPath) !== ".env") {
+    return 'Filename of the fully qualified path must be ".env"';
+  } else if (workspacePath !== null) {
+    // Note: If the workspacePath is equal to inputPath,
+    // relativePathFromEnvToWorkspace will be empty string
+    const relativePathFromEnvToWorkspace = path.relative(
+      path.dirname(inputPath),
+      workspacePath
+    );
+    if (relativePathFromEnvToWorkspace.startsWith("..")) {
+      return `File path must either be contained within the VS Code workspace directory ('${workspacePath}') or within a one of it's parent folders`;
+    }
+  }
+  return null;
+}
