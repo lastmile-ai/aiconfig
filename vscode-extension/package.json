@@ -1,11 +1,16 @@
 {
   "name": "vscode-aiconfig",
+  "repository": "https://github.com/lastmile-ai/aiconfig",
+  "publisher": "lastmile-ai",
+  "author": "LastMile AI",
   "displayName": "AIConfig Editor",
   "description": "AIConfig notebook editor that turns VSCode into a generative AI studio.",
-  "version": "0.0.1",
+  "version": "0.0.6",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
   },
+  "icon": "./static/Logo.png",
   "categories": [
     "Other"
   ],
@@ -14,11 +19,48 @@
     "commands": [
       {
         "command": "vscode-aiconfig.init",
-        "title": "AIConfig: Initialize Extension"
+        "title": "Initialize Extension",
+        "category": "AIConfig"
       },
       {
-        "command": "vscode-aiconfig.helloWorld",
-        "title": "Hello World"
+        "command": "vscode-aiconfig.createAIConfigJSON",
+        "title": "Create New (JSON)",
+        "category": "AIConfig"
+      },
+      {
+        "command": "vscode-aiconfig.createAIConfigYAML",
+        "title": "Create New (YAML)",
+        "category": "AIConfig"
+      },
+      {
+        "command": "vscode-aiconfig.share",
+        "title": "Share (get permalink)",
+        "category": "AIConfig"
+      },
+      {
+        "command": "vscode-aiconfig.customModelRegistryPath",
+        "title": "Set Custom Model Registry File Path",
+        "category": "AIConfig"
+      },
+      {
+        "command": "vscode-aiconfig.createCustomModelRegistry",
+        "title": "Create Custom Model Registry",
+        "category": "AIConfig"
+      },
+      {
+        "command": "vscode-aiconfig.openConfigFile",
+        "title": "Open AIConfig File",
+        "category": "AIConfig"
+      },
+      {
+        "command": "vscode-aiconfig.openModelRegistry",
+        "title": "Open Custom Model Registry File",
+        "category": "AIConfig"
+      },
+      {
+        "command": "vscode-aiconfig.showWelcome",
+        "title": "Welcome",
+        "category": "AIConfig"
       }
     ],
     "customEditors": [
@@ -36,7 +78,72 @@
             "filenamePattern": "*.aiconfig"
           }
         ],
+        "enableForDiffView": false,
         "priority": "default"
+      }
+    ],
+    "configuration": {
+      "title": "AIConfig Editor extension settings",
+      "properties": {
+        "vscode-aiconfig.modelRegistryPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the custom model registry file."
+        }
+      }
+    },
+    "configurationDefaults": {
+      "workbench.editorAssociations": {
+        "{git,gitlens,sapling-diff}:/**/*.{aiconfig.json, aiconfig.yaml}": "default"
+      }
+    },
+    "walkthroughs": [
+      {
+        "id": "vscode-aiconfig.welcomeWalkthrough",
+        "title": "Getting Started with AIConfig Editor",
+        "description": "Get started with some basic commands!",
+        "steps": [
+          {
+						"id": "selectInterpreter",
+						"title": "Select your Python Interpreter",
+						"description": "This defines the Python environment that you will use in your VS Code session. It keeps track of which modules you've installed",
+						"media": {
+              "markdown": "media/welcomePage.md"
+						}
+					},
+          {
+						"id": "installDependencies",
+						"title": "Install dependencies",
+						"description": "This installs the Python libraries required to use the AIConfig editor and SDK",
+						"media": {
+              "markdown": "media/welcomePage.md"
+						}
+					},
+          {
+						"id": "setupEnvironmentVariables",
+						"title": "Setup Environment Variables",
+						"description": "This creates an .env file (or uses it if it already exists) to define environment varialbes needed to run AI models. Ex: OpenAI models read from the `OPENAI_API_KEY` variable",
+						"media": {
+              "markdown": "media/welcomePage.md"
+						}
+					},
+          {
+						"id": "createAIConfig",
+						"title": "Create an AIConfig file",
+						"description": "You can do this either in JSON or YAML format. This file defines the AI models and workflow you want to use in your project.\n[JSON](command:vscode-aiconfig.createAIConfigJSON) [YAML](command:vscode-aiconfig.createAIConfigYAML)",
+						"media": {
+              "markdown": "media/welcomePage.md"
+						}
+					},
+          {
+						"id": "showWelcome",
+						"title": "[Optional] Read full tutorial",
+						"description": "Read the full tutorial on the [Welcome page](command:vscode-aiconfig.showWelcome) to learn about all the things you can do with AIConfig!",
+						"media": {
+              "markdown": "media/welcomePage.md"
+						}
+					}
+        ]
       }
     ]
   },
@@ -69,5 +176,8 @@
     "oboe": "^2.1.5",
     "portfinder": "^1.0.32",
     "ufetch": "^1.6.0"
-  }
+  },
+  "extensionDependencies": [
+    "ms-python.python"
+  ]
 }

@@ -14,7 +14,8 @@ The [cookbooks](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks) dir
 
 ### Retrieval Augmented Generated (RAG)
 
-- [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
+- [RAG with ChromaDB](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-ChromaDB)
+- [RAG with MongoDB Vector Search](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-MongoDB)
 
 At its core, RAG is about passing data into prompts. Read how to [pass data](/docs/overview/parameters) with AIConfig.
 

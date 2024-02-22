@@ -31,6 +31,7 @@ type Props = {
     promptId: string,
     newParameters: Record<string, unknown>
   ) => void;
+  onUpdatePromptMetadata: (promptId: string, newMetadata: JSONObject) => void;
   defaultConfigModelName?: string;
   isRunButtonDisabled?: boolean;
 };
@@ -48,6 +49,7 @@ export default memo(function PromptContainer({
   onUpdateModel,
   onUpdateModelSettings,
   onUpdateParameters,
+  onUpdatePromptMetadata,
   isRunButtonDisabled = false,
 }: Props) {
   const promptId = prompt._ui.id;
@@ -70,6 +72,11 @@ export default memo(function PromptContainer({
   const updateParameters = useCallback(
     (parameters: JSONObject) => onUpdateParameters(promptId, parameters),
     [promptId, onUpdateParameters]
+  );
+
+  const updatePromptMetadata = useCallback(
+    (metadata: JSONObject) => onUpdatePromptMetadata(promptId, metadata),
+    [promptId, onUpdatePromptMetadata]
   );
 
   const runPrompt = useCallback(
@@ -156,16 +163,23 @@ export default memo(function PromptContainer({
             isRunning={prompt._ui.isRunning}
             isRunButtonDisabled={isRunButtonDisabled}
           />
-          <PromptOutputBar />
-          {prompt.outputs && <PromptOutputsRenderer outputs={prompt.outputs} />}
+
+          {prompt.outputs && prompt.outputs.length > 0 && (
+            <>
+              <PromptOutputBar />
+              <PromptOutputsRenderer outputs={prompt.outputs} />
+            </>
+          )}
         </Flex>
       </Card>
       <div className="sidePanel">
         <PromptActionBar
+          defaultConfigModelName={defaultConfigModelName}
           prompt={prompt}
           promptSchema={promptSchema}
           onUpdateModelSettings={updateModelSettings}
           onUpdateParameters={updateParameters}
+          onUpdatePromptMetadata={updatePromptMetadata}
         />
       </div>
     </Flex>

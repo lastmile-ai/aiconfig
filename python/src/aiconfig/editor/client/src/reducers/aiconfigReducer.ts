@@ -149,6 +149,17 @@ export default function aiconfigReducer(
         input: action.input,
       }));
     }
+    case "UPDATE_PROMPT_METADATA": {
+      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
+        ...prompt,
+        metadata: {
+          ...action.metadata,
+          // Keep existing model and parameters metadata (managed by separate actions)
+          model: prompt.metadata?.model,
+          parameters: prompt.metadata?.parameters,
+        },
+      }));
+    }
     case "UPDATE_PROMPT_NAME": {
       // Validate that no prompt has a name that conflicts with this one:
       const existingPromptNames = dirtyState.prompts.map(
@@ -168,12 +179,17 @@ export default function aiconfigReducer(
     }
     case "UPDATE_PROMPT_MODEL": {
       return reduceReplacePrompt(dirtyState, action.id, (prompt) => {
+        // TODO (rossdan): Uncomment below once we are able to handle updating model names for HF tasks or sub-classes
         // TODO: Consolidate settings based on schema union, server-side
         // For now, just keep all the settings to match the server-side implementation
         let modelSettings;
         const promptModel = prompt.metadata?.model;
         if (promptModel && typeof promptModel !== "string") {
           modelSettings = promptModel.settings;
+          // TODO (rossdanlm): For now just clearing the model field whenever new model name is selected
+          if (modelSettings) {
+            delete modelSettings.model;
+          }
         }
         return {
           ...prompt,
@@ -182,6 +198,7 @@ export default function aiconfigReducer(
             model: action.modelName
               ? {
                   name: action.modelName,
+                  // TODO (rossdanlm): For now just clearing the model field whenever new model name is selected
                   settings: modelSettings,
                 }
               : undefined,

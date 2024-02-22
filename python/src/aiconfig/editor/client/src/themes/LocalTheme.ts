@@ -43,7 +43,6 @@ export const LOCAL_THEME: MantineThemeOverride = {
           "sf mono, ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
         border: "none",
         borderRadius: "4px",
-        padding: "4px",
         margin: "0px",
         backgroundColor: "transparent",
       },
@@ -111,7 +110,6 @@ export const LOCAL_THEME: MantineThemeOverride = {
     ".parametersContainer": {
       maxWidth: "1250px",
       maxHeight: "-webkit-fill-available",
-      margin: "16px auto 16px 36px",
       padding: "0",
       backgroundColor: "rgba(226,232,255,.1)",
       borderRadius: "4px",

@@ -1,7 +1,10 @@
 import { JSONObject, JSONValue, Prompt } from "aiconfig";
 import { OpenAIChatModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatModelParserPromptSchema";
 import { OpenAIChatVisionModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatVisionModelParserPromptSchema";
-import { DalleImageGenerationParserPromptSchema } from "../shared/prompt_schemas/DalleImageGenerationParserPromptSchema";
+import {
+  Dalle2ImageGenerationParserPromptSchema,
+  Dalle3ImageGenerationParserPromptSchema,
+} from "../shared/prompt_schemas/DalleImageGenerationParserPromptSchema";
 import { PaLMTextParserPromptSchema } from "../shared/prompt_schemas/PaLMTextParserPromptSchema";
 import { PaLMChatParserPromptSchema } from "../shared/prompt_schemas/PaLMChatParserPromptSchema";
 import { AnyscaleEndpointPromptSchema } from "../shared/prompt_schemas/AnyscaleEndpointPromptSchema";
@@ -19,6 +22,7 @@ import { HuggingFaceTextSummarizationRemoteInferencePromptSchema } from "../shar
 import { HuggingFaceTextTranslationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextTranslationRemoteInferencePromptSchema";
 import { HuggingFaceImage2TextRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextRemoteInferencePromptSchema";
 import { ClaudeBedrockPromptSchema } from "../shared/prompt_schemas/ClaudeBedrockPromptSchema";
+import { HuggingFaceConversationalRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceConversationalRemoteInferencePromptSchema";
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -79,13 +83,16 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "gpt-4-vision-preview": OpenAIChatVisionModelParserPromptSchema,
 
   // DalleImageGenerationParser
-  "dall-e-2": DalleImageGenerationParserPromptSchema,
-  "dall-e-3": DalleImageGenerationParserPromptSchema,
+  "dall-e-2": Dalle2ImageGenerationParserPromptSchema,
+  "dall-e-3": Dalle3ImageGenerationParserPromptSchema,
 
   ClaudeBedrockModelParser: ClaudeBedrockPromptSchema,
 
   HuggingFaceImage2TextRemoteInference:
     HuggingFaceImage2TextRemoteInferencePromptSchema,
+
+  HuggingFaceConversationalRemoteInference:
+    HuggingFaceConversationalRemoteInferencePromptSchema,
 
   HuggingFaceAutomaticSpeechRecognitionRemoteInference:
     HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema,
@@ -149,6 +156,7 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "Text Generation": HuggingFaceTextGenerationRemoteInferencePromptSchema,
   Summarization: HuggingFaceTextSummarizationRemoteInferencePromptSchema,
   Translation: HuggingFaceTextTranslationRemoteInferencePromptSchema,
+  Conversational: HuggingFaceConversationalRemoteInferencePromptSchema,
 
   "Automatic Speech Recognition (Local)":
     HuggingFaceAutomaticSpeechRecognitionPromptSchema,

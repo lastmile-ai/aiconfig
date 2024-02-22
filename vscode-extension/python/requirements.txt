@@ -1,8 +1,5 @@
 # AIConfig
-python-aiconfig>=1.1.12
-
-# Hugging Face Extension for AIConfig
-aiconfig-extension-hugging-face >= 0.0.3
+python-aiconfig>=1.1.22
 
 #Other
 asyncio

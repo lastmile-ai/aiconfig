@@ -10,6 +10,7 @@ import {
 import { IconPlus, IconSearch, IconTextCaption } from "@tabler/icons-react";
 import { memo, useCallback, useState } from "react";
 import useLoadModels from "../../hooks/useLoadModels";
+import { PROMPT_CELL_LEFT_MARGIN_PX } from "../../utils/constants";
 
 type Props = {
   addPrompt: (prompt: string) => void;
@@ -21,8 +22,8 @@ const useStyles = createStyles((theme) => ({
     borderRadius: rem(4),
     display: "flex",
     justifyContent: "center",
+    marginLeft: PROMPT_CELL_LEFT_MARGIN_PX,
     align: "center",
-    width: "100%",
     "&:hover": {
       backgroundColor:
         theme.colorScheme === "light"
@@ -88,7 +89,7 @@ export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
   const { classes } = useStyles();
 
   return (
-    <div className={classes.addPromptRow}>
+    <div className={`${classes.addPromptRow} addPromptRow`}>
       <Menu
         position="bottom"
         // Manually maintain open state to support ... expand button

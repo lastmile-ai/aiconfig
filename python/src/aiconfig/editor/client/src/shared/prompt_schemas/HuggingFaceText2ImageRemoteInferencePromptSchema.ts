@@ -13,7 +13,7 @@ export const HuggingFaceText2ImageRemoteInferencePromptSchema: PromptSchema = {
         type: "string",
         description: `Hugging Face model to use. Can be a model ID hosted on the Hugging Face Hub or a URL 
         to a deployed Inference Endpoint`,
-        default: "CompVis/stable-diffusion-v1-4"
+        default: "CompVis/stable-diffusion-v1-4",
       },
       negative_prompt: {
         type: "string",

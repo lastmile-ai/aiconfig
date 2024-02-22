@@ -1,0 +1,33 @@
+{
+  "name": "Untitled",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {
+      "gpt-3.5-turbo": {
+        "model": "gpt-3.5-turbo",
+        "top_p": 1,
+        "temperature": 1
+      }
+    },
+    "default_model": "gpt-3.5-turbo"
+  },
+  "description": "Enter a description for this AIConfig",
+  "prompts": [
+    {
+      "name": "prompt_1",
+      "input": "",
+      "outputs": []
+    },
+    {
+      "name": "prompt_2",
+      "input": "",
+      "metadata": {
+        "model": "gpt-4",
+        "parameters": {}
+      },
+      "outputs": []
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}

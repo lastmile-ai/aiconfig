@@ -62,21 +62,19 @@ npm install aiconfig
 
 You must specify your [OpenAI API Key](https://platform.openai.com/account/api-keys). Open your Terminal and add this line, replacing ‘your-api-key-here’ with your API key: `export OPENAI_API_KEY='your-api-key-here'`.
 
-### Open AIConfig Editor
+### Open AIConfig Editor in VS Code
 
-AIConfig Editor helps you visually create and edit the prompts and model parameters stored as AIConfigs.
+[AIConfig Editor](https://marketplace.visualstudio.com/items?itemName=lastmile-ai.vscode-aiconfig) helps you visually create and edit the prompts and model parameters stored as AIConfigs.
 
-1. Open your Terminal
-2. Run this command: `aiconfig edit --aiconfig-path=travel.aiconfig.json`
-
-This will open AIConfig Editor in your default browser at http://localhost:8080/ and create a new AIConfig JSON file `travel.aiconfig.json` in your current directory.
+1. Install the [AIConfig Editor for VS Code](https://marketplace.visualstudio.com/items?itemName=lastmile-ai.vscode-aiconfig)
+2. Open the `travel.aiconfig.json` file in VS Code. This will automatically open the AIConfig Editor in VS Code.
 
 ### Run Prompts in the Editor
 
 With AIConfig Editor, you can create and run prompts with complex chaining and variables. The editor auto-saves every 15 seconds and you can manually save with the Save button. Your updates will be reflected in the AIConfig JSON file. See this example of a prompt chain created with the editor:
 
 <div align="center"><picture>
-  <img alt="aiconfig" src="https://github.com/lastmile-ai/aiconfig/assets/81494782/6f564fc8-65fd-4e25-9ef8-699e1601d3e6" width="800"/>
+  <img alt="aiconfig" src="https://github.com/lastmile-ai/aiconfig/assets/129882602/1dff39d5-d7fc-40f5-8143-22173dac713f" width="800"/>
 </picture></div>
 
 <br>
@@ -184,7 +182,7 @@ AIConfig helps unwind complexity by separating prompts, model parameters, and mo
 
 AIConfig makes it easy to work with complex prompt chains, various models, and advanced generative AI workflows. Start with these recipes and access more in [`/cookbooks`](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks):
 
-- [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-AIConfig)
+- [RAG with AIConfig](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/RAG-with-ChromaDB)
 - [Function Calling with OpenAI](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Function-Calling-OpenAI)
 - [CLI Chatbot](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Wizard-GPT)
 - [Prompt Routing](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/Basic-Prompt-Routing)

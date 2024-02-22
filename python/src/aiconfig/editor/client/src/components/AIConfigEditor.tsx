@@ -6,8 +6,9 @@ import {
   Tooltip,
   Alert,
   Group,
+  ActionIcon,
+  MantineThemeOverride,
 } from "@mantine/core";
-import { Notifications, showNotification } from "@mantine/notifications";
 import {
   AIConfig,
   InferenceSettings,
@@ -18,6 +19,7 @@ import {
 } from "aiconfig";
 import {
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useReducer,
@@ -54,12 +56,16 @@ import {
   getDefaultPromptInputForModel,
   getPromptModelName,
 } from "../utils/promptUtils";
-import { IconDeviceFloppy } from "@tabler/icons-react";
+import { IconBraces, IconDeviceFloppy } from "@tabler/icons-react";
 import CopyButton from "./CopyButton";
 import AIConfigEditorThemeProvider from "../themes/AIConfigEditorThemeProvider";
 import DownloadButton from "./global/DownloadButton";
 import ShareButton from "./global/ShareButton";
 import PromptsContainer from "./prompt/PromptsContainer";
+import NotificationProvider, {
+  AIConfigEditorNotification,
+} from "./notifications/NotificationProvider";
+import NotificationContext from "./notifications/NotificationContext";
 
 type Props = {
   aiconfig: AIConfig;
@@ -72,6 +78,11 @@ type Props = {
    * overriding that behavior.
    */
   themeMode?: ThemeMode;
+  /**
+   * Theme override for the editor. If provided, this will override the theme associated
+   * with the provided AIConfigEditorMode.
+   */
+  themeOverride?: MantineThemeOverride;
 };
 
 export type RunPromptStreamEvent =
@@ -109,9 +120,11 @@ export type AIConfigCallbacks = {
     prompt: Prompt,
     index: number
   ) => Promise<{ aiconfig: AIConfig }>;
+  cancel: (cancellationToken: string) => Promise<void>;
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
   deletePrompt: (promptName: string) => Promise<void>;
   download?: () => Promise<void>;
+  openInTextEditor?: () => Promise<void>;
   getModels: (search: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
@@ -122,12 +135,12 @@ export type AIConfigCallbacks = {
     enableStreaming?: boolean,
     cancellationToken?: string
   ) => Promise<{ aiconfig: AIConfig }>;
-  cancel: (cancellationToken: string) => Promise<void>;
   save?: (aiconfig: AIConfig) => Promise<void>;
-  share?: () => Promise<{ share_url: string }>;
   setConfigDescription: (description: string) => Promise<void>;
   setConfigName: (name: string) => Promise<void>;
   setParameters: (parameters: JSONObject, promptName?: string) => Promise<void>;
+  share?: () => Promise<{ share_url: string }>;
+  showNotification?: (notification: AIConfigEditorNotification) => void;
   updateModel: (value: {
     modelName?: string;
     settings?: InferenceSettings;
@@ -141,12 +154,11 @@ export type AIConfigCallbacks = {
 
 type RequestCallbackError = { message?: string };
 
-export default function AIConfigEditor({
+function AIConfigEditorBase({
   aiconfig: initialAIConfig,
   callbacks,
   mode,
   readOnly = false,
-  themeMode,
 }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState<"OK" | "ERROR">("OK");
@@ -155,27 +167,31 @@ export default function AIConfigEditor({
     aiConfigToClientConfig(initialAIConfig)
   );
 
+  const { showNotification } = useContext(NotificationContext);
+
   const stateRef = useRef(aiconfigState);
   stateRef.current = aiconfigState;
 
   const logEventHandler = callbacks?.logEventHandler;
 
   const downloadCallback = callbacks?.download;
+  const openInTextEditorCallback = callbacks?.openInTextEditor;
   const onDownload = useCallback(async () => {
     if (!downloadCallback) {
       return;
     }
     try {
       await downloadCallback();
+      logEventHandler?.("DOWNLOAD_BUTTON_CLICKED");
     } catch (err: unknown) {
       const message = (err as RequestCallbackError).message ?? null;
       showNotification({
         title: "Error downloading AIConfig",
         message,
-        color: "red",
+        type: "error",
       });
     }
-  }, [downloadCallback]);
+  }, [downloadCallback, logEventHandler, showNotification]);
 
   const shareCallback = callbacks?.share;
   const onShare = useCallback(async () => {
@@ -184,16 +200,17 @@ export default function AIConfigEditor({
     }
     try {
       const { share_url: shareUrl } = await shareCallback();
+      logEventHandler?.("SHARE_BUTTON_CLICKED");
       return shareUrl;
     } catch (err: unknown) {
       const message = (err as RequestCallbackError).message ?? null;
       showNotification({
         title: "Error sharing AIConfig",
         message,
-        color: "red",
+        type: "error",
       });
     }
-  }, [shareCallback]);
+  }, [logEventHandler, shareCallback, showNotification]);
 
   const saveCallback = callbacks?.save;
   const onSave = useCallback(async () => {
@@ -211,12 +228,12 @@ export default function AIConfigEditor({
       showNotification({
         title: "Error saving",
         message,
-        color: "red",
+        type: "error",
       });
     } finally {
       setIsSaving(false);
     }
-  }, [saveCallback]);
+  }, [saveCallback, showNotification]);
 
   const updatePromptCallback = callbacks?.updatePrompt;
   const debouncedUpdatePrompt = useMemo(() => {
@@ -227,8 +244,10 @@ export default function AIConfigEditor({
       async (
         promptName: string,
         newPrompt: Prompt,
-        onSuccess: (aiconfigRes: AIConfig) => void,
-        onError: (err: unknown) => void
+        callbacks: {
+          onSuccess?: (aiconfigRes: AIConfig) => void;
+          onError?: (err: unknown) => void;
+        }
       ) => {
         try {
           const serverConfigRes = await updatePromptCallback(
@@ -236,10 +255,10 @@ export default function AIConfigEditor({
             newPrompt
           );
           if (serverConfigRes?.aiconfig) {
-            onSuccess(serverConfigRes.aiconfig);
+            callbacks?.onSuccess?.(serverConfigRes.aiconfig);
           }
         } catch (err: unknown) {
-          onError(err);
+          callbacks?.onError?.(err);
         }
       },
       DEBOUNCE_MS
@@ -261,13 +280,14 @@ export default function AIConfigEditor({
       };
 
       dispatch(action);
+      logEventHandler?.("UPDATE_PROMPT_INPUT");
 
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error updating prompt input",
           message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -284,19 +304,21 @@ export default function AIConfigEditor({
             ...prompt,
             input: newPromptInput,
           },
-          (config) =>
-            dispatch({
-              type: "CONSOLIDATE_AICONFIG",
-              action,
-              config,
-            }),
-          onError
+          {
+            onSuccess: (config) =>
+              dispatch({
+                type: "CONSOLIDATE_AICONFIG",
+                action,
+                config,
+              }),
+            onError,
+          }
         );
       } catch (err: unknown) {
         onError(err);
       }
     },
-    [debouncedUpdatePrompt, dispatch]
+    [debouncedUpdatePrompt, dispatch, logEventHandler, showNotification]
   );
 
   const onChangePromptName = useCallback(
@@ -312,7 +334,7 @@ export default function AIConfigEditor({
         showNotification({
           title: "Error updating prompt name",
           message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -332,19 +354,23 @@ export default function AIConfigEditor({
           // PromptName component maintains local state for the name to show in the UI
           // We cannot update client config state until the name is successfully set server-side
           // or else we could end up referencing a prompt name that is not set server-side
-          () =>
-            dispatch({
-              type: "UPDATE_PROMPT_NAME",
-              id: promptId,
-              name: newName,
-            }),
-          onError
+          {
+            onSuccess: () => {
+              dispatch({
+                type: "UPDATE_PROMPT_NAME",
+                id: promptId,
+                name: newName,
+              });
+              logEventHandler?.("UPDATE_PROMPT_NAME");
+            },
+            onError,
+          }
         );
       } catch (err: unknown) {
         onError(err);
       }
     },
-    [debouncedUpdatePrompt]
+    [debouncedUpdatePrompt, logEventHandler, showNotification]
   );
 
   const updateModelCallback = callbacks?.updateModel;
@@ -372,6 +398,57 @@ export default function AIConfigEditor({
     );
   }, [updateModelCallback]);
 
+  const onUpdatePromptMetadata = useCallback(
+    async (promptId: string, newMetadata: JSONObject) => {
+      if (!debouncedUpdatePrompt) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
+      dispatch({
+        type: "UPDATE_PROMPT_METADATA",
+        id: promptId,
+        metadata: newMetadata,
+      });
+
+      const onError = (err: unknown) => {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error updating prompt metadata",
+          message,
+          type: "error",
+        });
+      };
+
+      try {
+        const statePrompt = getPrompt(stateRef.current, promptId);
+        if (!statePrompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        const prompt = clientPromptToAIConfigPrompt(statePrompt);
+
+        await debouncedUpdatePrompt(
+          prompt.name,
+          {
+            ...prompt,
+            metadata: {
+              ...newMetadata,
+              model: prompt.metadata?.model,
+              parameters: prompt.metadata?.parameters,
+            },
+          },
+          {
+            onError,
+          }
+        );
+      } catch (err: unknown) {
+        onError(err);
+      }
+    },
+    [debouncedUpdatePrompt, showNotification]
+  );
+
   const onUpdatePromptModelSettings = useCallback(
     async (promptId: string, newModelSettings: JSONObject) => {
       if (!debouncedUpdateModel) {
@@ -385,13 +462,14 @@ export default function AIConfigEditor({
         id: promptId,
         modelSettings: newModelSettings,
       });
+      logEventHandler?.("UPDATE_PROMPT_MODEL_SETTINGS");
 
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error updating prompt model settings",
           message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -419,7 +497,7 @@ export default function AIConfigEditor({
         onError(err);
       }
     },
-    [debouncedUpdateModel, dispatch]
+    [debouncedUpdateModel, dispatch, logEventHandler, showNotification]
   );
 
   const onUpdatePromptModel = useCallback(
@@ -435,13 +513,14 @@ export default function AIConfigEditor({
         id: promptId,
         modelName: newModel,
       });
+      logEventHandler?.("UPDATE_PROMPT_MODEL", { model: newModel });
 
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error updating model for prompt",
           message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -462,7 +541,7 @@ export default function AIConfigEditor({
         onError(err);
       }
     },
-    [dispatch, debouncedUpdateModel]
+    [dispatch, debouncedUpdateModel, logEventHandler, showNotification]
   );
 
   const setParametersCallback = callbacks?.setParameters;
@@ -499,13 +578,14 @@ export default function AIConfigEditor({
         type: "UPDATE_GLOBAL_PARAMETERS",
         parameters: newParameters,
       });
+      logEventHandler?.("UPDATE_GLOBAL_PARAMETERS");
 
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting global parameters",
           message: message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -519,7 +599,7 @@ export default function AIConfigEditor({
         onError(err);
       }
     },
-    [debouncedSetParameters, dispatch]
+    [debouncedSetParameters, dispatch, logEventHandler, showNotification]
   );
 
   const onUpdatePromptParameters = useCallback(
@@ -535,6 +615,7 @@ export default function AIConfigEditor({
         id: promptId,
         parameters: newParameters,
       });
+      logEventHandler?.("UPDATE_PROMPT_PARAMETERS");
 
       const onError = (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
@@ -543,7 +624,7 @@ export default function AIConfigEditor({
         showNotification({
           title: `Error setting parameters for prompt ${promptIdentifier}`,
           message: message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -557,7 +638,7 @@ export default function AIConfigEditor({
         onError(err);
       }
     },
-    [debouncedSetParameters, dispatch]
+    [debouncedSetParameters, dispatch, logEventHandler, showNotification]
   );
 
   const addPromptCallback = callbacks?.addPrompt;
@@ -611,11 +692,11 @@ export default function AIConfigEditor({
         showNotification({
           title: "Error adding prompt to config",
           message: message,
-          color: "red",
+          type: "error",
         });
       }
     },
-    [addPromptCallback, logEventHandler]
+    [addPromptCallback, logEventHandler, showNotification]
   );
 
   const deletePromptCallback = callbacks?.deletePrompt;
@@ -631,6 +712,7 @@ export default function AIConfigEditor({
         type: "DELETE_PROMPT",
         id: promptId,
       });
+      logEventHandler?.("DELETE_PROMPT");
 
       try {
         const prompt = getPrompt(stateRef.current, promptId);
@@ -643,11 +725,11 @@ export default function AIConfigEditor({
         showNotification({
           title: "Error deleting prompt",
           message,
-          color: "red",
+          type: "error",
         });
       }
     },
-    [deletePromptCallback, dispatch]
+    [deletePromptCallback, dispatch, logEventHandler, showNotification]
   );
 
   const clearOutputsCallback = callbacks?.clearOutputs;
@@ -661,6 +743,8 @@ export default function AIConfigEditor({
     dispatch({
       type: "CLEAR_OUTPUTS",
     });
+    logEventHandler?.("CLEAR_OUTPUTS");
+
     try {
       await clearOutputsCallback();
     } catch (err: unknown) {
@@ -668,10 +752,10 @@ export default function AIConfigEditor({
       showNotification({
         title: "Error clearing outputs",
         message,
-        color: "red",
+        type: "error",
       });
     }
-  }, [clearOutputsCallback, dispatch]);
+  }, [clearOutputsCallback, dispatch, logEventHandler, showNotification]);
 
   const runPromptCallback = callbacks?.runPrompt;
 
@@ -706,7 +790,7 @@ export default function AIConfigEditor({
         showNotification({
           title: `Error running prompt${promptName ? ` ${promptName}` : ""}`,
           message,
-          color: "red",
+          type: "error",
         });
       };
 
@@ -770,7 +854,7 @@ export default function AIConfigEditor({
                     promptName ? ` '${promptName}'` : ""
                   }. Resetting output to previous state.`,
                   message: event.data.message,
-                  color: "yellow",
+                  type: "warning",
                 });
               } else {
                 onPromptError(event.data.message);
@@ -797,7 +881,7 @@ export default function AIConfigEditor({
         onPromptError(message);
       }
     },
-    [logEventHandler, runPromptCallback]
+    [logEventHandler, runPromptCallback, showNotification]
   );
 
   const setNameCallback = callbacks?.setConfigName;
@@ -827,17 +911,18 @@ export default function AIConfigEditor({
         type: "SET_NAME",
         name,
       });
+      logEventHandler?.("SET_NAME");
 
       await debouncedSetName(name, (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting config name",
           message,
-          color: "red",
+          type: "error",
         });
       });
     },
-    [debouncedSetName]
+    [debouncedSetName, logEventHandler, showNotification]
   );
 
   const setDescriptionCallback = callbacks?.setConfigDescription;
@@ -870,17 +955,18 @@ export default function AIConfigEditor({
         type: "SET_DESCRIPTION",
         description,
       });
+      logEventHandler?.("SET_DESCRIPTION");
 
       await debouncedSetDescription(description, (err: unknown) => {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
           title: "Error setting config description",
           message,
-          color: "red",
+          type: "error",
         });
       });
     },
-    [debouncedSetDescription]
+    [debouncedSetDescription, logEventHandler, showNotification]
   );
 
   const getState = useCallback(() => stateRef.current, []);
@@ -896,7 +982,7 @@ export default function AIConfigEditor({
 
   const isDirty = aiconfigState._ui.isDirty !== false;
   useEffect(() => {
-    if (!isDirty) {
+    if (!isDirty || !saveCallback) {
       return;
     }
 
@@ -904,10 +990,14 @@ export default function AIConfigEditor({
     const saveInterval = setInterval(onSave, AUTOSAVE_INTERVAL_MS);
 
     return () => clearInterval(saveInterval);
-  }, [isDirty, onSave]);
+  }, [isDirty, onSave, saveCallback]);
 
   // Override CMD+s and CTRL+s to save
   useEffect(() => {
+    if (!saveCallback) {
+      return;
+    }
+
     const saveHandler = (e: KeyboardEvent) => {
       // Note platform property to distinguish between CMD and CTRL for
       // Mac/Windows/Linux is deprecated.
@@ -925,7 +1015,7 @@ export default function AIConfigEditor({
     window.addEventListener("keydown", saveHandler, false);
 
     return () => window.removeEventListener("keydown", saveHandler);
-  }, [onSave]);
+  }, [onSave, saveCallback]);
 
   // Server heartbeat, check every 3s to show error if server is down
   // Don't poll if server status is in an error state since it won't automatically recover
@@ -950,113 +1040,148 @@ export default function AIConfigEditor({
   const runningPromptId: string | undefined = aiconfigState._ui.runningPromptId;
 
   return (
-    <AIConfigEditorThemeProvider mode={mode} themeMode={themeMode}>
-      <AIConfigContext.Provider value={contextValue}>
-        <Notifications />
-        <Container className="editorBackground" maw="80rem">
-          {serverStatus !== "OK" && (
-            <>
-              {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
-              <div style={{ height: "100px" }} />
-              <Alert
-                color="red"
-                title="Server Connection Error"
-                w="100%"
-                style={{ position: "fixed", top: 0, zIndex: 999 }}
-              >
-                <Text>
-                  There is a problem with the editor server connection. Please
-                  copy important changes somewhere safe and then try reloading
-                  the page or restarting the editor.
-                </Text>
-                <Flex align="center">
-                  <CopyButton
-                    value={JSON.stringify(
-                      clientConfigToAIConfig(aiconfigState),
-                      null,
-                      2
-                    )}
-                    contentLabel="AIConfig JSON"
-                  />
-                  <Text color="dimmed">
-                    Click to copy current AIConfig JSON
-                  </Text>
-                </Flex>
-              </Alert>
-            </>
-          )}
-          <div>
-            <Flex justify="flex-end" mt="md" mb="xs">
-              {
-                <Group>
-                  {downloadCallback && (
-                    <DownloadButton onDownload={onDownload} />
+    <AIConfigContext.Provider value={contextValue}>
+      <Container className="editorBackground" maw="80rem">
+        {serverStatus !== "OK" && (
+          <>
+            {/* // Simple placeholder block div to make sure the banner does not overlap page contents until scrolling past its height */}
+            <div style={{ height: "100px" }} />
+            <Alert
+              color="red"
+              title="Server Connection Error"
+              w="100%"
+              style={{ position: "fixed", top: 0, zIndex: 999 }}
+            >
+              <Text>
+                There is a problem with the editor server connection. Please
+                copy important changes somewhere safe and then try reloading the
+                page or restarting the editor.
+              </Text>
+              <Flex align="center">
+                <CopyButton
+                  value={JSON.stringify(
+                    clientConfigToAIConfig(aiconfigState),
+                    null,
+                    2
                   )}
-                  {shareCallback && <ShareButton onShare={onShare} />}
-                  {!readOnly && onClearOutputs && (
+                  contentLabel="AIConfig JSON"
+                />
+                <Text color="dimmed">Click to copy current AIConfig JSON</Text>
+              </Flex>
+            </Alert>
+          </>
+        )}
+        <div>
+          <Flex justify="flex-end" pt="md" mb="xs">
+            {
+              <Group spacing="xs">
+                {!readOnly && onClearOutputs && (
+                  <Button
+                    loading={undefined}
+                    onClick={onClearOutputs}
+                    size="xs"
+                    variant="gradient"
+                  >
+                    Clear Outputs
+                  </Button>
+                )}
+                {(downloadCallback || shareCallback) && (
+                  <div>
+                    {downloadCallback && (
+                      <DownloadButton
+                        onDownload={onDownload}
+                        isGrouped={shareCallback != null}
+                      />
+                    )}
+                    {shareCallback && (
+                      <ShareButton
+                        onShare={onShare}
+                        isGrouped={downloadCallback != null}
+                      />
+                    )}
+                  </div>
+                )}
+                {openInTextEditorCallback && (
+                  <Tooltip label="Open in Text Editor" withArrow>
+                    <ActionIcon
+                      onClick={openInTextEditorCallback}
+                      className="secondaryButton"
+                    >
+                      <IconBraces size="1rem" />
+                    </ActionIcon>
+                  </Tooltip>
+                )}
+                {!readOnly && saveCallback && (
+                  <Tooltip
+                    label={
+                      isDirty ? "Save changes to config" : "No unsaved changes"
+                    }
+                  >
                     <Button
-                      loading={undefined}
-                      onClick={onClearOutputs}
+                      leftIcon={<IconDeviceFloppy />}
+                      loading={isSaving}
+                      onClick={() => {
+                        onSave();
+                        logEventHandler?.("SAVE_BUTTON_CLICKED");
+                      }}
+                      disabled={!isDirty}
                       size="xs"
                       variant="gradient"
                     >
-                      Clear Outputs
+                      Save
                     </Button>
-                  )}
-                  {!readOnly && saveCallback && (
-                    <Tooltip
-                      label={
-                        isDirty
-                          ? "Save changes to config"
-                          : "No unsaved changes"
-                      }
-                    >
-                      <Button
-                        leftIcon={<IconDeviceFloppy />}
-                        loading={isSaving}
-                        onClick={() => {
-                          onSave();
-                          logEventHandler?.("SAVE_BUTTON_CLICKED");
-                        }}
-                        disabled={!isDirty}
-                        size="xs"
-                        variant="gradient"
-                      >
-                        Save
-                      </Button>
-                    </Tooltip>
-                  )}
-                </Group>
-              }
-            </Flex>
-            <ConfigNameDescription
-              name={aiconfigState.name}
-              description={aiconfigState.description}
-              setDescription={onSetDescription}
-              setName={onSetName}
-            />
-          </div>
-          <GlobalParametersContainer
-            initialValue={aiconfigState?.metadata?.parameters ?? {}}
-            onUpdateParameters={onUpdateGlobalParameters}
+                  </Tooltip>
+                )}
+              </Group>
+            }
+          </Flex>
+          <ConfigNameDescription
+            name={aiconfigState.name}
+            description={aiconfigState.description}
+            setDescription={onSetDescription}
+            setName={onSetName}
           />
-          <PromptsContainer
-            cancelRunPrompt={callbacks?.cancel}
-            defaultModel={aiconfigState.metadata.default_model}
-            getModels={callbacks?.getModels}
-            onAddPrompt={onAddPrompt}
-            onChangePromptInput={onChangePromptInput}
-            onChangePromptName={onChangePromptName}
-            onDeletePrompt={onDeletePrompt}
-            onRunPrompt={onRunPrompt}
-            onUpdatePromptModel={onUpdatePromptModel}
-            onUpdatePromptModelSettings={onUpdatePromptModelSettings}
-            onUpdatePromptParameters={onUpdatePromptParameters}
-            prompts={aiconfigState.prompts}
-            runningPromptId={runningPromptId}
-          />
-        </Container>
-      </AIConfigContext.Provider>
+        </div>
+        <GlobalParametersContainer
+          initialValue={aiconfigState?.metadata?.parameters ?? {}}
+          onUpdateParameters={onUpdateGlobalParameters}
+        />
+        <PromptsContainer
+          cancelRunPrompt={callbacks?.cancel}
+          defaultModel={aiconfigState.metadata.default_model}
+          getModels={callbacks?.getModels}
+          onAddPrompt={onAddPrompt}
+          onChangePromptInput={onChangePromptInput}
+          onChangePromptName={onChangePromptName}
+          onDeletePrompt={onDeletePrompt}
+          onRunPrompt={onRunPrompt}
+          onUpdatePromptMetadata={onUpdatePromptMetadata}
+          onUpdatePromptModel={onUpdatePromptModel}
+          onUpdatePromptModelSettings={onUpdatePromptModelSettings}
+          onUpdatePromptParameters={onUpdatePromptParameters}
+          prompts={aiconfigState.prompts}
+          runningPromptId={runningPromptId}
+        />
+      </Container>
+    </AIConfigContext.Provider>
+  );
+}
+
+// Wrap the AIConfigEditorBase in the NotificationProvider to provide NotificationContext
+// to the AIConfigEditorBase. Wrap both NotificationProvider and AIConfigEditorBase with
+// the theme provider to ensure all components have the proper theme
+export default function AIConfigEditor(props: Props) {
+  return (
+    <AIConfigEditorThemeProvider
+      mode={props.mode}
+      themeMode={props.themeMode}
+      themeOverride={props.themeOverride}
+    >
+      <NotificationProvider
+        showNotification={props.callbacks?.showNotification}
+      >
+        <AIConfigEditorBase {...props} />
+      </NotificationProvider>
     </AIConfigEditorThemeProvider>
   );
 }
