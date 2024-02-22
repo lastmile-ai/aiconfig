@@ -736,22 +736,14 @@ async function setupEnvironmentVariables(context: vscode.ExtensionContext) {
   const homedir = require("os").homedir(); // This is cross-platform: https://stackoverflow.com/a/9081436
   const defaultEnvPath = path.join(homedir, ".env");
 
+  const workspacePath = vscode.workspace.workspaceFolders
+    ? vscode.workspace.workspaceFolders[0].uri.fsPath
+    : null;
+
   const envPath = await vscode.window.showInputBox({
     prompt: "Enter the path of your .env file",
     value: defaultEnvPath,
-    validateInput: (text) => {
-      if (!text) {
-        return "File path is required";
-      } else if (!text.endsWith(".env")) {
-        return "File path must end in .env file";
-      }
-      // TODO: Check that file path is a "/.env" file (linux) or "\.env" (Windows)
-
-      // TODO: Check that env path is contained within workspace hierarchy
-      // (Ex: can't have .env file in a sibling dir otherwise AIConfig
-      // loadenv can't read it)
-      return null;
-    },
+    validateInput: (input) => validateEnvPath(input, workspacePath),
   });
 
   if (!envPath) {
@@ -810,6 +802,35 @@ async function setupEnvironmentVariables(context: vscode.ExtensionContext) {
       "Please define your environment variables."
     );
   }
+}
+
+function validateEnvPath(
+  inputPath: string,
+  workspacePath: string | null
+): string | null {
+  if (!inputPath) {
+    return "File path is required";
+  } else if (path.basename(inputPath) !== ".env") {
+    return 'Filename must be ".env"';
+  } else if (workspacePath !== null) {
+    // Loadenv from Python checks each folder from the file/program where it's
+    // invoked for the presence of an `.env` file. Therefore, the `.env` file
+    // must be saved either at the top-level directory of the workspace
+    // directory, or one of it's parent directories. This will ensure that if
+    // two AIConfig files are contained in separate paths within the workspace
+    // they'll still be able to access the same `.env` file.
+
+    // Note: If the `inputPath` directory is equal to the `workspacePath`,
+    // `relativePathFromEnvToWorkspace` will be an empty string
+    const relativePathFromEnvToWorkspace = path.relative(
+      path.dirname(inputPath),
+      workspacePath
+    );
+    if (relativePathFromEnvToWorkspace.startsWith("..")) {
+      return `File path must either be contained within the VS Code workspace directory ('${workspacePath}') or within a one of it's parent folders`;
+    }
+  }
+  return null;
 }
 
 async function shareAIConfig(
