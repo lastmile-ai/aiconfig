@@ -105,50 +105,42 @@
     "walkthroughs": [
       {
         "id": "vscode-aiconfig.welcomeWalkthrough",
-        "title": "Getting Started with AIConfig Editor",
-        "description": "Get started with some basic commands!",
+        "title": "AIConfig Editor Getting Started",
+        "description": "Your first steps to using AIConfig Editor - the generative AI studio for VS Code!",
         "steps": [
           {
-						"id": "selectInterpreter",
-						"title": "Select your Python Interpreter",
-						"description": "This defines the Python environment that you will use in your VS Code session. It keeps track of which modules you've installed",
+						"id": "InitializeExtension",
+						"title": "Initialize Extension",
+						"description": "Open the Command Palette (CMD+Shift+P) and run the command `AIConfig: Initialize Extension`",
 						"media": {
-              "markdown": "media/welcomePage.md"
+              "markdown": "media/InitializeExtension.md"
 						}
 					},
           {
-						"id": "installDependencies",
-						"title": "Install dependencies",
-						"description": "This installs the Python libraries required to use the AIConfig editor and SDK",
+						"id": "ApiKeys",
+						"title": "Set API Keys",
+						"description": "This step is needed to access generative AI models via model provider API keys, endpoints, tokens (e.g OpenAI API Key)",
 						"media": {
-              "markdown": "media/welcomePage.md"
+              "markdown": "media/ApiKeys.md"
 						}
 					},
           {
-						"id": "setupEnvironmentVariables",
-						"title": "Setup Environment Variables",
-						"description": "This creates an .env file (or uses it if it already exists) to define environment varialbes needed to run AI models. Ex: OpenAI models read from the `OPENAI_API_KEY` variable\n[Setup Environment Variables](command:vscode-aiconfig.setupEnvironmentVariables)",
+						"id": "CreateAIConfig",
+						"title": "Create your first AIConfig",
+						"description": "Open the Command Palette (CMD+Shift+P) and run the command `AIConfig: Create New (JSON)` or `AIConfig: Create New (YAML)`",
 						"media": {
-              "markdown": "media/welcomePage.md"
+              "markdown": "media/CreateAIConfig.md"
 						},
             "completionEvents": [
 							"onCommand:vscode-aiconfig.setupEnvironmentVariables"
 						]
 					},
           {
-						"id": "createAIConfig",
-						"title": "Create your first AIConfig",
-						"description": "You can do this either in JSON or YAML format. This file defines the AI models and workflow you want to use in your project.\n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON:\n[Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
+						"id": "more",
+						"title": "Find out more",
+						"description": "Explore all the features of AIConfig Editor by looking for “AIConfig” in the Command Palette (CMD+Shift+P)",
 						"media": {
-              "markdown": "media/welcomePage.md"
-						}
-					},
-          {
-						"id": "showWelcome",
-						"title": "[Optional] Read full tutorial",
-						"description": "Read the full tutorial on the [Welcome page](command:vscode-aiconfig.showWelcome) to learn about all the things you can do with AIConfig!",
-						"media": {
-              "markdown": "media/welcomePage.md"
+              "markdown": "media/more.md"
 						}
 					}
         ]
