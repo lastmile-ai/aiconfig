@@ -571,16 +571,19 @@ async function installRequirements(
         vscode.window
           .showErrorMessage(
             `Failed to install dependencies. Pip exited with code ${code}. Please try again later`,
-            ...["Retry"]
+            ...["Select Interpreter", "Retry Install Dependencies"]
           )
           .then((selection) => {
-            if (selection === "Retry") {
+            if (selection === "Retry Install Dependencies") {
               installRequirements(
                 context,
                 progress,
                 cancellationToken,
                 outputChannel
               );
+            }
+            else if(selection === "Select Interpreter"){
+              vscode.commands.executeCommand(COMMANDS.INIT);
             }
           });
         resolve(false);
