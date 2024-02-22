@@ -124,8 +124,6 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openModelParserCommand);
 
-  // Run the setup command on activation
-  vscode.commands.executeCommand(COMMANDS.INIT);
 
   // Register our custom editor providers
   const aiconfigEditorManager: AIConfigEditorManager =
