@@ -6,6 +6,7 @@ import {
   getCurrentWorkingDirectory,
   getDocumentFromServer,
   getPythonPath,
+  setupEnvironmentVariables,
   updateServerState,
   updateWebviewEditorThemeMode,
   waitUntilServerReady,
@@ -340,12 +341,23 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
           const message = notification.message;
 
-          // Notification supports 'details' for modal only. For now, just show title
-          // in notification toast and full message in output channel.
-          const notificationAction = await notificationFn(
-            notification.title,
-            message ? "Details" : undefined
-          );
+          let notificationAction;
+          // TODO: Create a constant value somewhere in lastmile-utils to
+          // centralize string error message for missing API key. This
+          // logic is defined in https://github.com/lastmile-ai/aiconfig/blob/33fb852854d0bd64b8ddb4e52320112782008b99/python/src/aiconfig/util/config_utils.py#L41
+          if (message.includes("Missing API key")) {
+            notificationAction = await notificationFn(
+              "Looks like you're missing an API key, please set it in your env variables",
+              "Setup Environment Variables"
+            );
+          } else {
+            // Notification supports 'details' for modal only. For now, just show title
+            // in notification toast and full message in output channel.
+            notificationAction = await notificationFn(
+              notification.title,
+              message ? "Details" : undefined
+            );
+          }
 
           if (message) {
             outputChannelFn(
@@ -354,8 +366,10 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
                 document
               )
             );
-            // If user clicked "Details", show & focus the output channel
-            if (notificationAction === "Details") {
+            if (notificationAction === "Setup Environment Variables") {
+              await setupEnvironmentVariables(this.context);
+            } else if (notificationAction === "Details") {
+              // If user clicked "Details", show & focus the output channel
               this.extensionOutputChannel.show(/*preserveFocus*/ true);
             }
           }
