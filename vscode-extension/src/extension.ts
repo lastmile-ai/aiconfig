@@ -770,7 +770,7 @@ async function setupEnvironmentVariables(context: vscode.ExtensionContext) {
 
     // TODO: Check if we already appended the template text to existing .env
     // file before. If we did, don't do it again
-    fs.appendFile(envPath, helperText, function (err) {
+    fs.appendFile(envPath, "\n\n" + helperText, function (err) {
       if (err) {
         throw err;
       }
