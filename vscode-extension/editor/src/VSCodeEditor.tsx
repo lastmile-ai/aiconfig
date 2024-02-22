@@ -283,18 +283,28 @@ export default function VSCodeEditor() {
         {
           output_chunk: (data) => {
             onStream({ type: "output_chunk", data: data as Output });
+            // Don't notify dirty since output chunks are very frequent
           },
           aiconfig_chunk: (data) => {
             onStream({ type: "aiconfig_chunk", data: data as AIConfig });
+            if (vscode) {
+              notifyDocumentDirty(vscode);
+            }
           },
           stop_streaming: (_data) => {
             onStream({ type: "stop_streaming", data: null });
+            if (vscode) {
+              notifyDocumentDirty(vscode);
+            }
           },
           error: (data) => {
             onError({
               type: "error",
               data: data as RunPromptStreamErrorEvent["data"],
             });
+            if (vscode) {
+              notifyDocumentDirty(vscode);
+            }
           },
         }
       );
