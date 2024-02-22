@@ -18,6 +18,7 @@ import {
   getPythonPath,
   isSupportedConfigExtension,
   SUPPORTED_FILE_EXTENSIONS,
+  isPythonVersionAtLeast310,
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
@@ -673,6 +674,12 @@ async function checkPython() {
             }
           });
         resolve(false);
+      } else if (!isPythonVersionAtLeast310(pythonPath)) {
+        console.error(
+          "Python version is not 3.10 or higher. Please upgrade to Python 3.10 or higher."
+        );
+        resolve(false);
+        // show guide for installation
       } else {
         resolve(true);
         console.log("Python is installed");
@@ -732,22 +739,14 @@ async function setupEnvironmentVariables(context: vscode.ExtensionContext) {
   const homedir = require("os").homedir(); // This is cross-platform: https://stackoverflow.com/a/9081436
   const defaultEnvPath = path.join(homedir, ".env");
 
+  const workspaceUri = vscode.workspace.workspaceFolders
+    ? vscode.workspace.workspaceFolders[0].uri
+    : null;
+
   const envPath = await vscode.window.showInputBox({
     prompt: "Enter the path of your .env file",
     value: defaultEnvPath,
-    validateInput: (text) => {
-      if (!text) {
-        return "File path is required";
-      } else if (!text.endsWith(".env")) {
-        return "File path must end in .env file";
-      }
-      // TODO: Check that file path is a "/.env" file (linux) or "\.env" (Windows)
-
-      // TODO: Check that env path is contained within workspace hierarchy
-      // (Ex: can't have .env file in a sibling dir otherwise AIConfig
-      // loadenv can't read it)
-      return null;
-    },
+    validateInput: (input) => validateEnvPath(input, workspaceUri.fsPath),
   });
 
   if (!envPath) {
@@ -806,6 +805,27 @@ async function setupEnvironmentVariables(context: vscode.ExtensionContext) {
       "Please define your environment variables."
     );
   }
+}
+
+function validateEnvPath(
+  inputPath: string,
+  workspacePath: string | null
+): string | null {
+  if (!inputPath) {
+    return "File path is required";
+  } else if (!inputPath.endsWith(".env")) {
+    return 'File path must end in ".env"';
+  } else if (path.basename(inputPath) !== ".env") {
+    return 'Filename of the fully qualified path must be ".env"';
+  } else if (workspacePath !== null) {
+    const normalizedWorkspacePath = path.normalize(workspacePath);
+    const workspaceDirectory = path.dirname(normalizedWorkspacePath);
+    const normalizedEnvPath = path.normalize(inputPath);
+    if (!workspaceDirectory.includes(path.dirname(normalizedEnvPath))) {
+      return `File path must either be contained within the VS Code workspace directory ('${workspaceDirectory}') or within a one of it's parent folders`;
+    }
+  }
+  return null;
 }
 
 async function shareAIConfig(
