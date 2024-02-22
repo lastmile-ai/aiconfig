@@ -23,10 +23,13 @@ import {
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
+import {
+  PythonExtension,
+} from "@vscode/python-extension";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log(
@@ -38,9 +41,12 @@ export function activate(context: vscode.ExtensionContext) {
     log: true,
   });
 
-  const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
-    installDependencies(context, extensionOutputChannel);
-  });
+  const setupCommand = vscode.commands.registerCommand(
+    COMMANDS.INIT,
+    async () => {
+      await initialize(context, extensionOutputChannel);
+    }
+  );
   context.subscriptions.push(setupCommand);
 
   context.subscriptions.push(
@@ -905,4 +911,28 @@ async function shareAIConfig(
         }
       });
   }
+}
+
+/**
+ * Selects a Python interpreter and initiates the dependency installation flow.
+ */
+async function initialize(
+  context: vscode.ExtensionContext,
+  outputChannel: vscode.LogOutputChannel
+) {
+  // Make sure Python API is activated
+  const pythonApi: PythonExtension = await PythonExtension.api();
+
+  await new Promise((resolve, reject) => {
+    vscode.commands
+    .executeCommand("python.setInterpreter")
+    .then(async () => {
+    // .then triggers on user selection or exiting interpreter selection.
+      resolve(undefined);
+    });
+  });
+
+  installDependencies(context, outputChannel);
+  
+  return;
 }
