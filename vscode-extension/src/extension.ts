@@ -23,6 +23,7 @@ import {
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
+import { ActiveEnvironmentPathChangeEvent, PythonExtension } from "@vscode/python-extension";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -38,8 +39,8 @@ export function activate(context: vscode.ExtensionContext) {
     log: true,
   });
 
-  const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
-    installDependencies(context, extensionOutputChannel);
+  const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, async () => {
+    await initialize(context, extensionOutputChannel);
   });
   context.subscriptions.push(setupCommand);
 
@@ -893,4 +894,18 @@ async function shareAIConfig(
         }
       });
   }
+}
+
+
+async function initialize(context: vscode.ExtensionContext, outputChannel: vscode.LogOutputChannel) {
+  const pythonApi: PythonExtension = await PythonExtension.api();
+
+  // Awaiting for the setInterpreter commend does not actually wait. For an unknown reason, the following code executes twice.
+  await vscode.commands.executeCommand("python.setInterpreter");
+
+  vscode.window.showInformationMessage(`Python interpreter selected: ${await getPythonPath()}`);
+  console.debug("Python interpreter selected: ", await getPythonPath());
+
+  // installDependencies(context, outputChannel);
+  return;
 }
