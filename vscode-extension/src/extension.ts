@@ -59,8 +59,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       COMMANDS.SETUP_ENVIRONMENT_VARIABLES,
-      () => {
-        setupEnvironmentVariables(context);
+      async () => {
+        await setupEnvironmentVariables(context);
       }
     )
   );
@@ -771,17 +771,13 @@ async function setupEnvironmentVariables(context: vscode.ExtensionContext) {
   );
 
   if (fs.existsSync(envPath)) {
-    var helperText: string = "\ntest, will change next PR";
-    // fs.readFile(envTemplatePath.fsPath, function read(err, data) {
-    //   if (err) {
-    //     throw err;
-    //   }
-    //   helperText = "\n" + data.toString();
-    // });
+    const helperText = (
+      await vscode.workspace.fs.readFile(envTemplatePath)
+    ).toString();
 
     // TODO: Check if we already appended the template text to existing .env
     // file before. If we did, don't do it again
-    fs.appendFile(envPath, helperText, function (err) {
+    fs.appendFile(envPath, "\n\n" + helperText, function (err) {
       if (err) {
         throw err;
       }
