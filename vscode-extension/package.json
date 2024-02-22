@@ -173,6 +173,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@vscode/python-extension": "^1.0.5",
     "oboe": "^2.1.5",
     "portfinder": "^1.0.32",
     "ufetch": "^1.6.0"
