@@ -46,9 +46,10 @@ export default function VSCodeEditor() {
 
   // TODO: saqadri - does this need to be wrapped in a memo?
   const webviewState = getWebviewState(vscode);
-  console.log(`webviewState = ${JSON.stringify(webviewState)}`);
 
-  const [aiconfig, setAIConfig] = useState<AIConfig | undefined>();
+  const [aiconfig, setAIConfig] = useState<AIConfig | undefined>(
+    webviewState?.aiconfigState
+  );
   const [aiConfigServerUrl, setAIConfigServerUrl] = useState<string>(
     webviewState?.serverUrl ?? ""
   );
@@ -65,23 +66,25 @@ export default function VSCodeEditor() {
 
   const { classes } = useStyles();
 
-  const updateContent = useCallback(async (text: string) => {
-    // TODO: saqadri - this won't work for YAML -- the handling of the text needs to include the logic from AIConfig.load
+  const updateContent = useCallback(
+    async (text: string) => {
+      if (text != null) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let updatedConfig: any = {};
+        try {
+          // Try parsing the string as JSON first
+          updatedConfig = JSON.parse(text);
+        } catch (e) {
+          // If that fails, try parsing the string as YAML
+          updatedConfig = yaml.load(text);
+        }
 
-    if (text != null) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let updatedConfig: any = {};
-      try {
-        // Try parsing the string as JSON first
-        updatedConfig = JSON.parse(text);
-      } catch (e) {
-        // If that fails, try parsing the string as YAML
-        updatedConfig = yaml.load(text);
+        setAIConfig(updatedConfig);
+        updateWebviewState(vscode, { aiconfigState: updatedConfig });
       }
-
-      setAIConfig(updatedConfig);
-    }
-  }, []);
+    },
+    [vscode]
+  );
 
   // Register an event listener to handle messages from the extension host
   // This is how we'll receive updates to the webview's content
@@ -136,11 +139,13 @@ export default function VSCodeEditor() {
   const loadConfig = useCallback(async () => {
     const route = ROUTE_TABLE.LOAD(aiConfigServerUrl);
     const res = await ufetch.post(route, {});
-    // console.log(`IN LOAD: route=${route}, res=${JSON.stringify(res)}`);
     setAIConfig(res.aiconfig);
     // If we can load the config from the server, we assume it's in a good state
     setIsReadOnly(false);
-    updateWebviewState(vscode, { isReadOnly: false });
+    updateWebviewState(vscode, {
+      aiconfigState: res.aiconfig,
+      isReadOnly: false,
+    });
   }, [aiConfigServerUrl, vscode]);
 
   useEffect(() => {
@@ -283,18 +288,28 @@ export default function VSCodeEditor() {
         {
           output_chunk: (data) => {
             onStream({ type: "output_chunk", data: data as Output });
+            // Don't notify dirty since output chunks are very frequent
           },
           aiconfig_chunk: (data) => {
             onStream({ type: "aiconfig_chunk", data: data as AIConfig });
+            if (vscode) {
+              notifyDocumentDirty(vscode);
+            }
           },
           stop_streaming: (_data) => {
             onStream({ type: "stop_streaming", data: null });
+            if (vscode) {
+              notifyDocumentDirty(vscode);
+            }
           },
           error: (data) => {
             onError({
               type: "error",
               data: data as RunPromptStreamErrorEvent["data"],
             });
+            if (vscode) {
+              notifyDocumentDirty(vscode);
+            }
           },
         }
       );
