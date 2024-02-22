@@ -23,6 +23,7 @@ import {
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
+import { ActiveEnvironmentPathChangeEvent, PythonExtension } from "@vscode/python-extension";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -38,8 +39,8 @@ export function activate(context: vscode.ExtensionContext) {
     log: true,
   });
 
-  const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
-    installDependencies(context, extensionOutputChannel);
+  const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, async () => {
+    await initialize(context, extensionOutputChannel);
   });
   context.subscriptions.push(setupCommand);
 
@@ -61,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       COMMANDS.SETUP_ENVIRONMENT_VARIABLES,
       () => {
-        vscode.window.showInformationMessage("Will implement next PR");
+        setupEnvironmentVariables(context);
       }
     )
   );
@@ -717,6 +718,86 @@ async function checkPip() {
   });
 }
 
+/**
+ * Creates an .env file (or opens it if it already exists) to define environment variables
+ * 1) If .env file exists:
+ *    a) Add helper lines on how to add common API keys (if not currently present)
+ * 2) If .env file doesn't exist
+ *    b) Add template file containing helper lines from 1a above
+ */
+async function setupEnvironmentVariables(context: vscode.ExtensionContext) {
+  // Use home dir because env variables should be global. I get the argument
+  // for having in the workspace dir. I personally feel this is more
+  // annoying to setup every time you create a new project when using the
+  // same API keys, but I can do whatever option you want, not hard to
+  // implement
+  const homedir = require("os").homedir(); // This is cross-platform: https://stackoverflow.com/a/9081436
+  const defaultEnvPath = path.join(homedir, ".env");
+
+  const envPath = await vscode.window.showInputBox({
+    prompt: "Enter the path of your .env file",
+    value: defaultEnvPath,
+    validateInput: (text) => {
+      if (!text) {
+        return "File path is required";
+      } else if (!text.endsWith(".env")) {
+        return "File path must end in .env file";
+      }
+      // TODO: Check that file path is a "/.env" file (linux) or "\.env" (Windows)
+
+      // TODO: Check that env path is contained within workspace hierarchy
+      // (Ex: can't have .env file in a sibling dir otherwise AIConfig
+      // loadenv can't read it)
+      return null;
+    },
+  });
+
+  if (!envPath) {
+    vscode.window.showInformationMessage(
+      "Environment variable setup cancelled"
+    );
+    return;
+  }
+
+  if (fs.existsSync(envPath)) {
+    vscode.window.showInformationMessage(
+      "Env file already exists, will implement next PR"
+    );
+  } else {
+    // Create the .env file from the sample
+    const envTemplatePath = vscode.Uri.joinPath(
+      context.extensionUri,
+      "static",
+      "env_template.env"
+    );
+
+    try {
+      await vscode.workspace.fs.copy(
+        envTemplatePath,
+        vscode.Uri.file(envPath),
+        { overwrite: false }
+      );
+    } catch (err) {
+      vscode.window.showErrorMessage(
+        `Error creating new file ${envTemplatePath}: ${err}`
+      );
+    }
+
+    const doc = await vscode.workspace.openTextDocument(envPath);
+    if (doc) {
+      vscode.window.showTextDocument(doc, {
+        preview: false,
+        // Tried using vscode.ViewColumn.Active but that overrides existing
+        // walkthrough window
+        viewColumn: vscode.ViewColumn.Beside,
+      });
+      vscode.window.showInformationMessage(
+        "Please define your environment variables."
+      );
+    }
+  }
+}
+
 async function shareAIConfig(
   context: vscode.ExtensionContext,
   aiconfigEditorManager: AIConfigEditorManager
@@ -813,4 +894,18 @@ async function shareAIConfig(
         }
       });
   }
+}
+
+
+async function initialize(context: vscode.ExtensionContext, outputChannel: vscode.LogOutputChannel) {
+  const pythonApi: PythonExtension = await PythonExtension.api();
+
+  // Awaiting for the setInterpreter commend does not actually wait. For an unknown reason, the following code executes twice.
+  await vscode.commands.executeCommand("python.setInterpreter");
+
+  vscode.window.showInformationMessage(`Python interpreter selected: ${await getPythonPath()}`);
+  console.debug("Python interpreter selected: ", await getPythonPath());
+
+  // installDependencies(context, outputChannel);
+  return;
 }

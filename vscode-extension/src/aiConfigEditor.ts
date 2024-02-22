@@ -386,9 +386,6 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       });
     }
 
-    // Wait for server ready
-    await waitUntilServerReady(editorServer.url);
-
     // Now set up the server with the latest document content
     await this.startServerWithRetry(editorServer.url, document, webviewPanel);
 

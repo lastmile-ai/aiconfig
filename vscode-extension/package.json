@@ -109,48 +109,48 @@
         "description": "Get started with some basic commands!",
         "steps": [
           {
-						"id": "selectInterpreter",
-						"title": "Select your Python Interpreter",
-						"description": "This defines the Python environment that you will use in your VS Code session. It keeps track of which modules you've installed",
-						"media": {
+            "id": "selectInterpreter",
+            "title": "Select your Python Interpreter",
+            "description": "This defines the Python environment that you will use in your VS Code session. It keeps track of which modules you've installed",
+            "media": {
               "markdown": "media/welcomePage.md"
-						}
-					},
+            }
+          },
           {
-						"id": "installDependencies",
-						"title": "Install dependencies",
-						"description": "This installs the Python libraries required to use the AIConfig editor and SDK",
-						"media": {
+            "id": "installDependencies",
+            "title": "Install dependencies",
+            "description": "This installs the Python libraries required to use the AIConfig editor and SDK",
+            "media": {
               "markdown": "media/welcomePage.md"
-						}
-					},
+            }
+          },
           {
-						"id": "setupEnvironmentVariables",
-						"title": "Setup Environment Variables",
-						"description": "This creates an .env file (or uses it if it already exists) to define environment varialbes needed to run AI models. Ex: OpenAI models read from the `OPENAI_API_KEY` variable\n[Setup Environment Variables](command:vscode-aiconfig.setupEnvironmentVariables)",
-						"media": {
+            "id": "setupEnvironmentVariables",
+            "title": "Setup Environment Variables",
+            "description": "This creates an .env file (or uses it if it already exists) to define environment varialbes needed to run AI models. Ex: OpenAI models read from the `OPENAI_API_KEY` variable\n[Setup Environment Variables](command:vscode-aiconfig.setupEnvironmentVariables)",
+            "media": {
               "markdown": "media/welcomePage.md"
-						},
+            },
             "completionEvents": [
-							"onCommand:vscode-aiconfig.setupEnvironmentVariables"
-						]
-					},
+              "onCommand:vscode-aiconfig.setupEnvironmentVariables"
+            ]
+          },
           {
-						"id": "createAIConfig",
-						"title": "Create your first AIConfig",
-						"description": "You can do this either in JSON or YAML format. This file defines the AI models and workflow you want to use in your project.\n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON:\n[Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
-						"media": {
+            "id": "createAIConfig",
+            "title": "Create your first AIConfig",
+            "description": "You can do this either in JSON or YAML format. This file defines the AI models and workflow you want to use in your project.\n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON:\n[Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
+            "media": {
               "markdown": "media/welcomePage.md"
-						}
-					},
+            }
+          },
           {
-						"id": "showWelcome",
-						"title": "[Optional] Read full tutorial",
-						"description": "Read the full tutorial on the [Welcome page](command:vscode-aiconfig.showWelcome) to learn about all the things you can do with AIConfig!",
-						"media": {
+            "id": "showWelcome",
+            "title": "[Optional] Read full tutorial",
+            "description": "Read the full tutorial on the [Welcome page](command:vscode-aiconfig.showWelcome) to learn about all the things you can do with AIConfig!",
+            "media": {
               "markdown": "media/welcomePage.md"
-						}
-					}
+            }
+          }
         ]
       }
     ]
@@ -181,6 +181,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@vscode/python-extension": "^1.0.5",
     "oboe": "^2.1.5",
     "portfinder": "^1.0.32",
     "ufetch": "^1.6.0"
