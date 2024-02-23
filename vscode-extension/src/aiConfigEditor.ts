@@ -10,7 +10,10 @@ import {
   updateWebviewEditorThemeMode,
   waitUntilServerReady,
 } from "./util";
-import { getPythonPath } from "./utilities/pythonSetupUtils";
+import {
+  getPythonPath,
+  initializePythonFlow,
+} from "./utilities/pythonSetupUtils";
 import { getNonce } from "./utilities/getNonce";
 import { getUri } from "./utilities/getUri";
 
@@ -98,6 +101,9 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Update webview immediately so we unblock the render; server init will happen in the background.
     updateWebview();
+
+    // Do not start the server until we ensure the Python setup is ready
+    await initializePythonFlow(this.context, this.extensionOutputChannel);
 
     // Start the AIConfig editor server process. Don't await at the top level here since that blocks the
     // webview render (which happens only when resolveCustomTextEditor returns)
