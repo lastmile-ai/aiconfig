@@ -124,9 +124,6 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openModelParserCommand);
 
-  // Run the setup command on activation
-  vscode.commands.executeCommand(COMMANDS.INIT);
-
   // Register our custom editor providers
   const aiconfigEditorManager: AIConfigEditorManager =
     new AIConfigEditorManager();
@@ -453,6 +450,10 @@ async function installDependencies(
         outputChannel.appendLine("Python is not installed");
         return;
       }
+
+      // TODO: rossdan - Set cache for Python path to vscode settings
+      const pythonPath = getPythonPath();
+      // save python path to .vscode file for our key
 
       outputChannel.append(" -- SUCCESS");
       outputChannel.appendLine("2. Making sure pip is installed");

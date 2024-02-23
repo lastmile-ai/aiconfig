@@ -111,7 +111,7 @@
           {
 						"id": "InitializeExtension",
 						"title": "Initialize Extension",
-						"description": "Open the Command Palette (CMD+Shift+P) and run the command `AIConfig: Initialize Extension`",
+						"description": "Open the Command Palette (CMD+Shift+P) and run the command `AIConfig: Initialize Extension  \n[Initialize Extension](command:vscode-aiconfig.init)",
 						"media": {
               "markdown": "media/InitializeExtension.md"
 						}
