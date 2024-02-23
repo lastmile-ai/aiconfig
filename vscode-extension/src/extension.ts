@@ -68,12 +68,9 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      COMMANDS.SETUP_ENVIRONMENT_VARIABLES,
-      async () => {
-        await setupEnvironmentVariables(context);
-      }
-    )
+    vscode.commands.registerCommand(COMMANDS.SET_API_KEYS, async () => {
+      await setupEnvironmentVariables(context);
+    })
   );
 
   const createAIConfigJSONCommand = vscode.commands.registerCommand(
