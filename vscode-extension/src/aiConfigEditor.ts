@@ -15,7 +15,7 @@ import {
   AIConfigEditorManager,
   AIConfigEditorState,
 } from "./aiConfigEditorManager";
-import { EditorServer, EditorServerState } from "./editorServer";
+import { EditorServer, EditorServerState } from "./editor_server/editorServer";
 
 /**
  * Provider for AIConfig editors.

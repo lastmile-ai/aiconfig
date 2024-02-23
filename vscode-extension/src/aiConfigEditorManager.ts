@@ -1,5 +1,5 @@
 import vscode from "vscode";
-import { EditorServer } from "./editorServer";
+import { EditorServer } from "./editor_server/editorServer";
 
 export class AIConfigEditorState {
   constructor(
