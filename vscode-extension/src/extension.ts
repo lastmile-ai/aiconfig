@@ -182,8 +182,7 @@ export async function activate(context: vscode.ExtensionContext) {
             .then((selection) => {
               if (selection === "Yes") {
                 editors.forEach((editor) => {
-                  // Next PR: refresh editor here
-                  vscode.window.showInformationMessage("Refresh boiiiiii");
+                  editor.editorServer.restart();
                 });
               }
             });

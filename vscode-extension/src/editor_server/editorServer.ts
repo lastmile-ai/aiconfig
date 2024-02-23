@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import { getPortPromise } from "portfinder";
-import { EXTENSION_NAME } from "./util";
-import { getPythonPath } from "./utilities/pythonSetupUtils";
+import { EXTENSION_NAME } from "../util";
+import { getPythonPath } from "../utilities/pythonSetupUtils";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+import serverPortManager from "./serverPortManager";
 
 export enum EditorServerState {
   Starting = "Starting",
@@ -74,7 +74,7 @@ export class EditorServer {
         ? ["--parsers-module-path", modelRegistryPath]
         : [];
 
-      this.port = await getPortPromise();
+      this.port = await serverPortManager.getPort();
 
       const pythonPath = await getPythonPath();
 
