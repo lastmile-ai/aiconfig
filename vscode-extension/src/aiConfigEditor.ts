@@ -107,29 +107,33 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Start the AIConfig editor server process. Don't await at the top level here since that blocks the
     // webview render (which happens only when resolveCustomTextEditor returns)
-    this.startEditorServer(document).then(async (editorServer) => {
-      editorServer = editorServer;
+    this.startEditorServer(document).then(async (startedServer) => {
+      editorServer = startedServer;
 
       this.aiconfigEditorManager.addEditor(
         new AIConfigEditorState(
           document,
           webviewPanel,
-          editorServer,
+          startedServer,
           this.aiconfigEditorManager
         )
       );
 
       // Wait for server ready
-      await waitUntilServerReady(editorServer.url);
+      await waitUntilServerReady(startedServer.url);
 
       // Now set up the server with the latest document content
-      await this.startServerWithRetry(editorServer.url, document, webviewPanel);
+      await this.startServerWithRetry(
+        startedServer.url,
+        document,
+        webviewPanel
+      );
 
       // Inform the webview of the server URL
       if (!isWebviewDisposed) {
         webviewPanel.webview.postMessage({
           type: "set_server_url",
-          url: editorServer.url,
+          url: startedServer.url,
         });
       }
     });
