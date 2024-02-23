@@ -23,7 +23,7 @@ export const COMMANDS = {
   SHOW_WELCOME: `${EXTENSION_NAME}.showWelcome`,
 };
 
-export const SUPPORTED_FILE_EXTENSIONS = [".json", ".yaml"];
+export const SUPPORTED_FILE_EXTENSIONS = [".json", ".yaml", ".yml"];
 
 export function isSupportedConfigExtension(fileName: string) {
   return SUPPORTED_FILE_EXTENSIONS.includes(path.extname(fileName));
@@ -102,7 +102,7 @@ export function getModeFromDocument(
   // determine mode from file path
   const documentPath = document.fileName;
   const ext = path.extname(documentPath)?.toLowerCase();
-  if (ext === "yaml" || ext === ".yaml") {
+  if (ext === "yaml" || ext === ".yaml" || ext === "yml" || ext === ".yml") {
     return "yaml";
   }
 
