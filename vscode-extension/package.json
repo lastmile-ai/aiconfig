@@ -58,6 +58,11 @@
         "category": "AIConfig"
       },
       {
+        "command": "vscode-aiconfig.restartActiveEditorServer",
+        "title": "Restart Active Editor Server",
+        "category": "AIConfig"
+      },
+      {
         "command": "vscode-aiconfig.setApiKeys",
         "title": "Set API Keys",
         "category": "AIConfig"
