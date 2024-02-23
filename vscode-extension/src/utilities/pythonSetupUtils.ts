@@ -375,10 +375,10 @@ export async function initializePythonFlow(
     // simply runs through the installation flow
     await installDependencies(context, outputChannel);
   }
-  // TODO (rossdan): This resolves an issue where somewhere inside
-  // installDependencies, this causes some sort of race condition and the
-  // server hangs: https://github.com/lastmile-ai/aiconfig/assets/151060367/49fd4af0-927d-4950-873a-aa54f334f8e6
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  // // TODO (rossdan): This resolves an issue where somewhere inside
+  // // installDependencies, this causes some sort of race condition and the
+  // // server hangs: https://github.com/lastmile-ai/aiconfig/assets/151060367/49fd4af0-927d-4950-873a-aa54f334f8e6
+  // await new Promise((resolve) => setTimeout(resolve, 2000));
 }
 
 export function checkIfPythonInterpreterCacheIsDefined(): boolean {

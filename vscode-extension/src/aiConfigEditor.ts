@@ -105,6 +105,8 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     // Do not start the server until we ensure the Python setup is ready
     await initializePythonFlow(this.context, this.extensionOutputChannel);
 
+    // await initializePythonFlow(this.context, this.extensionOutputChannel).then(
+    //   () =>
     // Start the AIConfig editor server process. Don't await at the top level here since that blocks the
     // webview render (which happens only when resolveCustomTextEditor returns)
     this.startEditorServer(document).then(async (editorServer) => {
@@ -133,6 +135,8 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         });
       }
     });
+    // ^Remove the semi-colon above here
+    // );
 
     // Hook up event handlers so that we can synchronize the webview with the text document.
     //
