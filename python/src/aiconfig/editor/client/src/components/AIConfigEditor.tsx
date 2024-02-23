@@ -1038,16 +1038,18 @@ function AIConfigEditorBase({
     }
 
     const interval = setInterval(async () => {
-      try {
-        const res = await getServerStatusCallback();
-        setServerStatus(res.status);
-      } catch (err: unknown) {
-        setServerStatus("ERROR");
+      if (!readOnly) {
+        try {
+          const res = await getServerStatusCallback();
+          setServerStatus(res.status);
+        } catch (err: unknown) {
+          setServerStatus("ERROR");
+        }
       }
     }, SERVER_HEARTBEAT_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [getServerStatusCallback, serverStatus]);
+  }, [getServerStatusCallback, readOnly, serverStatus]);
 
   const runningPromptId: string | undefined = aiconfigState._ui.runningPromptId;
 
