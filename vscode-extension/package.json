@@ -115,32 +115,72 @@
             "id": "initializeExtension",
             "title": "Initialize Extension",
             "description": "Get the extension set up for first use.\n[Initialize Extension](command:vscode-aiconfig.init)",
+            "when": "isMac",
             "media": {
               "markdown": "media/initializeExtension.md"
+            }
+          },
+          {
+            "id": "initializeExtension",
+            "title": "Initialize Extension",
+            "description": "Get the extension set up for first use.\n[Initialize Extension](command:vscode-aiconfig.init)",
+            "when": "isWindows",
+            "media": {
+              "markdown": "media/initializeExtensionWindows.md"
             }
           },
           {
             "id": "setEnvironment",
             "title": "Set API Keys",
             "description": "Set up a .env file with the API keys needed to access the models you want to use.\n[Set API Keys](command:vscode-aiconfig.setApiKeys)",
+            "when": "isMac",
             "media": {
               "markdown": "media/apiKeys.md"
+            }
+          },
+          {
+            "id": "setEnvironment",
+            "title": "Set API Keys",
+            "description": "Set up a .env file with the API keys needed to access the models you want to use.\n[Set API Keys](command:vscode-aiconfig.setApiKeys)",
+            "when": "isWindows",
+            "media": {
+              "markdown": "media/apiKeysWindows.md"
             }
           },
           {
             "id": "createAIConfig",
             "title": "Create your first AIConfig",
             "description": "Let's turn your VS Code into a generative AI studio. \n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON: [Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
+            "when": "isMac",
             "media": {
               "markdown": "media/createAIConfig.md"
+            }
+          },
+          {
+            "id": "createAIConfig",
+            "title": "Create your first AIConfig",
+            "description": "Let's turn your VS Code into a generative AI studio. \n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON: [Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
+            "when": "isWindows",
+            "media": {
+              "markdown": "media/createAIConfigWindows.md"
             }
           },
           {
             "id": "learnMore",
             "title": "Find out more",
             "description": "Explore all the features of AIConfig Editor by looking for “AIConfig” in the Command Palette (CMD+Shift+P)",
+            "when": "isMac",
             "media": {
               "markdown": "media/more.md"
+            }
+          },
+          {
+            "id": "learnMore",
+            "title": "Find out more",
+            "description": "Explore all the features of AIConfig Editor by looking for “AIConfig” in the Command Palette (CMD+Shift+P)",
+            "when": "isWindows",
+            "media": {
+              "markdown": "media/moreWindows.md"
             }
           }
         ]
