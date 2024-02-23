@@ -454,6 +454,12 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         if (e.webviewPanel.active) {
           if (!isWebviewDisposed) {
             updateWebviewEditorThemeMode(webviewPanel.webview);
+
+            // Inform the webview if editor server updated in the background
+            webviewPanel.webview.postMessage({
+              type: "set_server_url",
+              url: editorServer.url,
+            });
           }
         }
       });
