@@ -391,7 +391,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
                 document
               )
             );
-            if (notificationAction === "Setup Environment Variables") {
+            if (notificationAction === "Set API Keys") {
               await setupEnvironmentVariables(this.context);
             } else if (notificationAction === "Details") {
               // If user clicked "Details", show & focus the output channel
