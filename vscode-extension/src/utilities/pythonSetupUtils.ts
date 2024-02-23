@@ -39,7 +39,7 @@ export async function installDependencies(
   context: vscode.ExtensionContext,
   outputChannel: vscode.LogOutputChannel
 ) {
-  vscode.window.withProgress(
+  await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
       title: "Initializing AIConfig Extension",
