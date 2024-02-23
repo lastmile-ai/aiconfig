@@ -58,7 +58,7 @@
         "category": "AIConfig"
       },
       {
-        "command": "vscode-aiconfig.setupEnvironmentVariables",
+        "command": "vscode-aiconfig.setApiKeys",
         "title": "Set API Keys",
         "category": "AIConfig"
       },
@@ -124,7 +124,7 @@
           {
             "id": "setEnvironment",
             "title": "Set API Keys",
-            "description": "Set up a .env file with the API keys needed to access the models you want to use.\n[Set API Keys](command:vscode-aiconfig.setupEnvironmentVariables)",
+            "description": "Set up a .env file with the API keys needed to access the models you want to use.\n[Set API Keys](command:vscode-aiconfig.setApiKeys)",
             "media": {
               "markdown": "media/apiKeys.md"
             }
