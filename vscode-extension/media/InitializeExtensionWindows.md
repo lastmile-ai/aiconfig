@@ -6,4 +6,4 @@ This installs the `python-aiconfig` package, which is used to run the AIConfig e
 
 **[Learn more](https://aiconfig.lastmileai.dev/docs/getting-started)**
 
-![alt](initialize.png)
+![alt](initializeWindows.png)

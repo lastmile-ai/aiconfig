@@ -18,12 +18,12 @@ export const COMMANDS = {
   CREATE_CUSTOM_MODEL_REGISTRY: `${EXTENSION_NAME}.createCustomModelRegistry`,
   OPEN_CONFIG_FILE: `${EXTENSION_NAME}.openConfigFile`,
   OPEN_MODEL_REGISTRY: `${EXTENSION_NAME}.openModelRegistry`,
-  SETUP_ENVIRONMENT_VARIABLES: `${EXTENSION_NAME}.setupEnvironmentVariables`,
+  SET_API_KEYS: `${EXTENSION_NAME}.setApiKeys`,
   SHARE: `${EXTENSION_NAME}.share`,
   SHOW_WELCOME: `${EXTENSION_NAME}.showWelcome`,
 };
 
-export const SUPPORTED_FILE_EXTENSIONS = [".json", ".yaml"];
+export const SUPPORTED_FILE_EXTENSIONS = [".json", ".yaml", ".yml"];
 
 export function isSupportedConfigExtension(fileName: string) {
   return SUPPORTED_FILE_EXTENSIONS.includes(path.extname(fileName));
@@ -102,7 +102,7 @@ export function getModeFromDocument(
   // determine mode from file path
   const documentPath = document.fileName;
   const ext = path.extname(documentPath)?.toLowerCase();
-  if (ext === "yaml" || ext === ".yaml") {
+  if (ext === "yaml" || ext === ".yaml" || ext === "yml" || ext === ".yml") {
     return "yaml";
   }
 
@@ -287,38 +287,113 @@ export function urlJoin(...args) {
 //#endregion
 
 /**
- * AIConfig Vscode extension has a dependency on the Python extension.
- * This function retrieves and returns the path to the current python interpreter.
- * @returns the path to the current python interpreter
+ * Creates an .env file (or opens it if it already exists) to define environment variables
+ * 1) If .env file exists:
+ *    a) Add helper lines on how to add common API keys (if not currently present)
+ * 2) If .env file doesn't exist
+ *    b) Add template file containing helper lines from 1a above
  */
-export async function getPythonPath(): Promise<string> {
-  const pythonExtension = vscode.extensions.getExtension("ms-python.python");
-  if (!pythonExtension.isActive) {
-    await pythonExtension.activate();
+export async function setupEnvironmentVariables(
+  context: vscode.ExtensionContext
+) {
+  const homedir = require("os").homedir(); // This is cross-platform: https://stackoverflow.com/a/9081436
+  const defaultEnvPath = path.join(homedir, ".env");
+
+  // TODO: If there are multiple workspace folders, use common lowest
+  // ancestor as workspacePath: https://github.com/lastmile-ai/aiconfig/issues/1299
+  const workspacePath = vscode.workspace.workspaceFolders
+    ? vscode.workspace.workspaceFolders[0].uri.fsPath
+    : null;
+
+  const envPath = await vscode.window.showInputBox({
+    prompt: "Enter the path of your .env file",
+    value: defaultEnvPath,
+    validateInput: (input) => validateEnvPath(input, workspacePath),
+  });
+
+  if (!envPath) {
+    vscode.window.showInformationMessage(
+      "Environment variable setup cancelled"
+    );
+    return;
   }
 
-  const pythonPath =
-    pythonExtension.exports.settings.getExecutionDetails().execCommand[0];
-  return pythonPath;
+  const envTemplatePath = vscode.Uri.joinPath(
+    context.extensionUri,
+    "static",
+    "env_template.env"
+  );
+
+  if (fs.existsSync(envPath)) {
+    const helperText = (
+      await vscode.workspace.fs.readFile(envTemplatePath)
+    ).toString();
+
+    // TODO: Check if we already appended the template text to existing .env
+    // file before. If we did, don't do it again
+    fs.appendFile(envPath, "\n\n" + helperText, function (err) {
+      if (err) {
+        throw err;
+      }
+      console.log(
+        `Added .env template text from ${envTemplatePath.fsPath} to ${envPath}`
+      );
+    });
+  } else {
+    // Create the .env file from the sample
+    try {
+      await vscode.workspace.fs.copy(
+        envTemplatePath,
+        vscode.Uri.file(envPath),
+        { overwrite: false }
+      );
+    } catch (err) {
+      vscode.window.showErrorMessage(
+        `Error creating new file ${envTemplatePath}: ${err}`
+      );
+    }
+  }
+
+  // Open the env file that was either was created or already existed
+  const doc = await vscode.workspace.openTextDocument(envPath);
+  if (doc) {
+    vscode.window.showTextDocument(doc, {
+      preview: false,
+      // Tried using vscode.ViewColumn.Active but that overrides existing
+      // walkthrough window
+      viewColumn: vscode.ViewColumn.Beside,
+    });
+    vscode.window.showInformationMessage(
+      "Please define your environment variables."
+    );
+  }
 }
 
-/**
- * Checks if the specified Python interpreter is version 3.10 or higher.
- * @param pythonPath The path to the Python interpreter.
- * @returns A promise that resolves to a boolean indicating if the version is >= 3.10.
- */
+function validateEnvPath(
+  inputPath: string,
+  workspacePath: string | null
+): string | null {
+  if (!inputPath) {
+    return "File path is required";
+  } else if (path.basename(inputPath) !== ".env") {
+    return 'Filename must be ".env"';
+  } else if (workspacePath !== null) {
+    // loadenv() from Python checks each folder from the file/program where
+    // it's invoked for the presence of an `.env` file. Therefore, the `.env
+    // file must be saved either at the top-level directory of the workspace
+    // directory, or one of it's parent directories. This will ensure that if
+    // two AIConfig files are contained in separate paths within the workspace
+    // they'll still be able to access the same `.env` file.
 
-export function isPythonVersionAtLeast310(pythonPath: string): boolean {
-  try {
-    // Use Python to check compatible version
-    // This approach circumvents the complexity of parsing version strings from `python --version`,
-    // which can vary in format and require custom parsing and comparison logic to handle different version schemes (e.g., major, minor, micro).
-    const command = `${pythonPath} -c "import sys; print(sys.version_info >= (3, 10))"`;
-    const output = execSync(command).toString().replace(/\s+/g, "").trim(); //replace newlines & whitespace
-
-    return output === "True";
-  } catch (error) {
-    console.debug("Error checking Python version:", error);
-    return false;
+    // Note: If the `inputPath` directory is equal to the `workspacePath`,
+    // `relativePathFromEnvToWorkspace` will be an empty string
+    const relativePathFromEnvToWorkspace = path.relative(
+      path.dirname(inputPath),
+      workspacePath
+    );
+    if (relativePathFromEnvToWorkspace.startsWith("..")) {
+      return `File path must either be contained within the VS Code workspace directory ('${workspacePath}') or within a one of it's parent folders`;
+    }
   }
+  return null;
 }

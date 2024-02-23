@@ -8,4 +8,4 @@ Learn more about generative AI with AIConfig:
 - [Clone aiconfig cookbooks](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks) (everything from simple playgrounds to complex flows like RAG)
 - [Get help on Discord](https://discord.com/invite/xBhNKTetGx)
 
-![alt](more.png)
+![alt](moreWindows.png)

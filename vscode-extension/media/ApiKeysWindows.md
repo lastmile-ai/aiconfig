@@ -7,4 +7,4 @@ For remote inference, some model providers require an API key to access their in
 
 **[Learn more](https://aiconfig.lastmileai.dev/docs/getting-started#setup-your-api-keys)**
 
-![alt](apiKeys.png)
+![alt](apiKeysWindows.png)
