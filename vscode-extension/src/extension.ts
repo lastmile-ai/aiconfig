@@ -21,6 +21,7 @@ import {
   isPythonVersionAtLeast310,
   showGuideForPythonInstallation,
   setupEnvironmentVariables,
+  savePythonInterpreterToCache,
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
@@ -123,7 +124,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
   context.subscriptions.push(openModelParserCommand);
-
 
   // Register our custom editor providers
   const aiconfigEditorManager: AIConfigEditorManager =
@@ -451,6 +451,7 @@ async function installDependencies(
         outputChannel.appendLine("Python is not installed");
         return;
       }
+      await savePythonInterpreterToCache();
 
       outputChannel.append(" -- SUCCESS");
       outputChannel.appendLine("2. Making sure pip is installed");
