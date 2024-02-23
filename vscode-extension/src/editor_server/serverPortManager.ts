@@ -8,16 +8,20 @@ import { getPortPromise } from "portfinder";
  */
 class ServerPortManager {
   private lock;
+  private lowestPort = 8000;
+  private highestPort = 8200;
 
   constructor() {
     this.lock = new Mutex();
   }
 
   async getPort(): Promise<number> {
-    const release = await this.lock.acquire();
-    const port = await getPortPromise();
-    release();
-    return port;
+    return await this.lock.runExclusive(async () => {
+      const port = await getPortPromise({ port: this.lowestPort });
+      // Restart if port reaches max
+      this.lowestPort = port === this.highestPort ? this.lowestPort : port + 1;
+      return port;
+    });
   }
 }
 
