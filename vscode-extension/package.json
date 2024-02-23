@@ -94,6 +94,11 @@
           "type": "string",
           "default": "",
           "description": "Path to the custom model registry file."
+        },
+        "vscode-aiconfig.pythonInterpreter": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the python interpreter for this VS Code workspace"
         }
       }
     },
