@@ -29,7 +29,8 @@ export async function initialize(
 
   await vscode.commands.executeCommand("python.setInterpreter");
 
-  installDependencies(context, outputChannel);
+  await installDependencies(context, outputChannel);
+  vscode.window.showInformationMessage("Fuck me up Scotty");
 }
 
 /**
@@ -46,6 +47,7 @@ export async function installDependencies(
       cancellable: false,
     },
     async (progress, cancellationToken) => {
+      vscode.window.showInformationMessage("1 - Fuck me up Scotty");
       outputChannel.appendLine("Initializing extension");
 
       outputChannel.appendLine("1. Making sure Python is installed");
@@ -124,6 +126,7 @@ export async function installDependencies(
           });
 
           outputChannel.append(" -- SUCCESS");
+          vscode.window.showInformationMessage("Got to the end");
         }
       }
     }
@@ -141,7 +144,7 @@ export async function installRequirements(
   }>,
   cancellationToken: vscode.CancellationToken,
   outputChannel: vscode.LogOutputChannel
-) {
+): Promise<boolean> {
   const extensionPath = context.extensionPath;
   const requirementsPath = path.join(
     extensionPath,
@@ -356,6 +359,38 @@ export async function savePythonInterpreterToCache(): Promise<void> {
     pythonPath,
     vscode.ConfigurationTarget.Workspace
   );
+}
+
+/**
+ * This initializes the flow to ensure the Python setup is bullet-proof
+ * It gets called upon opening or creating an AIConfig file or updating
+ * the server
+ */
+export async function initializePythonFlow(
+  context: vscode.ExtensionContext,
+  outputChannel: vscode.LogOutputChannel
+): Promise<void> {
+  if (!checkIfPythonInterpreterCacheIsDefined()) {
+    await initialize(context, outputChannel);
+  } else {
+    // This is technically just a check if all the dependencies are all
+    // installed otherwise we don't need to install anything else and it
+    // simply runs through the installation flow
+    await installDependencies(context, outputChannel);
+  }
+}
+
+export function checkIfPythonInterpreterCacheIsDefined(): boolean {
+  const pythonPath = getPythonInterpreterFromCache();
+  if (!pythonPath) {
+    return false;
+  }
+  return true;
+}
+
+function getPythonInterpreterFromCache(): string | undefined {
+  const config = vscode.workspace.getConfiguration(EXTENSION_NAME);
+  return config.get<string>(PYTHON_INTERPRETER_CACHE_KEY_NAME);
 }
 
 /**
