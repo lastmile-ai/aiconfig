@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { type ChildProcessWithoutNullStreams, execSync } from "child_process";
 import { setTimeout } from "timers/promises";
 import { ufetch } from "ufetch";
 
@@ -43,11 +42,6 @@ export const EDITOR_SERVER_ROUTE_TABLE = {
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_content"),
   LOAD_MODEL_PARSER_MODULE: (hostUrl: string) =>
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_model_parser_module"),
-};
-
-export type ServerInfo = {
-  proc: ChildProcessWithoutNullStreams;
-  url: string;
 };
 
 export async function isServerReady(serverUrl: string) {
