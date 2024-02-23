@@ -75,6 +75,9 @@
             "filenamePattern": "*.aiconfig.yaml"
           },
           {
+            "filenamePattern": "*.aiconfig.yml"
+          },
+          {
             "filenamePattern": "*.aiconfig"
           }
         ],
