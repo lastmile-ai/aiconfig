@@ -1,11 +1,11 @@
 import vscode from "vscode";
-import { ServerInfo } from "./util";
+import { EditorServer } from "./editorServer";
 
 export class AIConfigEditorState {
   constructor(
     public document: vscode.TextDocument,
     public readonly webviewPanel: vscode.WebviewPanel,
-    public editorServer: ServerInfo | null,
+    public editorServer: EditorServer | null,
     private readonly manager: AIConfigEditorManager
   ) {
     // Listen to when the panel's view state changes and update the active editor
@@ -79,5 +79,9 @@ export class AIConfigEditorManager {
       this.activeEditor = null;
       this.activeEditorUri = null;
     }
+  }
+
+  updateEditorServer(editor: AIConfigEditorState, server: EditorServer) {
+    editor.editorServer = server;
   }
 }

@@ -58,6 +58,11 @@
         "category": "AIConfig"
       },
       {
+        "command": "vscode-aiconfig.restartActiveEditorServer",
+        "title": "Restart Active Editor Server",
+        "category": "AIConfig"
+      },
+      {
         "command": "vscode-aiconfig.setupEnvironmentVariables",
         "title": "Setup Environment Variables",
         "category": "AIConfig"
@@ -114,40 +119,40 @@
         "description": "Your first steps to using AIConfig Editor - the generative AI studio for VS Code!",
         "steps": [
           {
-						"id": "InitializeExtension",
-						"title": "Initialize Extension",
-						"description": "Open the Command Palette (CMD+Shift+P) and run the command `AIConfig: Initialize Extension  \n[Initialize Extension](command:vscode-aiconfig.init)",
-						"media": {
+            "id": "InitializeExtension",
+            "title": "Initialize Extension",
+            "description": "Open the Command Palette (CMD+Shift+P) and run the command `AIConfig: Initialize Extension  \n[Initialize Extension](command:vscode-aiconfig.init)",
+            "media": {
               "markdown": "media/InitializeExtension.md"
-						}
-					},
+            }
+          },
           {
-						"id": "ApiKeys",
-						"title": "Set API Keys",
-						"description": "This step is needed to access generative AI models via model provider API keys, endpoints, tokens (e.g OpenAI API Key)",
-						"media": {
+            "id": "ApiKeys",
+            "title": "Set API Keys",
+            "description": "This step is needed to access generative AI models via model provider API keys, endpoints, tokens (e.g OpenAI API Key)",
+            "media": {
               "markdown": "media/ApiKeys.md"
-						}
-					},
+            }
+          },
           {
-						"id": "CreateAIConfig",
-						"title": "Create your first AIConfig",
-						"description": "Open the Command Palette (CMD+Shift+P) and run the command `AIConfig: Create New (JSON)` or `AIConfig: Create New (YAML)`",
-						"media": {
+            "id": "CreateAIConfig",
+            "title": "Create your first AIConfig",
+            "description": "Open the Command Palette (CMD+Shift+P) and run the command `AIConfig: Create New (JSON)` or `AIConfig: Create New (YAML)`",
+            "media": {
               "markdown": "media/CreateAIConfig.md"
-						},
+            },
             "completionEvents": [
-							"onCommand:vscode-aiconfig.setupEnvironmentVariables"
-						]
-					},
+              "onCommand:vscode-aiconfig.setupEnvironmentVariables"
+            ]
+          },
           {
-						"id": "more",
-						"title": "Find out more",
-						"description": "Explore all the features of AIConfig Editor by looking for “AIConfig” in the Command Palette (CMD+Shift+P)",
-						"media": {
+            "id": "more",
+            "title": "Find out more",
+            "description": "Explore all the features of AIConfig Editor by looking for “AIConfig” in the Command Palette (CMD+Shift+P)",
+            "media": {
               "markdown": "media/more.md"
-						}
-					}
+            }
+          }
         ]
       }
     ]

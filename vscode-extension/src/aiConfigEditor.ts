@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
 import {
-  COMMANDS,
   EXTENSION_NAME,
-  ServerInfo,
   getCurrentWorkingDirectory,
   getDocumentFromServer,
   setupEnvironmentVariables,
@@ -10,19 +8,14 @@ import {
   updateWebviewEditorThemeMode,
   waitUntilServerReady,
 } from "./util";
-import {
-  getPythonPath,
-  initializePythonFlow,
-} from "./utilities/pythonSetupUtils";
+import { initializePythonFlow } from "./utilities/pythonSetupUtils";
 import { getNonce } from "./utilities/getNonce";
 import { getUri } from "./utilities/getUri";
-
-import { spawn } from "child_process";
-import { getPortPromise } from "portfinder";
 import {
   AIConfigEditorManager,
   AIConfigEditorState,
 } from "./aiConfigEditorManager";
+import { EditorServer } from "./editorServer";
 
 /**
  * Provider for AIConfig editors.
@@ -64,7 +57,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken
   ): Promise<void> {
-    let editorServer: ServerInfo | null = null;
+    let editorServer: EditorServer | null = null;
     let isWebviewDisposed = false;
 
     // TODO: saqadri - clean up console log
@@ -110,32 +103,41 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     this.startEditorServer(document).then(async (startedServer) => {
       editorServer = startedServer;
 
-      this.aiconfigEditorManager.addEditor(
-        new AIConfigEditorState(
-          document,
-          webviewPanel,
-          startedServer,
-          this.aiconfigEditorManager
-        )
-      );
-
-      // Wait for server ready
-      await waitUntilServerReady(startedServer.url);
-
-      // Now set up the server with the latest document content
-      await this.startServerWithRetry(
-        startedServer.url,
+      const editor = new AIConfigEditorState(
         document,
-        webviewPanel
+        webviewPanel,
+        startedServer,
+        this.aiconfigEditorManager
       );
 
-      // Inform the webview of the server URL
-      if (!isWebviewDisposed) {
-        webviewPanel.webview.postMessage({
-          type: "set_server_url",
-          url: startedServer.url,
+      this.aiconfigEditorManager.addEditor(editor);
+
+      async function setupServerState(server: EditorServer) {
+        // Wait for server ready
+        await waitUntilServerReady(server.url);
+
+        // Now set up the server with the latest document content
+        await this.initializeServerStateWithRetry(
+          server.url,
+          document,
+          webviewPanel
+        );
+
+        // Inform the webview of the server URL
+        if (!isWebviewDisposed) {
+          webviewPanel.webview.postMessage({
+            type: "set_server_url",
+            url: server.url,
+          });
+        }
+
+        server.onRestart(async (newServer) => {
+          editor.editorServer = newServer;
+          await setupServerState(newServer);
         });
       }
+
+      await setupServerState(startedServer);
     });
 
     // Hook up event handlers so that we can synchronize the webview with the text document.
@@ -285,8 +287,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       willSaveDocumentSubscription.dispose();
 
       if (editorServer) {
-        console.log("Killing editor server process");
-        editorServer.proc.kill();
+        editorServer.stop();
         editorServer = null;
       }
     });
@@ -427,7 +428,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     }
   }
 
-  private startServerWithRetry(
+  private initializeServerStateWithRetry(
     serverUrl: string,
     document: vscode.TextDocument,
     webviewPanel: vscode.WebviewPanel
@@ -460,7 +461,11 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
             }
 
             if (selection === "Retry") {
-              this.startServerWithRetry(serverUrl, document, webviewPanel);
+              this.initializeServerStateWithRetry(
+                serverUrl,
+                document,
+                webviewPanel
+              );
             }
           });
       });
@@ -472,65 +477,40 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
   private async startEditorServer(
     document: vscode.TextDocument
-  ): Promise<ServerInfo> {
+  ): Promise<EditorServer> {
     this.extensionOutputChannel.info(
       this.prependMessage("Starting editor server", document)
     );
 
-    // If there is a custom model registry path, pass it to the server
-    let config = vscode.workspace.getConfiguration(EXTENSION_NAME);
-    let modelRegistryPath = config.get<string>("modelRegistryPath");
-    const modelRegistryPathArgs = modelRegistryPath
-      ? ["--parsers-module-path", modelRegistryPath]
-      : [];
+    const editorServer = new EditorServer(getCurrentWorkingDirectory(document));
+    await editorServer.start();
 
-    const openPort = await getPortPromise();
-
-    const pythonPath = await getPythonPath();
-
-    // TODO: saqadri - specify parsers_module_path
-    // `aiconfig` command not useable here because it relies on python. Instead invoke the module directly.
-    let startServer = spawn(
-      pythonPath,
-      [
-        "-m",
-        "aiconfig.scripts.aiconfig_cli",
-        "start",
-        "--server-port",
-        openPort.toString(),
-        ...modelRegistryPathArgs,
-      ],
-      {
-        cwd: getCurrentWorkingDirectory(document),
-      }
-    );
-
-    startServer.stdout.on("data", (data) => {
+    editorServer.serverProc.stdout.on("data", (data) => {
       this.extensionOutputChannel.info(this.prependMessage(data, document));
       console.log(`server stdout: ${data}`);
     });
 
     // TODO: saqadri - stderr is very noisy for some reason (duplicating INFO logs). Figure out why before enabling this.
-    startServer.stderr.on("data", (data) => {
+    editorServer.serverProc.stderr.on("data", (data) => {
       this.extensionOutputChannel.error(this.prependMessage(data, document));
       console.error(`server stderr: ${data}`);
     });
 
-    startServer.on("spawn", () => {
+    editorServer.serverProc.on("spawn", () => {
       this.extensionOutputChannel.info(
         this.prependMessage(
-          `Started server at port=${openPort}, pid=${startServer.pid}`,
+          `Started server at port=${editorServer.port}, pid=${editorServer.pid}`,
           document
         )
       );
-      console.log(`server spawned: ${startServer.pid}`);
+      console.log(`server spawned: ${editorServer.pid}`);
     });
 
-    startServer.on("close", (code) => {
+    editorServer.serverProc.on("close", (code) => {
       if (code !== 0) {
         this.extensionOutputChannel.error(
           this.prependMessage(
-            `Server at port=${openPort}, pid=${startServer.pid} was terminated unexpectedly with exit code ${code}`,
+            `Server at port=${editorServer.port}, pid=${editorServer.pid} was terminated unexpectedly with exit code ${code}`,
             document
           )
         );
@@ -538,7 +518,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       } else {
         this.extensionOutputChannel.info(
           this.prependMessage(
-            `Server at port=${openPort}, pid=${startServer.pid} was terminated successfully.`,
+            `Server at port=${editorServer.port}, pid=${editorServer.pid} was terminated successfully.`,
             document
           )
         );
@@ -546,19 +526,14 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       }
     });
 
-    startServer.on("error", (err) => {
+    editorServer.serverProc.on("error", (err) => {
       this.extensionOutputChannel.error(
         this.prependMessage(JSON.stringify(err), document)
       );
       // TODO: saqadri - add "restart" option with error message
     });
 
-    const serverUrl = `http://localhost:${openPort}`;
-
-    return {
-      proc: startServer,
-      url: serverUrl,
-    };
+    return editorServer;
   }
 
   /**

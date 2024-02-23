@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { type ChildProcessWithoutNullStreams, execSync } from "child_process";
 import { setTimeout } from "timers/promises";
 import { ufetch } from "ufetch";
 
@@ -18,6 +17,7 @@ export const COMMANDS = {
   CREATE_CUSTOM_MODEL_REGISTRY: `${EXTENSION_NAME}.createCustomModelRegistry`,
   OPEN_CONFIG_FILE: `${EXTENSION_NAME}.openConfigFile`,
   OPEN_MODEL_REGISTRY: `${EXTENSION_NAME}.openModelRegistry`,
+  RESTART_ACTIVE_EDITOR_SERVER: `${EXTENSION_NAME}.restartActiveEditorServer`,
   SETUP_ENVIRONMENT_VARIABLES: `${EXTENSION_NAME}.setupEnvironmentVariables`,
   SHARE: `${EXTENSION_NAME}.share`,
   SHOW_WELCOME: `${EXTENSION_NAME}.showWelcome`,
@@ -43,11 +43,6 @@ export const EDITOR_SERVER_ROUTE_TABLE = {
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_content"),
   LOAD_MODEL_PARSER_MODULE: (hostUrl: string) =>
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_model_parser_module"),
-};
-
-export type ServerInfo = {
-  proc: ChildProcessWithoutNullStreams;
-  url: string;
 };
 
 export async function isServerReady(serverUrl: string) {
