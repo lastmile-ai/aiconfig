@@ -61,11 +61,6 @@
         "command": "vscode-aiconfig.setupEnvironmentVariables",
         "title": "Setup Environment Variables",
         "category": "AIConfig"
-      },
-      {
-        "command": "vscode-aiconfig.showWelcome",
-        "title": "Welcome",
-        "category": "AIConfig"
       }
     ],
     "customEditors": [
