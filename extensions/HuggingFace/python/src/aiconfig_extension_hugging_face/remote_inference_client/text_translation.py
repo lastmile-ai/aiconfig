@@ -45,6 +45,14 @@ def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
         if key.lower() in supported_keys:
             completion_data[key.lower()] = model_settings[key]
 
+    # The default model in HF is t5-small, which raises a KeyError,
+    # "translation_text", when calling the inference client.
+    # Instead, default to the model (which supports remote inference) with the
+    # most "likes" in HF
+    # https://huggingface.co/models?pipeline_tag=translation&sort=likes
+    if completion_data.get("model") is None:
+        completion_data["model"] = "facebook/mbart-large-50-many-to-many-mmt"
+
     return completion_data
 
 

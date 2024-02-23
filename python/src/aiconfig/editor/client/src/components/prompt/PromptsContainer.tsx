@@ -19,6 +19,10 @@ type Props = {
   onChangePromptName: (promptId: string, newName: string) => Promise<void>;
   onDeletePrompt: (promptId: string) => Promise<void>;
   onRunPrompt: (promptId: string) => Promise<void>;
+  onUpdatePromptMetadata: (
+    promptId: string,
+    newMetadata: JSONObject
+  ) => Promise<void>;
   onUpdatePromptModel: (promptId: string, newModel?: string) => Promise<void>;
   onUpdatePromptModelSettings: (
     promptId: string,
@@ -76,6 +80,7 @@ export default memo(function PromptsContainer(props: Props) {
                 onUpdateModel={props.onUpdatePromptModel}
                 onUpdateModelSettings={props.onUpdatePromptModelSettings}
                 onUpdateParameters={props.onUpdatePromptParameters}
+                onUpdatePromptMetadata={props.onUpdatePromptMetadata}
                 defaultConfigModelName={props.defaultModel}
                 isRunButtonDisabled={isAnotherPromptRunning}
               />

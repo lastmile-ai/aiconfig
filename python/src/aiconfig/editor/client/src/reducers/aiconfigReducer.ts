@@ -1,5 +1,9 @@
-import { AIConfig } from "aiconfig";
-import { ClientAIConfig, ClientPrompt } from "../shared/types";
+import { AIConfig, Prompt } from "aiconfig";
+import {
+  ClientAIConfig,
+  ClientPrompt,
+  aiConfigToClientConfig,
+} from "../shared/types";
 import { getPromptModelName } from "../utils/promptUtils";
 import type {
   AIConfigReducerAction,
@@ -47,6 +51,31 @@ function setRunningPromptId(
   };
 }
 
+/**
+ * Consolidate existing state and external prompt into a single prompt.
+ * Existing client input and metadata takes precedence since it may have been updated
+ * by the user while the external process was happening (e.g. request was in flight).
+ * External outputs will always be used since they can only be updated by external source.
+ * @param statePrompt ClientPrompt that exists in client state
+ * @param externalPrompt ClientPrompt obtained from external source (e.g. server response)
+ * @returns Consolidated ClientPrompt
+ */
+function reduceConsolidatePrompt(
+  statePrompt: ClientPrompt,
+  externalPrompt: Prompt
+): ClientPrompt {
+  return {
+    ...externalPrompt,
+    ...statePrompt,
+    metadata: {
+      ...externalPrompt.metadata,
+      ...statePrompt.metadata,
+    },
+    outputs: externalPrompt.outputs,
+    _ui: statePrompt._ui,
+  };
+}
+
 function reduceConsolidateAIConfig(
   state: ClientAIConfig,
   action: ConsolidateAIConfigSubAction,
@@ -58,14 +87,12 @@ function reduceConsolidateAIConfig(
     const responsePrompt = responseConfig.prompts.find(
       (resPrompt) => resPrompt.name === statePrompt.name
     );
-    return {
-      ...responsePrompt,
-      ...statePrompt,
-      metadata: {
-        ...responsePrompt?.metadata,
-        ...statePrompt.metadata,
-      },
-    } as ClientPrompt;
+
+    if (!responsePrompt) {
+      return statePrompt;
+    }
+
+    return reduceConsolidatePrompt(statePrompt, responsePrompt);
   };
 
   switch (action.type) {
@@ -131,6 +158,14 @@ export default function aiconfigReducer(
         ),
       };
     }
+    case "PROVIDED_AICONFIG_UPDATE": {
+      // For now, treat the editor as a controlled component and replace the entire state.
+      // Revisit this if we want to optimize consolidation by deep comparing the existing
+      // state and the provided state (i.e. to prevent re-rendering prompts that haven't
+      // changed), but note the trade-off of deep compare perf cost vs. re-rendering cost
+      // may be negligible. Consider only if UX is affected by current approach
+      return aiConfigToClientConfig(action.config);
+    }
     case "SET_DESCRIPTION": {
       return {
         ...dirtyState,
@@ -147,6 +182,17 @@ export default function aiconfigReducer(
       return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
         ...prompt,
         input: action.input,
+      }));
+    }
+    case "UPDATE_PROMPT_METADATA": {
+      return reduceReplacePrompt(dirtyState, action.id, (prompt) => ({
+        ...prompt,
+        metadata: {
+          ...action.metadata,
+          // Keep existing model and parameters metadata (managed by separate actions)
+          model: prompt.metadata?.model,
+          parameters: prompt.metadata?.parameters,
+        },
       }));
     }
     case "UPDATE_PROMPT_NAME": {
@@ -168,12 +214,17 @@ export default function aiconfigReducer(
     }
     case "UPDATE_PROMPT_MODEL": {
       return reduceReplacePrompt(dirtyState, action.id, (prompt) => {
+        // TODO (rossdan): Uncomment below once we are able to handle updating model names for HF tasks or sub-classes
         // TODO: Consolidate settings based on schema union, server-side
         // For now, just keep all the settings to match the server-side implementation
         let modelSettings;
         const promptModel = prompt.metadata?.model;
         if (promptModel && typeof promptModel !== "string") {
           modelSettings = promptModel.settings;
+          // TODO (rossdanlm): For now just clearing the model field whenever new model name is selected
+          if (modelSettings) {
+            delete modelSettings.model;
+          }
         }
         return {
           ...prompt,
@@ -182,6 +233,7 @@ export default function aiconfigReducer(
             model: action.modelName
               ? {
                   name: action.modelName,
+                  // TODO (rossdanlm): For now just clearing the model field whenever new model name is selected
                   settings: modelSettings,
                 }
               : undefined,

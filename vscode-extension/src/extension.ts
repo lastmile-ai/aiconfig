@@ -15,10 +15,11 @@ import {
   sanitizeFileName,
   getTodayDateString,
   LASTMILE_BASE_URI,
-  getPythonPath,
   isSupportedConfigExtension,
   SUPPORTED_FILE_EXTENSIONS,
+  setupEnvironmentVariables,
 } from "./util";
+import { initialize, getPythonPath } from "./utilities/pythonSetupUtils";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
 
@@ -37,22 +38,31 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
-    installDependencies(context, extensionOutputChannel);
+    initialize(context, extensionOutputChannel);
   });
   context.subscriptions.push(setupCommand);
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.SHOW_WELCOME, async () => {
+    vscode.commands.registerCommand(COMMANDS.SHOW_WELCOME, () => {
       const welcomeFilePath = path.join(
         context.extensionPath,
-        "src",
+        "media",
         "welcomePage.md"
       );
-      await vscode.commands.executeCommand(
+      vscode.commands.executeCommand(
         "markdown.showPreview",
         vscode.Uri.file(welcomeFilePath)
       );
     })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      COMMANDS.SETUP_ENVIRONMENT_VARIABLES,
+      async () => {
+        await setupEnvironmentVariables(context);
+      }
+    )
   );
 
   const createAIConfigJSONCommand = vscode.commands.registerCommand(
@@ -110,9 +120,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
   context.subscriptions.push(openModelParserCommand);
-
-  // Run the setup command on activation
-  vscode.commands.executeCommand(COMMANDS.INIT);
 
   // Register our custom editor providers
   const aiconfigEditorManager: AIConfigEditorManager =
@@ -411,300 +418,6 @@ async function handleCustomModelRegistryUpdate(
   vscode.window.showInformationMessage(
     `Updated model registry for open aiconfigs to ${modelRegistryPath}`
   );
-}
-
-/**
- * Installs the dependencies required for the AIConfig extension to work
- */
-async function installDependencies(
-  context: vscode.ExtensionContext,
-  outputChannel: vscode.LogOutputChannel
-) {
-  vscode.window.withProgress(
-    {
-      location: vscode.ProgressLocation.Notification,
-      title: "Initializing AIConfig Extension",
-      cancellable: false,
-    },
-    async (progress, cancellationToken) => {
-      outputChannel.appendLine("Initializing extension");
-
-      outputChannel.appendLine("1. Making sure Python is installed");
-      progress.report({
-        increment: 0,
-        message: "Checking Python installation",
-      });
-
-      const isPythonInstalled = await checkPython();
-      if (!isPythonInstalled) {
-        outputChannel.appendLine("Python is not installed");
-        return;
-      }
-
-      outputChannel.append(" -- SUCCESS");
-      outputChannel.appendLine("2. Making sure pip is installed");
-
-      progress.report({
-        increment: 20,
-        message: "Checking pip installation",
-      });
-
-      const isPipInstalled = await checkPip();
-      if (!isPipInstalled) {
-        outputChannel.appendLine("Pip is not installed");
-        return;
-      }
-
-      outputChannel.append(" -- SUCCESS");
-      outputChannel.appendLine("3. Checking dependencies to install or update");
-
-      progress.report({
-        increment: 20,
-        message: "Checking dependencies to install or update",
-      });
-
-      // Check if requirements need to be installed
-      const requirementsInstalled = await checkRequirements(
-        context,
-        outputChannel
-      );
-      if (requirementsInstalled) {
-        outputChannel.append(" -- SUCCESS");
-        // Requirements are already installed
-        progress.report({
-          increment: 40,
-          message: "Dependencies are already installed. Let's go!",
-        });
-      } else {
-        outputChannel.appendLine("Update required. Installing dependencies");
-
-        // Install or update requirements
-        progress.report({
-          increment: 20,
-          message: "Installing dependencies",
-        });
-
-        const installationResult = await installRequirements(
-          context,
-          progress,
-          cancellationToken,
-          outputChannel
-        );
-        if (!installationResult) {
-          // The installation encountered issues -- the installRequirements function will have already shown an error message
-          outputChannel.error(
-            "Failed to install dependencies. Please try again."
-          );
-          return;
-        } else {
-          // Installation was successful
-          progress.report({
-            increment: 40,
-            message: "Dependencies installed. Let's go!",
-          });
-
-          outputChannel.append(" -- SUCCESS");
-        }
-      }
-    }
-  );
-}
-
-/**
- * Installs the packages in the requirements.txt file needed for the AIConfig extension to work.
- */
-async function installRequirements(
-  context: vscode.ExtensionContext,
-  progress: vscode.Progress<{
-    message?: string | undefined;
-    increment?: number | undefined;
-  }>,
-  cancellationToken: vscode.CancellationToken,
-  outputChannel: vscode.LogOutputChannel
-) {
-  const extensionPath = context.extensionPath;
-  const requirementsPath = path.join(
-    extensionPath,
-    "python",
-    "requirements.txt"
-  );
-  const pythonPath = await getPythonPath();
-
-  return new Promise((resolve, _reject) => {
-    const pipInstall = spawn(pythonPath, [
-      "-m",
-      "pip",
-      "install",
-      "-r",
-      requirementsPath,
-      "--upgrade",
-    ]);
-
-    pipInstall.stdout.on("data", (data) => {
-      progress.report({
-        message: `Installing dependencies: ${data}`,
-      });
-      outputChannel.info(`pip install: ${data}`);
-      console.log(`pip install stdout: ${data}`);
-    });
-
-    pipInstall.stderr.on("data", (data) => {
-      outputChannel.error(`pip install: ${data}`);
-      console.error(`pip install stderr: ${data}`);
-    });
-
-    pipInstall.on("close", (code) => {
-      if (code !== 0) {
-        console.log(`pip install process exited with code ${code}`);
-        vscode.window
-          .showErrorMessage(
-            `Failed to install dependencies. Pip exited with code ${code}. Please try again later`,
-            ...["Retry"]
-          )
-          .then((selection) => {
-            if (selection === "Retry") {
-              installRequirements(
-                context,
-                progress,
-                cancellationToken,
-                outputChannel
-              );
-            }
-          });
-        resolve(false);
-      } else {
-        resolve(true);
-      }
-    });
-  });
-}
-
-/**
- * Runs the check_requirements.py script to check if any requirements need to be updated or installed.
- */
-async function checkRequirements(
-  context: vscode.ExtensionContext,
-  outputChannel: vscode.LogOutputChannel
-) {
-  const extensionPath = context.extensionPath;
-  const checkRequirementsScriptPath = path.join(
-    extensionPath,
-    "python",
-    "src",
-    "check_requirements.py"
-  );
-
-  const requirementsPath = path.join(
-    extensionPath,
-    "python",
-    "requirements.txt"
-  );
-
-  const pythonPath = await getPythonPath();
-
-  return new Promise((resolve, reject) => {
-    let checkRequirements = spawn(pythonPath, [
-      checkRequirementsScriptPath,
-      "--requirements_path",
-      requirementsPath,
-    ]);
-
-    checkRequirements.stdout.on("data", (data) => {
-      outputChannel.info(`check_requirements: ${data}`);
-    });
-
-    checkRequirements.on("close", (code) => {
-      if (code !== 0) {
-        // Need to install requirements
-        const msg = "Requirements are not installed or out of date";
-        outputChannel.warn(`check_requirements: ${msg}`);
-        console.log(msg);
-        resolve(false);
-      } else {
-        // Requirements are installed
-        const msg = "Requirements are already installed";
-        outputChannel.info(`check_requirements: ${msg}`);
-
-        console.log(msg);
-        resolve(true);
-      }
-    });
-
-    checkRequirements.on("error", (err) => {
-      outputChannel.error(err);
-      reject(err);
-    });
-  });
-}
-
-/**
- * Checks if Python is installed on the system, and if not, prompts the user to install it.
- */
-async function checkPython() {
-  const pythonPath = await getPythonPath();
-  return new Promise((resolve, _reject) => {
-    exec(pythonPath + " --version", (error, stdout, stderr) => {
-      if (error) {
-        console.error("Python was not found, can't install requirements");
-        console.error("retrieved python path: " + pythonPath);
-
-        // Guide for installation
-        vscode.window
-          .showErrorMessage(
-            "Python is not installed",
-            ...["Install Python", "Retry"]
-          )
-          .then((selection) => {
-            if (selection === "Install Python") {
-              vscode.env.openExternal(
-                vscode.Uri.parse("https://www.python.org/downloads/")
-              );
-            } else if (selection === "Retry") {
-              vscode.commands.executeCommand(COMMANDS.INIT);
-            }
-          });
-        resolve(false);
-      } else {
-        resolve(true);
-        console.log("Python is installed");
-      }
-    });
-  });
-}
-
-/**
- * Checks if pip is installed on the system, and if not, prompts the user to install it.
- */
-async function checkPip() {
-  const pythonPath = await getPythonPath();
-  return new Promise((resolve, _reject) => {
-    // when calling pip using `python -m`, no need to worry about pip vs pip3.
-    // You're directly specifying which Python environment's pip to use.
-    exec(pythonPath + " -m pip --version", (error, stdout, stderr) => {
-      if (error) {
-        console.log("pip is not found");
-        // Guide for installation
-        vscode.window
-          .showErrorMessage(
-            "pip is not installed, but is needed for AIConfig installation",
-            ...["Install pip", "Retry"]
-          )
-          .then((selection) => {
-            if (selection === "Install pip") {
-              vscode.env.openExternal(
-                vscode.Uri.parse("https://pip.pypa.io/en/stable/installation/")
-              );
-            } else if (selection === "Retry") {
-              vscode.commands.executeCommand(COMMANDS.INIT);
-            }
-          });
-        resolve(false);
-      } else {
-        console.log("pip is installed");
-        resolve(true);
-      }
-    });
-  });
 }
 
 async function shareAIConfig(

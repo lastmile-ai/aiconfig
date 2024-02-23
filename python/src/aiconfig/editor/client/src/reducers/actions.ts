@@ -12,12 +12,14 @@ export type MutateAIConfigAction =
   | AddPromptAction
   | ClearOutputsAction
   | DeletePromptAction
+  | ProvidedAIConfigUpdateAction
   | SetDescriptionAction
   | SetNameAction
   | UpdatePromptInputAction
-  | UpdatePromptNameAction
+  | UpdatePromptMetadataAction
   | UpdatePromptModelAction
   | UpdatePromptModelSettingsAction
+  | UpdatePromptNameAction
   | UpdatePromptParametersAction
   | UpdateGlobalParametersAction;
 
@@ -57,6 +59,11 @@ export type DeletePromptAction = {
   id: string;
 };
 
+export type ProvidedAIConfigUpdateAction = {
+  type: "PROVIDED_AICONFIG_UPDATE";
+  config: AIConfig;
+};
+
 export type SetDescriptionAction = {
   type: "SET_DESCRIPTION";
   description: string;
@@ -71,6 +78,12 @@ export type UpdatePromptInputAction = {
   type: "UPDATE_PROMPT_INPUT";
   id: string;
   input: PromptInput;
+};
+
+export type UpdatePromptMetadataAction = {
+  type: "UPDATE_PROMPT_METADATA";
+  id: string;
+  metadata: JSONObject;
 };
 
 export type UpdatePromptNameAction = {

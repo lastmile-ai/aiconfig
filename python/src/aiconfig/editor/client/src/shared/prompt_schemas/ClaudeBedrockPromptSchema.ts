@@ -14,7 +14,7 @@ export const ClaudeBedrockPromptSchema: PromptSchema = {
         type: "string",
       },
       max_tokens_to_sample: {
-        type: "number",
+        type: "integer",
         description: `The maximum number of tokens to generate before stopping.
         Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.`,
       },
@@ -54,18 +54,10 @@ export const ClaudeBedrockPromptSchema: PromptSchema = {
           user_id: {
             type: "string",
           },
-        }, 
+        },
         description: `An object describing metadata about the request. (Claude specific)`,
-      }
-    },
-    required: ["model", "max_tokens_to_sample", "stop_sequences"],
-  },
-  prompt_metadata: {
-    type: "object",
-    properties: {
-      remember_chat_context: {
-        type: "boolean",
       },
     },
+    required: ["model", "max_tokens_to_sample", "stop_sequences"],
   },
 };

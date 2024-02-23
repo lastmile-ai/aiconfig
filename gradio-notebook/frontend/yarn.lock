@@ -679,10 +679,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@lastmileai/aiconfig-editor@^0.1.26":
-  version "0.1.26"
-  resolved "https://registry.yarnpkg.com/@lastmileai/aiconfig-editor/-/aiconfig-editor-0.1.26.tgz#0c9b3151dcc955fb4bb32bd0b1ca360c54b0d28c"
-  integrity sha512-z8ZTiYjj7to7MbMj5Mf7xwYkx0EY7iOCrzDkirjRJ+Yp3//Lvzez/0NEFFw4JCVTk9akajZcy795h4WRpawbdA==
+"@lastmileai/aiconfig-editor@^0.1.29":
+  version "0.1.29"
+  resolved "https://registry.yarnpkg.com/@lastmileai/aiconfig-editor/-/aiconfig-editor-0.1.29.tgz#dfe528b34068cc23e0aa2a5fdba2d32a8d8239a9"
+  integrity sha512-bX1Na50WTNfxWxnVU75nEHwS9dduERy2q6xZRS3e6ykJ02SgnNO+8jFnUfxCUtUjJMbVDIR2HJlf3XhBVKy4jw==
   dependencies:
     "@emotion/react" "^11.11.1"
     "@mantine/carousel" "^6.0.7"
