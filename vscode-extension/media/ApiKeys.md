@@ -1,7 +1,10 @@
 ## Set API Keys
 
-Open the Command Palette (CMD+Shift+P) and run the command `AIConfig: Set API Keys`
+> _Tip_: You can use the Command Palette (`CMD`+`Shift`+`P`) to run the command `AIConfig: Set API Keys`
 
-This step is needed to access generative AI models via model provider API keys, endpoints, tokens (e.g OpenAI API Key). Read more [here](https://aiconfig.lastmileai.dev/docs/getting-started#setup-your-api-keys)
+You can use AIConfig to run models locally (e.g. LLaMA) or via remote inference API (e.g. GPT-4).
+For remote inference, some model providers require an API key to access their inference API (e.g. OpenAI, Google, Anthropic).
+
+**[Learn more](https://aiconfig.lastmileai.dev/docs/getting-started#setup-your-api-keys)**
 
 ![alt](apiKeys.png)

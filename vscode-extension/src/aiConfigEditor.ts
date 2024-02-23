@@ -103,40 +103,42 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     updateWebview();
 
     // Do not start the server until we ensure the Python setup is ready
-    await initializePythonFlow(this.context, this.extensionOutputChannel);
+    initializePythonFlow(this.context, this.extensionOutputChannel).then(
+      async () => {
+        // Start the AIConfig editor server process. Don't await at the top level here since that blocks the
+        // webview render (which happens only when resolveCustomTextEditor returns)
+        this.startEditorServer(document).then(async (startedServer) => {
+          editorServer = startedServer;
 
-    // Start the AIConfig editor server process. Don't await at the top level here since that blocks the
-    // webview render (which happens only when resolveCustomTextEditor returns)
-    this.startEditorServer(document).then(async (startedServer) => {
-      editorServer = startedServer;
+          this.aiconfigEditorManager.addEditor(
+            new AIConfigEditorState(
+              document,
+              webviewPanel,
+              startedServer,
+              this.aiconfigEditorManager
+            )
+          );
 
-      this.aiconfigEditorManager.addEditor(
-        new AIConfigEditorState(
-          document,
-          webviewPanel,
-          startedServer,
-          this.aiconfigEditorManager
-        )
-      );
+          // Wait for server ready
+          await waitUntilServerReady(startedServer.url);
 
-      // Wait for server ready
-      await waitUntilServerReady(startedServer.url);
+          // Now set up the server with the latest document content
+          await this.startServerWithRetry(
+            startedServer.url,
+            document,
+            webviewPanel
+          );
 
-      // Now set up the server with the latest document content
-      await this.startServerWithRetry(
-        startedServer.url,
-        document,
-        webviewPanel
-      );
-
-      // Inform the webview of the server URL
-      if (!isWebviewDisposed) {
-        webviewPanel.webview.postMessage({
-          type: "set_server_url",
-          url: startedServer.url,
+          // Inform the webview of the server URL
+          if (!isWebviewDisposed) {
+            webviewPanel.webview.postMessage({
+              type: "set_server_url",
+              url: startedServer.url,
+            });
+          }
         });
       }
-    });
+    );
 
     // Hook up event handlers so that we can synchronize the webview with the text document.
     //
@@ -395,7 +397,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
                 document
               )
             );
-            if (notificationAction === "Setup Environment Variables") {
+            if (notificationAction === "Set API Keys") {
               await setupEnvironmentVariables(this.context);
             } else if (notificationAction === "Details") {
               // If user clicked "Details", show & focus the output channel
