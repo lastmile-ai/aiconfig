@@ -7,7 +7,6 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { PYTHON_INTERPRETER_CACHE_KEY_NAME } from "./constants";
 
 export const EXTENSION_NAME = "vscode-aiconfig";
 export const COMMANDS = {
@@ -286,72 +285,6 @@ export function urlJoin(...args) {
   return normalize(parts);
 }
 //#endregion
-
-/**
- * AIConfig Vscode extension has a dependency on the Python extension.
- * This function retrieves and returns the path to the current python interpreter.
- * @returns the path to the current python interpreter
- */
-export async function getPythonPath(): Promise<string> {
-  const pythonExtension = vscode.extensions.getExtension("ms-python.python");
-  if (!pythonExtension.isActive) {
-    await pythonExtension.activate();
-  }
-
-  const pythonPath =
-    pythonExtension.exports.settings.getExecutionDetails().execCommand[0];
-  return pythonPath;
-}
-
-/**
- * Save the python interpreter path to the VS Code extension workspace settings
- * @returns void
- */
-export async function savePythonInterpreterToCache(): Promise<void> {
-  const pythonPath = await getPythonPath();
-  const config = vscode.workspace.getConfiguration(EXTENSION_NAME);
-  await config.update(
-    PYTHON_INTERPRETER_CACHE_KEY_NAME,
-    pythonPath,
-    vscode.ConfigurationTarget.Workspace
-  );
-}
-
-/**
- * Checks if the specified Python interpreter is version 3.10 or higher.
- * @param pythonPath The path to the Python interpreter.
- * @returns A promise that resolves to a boolean indicating if the version is >= 3.10.
- */
-
-export function isPythonVersionAtLeast310(pythonPath: string): boolean {
-  try {
-    // Use Python to check compatible version
-    // This approach circumvents the complexity of parsing version strings from `python --version`,
-    // which can vary in format and require custom parsing and comparison logic to handle different version schemes (e.g., major, minor, micro).
-    const command = `${pythonPath} -c "import sys; print(sys.version_info >= (3, 10))"`;
-    const output = execSync(command).toString().replace(/\s+/g, "").trim(); //replace newlines & whitespace
-
-    return output === "True";
-  } catch (error) {
-    console.debug("Error checking Python version:", error);
-    return false;
-  }
-}
-
-export function showGuideForPythonInstallation(message: string): void {
-  // Guide for installation
-  vscode.window
-    .showErrorMessage(message, ...["Install Python", "Retry"])
-    .then((selection) => {
-      if (selection === "Install Python") {
-        vscode.env.openExternal(
-          vscode.Uri.parse("https://www.python.org/downloads/")
-        );
-      } else if (selection === "Retry") {
-        vscode.commands.executeCommand(COMMANDS.INIT);
-      }
-    });
-}
 
 /**
  * Creates an .env file (or opens it if it already exists) to define environment variables

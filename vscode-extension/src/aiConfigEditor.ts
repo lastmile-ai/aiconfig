@@ -5,12 +5,12 @@ import {
   ServerInfo,
   getCurrentWorkingDirectory,
   getDocumentFromServer,
-  getPythonPath,
   setupEnvironmentVariables,
   updateServerState,
   updateWebviewEditorThemeMode,
   waitUntilServerReady,
 } from "./util";
+import { getPythonPath } from "./utilities/pythonSetupUtils";
 import { getNonce } from "./utilities/getNonce";
 import { getUri } from "./utilities/getUri";
 
