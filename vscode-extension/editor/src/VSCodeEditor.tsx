@@ -432,9 +432,6 @@ export default function VSCodeEditor() {
     [aiConfigServerUrl, vscode]
   );
 
-  const getServerStatus = useCallback(async () => {
-    return await ufetch.get(ROUTE_TABLE.SERVER_STATUS(aiConfigServerUrl));
-  }, [aiConfigServerUrl]);
 
   const logEventHandler = useCallback(
     (event: LogEvent, data?: LogEventData) => {
@@ -464,7 +461,6 @@ export default function VSCodeEditor() {
       clearOutputs,
       deletePrompt,
       getModels,
-      getServerStatus,
       logEventHandler,
       openInTextEditor,
       runPrompt,
@@ -483,7 +479,6 @@ export default function VSCodeEditor() {
       clearOutputs,
       deletePrompt,
       getModels,
-      getServerStatus,
       logEventHandler,
       openInTextEditor,
       runPrompt,
