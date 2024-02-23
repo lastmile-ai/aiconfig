@@ -1,5 +1,9 @@
 ## Initialize Extension
 
-Open the Command Palette (CMD+Shift+P) and run the command `AIConfig: Initialize`
+> _Tip_: You can use the Command Palette (`CMD`+`Shift`+`P`) to run the command `AIConfig: Initialize Extension`
 
-![alt](Initialize.png)
+This installs the `python-aiconfig` package, which is used to run the AIConfig editor and SDK.
+
+**[Learn more](https://aiconfig.lastmileai.dev/docs/getting-started)**
+
+![alt](initialize.png)
