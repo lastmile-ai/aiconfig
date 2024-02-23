@@ -7,6 +7,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import { PYTHON_INTERPRETER_CACHE_KEY_NAME } from "./constants";
 
 export const EXTENSION_NAME = "vscode-aiconfig";
 export const COMMANDS = {
@@ -300,6 +301,20 @@ export async function getPythonPath(): Promise<string> {
   const pythonPath =
     pythonExtension.exports.settings.getExecutionDetails().execCommand[0];
   return pythonPath;
+}
+
+/**
+ * Save the python interpreter path to the VS Code extension workspace settings
+ * @returns void
+ */
+export async function savePythonInterpreterToCache(): Promise<void> {
+  const pythonPath = await getPythonPath();
+  const config = vscode.workspace.getConfiguration(EXTENSION_NAME);
+  await config.update(
+    PYTHON_INTERPRETER_CACHE_KEY_NAME,
+    pythonPath,
+    vscode.ConfigurationTarget.Workspace
+  );
 }
 
 /**
