@@ -361,7 +361,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
           // TODO: Create a constant value somewhere in lastmile-utils to
           // centralize string error message for missing API key. This
           // logic is defined in https://github.com/lastmile-ai/aiconfig/blob/33fb852854d0bd64b8ddb4e52320112782008b99/python/src/aiconfig/util/config_utils.py#L41
-          if (message.includes("Missing API key")) {
+          if (message?.includes("Missing API key")) {
             // TODO: Once VS Code supports Markdown in diagnostic links, add
             // support to link to our docs: https://github.com/lastmile-ai/aiconfig/pull/1300/files#r1499920802
             notificationAction = await notificationFn(
@@ -369,11 +369,12 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
               "Set API Keys"
             );
           } else {
+            const buttonOptions = message ? ["Details"] : [];
             // Notification supports 'details' for modal only. For now, just show title
             // in notification toast and full message in output channel.
             notificationAction = await notificationFn(
               notification.title,
-              message ? "Details" : undefined
+              ...buttonOptions
             );
           }
 
