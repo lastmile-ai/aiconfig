@@ -10,7 +10,10 @@ import {
   updateWebviewEditorThemeMode,
   waitUntilServerReady,
 } from "./util";
-import { getPythonPath } from "./utilities/pythonSetupUtils";
+import {
+  getPythonPath,
+  initializePythonFlow,
+} from "./utilities/pythonSetupUtils";
 import { getNonce } from "./utilities/getNonce";
 import { getUri } from "./utilities/getUri";
 
@@ -68,6 +71,9 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     // We show the extension output channel so users can see some of the server logs as they use the extension
     this.extensionOutputChannel.show(/*preserveFocus*/ true);
+
+    // Do not start the server until we ensure the Python setup is ready
+    await initializePythonFlow(this.context, this.extensionOutputChannel);
 
     // Start the AIConfig editor server process.
     editorServer = await this.startEditorServer(document);
