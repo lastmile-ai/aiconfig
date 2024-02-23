@@ -21,6 +21,7 @@ import {
   isPythonVersionAtLeast310,
   showGuideForPythonInstallation,
   setupEnvironmentVariables,
+  savePythonInterpreterToCache,
 } from "./util";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import { AIConfigEditorManager } from "./aiConfigEditorManager";
@@ -450,6 +451,7 @@ async function installDependencies(
         outputChannel.appendLine("Python is not installed");
         return;
       }
+      await savePythonInterpreterToCache();
 
       // TODO: rossdan - Set cache for Python path to vscode settings
       const pythonPath = getPythonPath();
