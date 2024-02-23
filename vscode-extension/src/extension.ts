@@ -19,13 +19,24 @@ import {
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
 } from "./util";
-import { initialize, getPythonPath } from "./utilities/pythonSetupUtils";
+import {
+  getPythonPath,
+  initialize,
+  savePythonInterpreterToCache,
+} from "./utilities/pythonSetupUtils";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
-import { AIConfigEditorManager } from "./aiConfigEditorManager";
+import {
+  AIConfigEditorManager,
+  AIConfigEditorState,
+} from "./aiConfigEditorManager";
+import {
+  ActiveEnvironmentPathChangeEvent,
+  PythonExtension,
+} from "@vscode/python-extension";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log(
@@ -118,6 +129,15 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openModelParserCommand);
 
+  const restartActiveEditorCommand = vscode.commands.registerCommand(
+    COMMANDS.RESTART_ACTIVE_EDITOR_SERVER,
+    async () => {
+      const activeEditor = aiconfigEditorManager.getActiveEditor();
+      activeEditor?.editorServer?.restart();
+    }
+  );
+  context.subscriptions.push(restartActiveEditorCommand);
+
   // Register our custom editor providers
   const aiconfigEditorManager: AIConfigEditorManager =
     new AIConfigEditorManager();
@@ -143,6 +163,32 @@ export function activate(context: vscode.ExtensionContext) {
         }
       });
     })
+  );
+
+  const pythonapi = await PythonExtension.api();
+  context.subscriptions.push(
+    pythonapi.environments.onDidChangeActiveEnvironmentPath(
+      async (e: ActiveEnvironmentPathChangeEvent) => {
+        await savePythonInterpreterToCache();
+        const editors: Array<AIConfigEditorState> = Array.from(
+          aiconfigEditorManager.getRegisteredEditors()
+        );
+        if (editors.length > 0) {
+          vscode.window
+            .showInformationMessage(
+              "Python Interpreter Updated: Would you like to refresh active AIConfig files?",
+              ...["Yes", "No"]
+            )
+            .then((selection) => {
+              if (selection === "Yes") {
+                editors.forEach((editor) => {
+                  editor.editorServer.restart();
+                });
+              }
+            });
+        }
+      }
+    )
   );
 }
 
