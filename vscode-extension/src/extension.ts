@@ -121,6 +121,15 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openModelParserCommand);
 
+  const restartActiveEditorCommand = vscode.commands.registerCommand(
+    COMMANDS.RESTART_ACTIVE_EDITOR_SERVER,
+    async () => {
+      const activeEditor = aiconfigEditorManager.getActiveEditor();
+      activeEditor?.editorServer?.restart();
+    }
+  );
+  context.subscriptions.push(restartActiveEditorCommand);
+
   // Register our custom editor providers
   const aiconfigEditorManager: AIConfigEditorManager =
     new AIConfigEditorManager();

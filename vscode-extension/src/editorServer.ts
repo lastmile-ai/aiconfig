@@ -12,12 +12,15 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process";
  */
 export class EditorServer {
   private cwd: string;
+  private _onRestart = new vscode.EventEmitter<EditorServer>();
 
   public pid: number | null = null;
   public port: number | null = null;
   // TODO: Should make this private and expose subscriptions to .stderr, .stdout, and .on
   public serverProc: ChildProcessWithoutNullStreams | null = null;
   public url: string | null = null;
+
+  public readonly onRestart = this._onRestart.event;
 
   constructor(workingDirectory: string) {
     this.cwd = workingDirectory;
@@ -70,5 +73,13 @@ export class EditorServer {
     this.pid = null;
     this.port = null;
     this.url = null;
+  }
+
+  public async restart(): Promise<EditorServer> {
+    console.log("Restarting editor server process");
+    this.stop();
+    const updatedServer = await this.start();
+    this._onRestart.fire(updatedServer);
+    return updatedServer;
   }
 }

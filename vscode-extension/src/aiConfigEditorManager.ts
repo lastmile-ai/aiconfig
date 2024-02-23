@@ -80,4 +80,8 @@ export class AIConfigEditorManager {
       this.activeEditorUri = null;
     }
   }
+
+  updateEditorServer(editor: AIConfigEditorState, server: EditorServer) {
+    editor.editorServer = server;
+  }
 }

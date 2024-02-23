@@ -103,32 +103,41 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     this.startEditorServer(document).then(async (startedServer) => {
       editorServer = startedServer;
 
-      this.aiconfigEditorManager.addEditor(
-        new AIConfigEditorState(
-          document,
-          webviewPanel,
-          startedServer,
-          this.aiconfigEditorManager
-        )
-      );
-
-      // Wait for server ready
-      await waitUntilServerReady(startedServer.url);
-
-      // Now set up the server with the latest document content
-      await this.startServerWithRetry(
-        startedServer.url,
+      const editor = new AIConfigEditorState(
         document,
-        webviewPanel
+        webviewPanel,
+        startedServer,
+        this.aiconfigEditorManager
       );
 
-      // Inform the webview of the server URL
-      if (!isWebviewDisposed) {
-        webviewPanel.webview.postMessage({
-          type: "set_server_url",
-          url: startedServer.url,
+      this.aiconfigEditorManager.addEditor(editor);
+
+      async function setupServerState(server: EditorServer) {
+        // Wait for server ready
+        await waitUntilServerReady(server.url);
+
+        // Now set up the server with the latest document content
+        await this.initializeServerStateWithRetry(
+          server.url,
+          document,
+          webviewPanel
+        );
+
+        // Inform the webview of the server URL
+        if (!isWebviewDisposed) {
+          webviewPanel.webview.postMessage({
+            type: "set_server_url",
+            url: server.url,
+          });
+        }
+
+        server.onRestart(async (newServer) => {
+          editor.editorServer = newServer;
+          await setupServerState(newServer);
         });
       }
+
+      await setupServerState(startedServer);
     });
 
     // Hook up event handlers so that we can synchronize the webview with the text document.
@@ -419,7 +428,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     }
   }
 
-  private startServerWithRetry(
+  private initializeServerStateWithRetry(
     serverUrl: string,
     document: vscode.TextDocument,
     webviewPanel: vscode.WebviewPanel
@@ -452,7 +461,11 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
             }
 
             if (selection === "Retry") {
-              this.startServerWithRetry(serverUrl, document, webviewPanel);
+              this.initializeServerStateWithRetry(
+                serverUrl,
+                document,
+                webviewPanel
+              );
             }
           });
       });
