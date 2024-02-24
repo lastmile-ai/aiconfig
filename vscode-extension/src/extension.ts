@@ -208,12 +208,6 @@ async function createNewAIConfig(
   const workspaceUri = vscode.workspace.workspaceFolders
     ? vscode.workspace.workspaceFolders[0].uri
     : null;
-  const untitledUri = workspaceUri
-    ? workspaceUri.with({
-        scheme: "untitled",
-        path: `${workspaceUri.path}/untitled.aiconfig.${mode}`,
-      })
-    : vscode.Uri.parse(`untitled:untitled.aiconfig.${mode}`);
 
   // Specify the initial content here
   const newAIConfigJSON = vscode.Uri.joinPath(
@@ -233,15 +227,27 @@ async function createNewAIConfig(
   const fileContentBuffer = await vscode.workspace.fs.readFile(fileContentPath);
   const initialContent = fileContentBuffer.toString();
 
-  const doc = await vscode.workspace.openTextDocument({
-    content: initialContent,
-    language: mode,
-  });
+  let doc: vscode.TextDocument = null;
+  let i = 0;
+  while (!doc) {
+    const fileName = `untitled${i === 0 ? "" : "-" + i}.aiconfig.${mode}`;
+    const filePath = workspaceUri
+      ? path.join(workspaceUri.path, fileName)
+      : fileName;
+    const untitledUri = vscode.Uri.file(filePath).with({ scheme: "untitled" });
+    try {
+      doc = await vscode.workspace.openTextDocument(untitledUri);
+      break;
+    } catch (err) {
+      i++;
+    }
+  }
 
-  //const doc = await vscode.workspace.openTextDocument(untitledUri);
-  await vscode.window.showTextDocument(doc, {
-    preview: false,
-    viewColumn: vscode.ViewColumn.One,
+  const editor = await vscode.window.showTextDocument(doc, { preview: false });
+
+  // TODO: saqadri - if the edits aren't applied, consider retrying or showing an error message
+  const editsApplied = await editor.edit((editBuilder) => {
+    editBuilder.insert(new vscode.Position(0, 0), initialContent);
   });
 
   await vscode.commands.executeCommand(
