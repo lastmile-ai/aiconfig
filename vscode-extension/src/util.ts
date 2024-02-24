@@ -381,6 +381,28 @@ export async function setupEnvironmentVariables(
   }
 }
 
+export function validateNewConfigName(name: string, mode: "json" | "yaml") {
+  if (name === "") {
+    return "Filename is required";
+  }
+  if (mode === "json" && !name.endsWith(".aiconfig.json")) {
+    return "Filename must end with .aiconfig.json";
+  }
+  if (
+    mode === "yaml" &&
+    !name.endsWith(".aiconfig.yaml") &&
+    !name.endsWith(".aiconfig.yml")
+  ) {
+    return "Filename must end with .aiconfig.yaml or .aiconfig.yml";
+  }
+
+  if (fs.existsSync(name)) {
+    return "File already exists";
+  }
+
+  return null;
+}
+
 function validateEnvPath(
   inputPath: string,
   workspacePath: string | null

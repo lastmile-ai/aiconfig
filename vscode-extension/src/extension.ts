@@ -18,6 +18,7 @@ import {
   isSupportedConfigExtension,
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
+  validateNewConfigName,
 } from "./util";
 import {
   getPythonPath,
@@ -76,7 +77,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const createAIConfigJSONCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_NEW_JSON,
     async () => {
-      return await createNewAIConfig(context, aiconfigEditorManager, "json");
+      return await createNewAIConfig(context, "json");
     }
   );
   context.subscriptions.push(createAIConfigJSONCommand);
@@ -84,7 +85,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const createAIConfigYAMLCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_NEW_YAML,
     async () => {
-      return await createNewAIConfig(context, aiconfigEditorManager, "yaml");
+      return await createNewAIConfig(context, "yaml");
     }
   );
   context.subscriptions.push(createAIConfigYAMLCommand);
@@ -202,19 +203,8 @@ export function deactivate() {
  */
 async function createNewAIConfig(
   context: vscode.ExtensionContext,
-  aiconfigEditorManager: AIConfigEditorManager,
   mode: "json" | "yaml" = "json"
 ) {
-  const workspaceUri = vscode.workspace.workspaceFolders
-    ? vscode.workspace.workspaceFolders[0].uri
-    : null;
-  const untitledUri = workspaceUri
-    ? workspaceUri.with({
-        scheme: "untitled",
-        path: `${workspaceUri.path}/untitled.aiconfig.${mode}`,
-      })
-    : vscode.Uri.parse(`untitled:untitled.aiconfig.${mode}`);
-
   // Specify the initial content here
   const newAIConfigJSON = vscode.Uri.joinPath(
     context.extensionUri,
@@ -233,22 +223,57 @@ async function createNewAIConfig(
   const fileContentBuffer = await vscode.workspace.fs.readFile(fileContentPath);
   const initialContent = fileContentBuffer.toString();
 
-  const doc = await vscode.workspace.openTextDocument({
-    content: initialContent,
-    language: mode,
+  const workspacePath = vscode.workspace.workspaceFolders
+    ? vscode.workspace.workspaceFolders[0].uri.path
+    : null;
+
+  // Find the first available untitled file name to suggest as default
+  let firstAvailableUntitledName: string | null = null;
+  let i = 0;
+  while (firstAvailableUntitledName === null) {
+    const fileName = `untitled${i === 0 ? "" : "-" + i}.aiconfig.${mode}`;
+    const filePath = workspacePath
+      ? path.join(workspacePath, fileName)
+      : fileName;
+
+    if (fs.existsSync(filePath)) {
+      i++;
+    } else {
+      firstAvailableUntitledName = fileName;
+    }
+  }
+
+  const newConfigName = await vscode.window.showInputBox({
+    prompt: "Enter a name for the new AIConfig file",
+    value: firstAvailableUntitledName,
+    validateInput: (input) => validateNewConfigName(input, mode),
   });
 
-  //const doc = await vscode.workspace.openTextDocument(untitledUri);
-  await vscode.window.showTextDocument(doc, {
-    preview: false,
-    viewColumn: vscode.ViewColumn.One,
+  const newConfigFilePath = workspacePath
+    ? path.join(workspacePath, newConfigName)
+    : newConfigName;
+  const newConfigUri = vscode.Uri.file(newConfigFilePath).with({
+    scheme: "untitled",
   });
 
-  await vscode.commands.executeCommand(
-    "vscode.openWith",
-    doc.uri,
-    AIConfigEditorProvider.viewType
-  );
+  const doc = await vscode.workspace.openTextDocument(newConfigUri);
+  const editor = await vscode.window.showTextDocument(doc, { preview: false });
+
+  try {
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), initialContent);
+    });
+
+    await vscode.commands.executeCommand(
+      "vscode.openWith",
+      doc.uri,
+      AIConfigEditorProvider.viewType
+    );
+  } catch (e) {
+    vscode.window.showErrorMessage(
+      `Error opening new AIConfig file ${newConfigFilePath}`
+    );
+  }
 }
 
 /**
