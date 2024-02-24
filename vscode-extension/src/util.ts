@@ -381,6 +381,26 @@ export async function setupEnvironmentVariables(
   }
 }
 
+export function validateConfigName(name: string, mode: "json" | "yaml") {
+  if (name === "") {
+    return "Name is required";
+  }
+  if (name.includes(" ")) {
+    return "Name cannot contain spaces";
+  }
+  if (mode === "json" && !name.endsWith("aiconfig.json")) {
+    return "Name must end with aiconfig.json";
+  }
+  if (
+    mode === "yaml" &&
+    !name.endsWith("aiconfig.yaml") &&
+    !name.endsWith("aiconfig.yml")
+  ) {
+    return "Name must end with aiconfig.yaml or aiconfig.yml";
+  }
+  return null;
+}
+
 function validateEnvPath(
   inputPath: string,
   workspacePath: string | null
