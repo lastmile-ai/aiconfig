@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import yaml from "js-yaml";
 import { setTimeout } from "timers/promises";
 import { ufetch } from "ufetch";
 
@@ -95,6 +96,22 @@ export function getModeFromDocument(
   document: vscode.TextDocument
 ): "json" | "yaml" {
   // determine mode from file path
+
+  if (document.isUntitled) {
+    // If the document is untitled, we cannot infer the mode from the file path, so
+    // we try to parse the document as JSON or YAML to determine the mode
+    const text = document.getText();
+    try {
+      // Try parsing the string as JSON first
+      JSON.parse(text);
+      return "json";
+    } catch (e) {
+      // If that fails, try parsing the string as YAML
+      yaml.load(text);
+      return "yaml";
+    }
+  }
+
   const documentPath = document.fileName;
   const ext = path.extname(documentPath)?.toLowerCase();
   if (ext === "yaml" || ext === ".yaml" || ext === "yml" || ext === ".yml") {
