@@ -18,6 +18,7 @@ import {
   isSupportedConfigExtension,
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
+  getConfigurationTarget,
 } from "./util";
 import {
   getPythonPath,
@@ -443,7 +444,7 @@ async function handleCustomModelRegistryUpdate(
   await config.update(
     "modelRegistryPath",
     modelRegistryPath,
-    vscode.ConfigurationTarget.Workspace
+    getConfigurationTarget()
   );
 
   vscode.window.showInformationMessage(
