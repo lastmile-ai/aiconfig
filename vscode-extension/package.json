@@ -180,6 +180,7 @@
   "dependencies": {
     "@vscode/python-extension": "^1.0.5",
     "async-mutex": "^0.4.1",
+    "js-yaml": "^4.1.0",
     "oboe": "^2.1.5",
     "portfinder": "^1.0.32",
     "ufetch": "^1.6.0"
