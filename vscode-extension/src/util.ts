@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import yaml from "js-yaml";
 import { setTimeout } from "timers/promises";
 import { ufetch } from "ufetch";
 
@@ -95,6 +96,22 @@ export function getModeFromDocument(
   document: vscode.TextDocument
 ): "json" | "yaml" {
   // determine mode from file path
+
+  if (document.isUntitled) {
+    // If the document is untitled, we cannot infer the mode from the file path, so
+    // we try to parse the document as JSON or YAML to determine the mode
+    const text = document.getText();
+    try {
+      // Try parsing the string as JSON first
+      JSON.parse(text);
+      return "json";
+    } catch (e) {
+      // If that fails, try parsing the string as YAML
+      yaml.load(text);
+      return "yaml";
+    }
+  }
+
   const documentPath = document.fileName;
   const ext = path.extname(documentPath)?.toLowerCase();
   if (ext === "yaml" || ext === ".yaml" || ext === "yml" || ext === ".yml") {
@@ -362,6 +379,26 @@ export async function setupEnvironmentVariables(
       "Please define your environment variables."
     );
   }
+}
+
+export function validateConfigName(name: string, mode: "json" | "yaml") {
+  if (name === "") {
+    return "Name is required";
+  }
+  if (name.includes(" ")) {
+    return "Name cannot contain spaces";
+  }
+  if (mode === "json" && !name.endsWith("aiconfig.json")) {
+    return "Name must end with aiconfig.json";
+  }
+  if (
+    mode === "yaml" &&
+    !name.endsWith("aiconfig.yaml") &&
+    !name.endsWith("aiconfig.yml")
+  ) {
+    return "Name must end with aiconfig.yaml or aiconfig.yml";
+  }
+  return null;
 }
 
 function validateEnvPath(
