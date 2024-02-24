@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { type ChildProcessWithoutNullStreams, execSync } from "child_process";
+import yaml from "js-yaml";
 import { setTimeout } from "timers/promises";
 import { ufetch } from "ufetch";
 
@@ -18,6 +18,7 @@ export const COMMANDS = {
   CREATE_CUSTOM_MODEL_REGISTRY: `${EXTENSION_NAME}.createCustomModelRegistry`,
   OPEN_CONFIG_FILE: `${EXTENSION_NAME}.openConfigFile`,
   OPEN_MODEL_REGISTRY: `${EXTENSION_NAME}.openModelRegistry`,
+  RESTART_ACTIVE_EDITOR_SERVER: `${EXTENSION_NAME}.restartActiveEditorServer`,
   SET_API_KEYS: `${EXTENSION_NAME}.setApiKeys`,
   SHARE: `${EXTENSION_NAME}.share`,
   SHOW_WELCOME: `${EXTENSION_NAME}.showWelcome`,
@@ -43,11 +44,6 @@ export const EDITOR_SERVER_ROUTE_TABLE = {
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_content"),
   LOAD_MODEL_PARSER_MODULE: (hostUrl: string) =>
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_model_parser_module"),
-};
-
-export type ServerInfo = {
-  proc: ChildProcessWithoutNullStreams;
-  url: string;
 };
 
 export async function isServerReady(serverUrl: string) {
@@ -100,6 +96,22 @@ export function getModeFromDocument(
   document: vscode.TextDocument
 ): "json" | "yaml" {
   // determine mode from file path
+
+  if (document.isUntitled) {
+    // If the document is untitled, we cannot infer the mode from the file path, so
+    // we try to parse the document as JSON or YAML to determine the mode
+    const text = document.getText();
+    try {
+      // Try parsing the string as JSON first
+      JSON.parse(text);
+      return "json";
+    } catch (e) {
+      // If that fails, try parsing the string as YAML
+      yaml.load(text);
+      return "yaml";
+    }
+  }
+
   const documentPath = document.fileName;
   const ext = path.extname(documentPath)?.toLowerCase();
   if (ext === "yaml" || ext === ".yaml") {
