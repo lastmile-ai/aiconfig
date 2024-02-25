@@ -420,8 +420,21 @@ export function showGuideForPythonInstallation(message: string): void {
         vscode.env.openExternal(
           vscode.Uri.parse("https://www.python.org/downloads/")
         );
+        showNotificationToRestartVsCode();
       } else if (selection === "Retry") {
         vscode.commands.executeCommand(COMMANDS.INIT);
       }
     });
+}
+
+export async function showNotificationToRestartVsCode(): Promise<void> {
+  // block on selection. Otherwise, the installation flow continues and will eventually cache the wrongly selected interpreter.
+  const selection = await vscode.window.showInformationMessage(
+    "After installing Python, Please restart VS Code to complete the installation of the AIConfig extension",
+    "Restart"
+  );
+
+  if (selection === "Restart") {
+    vscode.commands.executeCommand("workbench.action.reloadWindow");
+  }
 }
