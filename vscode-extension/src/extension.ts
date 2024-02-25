@@ -25,6 +25,7 @@ import {
   initialize,
   savePythonInterpreterToCache,
 } from "./utilities/pythonSetupUtils";
+import { performVersionInstallAndUpdateActionsIfNeeded } from "./utilities/versionUpdateUtils";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import {
   AIConfigEditorManager,
@@ -48,6 +49,8 @@ export async function activate(context: vscode.ExtensionContext) {
   const extensionOutputChannel = vscode.window.createOutputChannel("AIConfig", {
     log: true,
   });
+
+  await performVersionInstallAndUpdateActionsIfNeeded(context);
 
   const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
     initialize(context, extensionOutputChannel);
@@ -175,6 +178,10 @@ export async function activate(context: vscode.ExtensionContext) {
           aiconfigEditorManager.getRegisteredEditors()
         );
         if (editors.length > 0) {
+          // TODO: Check if user has set python interpreter, only do it if:
+          // after env is created
+          // python interpreter has actually changed
+
           vscode.window
             .showInformationMessage(
               "Python Interpreter Updated: Would you like to refresh active AIConfig files?",
