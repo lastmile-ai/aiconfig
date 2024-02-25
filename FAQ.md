@@ -22,7 +22,7 @@ Yes. [This example](https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks/
 
 We are also working on adding support for the Assistants API.
 
-### How can I use aiconfig with my own model endpoint?
+### How can I use aiconfig with my own model endpoint? TEST
 
 Model support is implemented as “ModelParser”s in the AIConfig SDK, and the idea is that anyone, including you, can define a ModelParser (and even publish it as an extension package).
 
