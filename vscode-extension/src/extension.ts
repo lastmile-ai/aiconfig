@@ -3,7 +3,6 @@
 import * as vscode from "vscode";
 
 import { ufetch } from "ufetch";
-import { exec, spawn } from "child_process";
 import fs from "fs";
 import path from "path";
 import {
@@ -21,7 +20,6 @@ import {
   validateNewConfigName,
 } from "./util";
 import {
-  getPythonPath,
   initialize,
   savePythonInterpreterToCache,
 } from "./utilities/pythonSetupUtils";
@@ -77,7 +75,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const createAIConfigJSONCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_NEW_JSON,
     async () => {
-      return await createNewAIConfig(context, "json");
+      return await createNewAIConfig("json");
     }
   );
   context.subscriptions.push(createAIConfigJSONCommand);
@@ -85,7 +83,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const createAIConfigYAMLCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_NEW_YAML,
     async () => {
-      return await createNewAIConfig(context, "yaml");
+      return await createNewAIConfig("yaml");
     }
   );
   context.subscriptions.push(createAIConfigYAMLCommand);
@@ -191,6 +189,15 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     )
   );
+
+  // Register new/untitled AIConfig document content provider
+  const untitledAIConfigProvider = new AIConfigDocumentContentProvider(context);
+  context.subscriptions.push(
+    vscode.workspace.registerTextDocumentContentProvider(
+      "aiconfig",
+      untitledAIConfigProvider
+    )
+  );
 }
 
 // This method is called when your extension is deactivated
@@ -198,31 +205,50 @@ export function deactivate() {
   console.log("Deactivated AIConfig extension");
 }
 
+// Provides the initial content for untitled AIConfig documents
+class AIConfigDocumentContentProvider
+  implements vscode.TextDocumentContentProvider
+{
+  private context: vscode.ExtensionContext;
+
+  constructor(context: vscode.ExtensionContext) {
+    this.context = context;
+  }
+
+  provideTextDocumentContent(uri: vscode.Uri): vscode.ProviderResult<string> {
+    // Specify the initial content here
+    const newAIConfigJSON = vscode.Uri.joinPath(
+      this.context.extensionUri,
+      "static",
+      "untitled.aiconfig.json"
+    );
+
+    const newAIConfigYAML = vscode.Uri.joinPath(
+      this.context.extensionUri,
+      "static",
+      "untitled.aiconfig.yaml"
+    );
+
+    const fileContentPath = uri.path.endsWith("json")
+      ? newAIConfigJSON
+      : newAIConfigYAML;
+
+    try {
+      return fs.readFileSync(fileContentPath.fsPath, "utf-8");
+    } catch (error) {
+      vscode.window.showErrorMessage(
+        "Error initializing AIConfig file content"
+      );
+      return "";
+    }
+  }
+}
+
 /**
  * Creates a new AIConfig file in the editor.
+ * The initial content is provided by the AIConfigDocumentContentProvider
  */
-async function createNewAIConfig(
-  context: vscode.ExtensionContext,
-  mode: "json" | "yaml" = "json"
-) {
-  // Specify the initial content here
-  const newAIConfigJSON = vscode.Uri.joinPath(
-    context.extensionUri,
-    "static",
-    "untitled.aiconfig.json"
-  );
-
-  const newAIConfigYAML = vscode.Uri.joinPath(
-    context.extensionUri,
-    "static",
-    "untitled.aiconfig.yaml"
-  );
-
-  const fileContentPath = mode === "json" ? newAIConfigJSON : newAIConfigYAML;
-
-  const fileContentBuffer = await vscode.workspace.fs.readFile(fileContentPath);
-  const initialContent = fileContentBuffer.toString();
-
+async function createNewAIConfig(mode: "json" | "yaml" = "json") {
   const workspacePath = vscode.workspace.workspaceFolders
     ? vscode.workspace.workspaceFolders[0].uri.path
     : null;
@@ -253,17 +279,11 @@ async function createNewAIConfig(
     ? path.join(workspacePath, newConfigName)
     : newConfigName;
   const newConfigUri = vscode.Uri.file(newConfigFilePath).with({
-    scheme: "untitled",
+    scheme: "aiconfig",
   });
 
-  const doc = await vscode.workspace.openTextDocument(newConfigUri);
-  const editor = await vscode.window.showTextDocument(doc, { preview: false });
-
   try {
-    await editor.edit((editBuilder) => {
-      editBuilder.insert(new vscode.Position(0, 0), initialContent);
-    });
-
+    const doc = await vscode.workspace.openTextDocument(newConfigUri);
     await vscode.commands.executeCommand(
       "vscode.openWith",
       doc.uri,
