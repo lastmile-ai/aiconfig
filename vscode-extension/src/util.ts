@@ -8,6 +8,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
+export const FULL_EXTENSION_NAME = "lastmile-ai.vscode-aiconfig";
 export const EXTENSION_NAME = "vscode-aiconfig";
 export const COMMANDS = {
   INIT: `${EXTENSION_NAME}.init`,
