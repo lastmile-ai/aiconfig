@@ -1033,7 +1033,7 @@ function AIConfigEditorBase({
   // Don't poll if server status is in an error state since it won't automatically recover
   const getServerStatusCallback = callbacks?.getServerStatus;
   useEffect(() => {
-    if (!getServerStatusCallback || serverStatus !== "OK") {
+    if (readOnly || !getServerStatusCallback || serverStatus !== "OK") {
       return;
     }
 
