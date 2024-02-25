@@ -1,0 +1,15 @@
+# Core libraries
+
+# TODO (remove hard pin to gradio once this is fixed and buttons no longer hang)
+# gradio>=4.0,<5.0
+gradio==4.16.0
+python-aiconfig>=1.1.25
+aiconfig-extension-hugging-face>=0.0.13
+
+#Uploading AIConfig to S3 and lastmile endpoints for sharing
+boto3
+botocore
+requests
+
+# Extra utils
+asyncio

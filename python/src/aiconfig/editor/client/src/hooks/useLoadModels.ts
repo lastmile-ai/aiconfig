@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import NotificationContext from "../components/notifications/NotificationContext";
+import AIConfigContext from "../contexts/AIConfigContext";
 
 export default function useLoadModels(
   modelSearch: string,
@@ -7,10 +8,11 @@ export default function useLoadModels(
 ) {
   const [models, setModels] = useState<string[]>([]);
   const { showNotification } = useContext(NotificationContext);
+  const { readOnly } = useContext(AIConfigContext);
 
   const loadModels = useCallback(
     async (modelSearch: string) => {
-      if (!getModels) {
+      if (!getModels || readOnly) {
         return;
       }
       try {
@@ -25,7 +27,7 @@ export default function useLoadModels(
         });
       }
     },
-    [getModels, showNotification]
+    [getModels, readOnly, showNotification]
   );
 
   useEffect(() => {

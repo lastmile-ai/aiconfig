@@ -1,4 +1,4 @@
-import { Text, Title, TitleOrder } from "@mantine/core";
+import { Anchor, Text, Title, TitleOrder } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import ReactMarkdown from "react-markdown";
 import { HeadingProps } from "react-markdown/lib/ast-to-react";
@@ -16,6 +16,20 @@ function CustomHeading({ level, children, ...props }: HeadingProps) {
   );
 }
 
+function LinkRenderer({
+  href,
+  children,
+}: {
+  href?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Anchor href={href} target="_blank">
+      {children}
+    </Anchor>
+  );
+}
+
 export function TextRenderer({ content }: TextRendererProps) {
   // Renders markdown & also syntax highlights code for code snippets from ChatGPT / GPT-3
   // Note that this may cause errors for some other responses / non-code things from other models potentially
@@ -24,6 +38,7 @@ export function TextRenderer({ content }: TextRendererProps) {
     <ReactMarkdown
       remarkPlugins={[[remarkGfm, { singleTilde: false }]]}
       components={{
+        a: LinkRenderer,
         code({ inline, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || "");
           return !inline ? (

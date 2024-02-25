@@ -57,6 +57,14 @@ def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
             parameters[key.lower()] = model_settings[key]
             completion_data["parameters"] = parameters
 
+    # The default model in HF is sshleifer/distilbart-cnn-12-6, which raises a
+    # KeyError, "summary_text", when calling the inference client.
+    # Instead, default to the model (which supports remote inference) with the
+    # most "likes" in HF
+    # https://huggingface.co/models?pipeline_tag=summarization&sort=likes
+    if completion_data.get("model") is None:
+        completion_data["model"] = "facebook/bart-large-cnn"
+
     return completion_data
 
 
