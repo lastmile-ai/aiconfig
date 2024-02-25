@@ -120,7 +120,7 @@
     },
     "walkthroughs": [
       {
-        "id": "vscode-aiconfig.welcomeWalkthrough",
+        "id": "welcomeWalkthrough",
         "title": "Get Started with AIConfig",
         "description": "AIConfig Editor is the Generative AI studio for VS Code. Discover and personalize features that supercharge your AI development workflow.",
         "steps": [
