@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { type ChildProcessWithoutNullStreams, execSync } from "child_process";
+import yaml from "js-yaml";
 import { setTimeout } from "timers/promises";
 import { ufetch } from "ufetch";
 
@@ -18,6 +18,7 @@ export const COMMANDS = {
   CREATE_CUSTOM_MODEL_REGISTRY: `${EXTENSION_NAME}.createCustomModelRegistry`,
   OPEN_CONFIG_FILE: `${EXTENSION_NAME}.openConfigFile`,
   OPEN_MODEL_REGISTRY: `${EXTENSION_NAME}.openModelRegistry`,
+  RESTART_ACTIVE_EDITOR_SERVER: `${EXTENSION_NAME}.restartActiveEditorServer`,
   SET_API_KEYS: `${EXTENSION_NAME}.setApiKeys`,
   SHARE: `${EXTENSION_NAME}.share`,
   SHOW_WELCOME: `${EXTENSION_NAME}.showWelcome`,
@@ -43,11 +44,6 @@ export const EDITOR_SERVER_ROUTE_TABLE = {
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_content"),
   LOAD_MODEL_PARSER_MODULE: (hostUrl: string) =>
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_model_parser_module"),
-};
-
-export type ServerInfo = {
-  proc: ChildProcessWithoutNullStreams;
-  url: string;
 };
 
 export async function isServerReady(serverUrl: string) {
@@ -100,6 +96,22 @@ export function getModeFromDocument(
   document: vscode.TextDocument
 ): "json" | "yaml" {
   // determine mode from file path
+
+  if (document.isUntitled) {
+    // If the document is untitled, we cannot infer the mode from the file path, so
+    // we try to parse the document as JSON or YAML to determine the mode
+    const text = document.getText();
+    try {
+      // Try parsing the string as JSON first
+      JSON.parse(text);
+      return "json";
+    } catch (e) {
+      // If that fails, try parsing the string as YAML
+      yaml.load(text);
+      return "yaml";
+    }
+  }
+
   const documentPath = document.fileName;
   const ext = path.extname(documentPath)?.toLowerCase();
   if (ext === "yaml" || ext === ".yaml" || ext === "yml" || ext === ".yml") {
@@ -298,17 +310,12 @@ export async function setupEnvironmentVariables(
 ) {
   const homedir = require("os").homedir(); // This is cross-platform: https://stackoverflow.com/a/9081436
   const defaultEnvPath = path.join(homedir, ".env");
-
-  // TODO: If there are multiple workspace folders, use common lowest
-  // ancestor as workspacePath: https://github.com/lastmile-ai/aiconfig/issues/1299
-  const workspacePath = vscode.workspace.workspaceFolders
-    ? vscode.workspace.workspaceFolders[0].uri.fsPath
-    : null;
+  const lowestCommonWorkspacePath = getLowestCommonAncestorAcrossWorkspaces();
 
   const envPath = await vscode.window.showInputBox({
     prompt: "Enter the path of your .env file",
     value: defaultEnvPath,
-    validateInput: (input) => validateEnvPath(input, workspacePath),
+    validateInput: (input) => validateEnvPath(input, lowestCommonWorkspacePath),
   });
 
   if (!envPath) {
@@ -369,15 +376,75 @@ export async function setupEnvironmentVariables(
   }
 }
 
+export function validateNewConfigName(name: string, mode: "json" | "yaml") {
+  if (name === "") {
+    return "Filename is required";
+  }
+  if (mode === "json" && !name.endsWith(".aiconfig.json")) {
+    return "Filename must end with .aiconfig.json";
+  }
+  if (
+    mode === "yaml" &&
+    !name.endsWith(".aiconfig.yaml") &&
+    !name.endsWith(".aiconfig.yml")
+  ) {
+    return "Filename must end with .aiconfig.yaml or .aiconfig.yml";
+  }
+
+  if (fs.existsSync(name)) {
+    return "File already exists";
+  }
+
+  return null;
+}
+
+/**
+ * Some VS Code setups can have multiple workspaces, in which
+ * case we should take the lowest common ancestor path that is shared
+ * across all of them so that the same .env file can be used for multiple
+ * AIConfig files
+ * @returns lowestCommonAncestorPath (string | undefined)
+ *    -> string of path to lowest common ancestor: empty means no shared path
+ *    -> undefined if no workspaces are defined in VS Code session
+ */
+function getLowestCommonAncestorAcrossWorkspaces(): string | undefined {
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (workspaceFolders === undefined || workspaceFolders.length === 0) {
+    return undefined;
+  }
+
+  const workspacePaths = workspaceFolders.map((folder) =>
+    path.normalize(folder.uri.fsPath)
+  );
+  let lowestCommonAncestorPath: string;
+  const separator = path.sep; // Handles Windows and Linux
+  lowestCommonAncestorPath = workspacePaths.reduce(
+    (currLowestCommonAncestorPath, currPath) => {
+      const ancestorFolders = currLowestCommonAncestorPath.split(separator);
+      const currPathFolders = currPath.split(separator);
+      const commonPathFolders: Array<string> = [];
+      for (var i = 0; i < ancestorFolders.length; i++) {
+        if (ancestorFolders[i] === currPathFolders[i]) {
+          commonPathFolders.push(ancestorFolders[i]);
+        } else {
+          break;
+        }
+      }
+      return commonPathFolders.join(separator);
+    }
+  );
+  return lowestCommonAncestorPath;
+}
+
 function validateEnvPath(
   inputPath: string,
-  workspacePath: string | null
+  workspacePath: string | undefined
 ): string | null {
   if (!inputPath) {
     return "File path is required";
   } else if (path.basename(inputPath) !== ".env") {
     return 'Filename must be ".env"';
-  } else if (workspacePath !== null) {
+  } else if (workspacePath != null && workspacePath !== "") {
     // loadenv() from Python checks each folder from the file/program where
     // it's invoked for the presence of an `.env` file. Therefore, the `.env
     // file must be saved either at the top-level directory of the workspace

@@ -18,12 +18,14 @@ import {
   isSupportedConfigExtension,
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
+  validateNewConfigName,
 } from "./util";
 import {
   getPythonPath,
   initialize,
   savePythonInterpreterToCache,
 } from "./utilities/pythonSetupUtils";
+import { performVersionInstallAndUpdateActionsIfNeeded } from "./utilities/versionUpdateUtils";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import {
   AIConfigEditorManager,
@@ -47,6 +49,8 @@ export async function activate(context: vscode.ExtensionContext) {
   const extensionOutputChannel = vscode.window.createOutputChannel("AIConfig", {
     log: true,
   });
+
+  await performVersionInstallAndUpdateActionsIfNeeded(context);
 
   const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
     initialize(context, extensionOutputChannel);
@@ -76,7 +80,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const createAIConfigJSONCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_NEW_JSON,
     async () => {
-      return await createNewAIConfig(context, aiconfigEditorManager, "json");
+      return await createNewAIConfig(context, "json");
     }
   );
   context.subscriptions.push(createAIConfigJSONCommand);
@@ -84,7 +88,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const createAIConfigYAMLCommand = vscode.commands.registerCommand(
     COMMANDS.CREATE_NEW_YAML,
     async () => {
-      return await createNewAIConfig(context, aiconfigEditorManager, "yaml");
+      return await createNewAIConfig(context, "yaml");
     }
   );
   context.subscriptions.push(createAIConfigYAMLCommand);
@@ -129,6 +133,15 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openModelParserCommand);
 
+  const restartActiveEditorCommand = vscode.commands.registerCommand(
+    COMMANDS.RESTART_ACTIVE_EDITOR_SERVER,
+    async () => {
+      const activeEditor = aiconfigEditorManager.getActiveEditor();
+      activeEditor?.editorServer?.restart();
+    }
+  );
+  context.subscriptions.push(restartActiveEditorCommand);
+
   // Register our custom editor providers
   const aiconfigEditorManager: AIConfigEditorManager =
     new AIConfigEditorManager();
@@ -165,6 +178,10 @@ export async function activate(context: vscode.ExtensionContext) {
           aiconfigEditorManager.getRegisteredEditors()
         );
         if (editors.length > 0) {
+          // TODO: Check if user has set python interpreter, only do it if:
+          // after env is created
+          // python interpreter has actually changed
+
           vscode.window
             .showInformationMessage(
               "Python Interpreter Updated: Would you like to refresh active AIConfig files?",
@@ -173,8 +190,7 @@ export async function activate(context: vscode.ExtensionContext) {
             .then((selection) => {
               if (selection === "Yes") {
                 editors.forEach((editor) => {
-                  // Next PR: refresh editor here
-                  vscode.window.showInformationMessage("Refresh boiiiiii");
+                  editor.editorServer.restart();
                 });
               }
             });
@@ -194,19 +210,8 @@ export function deactivate() {
  */
 async function createNewAIConfig(
   context: vscode.ExtensionContext,
-  aiconfigEditorManager: AIConfigEditorManager,
   mode: "json" | "yaml" = "json"
 ) {
-  const workspaceUri = vscode.workspace.workspaceFolders
-    ? vscode.workspace.workspaceFolders[0].uri
-    : null;
-  const untitledUri = workspaceUri
-    ? workspaceUri.with({
-        scheme: "untitled",
-        path: `${workspaceUri.path}/untitled.aiconfig.${mode}`,
-      })
-    : vscode.Uri.parse(`untitled:untitled.aiconfig.${mode}`);
-
   // Specify the initial content here
   const newAIConfigJSON = vscode.Uri.joinPath(
     context.extensionUri,
@@ -225,22 +230,57 @@ async function createNewAIConfig(
   const fileContentBuffer = await vscode.workspace.fs.readFile(fileContentPath);
   const initialContent = fileContentBuffer.toString();
 
-  const doc = await vscode.workspace.openTextDocument({
-    content: initialContent,
-    language: mode,
+  const workspacePath = vscode.workspace.workspaceFolders
+    ? vscode.workspace.workspaceFolders[0].uri.path
+    : null;
+
+  // Find the first available untitled file name to suggest as default
+  let firstAvailableUntitledName: string | null = null;
+  let i = 0;
+  while (firstAvailableUntitledName === null) {
+    const fileName = `untitled${i === 0 ? "" : "-" + i}.aiconfig.${mode}`;
+    const filePath = workspacePath
+      ? path.join(workspacePath, fileName)
+      : fileName;
+
+    if (fs.existsSync(filePath)) {
+      i++;
+    } else {
+      firstAvailableUntitledName = fileName;
+    }
+  }
+
+  const newConfigName = await vscode.window.showInputBox({
+    prompt: "Enter a name for the new AIConfig file",
+    value: firstAvailableUntitledName,
+    validateInput: (input) => validateNewConfigName(input, mode),
   });
 
-  //const doc = await vscode.workspace.openTextDocument(untitledUri);
-  await vscode.window.showTextDocument(doc, {
-    preview: false,
-    viewColumn: vscode.ViewColumn.One,
+  const newConfigFilePath = workspacePath
+    ? path.join(workspacePath, newConfigName)
+    : newConfigName;
+  const newConfigUri = vscode.Uri.file(newConfigFilePath).with({
+    scheme: "untitled",
   });
 
-  await vscode.commands.executeCommand(
-    "vscode.openWith",
-    doc.uri,
-    AIConfigEditorProvider.viewType
-  );
+  const doc = await vscode.workspace.openTextDocument(newConfigUri);
+  const editor = await vscode.window.showTextDocument(doc, { preview: false });
+
+  try {
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), initialContent);
+    });
+
+    await vscode.commands.executeCommand(
+      "vscode.openWith",
+      doc.uri,
+      AIConfigEditorProvider.viewType
+    );
+  } catch (e) {
+    vscode.window.showErrorMessage(
+      `Error opening new AIConfig file ${newConfigFilePath}`
+    );
+  }
 }
 
 /**
