@@ -1,6 +1,6 @@
 ## Create AIConfig
 
-> _Tip_: You can use the Command Palette (`CMD`+`Shift`+`P`) to run `AIConfig: Create New` to create a new aiconfig anytime.
+> _Tip_: You can use the Command Palette (`CMD/CTRL + Shift + P`) to run `AIConfig: Create New` to create a new aiconfig anytime.
 
 You can create the aiconfig in JSON or YAML format. The file defines the models, prompts and settings of your AI workflow.
 
