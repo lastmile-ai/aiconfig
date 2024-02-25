@@ -1,6 +1,6 @@
 ## Find out more!
 
-> _Tip_: Explore all the features of AIConfig Editor by looking for `AIConfig` in the Command Palette.
+> _Tip_: Explore all the features of AIConfig Editor by looking for `AIConfig` in the Command Palette (`CMD/CTRL + Shift + P`).
 
 Learn more about generative AI with AIConfig:
 

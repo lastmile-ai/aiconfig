@@ -119,34 +119,42 @@
           {
             "id": "initializeExtension",
             "title": "Initialize Extension",
-            "description": "Get the extension set up for first use.\n[Initialize Extension](command:vscode-aiconfig.init)",
+            "description": "Ensure you have everything needed before using the extension for the first time\n[Initialize Extension](command:vscode-aiconfig.init)",
             "media": {
               "markdown": "media/initializeExtension.md"
-            }
+            },
+            "completionEvents": ["onCommand:vscode-aiconfig.init"]
           },
           {
             "id": "setEnvironment",
             "title": "Set API Keys",
-            "description": "Set up a .env file with the API keys needed to access the models you want to use.\n[Set API Keys](command:vscode-aiconfig.setApiKeys)",
+            "description": "Define your model API keys in an ``.env`` file\n[Set API Keys](command:vscode-aiconfig.setApiKeys)",
             "media": {
               "markdown": "media/apiKeys.md"
-            }
+            },
+            "completionEvents": ["onCommand:vscode-aiconfig.setApiKeys"]
           },
           {
             "id": "createAIConfig",
             "title": "Create your first AIConfig",
-            "description": "Let's turn your VS Code into a generative AI studio. \n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON: [Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
+            "description": "Turn your VS Code IDE into a generative AI studio:\n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON:\n[Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
             "media": {
               "markdown": "media/createAIConfig.md"
-            }
+            },
+            "completionEvents": ["onCommand:vscode-aiconfig.createAIConfigYAML", "onCommand:vscode-aiconfig.createAIConfigJSON"]
           },
           {
             "id": "learnMore",
             "title": "Find out more",
-            "description": "Explore all the features of AIConfig Editor by looking for “AIConfig” in the Command Palette (CMD+Shift+P)",
+            "description": "Explore all the features of the AIConfig Editor by looking for “AIConfig” in the Command Palette (``CMD/CTRL + Shift + P``)",
             "media": {
               "markdown": "media/more.md"
-            }
+            },
+            "completionEvents": [
+              "onLink:https://aiconfig.lastmileai.dev/docs/category/overview", 
+              "onLink:https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks",
+              "onLink:https://discord.com/invite/xBhNKTetGx"
+            ]
           }
         ]
       }
