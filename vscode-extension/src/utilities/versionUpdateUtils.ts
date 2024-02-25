@@ -18,8 +18,8 @@ import { VERSION_KEY_NAME } from "../constants";
 export async function performVersionInstallAndUpdateActionsIfNeeded(
   context: vscode.ExtensionContext
 ) {
-  const extension = vscode.extensions.getExtension(context.extension.id);
-  const currExtensionVersion = extension?.packageJSON.version;
+  const extension = context.extension;
+  const currExtensionVersion = extension.packageJSON.version;
   const config = vscode.workspace.getConfiguration(EXTENSION_NAME);
   const lastActivatedVersion = config.get<string>(VERSION_KEY_NAME);
   await config.update(
@@ -30,8 +30,10 @@ export async function performVersionInstallAndUpdateActionsIfNeeded(
 
   if (lastActivatedVersion === undefined || lastActivatedVersion === "") {
     // First time activating extension, show walkthrough
-    // Will implement next PR
-    // vscode.commands.executeCommand("workbench.action.openWalkthrough");
+    vscode.commands.executeCommand(
+      "workbench.action.openWalkthrough",
+      `${extension.id}#welcomeWalkthrough`
+    );
   } else if (
     currExtensionVersion > lastActivatedVersion
     // TODO: Add check for if version string follows format of %d.%d.%d
