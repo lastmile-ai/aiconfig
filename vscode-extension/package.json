@@ -15,6 +15,9 @@
     "Other"
   ],
   "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "commands": [
       {
@@ -102,6 +105,11 @@
           "type": "string",
           "default": "",
           "description": "Path to the python interpreter for this VS Code workspace"
+        },
+        "vscode-aiconfig.version": {
+          "type": "string",
+          "default": "",
+          "description": "Version of the AIConfig Editor extension last time it was activated. We use this value to check if the extension has been updated to prompt users to reload VS Code"
         }
       }
     },
