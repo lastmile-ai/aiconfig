@@ -208,6 +208,11 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
               "Ignoring server update error due to webview disposal"
             );
             return;
+          } else if (document.isUntitled) {
+            // Saving untitled document triggers content change (i.e. setting full document
+            // content) but the server can't load from untitled:/ file scheme. Just ignore
+            // this scenario instead of showing the notification
+            console.info("Ignoring server update error for untitled document");
           }
 
           webviewPanel.webview.postMessage({
