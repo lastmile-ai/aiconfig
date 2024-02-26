@@ -41,6 +41,9 @@ gpt_models_extra = [
 ]
 for model in gpt_models_main:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
+ModelParserRegistry.register_model_parser(
+    GeminiModelParser("gemini-pro"), ["gemini-pro"]
+)
 dalle_image_generation_models = [
     "dall-e-2",
     "dall-e-3",
@@ -55,9 +58,7 @@ ModelParserRegistry.register_model_parser(
 ModelParserRegistry.register_model_parser(ClaudeBedrockModelParser())
 for model in gpt_models_extra:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
-ModelParserRegistry.register_model_parser(
-    GeminiModelParser("gemini-pro"), ["gemini-pro"]
-)
+
 ModelParserRegistry.register_model_parser(HuggingFaceTextGenerationParser())
 ModelParserRegistry.register_model_parser(PaLMChatParser())
 ModelParserRegistry.register_model_parser(PaLMTextParser())
