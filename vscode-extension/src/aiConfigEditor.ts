@@ -488,22 +488,23 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         vscode.window
           .showErrorMessage(
             "Failed to start aiconfig server. You can view the aiconfig but cannot modify it.",
-            ...["Details", "Retry"]
+            ...["Details", "Retry", "Change Python Interpreter"]
           )
-          .then((selection) => {
+          .then(async (selection) => {
             if (selection === "Details") {
               this.extensionOutputChannel.error(
                 e?.message ?? JSON.stringify(e)
               );
               this.extensionOutputChannel.show(/*preserveFocus*/ true);
-            }
-
-            if (selection === "Retry") {
+            } else if (selection === "Retry") {
               this.initializeServerStateWithRetry(
                 serverUrl,
                 document,
                 webviewPanel
               );
+            } else if (selection === "Change Python Interpreter") {
+              // Change interpreter will prompt to restart the editor server
+              await vscode.commands.executeCommand("python.setInterpreter");
             }
           });
       });
