@@ -46,6 +46,15 @@
         }
       },
       {
+        "command": "vscode-aiconfig.submitFeedback",
+        "title": "Submit Feedback",
+        "category": "AIConfig",
+        "icon": {
+          "light": "./static/bug.svg",
+          "dark": "./static/bug-dark.svg"
+        }
+      },
+      {
         "command": "vscode-aiconfig.customModelRegistryPath",
         "title": "Set Custom Model Registry File Path",
         "category": "AIConfig"
@@ -183,6 +192,11 @@
       "editor/title": [
         {
           "command": "vscode-aiconfig.share",
+          "when": "resourcePath =~ /.*(\\.aiconfig\\.json|\\.aiconfig\\.yaml|\\.aiconfig\\.yml|\\.aiconfig)$/",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-aiconfig.submitFeedback",
           "when": "resourcePath =~ /.*(\\.aiconfig\\.json|\\.aiconfig\\.yaml|\\.aiconfig\\.yml|\\.aiconfig)$/",
           "group": "navigation"
         }
