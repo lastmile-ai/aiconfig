@@ -87,9 +87,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const submitUserFeedbackCommand = vscode.commands.registerCommand(
     COMMANDS.SUBMIT_FEEDBACK,
-    async () => {
-      // TODO: implement next PR
-      // return await shareAIConfig(context, aiconfigEditorManager);
+    () => {
+      // TODO: Add issue template forms to standardize feedback that we submit
+      // Can include info like device OS, extension version, aiconfig.log content, pip list, etc
+      vscode.env.openExternal(
+        vscode.Uri.parse("https://github.com/lastmile-ai/aiconfig/issues/new")
+      );
     }
   );
   context.subscriptions.push(submitUserFeedbackCommand);
