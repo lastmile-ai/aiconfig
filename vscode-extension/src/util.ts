@@ -21,7 +21,7 @@ export const COMMANDS = {
   RESTART_ACTIVE_EDITOR_SERVER: `${EXTENSION_NAME}.restartActiveEditorServer`,
   SET_API_KEYS: `${EXTENSION_NAME}.setApiKeys`,
   SHARE: `${EXTENSION_NAME}.share`,
-  SHOW_WELCOME: `${EXTENSION_NAME}.showWelcome`,
+  SUBMIT_FEEDBACK: `${EXTENSION_NAME}.submitFeedback`,
 };
 
 export const SUPPORTED_FILE_EXTENSIONS = [".json", ".yaml", ".yml"];
@@ -380,28 +380,6 @@ export async function setupEnvironmentVariables(
       "Please define your environment variables."
     );
   }
-}
-
-export function validateNewConfigName(name: string, mode: "json" | "yaml") {
-  if (name === "") {
-    return "Filename is required";
-  }
-  if (mode === "json" && !name.endsWith(".aiconfig.json")) {
-    return "Filename must end with .aiconfig.json";
-  }
-  if (
-    mode === "yaml" &&
-    !name.endsWith(".aiconfig.yaml") &&
-    !name.endsWith(".aiconfig.yml")
-  ) {
-    return "Filename must end with .aiconfig.yaml or .aiconfig.yml";
-  }
-
-  if (fs.existsSync(name)) {
-    return "File already exists";
-  }
-
-  return null;
 }
 
 /**

@@ -38,6 +38,12 @@ It allows you to store and iterate on generative AI behavior _separately from yo
 
 ## Quickstart
 
+For VS Code Users:
+
+- Install the [AIConfig Editor VS Code Extension](https://marketplace.visualstudio.com/items?itemName=lastmile-ai.vscode-aiconfig)
+
+If you're not using VS Code, follow these steps:
+
 1. `pip3 install python-aiconfig`
 2. `export OPENAI_API_KEY='your-key'`
 3. `aiconfig edit`
