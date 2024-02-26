@@ -163,7 +163,7 @@
           {
             "id": "createAIConfig",
             "title": "Create your first AIConfig",
-            "description": "Turn your VS Code IDE into a generative AI studio:\n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON:\n[Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
+            "description": "**Note:** Please complete the ``Initialize Extension`` step before opening an AIConfig file!\nTurn your VS Code IDE into a generative AI studio:\n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON:\n[Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
             "media": {
               "markdown": "media/createAIConfig.md"
             },
