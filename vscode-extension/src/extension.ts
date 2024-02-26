@@ -58,20 +58,6 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(setupCommand);
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.SHOW_WELCOME, () => {
-      const welcomeFilePath = path.join(
-        context.extensionPath,
-        "media",
-        "welcomePage.md"
-      );
-      vscode.commands.executeCommand(
-        "markdown.showPreview",
-        vscode.Uri.file(welcomeFilePath)
-      );
-    })
-  );
-
-  context.subscriptions.push(
     vscode.commands.registerCommand(COMMANDS.SET_API_KEYS, async () => {
       await setupEnvironmentVariables(context);
     })
