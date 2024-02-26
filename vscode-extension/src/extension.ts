@@ -7,7 +7,6 @@ import {
   PythonExtension,
 } from "@vscode/python-extension";
 import { ufetch } from "ufetch";
-import fs from "fs";
 import path from "path";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import {
@@ -26,7 +25,6 @@ import {
   isSupportedConfigExtension,
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
-  validateNewConfigName,
   getConfigurationTarget,
 } from "./util";
 import {
@@ -228,7 +226,6 @@ async function createNewAIConfig(
   );
 
   const fileContentPath = mode === "json" ? newAIConfigJSON : newAIConfigYAML;
-
   const fileContentBuffer = await vscode.workspace.fs.readFile(fileContentPath);
   const initialContent = fileContentBuffer.toString();
 
@@ -236,46 +233,22 @@ async function createNewAIConfig(
     ? vscode.workspace.workspaceFolders[0].uri.path
     : null;
 
-  // Find the first available untitled file name to suggest as default
-  let firstAvailableUntitledName: string | null = null;
-  let i = 0;
-  while (firstAvailableUntitledName === null) {
-    const fileName = `untitled${i === 0 ? "" : "-" + i}.aiconfig.${mode}`;
-    const filePath = workspacePath
-      ? path.join(workspacePath, fileName)
-      : fileName;
-
-    if (fs.existsSync(filePath)) {
-      i++;
-    } else {
-      firstAvailableUntitledName = fileName;
-    }
-  }
-
-  const newConfigName = await vscode.window.showInputBox({
-    prompt: "Enter a name for the new AIConfig file",
-    value: firstAvailableUntitledName,
-    validateInput: (input) => validateNewConfigName(input, mode),
-  });
-
+  const untitledFileName = `untitled.aiconfig.${mode}`;
   const newConfigFilePath = workspacePath
-    ? path.join(workspacePath, newConfigName)
-    : newConfigName;
+    ? path.join(workspacePath, untitledFileName)
+    : untitledFileName;
   const newConfigUri = vscode.Uri.file(newConfigFilePath).with({
     scheme: "untitled",
   });
 
-  const doc = await vscode.workspace.openTextDocument(newConfigUri);
-  const editor = await vscode.window.showTextDocument(doc, { preview: false });
+  const edit = new vscode.WorkspaceEdit();
+  edit.insert(newConfigUri, new vscode.Position(0, 0), initialContent);
+  await vscode.workspace.applyEdit(edit);
 
   try {
-    await editor.edit((editBuilder) => {
-      editBuilder.insert(new vscode.Position(0, 0), initialContent);
-    });
-
     await vscode.commands.executeCommand(
       "vscode.openWith",
-      doc.uri,
+      newConfigUri,
       AIConfigEditorProvider.viewType
     );
   } catch (e) {
