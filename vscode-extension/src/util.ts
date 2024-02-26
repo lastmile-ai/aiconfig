@@ -21,7 +21,6 @@ export const COMMANDS = {
   RESTART_ACTIVE_EDITOR_SERVER: `${EXTENSION_NAME}.restartActiveEditorServer`,
   SET_API_KEYS: `${EXTENSION_NAME}.setApiKeys`,
   SHARE: `${EXTENSION_NAME}.share`,
-  SHOW_WELCOME: `${EXTENSION_NAME}.showWelcome`,
 };
 
 export const SUPPORTED_FILE_EXTENSIONS = [".json", ".yaml", ".yml"];
@@ -79,6 +78,12 @@ export function updateWebviewEditorThemeMode(webview: vscode.Webview) {
     type: "set_theme",
     theme: isDarkMode ? "dark" : "light",
   });
+}
+
+export function getConfigurationTarget() {
+  return vscode.workspace.workspaceFolders !== undefined
+    ? vscode.ConfigurationTarget.Workspace
+    : vscode.ConfigurationTarget.Global;
 }
 
 export async function updateServerState(

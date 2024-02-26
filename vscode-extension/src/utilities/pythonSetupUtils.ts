@@ -11,7 +11,7 @@ import * as vscode from "vscode";
 
 import { exec, execSync, spawn } from "child_process";
 import path from "path";
-import { COMMANDS, EXTENSION_NAME } from "../util";
+import { COMMANDS, EXTENSION_NAME, getConfigurationTarget } from "../util";
 import { PythonExtension } from "@vscode/python-extension";
 import { PYTHON_INTERPRETER_CACHE_KEY_NAME } from "../constants";
 
@@ -354,7 +354,7 @@ export async function savePythonInterpreterToCache(): Promise<void> {
   await config.update(
     PYTHON_INTERPRETER_CACHE_KEY_NAME,
     pythonPath,
-    vscode.ConfigurationTarget.Workspace
+    getConfigurationTarget()
   );
 }
 

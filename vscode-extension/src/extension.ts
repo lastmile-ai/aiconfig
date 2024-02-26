@@ -2,10 +2,18 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 
+import {
+  ActiveEnvironmentPathChangeEvent,
+  PythonExtension,
+} from "@vscode/python-extension";
 import { ufetch } from "ufetch";
-import { exec, spawn } from "child_process";
 import fs from "fs";
 import path from "path";
+import { AIConfigEditorProvider } from "./aiConfigEditor";
+import {
+  AIConfigEditorManager,
+  AIConfigEditorState,
+} from "./aiConfigEditorManager";
 import {
   EXTENSION_NAME,
   COMMANDS,
@@ -19,25 +27,17 @@ import {
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
   validateNewConfigName,
+  getConfigurationTarget,
 } from "./util";
 import {
-  getPythonPath,
   initialize,
+  installDependencies,
   savePythonInterpreterToCache,
 } from "./utilities/pythonSetupUtils";
 import { performVersionInstallAndUpdateActionsIfNeeded } from "./utilities/versionUpdateUtils";
-import { AIConfigEditorProvider } from "./aiConfigEditor";
-import {
-  AIConfigEditorManager,
-  AIConfigEditorState,
-} from "./aiConfigEditorManager";
-import {
-  ActiveEnvironmentPathChangeEvent,
-  PythonExtension,
-} from "@vscode/python-extension";
 
 // This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+// Your extension is activated the very first time a command is executed
 export async function activate(context: vscode.ExtensionContext) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
@@ -56,20 +56,6 @@ export async function activate(context: vscode.ExtensionContext) {
     initialize(context, extensionOutputChannel);
   });
   context.subscriptions.push(setupCommand);
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.SHOW_WELCOME, () => {
-      const welcomeFilePath = path.join(
-        context.extensionPath,
-        "media",
-        "welcomePage.md"
-      );
-      vscode.commands.executeCommand(
-        "markdown.showPreview",
-        vscode.Uri.file(welcomeFilePath)
-      );
-    })
-  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(COMMANDS.SET_API_KEYS, async () => {
@@ -137,6 +123,7 @@ export async function activate(context: vscode.ExtensionContext) {
     COMMANDS.RESTART_ACTIVE_EDITOR_SERVER,
     async () => {
       const activeEditor = aiconfigEditorManager.getActiveEditor();
+      await installDependencies(context, extensionOutputChannel);
       activeEditor?.editorServer?.restart();
     }
   );
@@ -187,9 +174,10 @@ export async function activate(context: vscode.ExtensionContext) {
               "Python Interpreter Updated: Would you like to refresh active AIConfig files?",
               ...["Yes", "No"]
             )
-            .then((selection) => {
+            .then(async (selection) => {
               if (selection === "Yes") {
-                editors.forEach((editor) => {
+                await installDependencies(context, extensionOutputChannel);
+                editors.forEach(async (editor) => {
                   editor.editorServer.restart();
                 });
               }
@@ -469,7 +457,7 @@ async function handleCustomModelRegistryUpdate(
   await config.update(
     "modelRegistryPath",
     modelRegistryPath,
-    vscode.ConfigurationTarget.Workspace
+    getConfigurationTarget()
   );
 
   vscode.window.showInformationMessage(

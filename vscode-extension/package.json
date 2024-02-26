@@ -28,18 +28,22 @@
       },
       {
         "command": "vscode-aiconfig.createAIConfigJSON",
-        "title": "Create New (JSON)",
+        "title": "Create New AIConfig (json)",
         "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.createAIConfigYAML",
-        "title": "Create New (YAML)",
+        "title": "Create New AIConfig (yaml)",
         "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.share",
         "title": "Share (get permalink)",
-        "category": "AIConfig"
+        "category": "AIConfig",
+        "icon": {
+          "light": "./static/share.svg",
+          "dark": "./static/share-dark.svg"
+        }
       },
       {
         "command": "vscode-aiconfig.customModelRegistryPath",
@@ -90,7 +94,6 @@
             "filenamePattern": "*.aiconfig"
           }
         ],
-        "enableForDiffView": false,
         "priority": "default"
       }
     ],
@@ -132,7 +135,9 @@
             "media": {
               "markdown": "media/initializeExtension.md"
             },
-            "completionEvents": ["onCommand:vscode-aiconfig.init"]
+            "completionEvents": [
+              "onCommand:vscode-aiconfig.init"
+            ]
           },
           {
             "id": "setEnvironment",
@@ -141,7 +146,9 @@
             "media": {
               "markdown": "media/apiKeys.md"
             },
-            "completionEvents": ["onCommand:vscode-aiconfig.setApiKeys"]
+            "completionEvents": [
+              "onCommand:vscode-aiconfig.setApiKeys"
+            ]
           },
           {
             "id": "createAIConfig",
@@ -150,7 +157,10 @@
             "media": {
               "markdown": "media/createAIConfig.md"
             },
-            "completionEvents": ["onCommand:vscode-aiconfig.createAIConfigYAML", "onCommand:vscode-aiconfig.createAIConfigJSON"]
+            "completionEvents": [
+              "onCommand:vscode-aiconfig.createAIConfigYAML",
+              "onCommand:vscode-aiconfig.createAIConfigJSON"
+            ]
           },
           {
             "id": "learnMore",
@@ -160,14 +170,43 @@
               "markdown": "media/more.md"
             },
             "completionEvents": [
-              "onLink:https://aiconfig.lastmileai.dev/docs/category/overview", 
+              "onLink:https://aiconfig.lastmileai.dev/docs/category/overview",
               "onLink:https://github.com/lastmile-ai/aiconfig/tree/main/cookbooks",
               "onLink:https://discord.com/invite/xBhNKTetGx"
             ]
           }
         ]
       }
-    ]
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "vscode-aiconfig.share",
+          "when": "resourcePath =~ /.*(\\.aiconfig\\.json|\\.aiconfig\\.yaml|\\.aiconfig\\.yml|\\.aiconfig)$/",
+          "group": "navigation"
+        }
+      ],
+      "file/newFile": [
+        {
+          "command": "vscode-aiconfig.createAIConfigJSON"
+        },
+        {
+          "command": "vscode-aiconfig.createAIConfigYAML"
+        }
+      ],
+      "webview/context": [
+        {
+          "command": "vscode-aiconfig.customModelRegistryPath",
+          "when": "resourcePath =~ /.*(\\.aiconfig\\.json|\\.aiconfig\\.yaml|\\.aiconfig\\.yml|\\.aiconfig)$/",
+          "group": "z_commands"
+        },
+        {
+          "command": "vscode-aiconfig.setApiKeys",
+          "when": "resourcePath =~ /.*(\\.aiconfig\\.json|\\.aiconfig\\.yaml|\\.aiconfig\\.yml|\\.aiconfig)$/",
+          "group": "z_commands"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
