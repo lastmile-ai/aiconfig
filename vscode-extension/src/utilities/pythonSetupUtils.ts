@@ -178,19 +178,32 @@ export async function installRequirements(
         console.log(`pip install process exited with code ${code}`);
         vscode.window
           .showErrorMessage(
-            `Failed to install dependencies. Pip exited with code ${code}. Please try again later`,
-            ...["Select Interpreter", "Retry Install Dependencies"]
+            `Failed to install dependencies. Pip exited with code ${code}. Please try again later\n`,
+            ...["Change Interpreter", "Retry", "Fix Manually"]
           )
           .then((selection) => {
-            if (selection === "Retry Install Dependencies") {
+            if (selection === "Retry") {
               installRequirements(
                 context,
                 progress,
                 cancellationToken,
                 outputChannel
               );
-            } else if (selection === "Select Interpreter") {
+            } else if (selection === "Change Interpreter") {
               vscode.commands.executeCommand(COMMANDS.INIT);
+            } else if (selection === "Fix Manually") {
+              vscode.window
+                .showInformationMessage(
+                  "Try installing `python-aiconfig` package manually using the command `python3 -m pip install python-aiconfig` in your terminal/shell.",
+                  ...["Copy command to Clipboard"]
+                )
+                .then((selection) => {
+                  if (selection === "Copy command to Clipboard") {
+                    vscode.env.clipboard.writeText(
+                      "python3 -m pip install python-aiconfig"
+                    );
+                  }
+                });
             }
           });
         resolve(false);
