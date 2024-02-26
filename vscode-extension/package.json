@@ -28,18 +28,22 @@
       },
       {
         "command": "vscode-aiconfig.createAIConfigJSON",
-        "title": "Create New (JSON)",
+        "title": "Create New AIConfig (json)",
         "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.createAIConfigYAML",
-        "title": "Create New (YAML)",
+        "title": "Create New AIConfig (yaml)",
         "category": "AIConfig"
       },
       {
         "command": "vscode-aiconfig.share",
         "title": "Share (get permalink)",
-        "category": "AIConfig"
+        "category": "AIConfig",
+        "icon": {
+          "light": "./static/share.svg",
+          "dark": "./static/share-dark.svg"
+        }
       },
       {
         "command": "vscode-aiconfig.customModelRegistryPath",
@@ -90,7 +94,6 @@
             "filenamePattern": "*.aiconfig"
           }
         ],
-        "enableForDiffView": false,
         "priority": "default"
       }
     ],
@@ -167,7 +170,31 @@
           }
         ]
       }
-    ]
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "vscode-aiconfig.share",
+          "when": "resourcePath =~ /.*(\\.aiconfig\\.json|\\.aiconfig\\.yaml|\\.aiconfig\\.yml|\\.aiconfig)$/",
+          "group": "navigation"
+        }
+      ],
+      "file/newFile": [
+        {
+          "command": "vscode-aiconfig.createAIConfigJSON"
+        },
+        {
+          "command": "vscode-aiconfig.createAIConfigYAML"
+        }
+      ],
+      "webview/context": [
+        {
+          "command": "vscode-aiconfig.customModelRegistryPath",
+          "when": "resourcePath =~ /.*(\\.aiconfig\\.json|\\.aiconfig\\.yaml|\\.aiconfig\\.yml|\\.aiconfig)$/",
+          "group": "z_commands"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
