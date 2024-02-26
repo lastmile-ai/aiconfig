@@ -382,28 +382,6 @@ export async function setupEnvironmentVariables(
   }
 }
 
-export function validateNewConfigName(name: string, mode: "json" | "yaml") {
-  if (name === "") {
-    return "Filename is required";
-  }
-  if (mode === "json" && !name.endsWith(".aiconfig.json")) {
-    return "Filename must end with .aiconfig.json";
-  }
-  if (
-    mode === "yaml" &&
-    !name.endsWith(".aiconfig.yaml") &&
-    !name.endsWith(".aiconfig.yml")
-  ) {
-    return "Filename must end with .aiconfig.yaml or .aiconfig.yml";
-  }
-
-  if (fs.existsSync(name)) {
-    return "File already exists";
-  }
-
-  return null;
-}
-
 /**
  * Some VS Code setups can have multiple workspaces, in which
  * case we should take the lowest common ancestor path that is shared

@@ -7,7 +7,6 @@ import {
   PythonExtension,
 } from "@vscode/python-extension";
 import { ufetch } from "ufetch";
-import fs from "fs";
 import path from "path";
 import { AIConfigEditorProvider } from "./aiConfigEditor";
 import {
@@ -26,7 +25,6 @@ import {
   isSupportedConfigExtension,
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
-  validateNewConfigName,
   getConfigurationTarget,
 } from "./util";
 import {
