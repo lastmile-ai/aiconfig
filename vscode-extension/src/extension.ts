@@ -27,6 +27,7 @@ import {
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
   validateNewConfigName,
+  getConfigurationTarget,
 } from "./util";
 import {
   initialize,
@@ -456,7 +457,7 @@ async function handleCustomModelRegistryUpdate(
   await config.update(
     "modelRegistryPath",
     modelRegistryPath,
-    vscode.ConfigurationTarget.Workspace
+    getConfigurationTarget()
   );
 
   vscode.window.showInformationMessage(
