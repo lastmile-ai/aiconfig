@@ -2,7 +2,9 @@
 
 > _Tip_: You can use the Command Palette (`CMD/CTRL + Shift + P`) to run the command `AIConfig: Initialize Extension`
 
-This installs the `python-aiconfig` package, which is used to run the AIConfig editor and SDK.
+This installs the `python-aiconfig` package, which is used to run the AIConfig editor and SDK. It can take a few minutes to download for the first time so please be patient.
+
+Additionally, please ensure that the Python interpreter you select was downloaded/created with admin privileges, otherwise it will fail when trying to download the package dependencies
 
 **[Learn more](https://aiconfig.lastmileai.dev/docs/getting-started)**
 
