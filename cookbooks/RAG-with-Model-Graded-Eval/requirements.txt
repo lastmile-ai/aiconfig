@@ -1,2 +1,0 @@
-python-aiconfig==1.1.20
-chromadb
