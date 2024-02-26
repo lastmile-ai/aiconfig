@@ -120,7 +120,8 @@
     "configurationDefaults": {
       "workbench.editorAssociations": {
         "{git,gitlens,sapling-diff}:/**/*.{aiconfig.json, aiconfig.yaml}": "default"
-      }
+      },
+      "workbench.editor.untitled.labelFormat": "name"
     },
     "walkthroughs": [
       {
