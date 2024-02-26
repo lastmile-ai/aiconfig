@@ -8,6 +8,7 @@ import {
 import { PaLMTextParserPromptSchema } from "../shared/prompt_schemas/PaLMTextParserPromptSchema";
 import { PaLMChatParserPromptSchema } from "../shared/prompt_schemas/PaLMChatParserPromptSchema";
 import { AnyscaleEndpointPromptSchema } from "../shared/prompt_schemas/AnyscaleEndpointPromptSchema";
+import { GeminiParserPromptSchema } from "../shared/prompt_schemas/GeminiPromptSchema";
 import { HuggingFaceAutomaticSpeechRecognitionPromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionPromptSchema";
 import { HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema";
 import { HuggingFaceImage2TextTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextTransformerPromptSchema";
@@ -23,6 +24,7 @@ import { HuggingFaceTextTranslationRemoteInferencePromptSchema } from "../shared
 import { HuggingFaceImage2TextRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextRemoteInferencePromptSchema";
 import { ClaudeBedrockPromptSchema } from "../shared/prompt_schemas/ClaudeBedrockPromptSchema";
 import { HuggingFaceConversationalRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceConversationalRemoteInferencePromptSchema";
+
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -120,6 +122,9 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
 
   // PaLMChatParser
   "models/chat-bison-001": PaLMChatParserPromptSchema,
+
+  // Gemini
+  "gemini-pro": GeminiParserPromptSchema,
 
   // AnyscaleEndpoint
   AnyscaleEndpoint: AnyscaleEndpointPromptSchema,
