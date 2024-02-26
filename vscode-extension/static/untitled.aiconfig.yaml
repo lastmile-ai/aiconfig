@@ -16,7 +16,7 @@ metadata:
       top_p: 1
   parameters:
     animal: llama
-    location: ""
+    location: NYC
 name: New Untitled AIConfig
 prompts:
   - input: write a haiku about a cat
@@ -56,23 +56,27 @@ prompts:
       parameters: {}
     name: prompt_2
     outputs:
-      - data: "High Andes' crisp air,
+      - data: "Llama in high rise,
 
-          Llama graces the landscape,
+          Neon lights meet wild brown eyes,
 
-          Mountain's gentle heir."
+          In taxis, he flies.
+
+          "
         execution_count: 0
         metadata:
-          created: 1708578047
-          id: chatcmpl-8uvUNToxqmF0dZ2rOBOinHKptnLJ3
+          created: 1708971469
+          id: chatcmpl-8wZptszlEW14hFiPFagpdWsoqkuIE
           model: gpt-4-0613
           object: chat.completion.chunk
           raw_response:
-            content: "High Andes' crisp air,
+            content: "Llama in high rise,
 
-              Llama graces the landscape,
+              Neon lights meet wild brown eyes,
 
-              Mountain's gentle heir."
+              In taxis, he flies.
+
+              "
             role: assistant
           role: assistant
         output_type: execute_result

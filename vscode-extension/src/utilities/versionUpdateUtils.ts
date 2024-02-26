@@ -34,7 +34,7 @@ export async function performVersionInstallAndUpdateActionsIfNeeded(
     // First time activating extension, show walkthrough
     vscode.commands.executeCommand(
       "workbench.action.openWalkthrough",
-      `${extension.id}#welcomeWalkthrough`
+      "lastmile-ai.vscode-aiconfig#welcomeWalkthrough"
     );
   } else if (
     currExtensionVersion > lastActivatedVersion

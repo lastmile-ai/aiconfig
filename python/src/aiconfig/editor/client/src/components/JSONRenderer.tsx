@@ -16,12 +16,27 @@ export default memo(function JSONRenderer({
   schema,
 }: Props) {
   const { readOnly } = useContext(AIConfigContext);
-  // Prism is a read only renderer.
-  return !onChange || readOnly ? (
-    <Prism language="json" styles={{ code: { textWrap: "pretty" } }}>
-      {JSON.stringify(content, null, 2)}
-    </Prism>
-  ) : (
-    <JSONEditor content={content} onChangeContent={onChange} schema={schema} />
-  );
+  let renderer = null;
+
+  if (!onChange || readOnly) {
+    if (content) {
+      // Prism is a read only renderer, but requires a string input. Just render
+      // null if the content is empty in readonly
+      renderer = (
+        <Prism language="json" styles={{ code: { textWrap: "pretty" } }}>
+          {JSON.stringify(content, null, 2)}
+        </Prism>
+      );
+    }
+  } else {
+    renderer = (
+      <JSONEditor
+        content={content}
+        onChangeContent={onChange}
+        schema={schema}
+      />
+    );
+  }
+
+  return renderer;
 });
