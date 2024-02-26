@@ -1,24 +1,21 @@
 import * as vscode from "vscode";
 import {
-  COMMANDS,
   EXTENSION_NAME,
-  ServerInfo,
   getCurrentWorkingDirectory,
   getDocumentFromServer,
-  getPythonPath,
+  setupEnvironmentVariables,
   updateServerState,
   updateWebviewEditorThemeMode,
   waitUntilServerReady,
 } from "./util";
+import { initializePythonFlow } from "./utilities/pythonSetupUtils";
 import { getNonce } from "./utilities/getNonce";
 import { getUri } from "./utilities/getUri";
-
-import { spawn } from "child_process";
-import { getPortPromise } from "portfinder";
 import {
   AIConfigEditorManager,
   AIConfigEditorState,
 } from "./aiConfigEditorManager";
+import { EditorServer, EditorServerState } from "./editor_server/editorServer";
 
 /**
  * Provider for AIConfig editors.
@@ -60,25 +57,16 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken
   ): Promise<void> {
-    let editorServer: ServerInfo | null = null;
+    const editorServer: EditorServer = new EditorServer(
+      getCurrentWorkingDirectory(document)
+    );
+    let isWebviewDisposed = false;
 
     // TODO: saqadri - clean up console log
     //console.log(`${document.fileName}: resolveCustomTextEditor called`);
 
     // We show the extension output channel so users can see some of the server logs as they use the extension
     this.extensionOutputChannel.show(/*preserveFocus*/ true);
-
-    // Start the AIConfig editor server process.
-    editorServer = await this.startEditorServer(document);
-
-    this.aiconfigEditorManager.addEditor(
-      new AIConfigEditorState(
-        document,
-        webviewPanel,
-        editorServer,
-        this.aiconfigEditorManager
-      )
-    );
 
     // Setup initial content for the webview
     webviewPanel.webview.options = {
@@ -92,10 +80,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         vscode.Uri.joinPath(this.context.extensionUri, "editor", "static"),
       ],
     };
-    webviewPanel.webview.html = this.getHtmlForWebview(
-      webviewPanel.webview,
-      editorServer
-    );
+    webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
 
     function updateWebview() {
       if (isWebviewDisposed) {
@@ -109,6 +94,85 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       });
     }
 
+    // Update webview immediately so we unblock the render; server init will happen in the background.
+    updateWebview();
+
+    const setupServerState = async (server: EditorServer) => {
+      // Wait for server ready
+      await waitUntilServerReady(server.url);
+
+      // Now set up the server with the latest document content
+      await this.initializeServerStateWithRetry(
+        server.url,
+        document,
+        webviewPanel
+      );
+
+      // Inform the webview of the server URL
+      if (!isWebviewDisposed) {
+        webviewPanel.webview.postMessage({
+          type: "set_server_url",
+          url: server.url,
+        });
+      }
+    };
+
+    // Do not start the server until we ensure the Python setup is ready
+    // Don't await at the top level here since that blocks the webview render (which happens
+    // only when resolveCustomTextEditor returns)
+    initializePythonFlow(this.context, this.extensionOutputChannel).then(() =>
+      this.startEditorServer(editorServer, document).then(
+        async (startedServer) => {
+          const editor = new AIConfigEditorState(
+            document,
+            webviewPanel,
+            startedServer,
+            this.aiconfigEditorManager
+          );
+
+          this.aiconfigEditorManager.addEditor(editor);
+          await setupServerState(startedServer);
+        }
+      )
+    );
+
+    const serverStateChangeSubscription = editorServer.onDidChangeState(
+      async (state) => {
+        switch (state) {
+          case EditorServerState.Stopped:
+            // Webview should be readonly until the server state is ready
+            if (!isWebviewDisposed) {
+              webviewPanel.webview.postMessage({
+                type: "set_readonly_state",
+                isReadOnly: true,
+              });
+            }
+            break;
+          case EditorServerState.Starting:
+            // Show notification with server starting progress if webview is focused
+            if (!isWebviewDisposed && webviewPanel.active) {
+              await vscode.window.withProgress(
+                {
+                  location: vscode.ProgressLocation.Notification,
+                  title: "Starting editor server...",
+                  cancellable: false,
+                },
+                async (progress) => {
+                  progress.report({
+                    increment: 50,
+                  });
+                }
+              );
+            }
+            break;
+        }
+      }
+    );
+
+    const serverRestartSubscription = editorServer.onRestart(async (server) => {
+      await setupServerState(server);
+    });
+
     // Hook up event handlers so that we can synchronize the webview with the text document.
     //
     // The text document acts as our model, so we have to sync change in the document to our
@@ -121,8 +185,6 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     // This is because we need to ignore these changes to avoid an infinite loop in onDidChangeTextDocument
     // For more details, see https://code.visualstudio.com/api/extension-guides/custom-editors#synchronizing-changes-with-the-textdocument
     let isInternalDocumentChange = false;
-
-    let isWebviewDisposed = false;
 
     function updateServerWithRetry(
       serverUrl: string,
@@ -146,6 +208,11 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
               "Ignoring server update error due to webview disposal"
             );
             return;
+          } else if (document.isUntitled) {
+            // Saving untitled document triggers content change (i.e. setting full document
+            // content) but the server can't load from untitled:/ file scheme. Just ignore
+            // this scenario instead of showing the notification
+            console.info("Ignoring server update error for untitled document");
           }
 
           webviewPanel.webview.postMessage({
@@ -210,7 +277,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
           updateWebview();
 
           // Notify server of updated document
-          if (editorServer) {
+          if (editorServer.url) {
             await updateServerWithRetry(editorServer.url, e.document);
           }
         }
@@ -255,13 +322,11 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       console.log(`${document.fileName}: Webview disposed`);
 
       changeDocumentSubscription.dispose();
+      serverRestartSubscription.dispose();
+      serverStateChangeSubscription.dispose();
       willSaveDocumentSubscription.dispose();
 
-      if (editorServer) {
-        console.log("Killing editor server process");
-        editorServer.proc.kill();
-        editorServer = null;
-      }
+      editorServer.stop();
     });
 
     // Receive message from the webview.
@@ -340,12 +405,26 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
           const message = notification.message;
 
-          // Notification supports 'details' for modal only. For now, just show title
-          // in notification toast and full message in output channel.
-          const notificationAction = await notificationFn(
-            notification.title,
-            message ? "Details" : undefined
-          );
+          let notificationAction;
+          // TODO: Create a constant value somewhere in lastmile-utils to
+          // centralize string error message for missing API key. This
+          // logic is defined in https://github.com/lastmile-ai/aiconfig/blob/33fb852854d0bd64b8ddb4e52320112782008b99/python/src/aiconfig/util/config_utils.py#L41
+          if (message?.includes("Missing API key")) {
+            // TODO: Once VS Code supports Markdown in diagnostic links, add
+            // support to link to our docs: https://github.com/lastmile-ai/aiconfig/pull/1300/files#r1499920802
+            notificationAction = await notificationFn(
+              "Looks like you're missing an API key, please set it in your .env variables",
+              "Set API Keys"
+            );
+          } else {
+            const buttonOptions = message ? ["Details"] : [];
+            // Notification supports 'details' for modal only. For now, just show title
+            // in notification toast and full message in output channel.
+            notificationAction = await notificationFn(
+              notification.title,
+              ...buttonOptions
+            );
+          }
 
           if (message) {
             outputChannelFn(
@@ -354,8 +433,10 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
                 document
               )
             );
-            // If user clicked "Details", show & focus the output channel
-            if (notificationAction === "Details") {
+            if (notificationAction === "Set API Keys") {
+              await setupEnvironmentVariables(this.context);
+            } else if (notificationAction === "Details") {
+              // If user clicked "Details", show & focus the output channel
               this.extensionOutputChannel.show(/*preserveFocus*/ true);
             }
           }
@@ -363,9 +444,6 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
           notification.onClose?.();
       }
     });
-
-    // Update webview immediately so we unblock the render; server init should happen in the background.
-    updateWebview();
 
     // Set initial dark/light theme mode for the webview and on theme changes. Also, on tab activation.
     if (!isWebviewDisposed) {
@@ -381,27 +459,19 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         if (e.webviewPanel.active) {
           if (!isWebviewDisposed) {
             updateWebviewEditorThemeMode(webviewPanel.webview);
+
+            // Inform the webview if editor server updated in the background
+            webviewPanel.webview.postMessage({
+              type: "set_server_url",
+              url: editorServer.url,
+            });
           }
         }
       });
     }
-
-    // Wait for server ready
-    await waitUntilServerReady(editorServer.url);
-
-    // Now set up the server with the latest document content
-    await this.startServerWithRetry(editorServer.url, document, webviewPanel);
-
-    // Inform the webview of the server URL
-    if (!isWebviewDisposed) {
-      webviewPanel.webview.postMessage({
-        type: "set_server_url",
-        url: editorServer.url,
-      });
-    }
   }
 
-  private startServerWithRetry(
+  private initializeServerStateWithRetry(
     serverUrl: string,
     document: vscode.TextDocument,
     webviewPanel: vscode.WebviewPanel
@@ -423,18 +493,23 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         vscode.window
           .showErrorMessage(
             "Failed to start aiconfig server. You can view the aiconfig but cannot modify it.",
-            ...["Details", "Retry"]
+            ...["Details", "Retry", "Change Python Interpreter"]
           )
-          .then((selection) => {
+          .then(async (selection) => {
             if (selection === "Details") {
               this.extensionOutputChannel.error(
                 e?.message ?? JSON.stringify(e)
               );
               this.extensionOutputChannel.show(/*preserveFocus*/ true);
-            }
-
-            if (selection === "Retry") {
-              this.startServerWithRetry(serverUrl, document, webviewPanel);
+            } else if (selection === "Retry") {
+              this.initializeServerStateWithRetry(
+                serverUrl,
+                document,
+                webviewPanel
+              );
+            } else if (selection === "Change Python Interpreter") {
+              // Change interpreter will prompt to restart the editor server
+              await vscode.commands.executeCommand("python.setInterpreter");
             }
           });
       });
@@ -445,74 +520,51 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
   }
 
   private async startEditorServer(
+    editorServer: EditorServer,
     document: vscode.TextDocument
-  ): Promise<ServerInfo> {
+  ): Promise<EditorServer> {
     this.extensionOutputChannel.info(
       this.prependMessage("Starting editor server", document)
     );
 
-    // If there is a custom model registry path, pass it to the server
-    let config = vscode.workspace.getConfiguration(EXTENSION_NAME);
-    let modelRegistryPath = config.get<string>("modelRegistryPath");
-    const modelRegistryPathArgs = modelRegistryPath
-      ? ["--parsers-module-path", modelRegistryPath]
-      : [];
+    await editorServer.start();
 
-    const openPort = await getPortPromise();
-
-    const pythonPath = await getPythonPath();
-
-    // TODO: saqadri - specify parsers_module_path
-    // `aiconfig` command not useable here because it relies on python. Instead invoke the module directly.
-    let startServer = spawn(
-      pythonPath,
-      [
-        "-m",
-        "aiconfig.scripts.aiconfig_cli",
-        "start",
-        "--server-port",
-        openPort.toString(),
-        ...modelRegistryPathArgs,
-      ],
-      {
-        cwd: getCurrentWorkingDirectory(document),
-      }
-    );
-
-    startServer.stdout.on("data", (data) => {
+    editorServer.onStdout((data) => {
       this.extensionOutputChannel.info(this.prependMessage(data, document));
       console.log(`server stdout: ${data}`);
     });
 
     // TODO: saqadri - stderr is very noisy for some reason (duplicating INFO logs). Figure out why before enabling this.
-    startServer.stderr.on("data", (data) => {
+    editorServer.onStderr((data) => {
       this.extensionOutputChannel.error(this.prependMessage(data, document));
       console.error(`server stderr: ${data}`);
     });
 
-    startServer.on("spawn", () => {
+    editorServer.onSpawn(() => {
       this.extensionOutputChannel.info(
         this.prependMessage(
-          `Started server at port=${openPort}, pid=${startServer.pid}`,
+          `Started server at port=${editorServer.port}, pid=${editorServer.pid}`,
           document
         )
       );
-      console.log(`server spawned: ${startServer.pid}`);
+      console.log(`server spawned: ${editorServer.pid}`);
     });
 
-    startServer.on("close", (code) => {
+    editorServer.onClose((code) => {
       if (code !== 0) {
         this.extensionOutputChannel.error(
           this.prependMessage(
-            `Server at port=${openPort}, pid=${startServer.pid} was terminated unexpectedly with exit code ${code}`,
+            `Server at port=${editorServer.port}, pid=${editorServer.pid} was terminated unexpectedly with exit code ${code}`,
             document
           )
         );
-        console.error(`server terminated unexpectedly: exit code=${code}`);
+        console.error(
+          `Server at port=${editorServer.port}, pid=${editorServer.pid} terminated unexpectedly: exit code=${code}`
+        );
       } else {
         this.extensionOutputChannel.info(
           this.prependMessage(
-            `Server at port=${openPort}, pid=${startServer.pid} was terminated successfully.`,
+            `Server at port=${editorServer.port}, pid=${editorServer.pid} was terminated successfully.`,
             document
           )
         );
@@ -520,28 +572,20 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
       }
     });
 
-    startServer.on("error", (err) => {
+    editorServer.onError((err) => {
       this.extensionOutputChannel.error(
         this.prependMessage(JSON.stringify(err), document)
       );
       // TODO: saqadri - add "restart" option with error message
     });
 
-    const serverUrl = `http://localhost:${openPort}`;
-
-    return {
-      proc: startServer,
-      url: serverUrl,
-    };
+    return editorServer;
   }
 
   /**
    * Get the static html used for the editor webviews.
    */
-  private getHtmlForWebview(
-    webview: vscode.Webview,
-    editorServer: ServerInfo
-  ): string {
+  private getHtmlForWebview(webview: vscode.Webview): string {
     // The JS file from the React build output
     const scriptUri = getUri(
       webview,
@@ -563,7 +607,7 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 	   <head>
 		 <meta charset="utf-8">
 		 <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
-		 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: http: https: 'self'; media-src data: http: https: 'self'; connect-src vscode-webview: ${editorServer.url} http: https:; style-src 'unsafe-inline' ${webview.cspSource} https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0 https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/editor/editor.main.css; script-src 'nonce-${nonce}' vscode-resource: https: http: https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0 https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/base/browser/ui/codicons/codicon/codicon.ttf; worker-src blob:;">
+		 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: http: https: 'self'; media-src data: http: https: 'self'; connect-src vscode-webview: http://localhost:* http: https:; style-src 'unsafe-inline' ${webview.cspSource} https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0 https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/editor/editor.main.css; script-src 'nonce-${nonce}' vscode-resource: https: http: https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0 https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/base/browser/ui/codicons/codicon/codicon.ttf; worker-src blob:;">
 		 </head>
 	   <body>
 		 <noscript>You need to enable JavaScript to run this app.</noscript>
