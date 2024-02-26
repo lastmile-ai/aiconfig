@@ -36,7 +36,12 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     );
     const providerRegistration = vscode.window.registerCustomEditorProvider(
       AIConfigEditorProvider.viewType,
-      provider
+      provider,
+      {
+        webviewOptions: {
+          enableFindWidget: true,
+        },
+      }
     );
     return providerRegistration;
   }
