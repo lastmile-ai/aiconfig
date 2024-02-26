@@ -1,6 +1,8 @@
 $schema: https://json.schemastore.org/aiconfig-1.0
 /$schema: https://json.schemastore.org/aiconfig-1.0
-description: ''
+description: 'mistralai/Mixtral-8x7B-Instruct-v0.1
+
+  meta-llama/Llama-2-13b-chat-hf'
 metadata:
   models: {}
   parameters:
@@ -86,15 +88,15 @@ prompts:
     remember_chat_context: false
   name: generate_v1
   outputs:
-  - data: The price of flour sold in Boston was $11.87 a barrel in August.
+  - data: The price of superfine flour sold in Boston was $11.87 a barrel.
     execution_count: 0
     metadata:
-      created: 1707439800
-      id: chatcmpl-8q9NY0YI6dDvzeFEebWIQZaOyLPwQ
-      model: gpt-3.5-turbo-16k-0613
+      created: 1708986622
+      id: chatcmpl-8wdmIfCdaZ5S2DRIQOLuAzspWQkbn
+      model: gpt-4-0613
       object: chat.completion.chunk
       raw_response:
-        content: The price of flour sold in Boston was $11.87 a barrel in August.
+        content: The price of superfine flour sold in Boston was $11.87 a barrel.
         role: assistant
       role: assistant
     output_type: execute_result
@@ -113,7 +115,19 @@ prompts:
       settings: {}
     parameters: {}
   name: generate_v2
-  outputs: []
+  outputs:
+  - data: The price of flour sold in Boston was $11.87 a barrel.
+    execution_count: 0
+    metadata:
+      created: 1708986634
+      id: chatcmpl-8wdmU4UP7FSNMcRHBJbtFmBPdARCN
+      model: gpt-3.5-turbo-16k-0613
+      object: chat.completion.chunk
+      raw_response:
+        content: The price of flour sold in Boston was $11.87 a barrel.
+        role: assistant
+      role: assistant
+    output_type: execute_result
 - input: "Answer the following question using the provided context. \n\nQuestion:\
     \ {{query}} \nContext: {{context}}\n\nReview your answer and the context. Is the\
     \ answer strictly justified by the context? If necessary, revise your answer.\n\
@@ -124,10 +138,25 @@ prompts:
     \ reviews your answer a final time.\n\n\nOutput ONLY YOUR BEST ANSWER.\n\nBEST\
     \ ANSWER:"
   metadata:
-    model: gpt-4
+    model:
+      name: gpt-4
+      settings:
+        model: gpt-4
     parameters: {}
   name: generate
-  outputs: []
+  outputs:
+  - data: The price of superfine flour sold in Boston was $11.87 a barrel.
+    execution_count: 0
+    metadata:
+      created: 1708987043
+      id: chatcmpl-8wdt5JEIBBEUMSsFB9Ovrh3v3iADw
+      model: gpt-4-0613
+      object: chat.completion.chunk
+      raw_response:
+        content: The price of superfine flour sold in Boston was $11.87 a barrel.
+        role: assistant
+      role: assistant
+    output_type: execute_result
 - input: "Given the following question, and answer, does the answer satisfactorily\
     \ answer the question? \n\nGive a relevance verdict (YES or NO) with an explanation.\n\
     \nQuestion: {{query}}\nAnswer: {{generate.output}}\n\nVerdict:\nExplanation:"
