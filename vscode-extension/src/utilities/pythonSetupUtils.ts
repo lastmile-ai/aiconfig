@@ -178,7 +178,7 @@ export async function installRequirements(
         console.log(`pip install process exited with code ${code}`);
         vscode.window
           .showErrorMessage(
-            `Failed to install dependencies. Pip exited with code ${code}. Please try again later\n`,
+            `Failed to install dependencies. Pip exited with code ${code}.\n`,
             ...["Change Interpreter", "Retry", "Fix Manually"]
           )
           .then((selection) => {
