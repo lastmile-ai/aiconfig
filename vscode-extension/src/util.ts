@@ -81,6 +81,12 @@ export function updateWebviewEditorThemeMode(webview: vscode.Webview) {
   });
 }
 
+export function getConfigurationTarget() {
+  return vscode.workspace.workspaceFolders !== undefined
+    ? vscode.ConfigurationTarget.Workspace
+    : vscode.ConfigurationTarget.Global;
+}
+
 export async function updateServerState(
   serverUrl: string,
   document: vscode.TextDocument
