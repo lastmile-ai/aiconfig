@@ -21,6 +21,7 @@ export const COMMANDS = {
   RESTART_ACTIVE_EDITOR_SERVER: `${EXTENSION_NAME}.restartActiveEditorServer`,
   SET_API_KEYS: `${EXTENSION_NAME}.setApiKeys`,
   SHARE: `${EXTENSION_NAME}.share`,
+  SUBMIT_FEEDBACK: `${EXTENSION_NAME}.submitFeedback`,
 };
 
 export const SUPPORTED_FILE_EXTENSIONS = [".json", ".yaml", ".yml"];

@@ -85,6 +85,15 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(shareModelParserCommand);
 
+  const submitUserFeedbackCommand = vscode.commands.registerCommand(
+    COMMANDS.SUBMIT_FEEDBACK,
+    async () => {
+      // TODO: implement next PR
+      // return await shareAIConfig(context, aiconfigEditorManager);
+    }
+  );
+  context.subscriptions.push(submitUserFeedbackCommand);
+
   const customModelParserCommand = vscode.commands.registerCommand(
     COMMANDS.CUSTOM_MODEL_REGISTRY_PATH,
     async () => {
