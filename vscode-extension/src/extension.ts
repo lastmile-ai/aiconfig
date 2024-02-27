@@ -50,6 +50,17 @@ export async function activate(context: vscode.ExtensionContext) {
 
   await performVersionInstallAndUpdateActionsIfNeeded(context);
 
+  const showWelcomeCommand = vscode.commands.registerCommand(
+    COMMANDS.SHOW_WELCOME,
+    () => {
+      vscode.commands.executeCommand(
+        "workbench.action.openWalkthrough",
+        "lastmile-ai.vscode-aiconfig#welcomeWalkthrough"
+      );
+    }
+  );
+  context.subscriptions.push(showWelcomeCommand);
+
   const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
     initialize(context, extensionOutputChannel);
   });
