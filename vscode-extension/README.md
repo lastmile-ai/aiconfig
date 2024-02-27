@@ -12,8 +12,6 @@ The prompts and model settings get saved in a `.aiconfig.yaml` or `.aiconfig.jso
 
 [**Demo Video**](https://github.com/lastmile-ai/aiconfig/assets/25641935/a790d650-e7be-4b1b-8b99-d5854dda4ac6)
 
-![DemoVideo](https://github.com/lastmile-ai/aiconfig/assets/25641935/a790d650-e7be-4b1b-8b99-d5854dda4ac6)
-
 ### Getting Started
 
 #### First use
