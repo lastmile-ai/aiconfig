@@ -308,6 +308,9 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
                   console.log(
                     `${e.document.fileName}: willSaveDocument - creating textedit`
                   );
+                  // Treat this as internal change so that we skip handling it in onDidChangeTextDocument
+                  // The client should already match the server state, so we don't need to update the webview
+                  isInternalDocumentChange = true;
                   resolve([
                     vscode.TextEdit.replace(
                       new vscode.Range(0, 0, e.document.lineCount, 0),
