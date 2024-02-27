@@ -22,6 +22,7 @@ export const COMMANDS = {
   SET_API_KEYS: `${EXTENSION_NAME}.setApiKeys`,
   SHARE: `${EXTENSION_NAME}.share`,
   SUBMIT_FEEDBACK: `${EXTENSION_NAME}.submitFeedback`,
+  SHOW_WELCOME: `${EXTENSION_NAME}.showWelcomePage`,
 };
 
 export const SUPPORTED_FILE_EXTENSIONS = [".json", ".yaml", ".yml"];
