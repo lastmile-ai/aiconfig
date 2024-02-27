@@ -46,6 +46,15 @@
         }
       },
       {
+        "command": "vscode-aiconfig.submitFeedback",
+        "title": "Submit Feedback",
+        "category": "AIConfig",
+        "icon": {
+          "light": "./static/bug.svg",
+          "dark": "./static/bug-dark.svg"
+        }
+      },
+      {
         "command": "vscode-aiconfig.customModelRegistryPath",
         "title": "Set Custom Model Registry File Path",
         "category": "AIConfig"
@@ -154,7 +163,7 @@
           {
             "id": "createAIConfig",
             "title": "Create your first AIConfig",
-            "description": "Turn your VS Code IDE into a generative AI studio:\n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON:\n[Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
+            "description": "Turn your VS Code into a generative AI studio\n**Note:** Please complete the ``Initialize Extension`` step before opening an AIConfig file!\n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON:\n[Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
             "media": {
               "markdown": "media/createAIConfig.md"
             },
@@ -183,6 +192,11 @@
       "editor/title": [
         {
           "command": "vscode-aiconfig.share",
+          "when": "resourcePath =~ /.*(\\.aiconfig\\.json|\\.aiconfig\\.yaml|\\.aiconfig\\.yml|\\.aiconfig)$/",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-aiconfig.submitFeedback",
           "when": "resourcePath =~ /.*(\\.aiconfig\\.json|\\.aiconfig\\.yaml|\\.aiconfig\\.yml|\\.aiconfig)$/",
           "group": "navigation"
         }

@@ -1,6 +1,7 @@
 import asyncio
 import copy
 import ctypes
+import dotenv
 import json
 import logging
 import threading
@@ -330,6 +331,11 @@ def run() -> FlaskResponse:
         "callback_manager": True,
     }
     state = get_server_state(app)
+
+    # Allow user to modify their environment keys without reloading the server.
+    # Execution time of `0.001s` is arbitrary, but should be small enough to not be noticeable.
+    dotenv.load_dotenv()
+
     aiconfig = state.aiconfig
     request_json = request.get_json()
     cancellation_token_id: str | None = None

@@ -85,6 +85,18 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(shareModelParserCommand);
 
+  const submitUserFeedbackCommand = vscode.commands.registerCommand(
+    COMMANDS.SUBMIT_FEEDBACK,
+    () => {
+      // TODO: Add issue template forms to standardize feedback that we submit
+      // Can include info like device OS, extension version, aiconfig.log content, pip list, etc
+      vscode.env.openExternal(
+        vscode.Uri.parse("https://github.com/lastmile-ai/aiconfig/issues/new")
+      );
+    }
+  );
+  context.subscriptions.push(submitUserFeedbackCommand);
+
   const customModelParserCommand = vscode.commands.registerCommand(
     COMMANDS.CUSTOM_MODEL_REGISTRY_PATH,
     async () => {
