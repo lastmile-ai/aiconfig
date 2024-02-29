@@ -45,6 +45,8 @@ export const EDITOR_SERVER_ROUTE_TABLE = {
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_content"),
   LOAD_MODEL_PARSER_MODULE: (hostUrl: string) =>
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_model_parser_module"),
+  SET_ENV: (hostUrl: string) =>
+    urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/set_env"),
 };
 
 export async function isServerReady(serverUrl: string) {
@@ -381,6 +383,13 @@ export async function setupEnvironmentVariables(
       "Please define your environment variables."
     );
   }
+
+  // Update Server Env FLow
+  // Set the .env file path in the settings
+  const config = vscode.workspace.getConfiguration("vscode-aiconfig");
+  config.update("envPath", envPath, getConfigurationTarget());
+
+  // If server is up, set the .env file path in the server
 }
 
 /**
