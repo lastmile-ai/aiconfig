@@ -26,6 +26,7 @@ import {
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
   getConfigurationTarget,
+  getModeFromDocument,
 } from "./util";
 import {
   initialize,
@@ -505,7 +506,8 @@ async function shareAIConfig(
   const uploadKey: string = `aiconfigs/${getTodayDateString()}/${randomPath}/${sanitizedFileName}`;
 
   // TODO: Will also need to check for yaml files and change the contentType accordingly
-  const contentType = "application/json";
+  const mode = getModeFromDocument(activeEditor.document);
+  const contentType = mode === "json" ? "application/json" : "application/yaml";
 
   const formData = new FormData();
   formData.append("key", uploadKey);
