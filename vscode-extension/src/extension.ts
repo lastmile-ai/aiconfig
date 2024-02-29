@@ -26,6 +26,7 @@ import {
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
   getConfigurationTarget,
+  getModeFromDocument,
 } from "./util";
 import {
   initialize,
@@ -495,17 +496,13 @@ async function shareAIConfig(
   const fileName: string = activeEditor.document.fileName;
   const sanitizedFileName: string = sanitizeFileName(fileName);
 
-  // TODO: Add back once CORS is resolved
-  // const policyResponse = await fetch(
-  //   "https://lastmileai.dev/api/upload/publicpolicy"
-  // );
-  // const policy = await policyResponse.json();
   const uploadUrl = "https://s3.amazonaws.com/lastmileai.aiconfig.public/";
   const randomPath = Math.round(Math.random() * 10000);
   const uploadKey: string = `aiconfigs/${getTodayDateString()}/${randomPath}/${sanitizedFileName}`;
-
-  // TODO: Will also need to check for yaml files and change the contentType accordingly
-  const contentType = "application/json";
+  const contentType =
+    getModeFromDocument(activeEditor.document) === "json"
+      ? "application/json"
+      : "application/yaml";
 
   const formData = new FormData();
   formData.append("key", uploadKey);
