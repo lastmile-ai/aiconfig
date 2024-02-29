@@ -8,6 +8,7 @@ import threading
 import time
 import uuid
 import webbrowser
+import os
 from typing import Any, Dict, Literal, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
@@ -829,3 +830,61 @@ def set_aiconfigrc() -> FlaskResponse:
     # yaml = YAML()
     # with open(state.aiconfigrc_path, "w") as f:
     #     yaml.dump(request_json["aiconfigrc"], f)
+
+@app.route("/api/set_env_file_path", methods=["POST"])
+def set_env_path() -> FlaskResponse:
+    """
+    Updates the server state with the new .env file path.
+
+    This method does NOT load the .env file into the server state.
+    It only updates the path to the .env file. See api/run
+
+    """
+    request_json = request.get_json()
+    state = get_server_state(app)
+
+    # Validate
+    request_env_path = request_json.get("env_file_path")
+    
+    if request_env_path is None:
+        return FlaskResponse(({"message": "No .env file path provided."}, 400))
+
+    if not isinstance(request_env_path, str):
+        return FlaskResponse(
+            (
+                {
+                    "message": "Invalid request, specified .env file path is not a string."
+                },
+                400,
+            )
+        )
+
+    # Check if path exists / is accessible
+    path_exists = os.path.exists(request_env_path)
+
+    # Check if filename format is correct
+    filename_format_correct = request_env_path.endswith(".env")
+
+    if filename_format_correct is False:
+        return FlaskResponse(
+            (
+                {
+                    "message": "Specified env file path is not a .env file.",
+                },
+                400,
+            )
+        )
+
+    if path_exists is False:
+        return FlaskResponse(
+            (
+                {
+                    "message": "Specified .env file path does not exist.",
+                },
+                400,
+            )
+        )
+
+    state.env_file_path = request_env_path
+
+    return FlaskResponse(({"message": "Updated .env file path."}, 200))
