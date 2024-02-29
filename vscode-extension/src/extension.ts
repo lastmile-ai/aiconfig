@@ -26,6 +26,7 @@ import {
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
   getConfigurationTarget,
+  updateServerEnv
 } from "./util";
 import {
   initialize,
@@ -207,6 +208,25 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     )
   );
+
+  // Handle changes to the .env path
+  context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(async (event) => {
+    if (event.affectsConfiguration("vscode-aiconfig")) {
+      // Get new env
+      const envPath = vscode.workspace.getConfiguration("vscode-aiconfig").get('envPath') as string;
+      console.log(`New .env path set: ${envPath}`);
+      // set env on all servesrs
+      const editors: Array<AIConfigEditorState> = Array.from(
+        aiconfigEditorManager.getRegisteredEditors()
+      );
+      if (editors.length > 0) {
+        editors.forEach(async (editor) => {
+          updateServerEnv(editor.editorServer.url, envPath);
+        });
+      
+      }
+  }
+  }));
 }
 
 // This method is called when your extension is deactivated
