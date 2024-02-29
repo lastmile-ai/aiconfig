@@ -1,5 +1,34 @@
 # Changelog
 
+## (2024-02-27) Python Version 1.1.28, NPM Version 1.1.12
+
+Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1379
+
+### Features
+
+- **vscode:** Supported thorough Python interpreter validation checks, ensuring that pip and Python are installed, are the correct version, and that dependencies get installed when viewing an AIConfig file (https://github.com/lastmile-ai/aiconfig/pull/1262, https://github.com/lastmile-ai/aiconfig/pull/1294, https://github.com/lastmile-ai/aiconfig/pull/1304, https://github.com/lastmile-ai/aiconfig/pull/1313, https://github.com/lastmile-ai/aiconfig/pull/1328, https://github.com/lastmile-ai/aiconfig/pull/1347, https://github.com/lastmile-ai/aiconfig/pull/1348)
+- **vscode:** Supported restarting the active editor server via `AIConfig: Restart Active Editor Server` command. This command is useful to restart the server if it’s experiencing issues (https://github.com/lastmile-ai/aiconfig/pull/1319, https://github.com/lastmile-ai/aiconfig/pull/1349)
+- **vscode:** Created walkthrough that opens when extension is first installed, as well as the command `AIConfig: Welcome` to open it (https://github.com/lastmile-ai/aiconfig/pull/1316, https://github.com/lastmile-ai/aiconfig/pull/1343, https://github.com/lastmile-ai/aiconfig/pull/1374)
+- **vscode:** Created `AIConfig: Submit Feedback` command and button which redirects to our issues page on Github (https://github.com/lastmile-ai/aiconfig/pull/1362)
+- **editor:** Supported updating the editor client AIConfig state via the `aiconfig` prop, allowing the component to be used as a controlled component with external AIConfig state (https://github.com/lastmile-ai/aiconfig/pull/1261)
+- **editor:** Added an input model schema for Gemini (https://github.com/lastmile-ai/aiconfig/pull/1023)
+- **editor:** Moved Gemini to the third position on model list (https://github.com/lastmile-ai/aiconfig/pull/1353)
+- **vscode:** Created `AIConfig: Set API Keys` command to help guide users on setting api keys in a `.env` file that’s accessible by their VS Code workspace so they can run inference on remote models (https://github.com/lastmile-ai/aiconfig/pull/1283, https://github.com/lastmile-ai/aiconfig/pull/1285, https://github.com/lastmile-ai/aiconfig/pull/1300)
+- **vscode:** Added datadog logging and telemetry (https://github.com/lastmile-ai/aiconfig/pull/1302)
+
+### Bug Fixes / Tasks
+
+- **vscode:** Rendered extension editor as read-only until the server is ready or if the server is in a bad state (https://github.com/lastmile-ai/aiconfig/pull/1260, https://github.com/lastmile-ai/aiconfig/pull/1282, https://github.com/lastmile-ai/aiconfig/pull/1306, https://github.com/lastmile-ai/aiconfig/pull/1308)
+- **editor:** Avoided polling server status heartbeat when in read-only mode (https://github.com/lastmile-ai/aiconfig/pull/1325)
+- **vscode:** Used the default text editor diff view for viewing `.aiconfig.[json/yaml/yml]` file changes (https://github.com/lastmile-ai/aiconfig/pull/1268)
+- **vscode:** Skipped updating custom editor webview if there are no document content changes, preventing an issue where editor inputs were being remounted while typing (https://github.com/lastmile-ai/aiconfig/pull/1279)
+- **vscode:** Fixed a new/untitled AIConfig flow to only open a single tab and prompt for the new file name on save (https://github.com/lastmile-ai/aiconfig/pull/1351)
+
+### Documentation
+
+- [new] Created default initial content when creating a new AIConfig file to help user get started (https://github.com/lastmile-ai/aiconfig/pull/1292)
+- [update] Updated [RAG-with-model-graded-eval cookbook](https://github.com/lastmile-ai/aiconfig/tree/ab0148ae7e1809bfe0193d7803770afc3f4342db/cookbooks/RAG-with-Model-Graded-Eval-v2) to allow customizing the prompt being referenced (https://github.com/lastmile-ai/aiconfig/pull/1370)
+
 ## (2024-02-20) Python Version 1.1.26, NPM Version 1.1.10
 
 Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1264
