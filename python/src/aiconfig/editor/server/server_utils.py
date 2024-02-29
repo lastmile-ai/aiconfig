@@ -10,7 +10,7 @@ from enum import Enum
 from textwrap import dedent
 from threading import Event
 from types import ModuleType
-from typing import Any, Callable, NewType, Type, TypeVar, cast
+from typing import Any, Callable, NewType, Type, TypeVar, cast, Optional
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -66,6 +66,7 @@ class EditServerConfig(core_utils.Record):
     log_level: str | int = "INFO"
     server_mode: ServerMode = ServerMode.PROD
     parsers_module_path: str = "aiconfig_model_registry.py"
+    env_file_path: Optional[str] = None
 
     @field_validator("server_mode", mode="before")
     def convert_to_mode(
@@ -84,6 +85,7 @@ class StartServerConfig(core_utils.Record):
     log_level: str | int = "INFO"
     server_mode: ServerMode = ServerMode.PROD
     parsers_module_path: str = "aiconfig_model_registry.py"
+    env_file_path: Optional[str] = None
 
     @field_validator("server_mode", mode="before")
     def convert_to_mode(
@@ -294,8 +296,8 @@ def init_server_state(
     aiconfigrc_path: str,
 ) -> Result[None, str]:
     LOGGER.info("Initializing server state for 'edit' command")
-    # TODO: saqadri - load specific .env file if specified
-    dotenv.load_dotenv()
+    # load specific .env file if specified
+    dotenv.load_dotenv(initialization_settings.env_file_path)
     _load_user_parser_module_if_exists(
         initialization_settings.parsers_module_path
     )
