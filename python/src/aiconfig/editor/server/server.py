@@ -829,3 +829,25 @@ def set_aiconfigrc() -> FlaskResponse:
     # yaml = YAML()
     # with open(state.aiconfigrc_path, "w") as f:
     #     yaml.dump(request_json["aiconfigrc"], f)
+
+@app.route("/api/set_env_file_path", methods=["POST"])
+def set_env_path() -> FlaskResponse:
+    """
+    Updates the server state with the new .env file path.
+
+    This method does NOT load the .env file into the server state.
+    It only updates the path to the .env file. See api/run
+
+    """
+    request_json = request.get_json()
+    state = get_server_state(app)
+
+    # Validate
+    request_env_path = request_json.get("env_path")
+
+    if request_env_path is None:
+        return FlaskResponse(({"message": "No .env file path provided."}, 400))
+
+    state.env_file_path = request_env_path
+
+    return FlaskResponse({"message": "Updated .env file path."}, 200)
