@@ -335,7 +335,9 @@ def run() -> FlaskResponse:
 
     # Allow user to modify their environment keys without reloading the server.
     # Execution time of `0.001s` is arbitrary, but should be small enough to not be noticeable.
-    dotenv.load_dotenv()
+    # Override if env_file_path is specified, user expects provided .env values take precedence over existing values
+    override_behaviour = state.env_file_path is not None
+    dotenv.load_dotenv(state.env_file_path, override = override_behaviour)
 
     aiconfig = state.aiconfig
     request_json = request.get_json()
