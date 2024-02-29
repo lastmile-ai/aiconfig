@@ -24,7 +24,7 @@
   <a href="https://aiconfig.lastmileai.dev/">
     <strong> Documentation</strong>
   </a>
-</p>
+</p> 
 
 AIConfig is a framework that makes it easy to build generative AI applications for production. It manages generative AI prompts, models and model parameters as JSON-serializable configs that can be version controlled, evaluated, monitored and opened in a local editor for rapid prototyping.
 
