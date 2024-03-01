@@ -14,5 +14,9 @@
     "jsx": "preserve",
     "incremental": true
   },
-  "include": ["src", "@types"]
+  "include": [
+    "src",
+    "@types",
+    "aiconfig-editor/src/shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema.ts"
+  ]
 }
