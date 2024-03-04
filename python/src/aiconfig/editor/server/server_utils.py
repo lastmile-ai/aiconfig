@@ -102,6 +102,7 @@ class ServerState:
     aiconfigrc_path: str = os.path.join(os.path.expanduser("~"), ".aiconfigrc")
     aiconfig: AIConfigRuntime | None = None
     events: dict[str, Event] = field(default_factory=dict)
+    env_file_path: str | None = None
 
 
 class AIConfigRC(core_utils.Record):
