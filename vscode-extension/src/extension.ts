@@ -27,6 +27,7 @@ import {
   setupEnvironmentVariables,
   getConfigurationTarget,
   getModeFromDocument,
+  updateServerEnv
 } from "./util";
 import {
   initialize,
@@ -34,6 +35,7 @@ import {
   savePythonInterpreterToCache,
 } from "./utilities/pythonSetupUtils";
 import { performVersionInstallAndUpdateActionsIfNeeded } from "./utilities/versionUpdateUtils";
+import { ENV_FILE_PATH } from "./constants";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time a command is executed
@@ -208,6 +210,25 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     )
   );
+
+  // Handle changes to the .env path
+  context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(async (event) => {
+    if (event.affectsConfiguration("vscode-aiconfig")) {
+      // Get new env
+      const envPath = vscode.workspace.getConfiguration("vscode-aiconfig").get(ENV_FILE_PATH) as string;
+      console.log(`New .env path set: ${envPath}`);
+      // set env on all servesrs
+      const editors: Array<AIConfigEditorState> = Array.from(
+        aiconfigEditorManager.getRegisteredEditors()
+      );
+      if (editors.length > 0) {
+        editors.forEach(async (editor) => {
+          updateServerEnv(editor.editorServer.url, envPath);
+        });
+      
+      }
+  }
+  }));
 }
 
 // This method is called when your extension is deactivated
