@@ -8,6 +8,8 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
+import {ENV_FILE_PATH} from "./constants";
+
 export const EXTENSION_NAME = "vscode-aiconfig";
 export const COMMANDS = {
   INIT: `${EXTENSION_NAME}.init`,
@@ -45,6 +47,8 @@ export const EDITOR_SERVER_ROUTE_TABLE = {
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_content"),
   LOAD_MODEL_PARSER_MODULE: (hostUrl: string) =>
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_model_parser_module"),
+  SET_ENV_FILE_PATH: (hostUrl: string) =>
+    urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/set_env_file_path"),
 };
 
 export async function isServerReady(serverUrl: string) {
@@ -95,6 +99,15 @@ export async function updateServerState(
   return await ufetch.post(EDITOR_SERVER_ROUTE_TABLE.LOAD_CONTENT(serverUrl), {
     content: document.getText(),
     mode: getModeFromDocument(document),
+  });
+}
+
+export async function updateServerEnv(
+  serverUrl: string,
+  filePath: string
+) {
+  return await ufetch.post(EDITOR_SERVER_ROUTE_TABLE.SET_ENV_FILE_PATH(serverUrl), {
+    [ENV_FILE_PATH]: filePath
   });
 }
 
@@ -381,6 +394,17 @@ export async function setupEnvironmentVariables(
       "Please define your environment variables."
     );
   }
+
+
+  // Update Server Env FLow
+  // Set the .env file path in the settings
+  const config = vscode.workspace.getConfiguration(EXTENSION_NAME);
+  await config.update(
+    ENV_FILE_PATH,
+    envPath,
+    getConfigurationTarget()
+  );
+  // Extension has a listener for changes to this setting on activation.
 }
 
 /**

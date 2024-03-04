@@ -53,13 +53,7 @@ We are working on using `sveltris` to package our React frontend to work with Gr
 
 - `pip3 install -r requirements.txt`
 
-Go to `aiconfig/python/src/aiconfig/editor/client` and run this command:
-
-```bash
-rm -rf node_modules && yarn && yarn build
-```
-
-Now run go back to top-level directory (`cd <aiconfig>`) and run this command to start the AIConfig editor:
+Run this command to start the AIConfig editor:
 
 ```bash
 aiconfig_path=./cookbooks/Gradio/huggingface.aiconfig.json

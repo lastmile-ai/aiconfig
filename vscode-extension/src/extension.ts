@@ -26,6 +26,8 @@ import {
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
   getConfigurationTarget,
+  getModeFromDocument,
+  updateServerEnv
 } from "./util";
 import {
   initialize,
@@ -207,6 +209,25 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     )
   );
+
+  // Handle changes to the .env path
+  context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(async (event) => {
+    if (event.affectsConfiguration("vscode-aiconfig")) {
+      // Get new env
+      const envPath = vscode.workspace.getConfiguration("vscode-aiconfig").get('envPath') as string;
+      console.log(`New .env path set: ${envPath}`);
+      // set env on all servesrs
+      const editors: Array<AIConfigEditorState> = Array.from(
+        aiconfigEditorManager.getRegisteredEditors()
+      );
+      if (editors.length > 0) {
+        editors.forEach(async (editor) => {
+          updateServerEnv(editor.editorServer.url, envPath);
+        });
+      
+      }
+  }
+  }));
 }
 
 // This method is called when your extension is deactivated
@@ -495,17 +516,13 @@ async function shareAIConfig(
   const fileName: string = activeEditor.document.fileName;
   const sanitizedFileName: string = sanitizeFileName(fileName);
 
-  // TODO: Add back once CORS is resolved
-  // const policyResponse = await fetch(
-  //   "https://lastmileai.dev/api/upload/publicpolicy"
-  // );
-  // const policy = await policyResponse.json();
   const uploadUrl = "https://s3.amazonaws.com/lastmileai.aiconfig.public/";
   const randomPath = Math.round(Math.random() * 10000);
   const uploadKey: string = `aiconfigs/${getTodayDateString()}/${randomPath}/${sanitizedFileName}`;
-
-  // TODO: Will also need to check for yaml files and change the contentType accordingly
-  const contentType = "application/json";
+  const contentType =
+    getModeFromDocument(activeEditor.document) === "json"
+      ? "application/json"
+      : "application/yaml";
 
   const formData = new FormData();
   formData.append("key", uploadKey);
