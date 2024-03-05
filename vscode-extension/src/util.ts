@@ -8,6 +8,8 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
+import { ENV_FILE_PATH } from "./constants";
+
 export const EXTENSION_NAME = "vscode-aiconfig";
 export const COMMANDS = {
   INIT: `${EXTENSION_NAME}.init`,
@@ -98,6 +100,15 @@ export async function updateServerState(
     content: document.getText(),
     mode: getModeFromDocument(document),
   });
+}
+
+export async function updateServerEnv(serverUrl: string, filePath: string) {
+  return await ufetch.post(
+    EDITOR_SERVER_ROUTE_TABLE.SET_ENV_FILE_PATH(serverUrl),
+    {
+      [ENV_FILE_PATH]: filePath,
+    }
+  );
 }
 
 // Figure out what kind of AIConfig this is that we are loading
@@ -383,6 +394,12 @@ export async function setupEnvironmentVariables(
       "Please define your environment variables."
     );
   }
+
+  // Update Server Env FLow
+  // Set the .env file path in the settings
+  // vscode Extension has a listener for changes defined at activation.
+  const config = vscode.workspace.getConfiguration(EXTENSION_NAME);
+  await config.update(ENV_FILE_PATH, envPath, getConfigurationTarget());
 }
 
 /**
