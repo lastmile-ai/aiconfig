@@ -7,13 +7,12 @@
     See example below.
 """
 
-
-from aiconfig import AzureOpenAIParser, ModelParserRegistry
+from aiconfig_extension_groq import GroqOpenAIParser
+from aiconfig import ModelParserRegistry
 import dotenv
 
-
 def register_model_parsers() -> None:
-    azure_gpt_35 = AzureOpenAIParser(deployment="gpt-35-turbo")
-    ModelParserRegistry.register_model_parser(azure_gpt_35)
+    groq_mixtral = GroqOpenAIParser(deployment="mixtral-8x7b-32768")
+    ModelParserRegistry.register_model_parser(groq_mixtral)
 
     dotenv.load_dotenv()
