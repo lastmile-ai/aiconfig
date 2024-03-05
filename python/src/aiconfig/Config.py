@@ -318,14 +318,17 @@ class AIConfigRuntime(AIConfig):
             )
 
         prompt_data = self.prompt_index[prompt_name]
+        # get new model name, ModelMetadata.model (also this sounds like data more than metadata)
         model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
         # Clear previous run outputs if they exist
         self.delete_output(prompt_name)
 
+        # Ideally we have some helper method that easily parses this model value.
         response = await model_provider.run(
             prompt_data,
+            model,
             self,
             options,
             params,

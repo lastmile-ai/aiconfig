@@ -136,9 +136,11 @@ Output = Union[ExecuteResult, Error]
 
 
 class ModelMetadata(BaseModel):
-    # The ID of the model to use.
+    # The ID of the inference provider aka Model Parser to use.
     name: str
-    # Model Inference settings that apply to this prompt.
+    # The model being used
+    model: Optional[str] = None
+    # Model Inference settings that apply to this prompt. Model Parsers will then parse model into settings.
     settings: Optional[InferenceSettings] = {}
 
 
