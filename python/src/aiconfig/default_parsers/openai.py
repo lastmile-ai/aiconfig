@@ -485,10 +485,23 @@ class OpenAIInference(ParameterizedModelParser):
 class DefaultOpenAIParser(OpenAIInference):
     def __init__(self, model_id: str):
         super().__init__()
-        self.model_id = model_id
+        self.model_id = "OpenAIInference" + model_id
+        # OpenAIInferencegpt-3.5
 
     def id(self) -> str:
         return self.model_id
+    
+# Psuodo Code:
+threedot5 = DefaultOpenAIParser("gpt-3.5")
+config:
+    prompt:
+        model:
+            - OpenAIInferencegpt-3.5
+            - settings:
+                top_p: 0.9
+                # no need for model, mp impl will handle it.
+
+
 
 
 def reduce(acc, delta):

@@ -136,7 +136,7 @@ Output = Union[ExecuteResult, Error]
 
 
 class ModelMetadata(BaseModel):
-    # The ID of the model to use.
+    # The ID of the model to use. No changes here.
     name: str
     # Model Inference settings that apply to this prompt.
     settings: Optional[InferenceSettings] = {}
