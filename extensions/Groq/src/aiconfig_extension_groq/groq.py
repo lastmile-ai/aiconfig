@@ -3,12 +3,13 @@ from aiconfig.default_parsers.openai import DefaultOpenAIParser
 
 import os
 
-class GroqOpenAIParser(DefaultOpenAIParser):
+class GroqParser(DefaultOpenAIParser):
     def __init__(self, model: str):
         super().__init__(model_id = model)
 
-        # Deployment is a custom name for the specific model they want to use
-        # when registering the Groq model parser. See the cookbook for reference
+        # "Model" field is a custom name for the specific model they want to use
+        # when registering the Groq model parser. See the cookbook for reference:
+        # https://github.com/lastmile-ai/aiconfig/blob/main/cookbooks/Groq/aiconfig_model_registry.py#L15
         self.model = model
 
     async def deserialize(self, *args, **kwargs):

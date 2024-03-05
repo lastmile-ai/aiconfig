@@ -1,3 +1,3 @@
-from .groq import GroqOpenAIParser
+from .groq import GroqParser
 
-__ALL__ = ["GroqOpenAIParser"]
+__ALL__ = ["GroqParser"]
