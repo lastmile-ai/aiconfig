@@ -30,4 +30,5 @@
   "black-formatter.args": ["--line-length=79"],
   // example: "--disable=C0114,C0115,C0116"
   "pylint.args": [],
+  "vscode-aiconfig.pythonInterpreter": "/Users/rossdancraig/.pyenv/versions/3.11.6/bin/python",
 }
