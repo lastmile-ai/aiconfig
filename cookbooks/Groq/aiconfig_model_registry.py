@@ -7,12 +7,12 @@
     See example below.
 """
 
-from aiconfig_extension_groq import GroqOpenAIParser
+from aiconfig_extension_groq import GroqParser
 from aiconfig import ModelParserRegistry
 import dotenv
 
 def register_model_parsers() -> None:
-    groq_mixtral = GroqOpenAIParser(model="mixtral-8x7b-32768")
+    groq_mixtral = GroqParser(model="mixtral-8x7b-32768")
     ModelParserRegistry.register_model_parser(groq_mixtral)
 
     dotenv.load_dotenv()
