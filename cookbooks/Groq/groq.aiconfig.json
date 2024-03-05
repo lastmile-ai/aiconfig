@@ -1,0 +1,132 @@
+{
+  "name": "Exploring Groq OpenAI",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {},
+    "models": {},
+    "model_parsers": {
+      "mixtral-8x7b-32768": "mixtral-8x7b-32768"
+    }
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "multilinguality",
+      "input": "Can you teach me how to say {{animal}} in different languages? Give me a few options",
+      "metadata": {
+        "model": "mixtral-8x7b-32768",
+        "parameters": {
+          "animal": "horse"
+        },
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "Of course! Here are the words for \"horse\" in a few different languages:\n\n* Spanish: caballo\n* French: cheval\n* German: Pferd\n* Italian: cavallo\n* Portuguese: cavalo\n* Chinese: \u9a6c (m\u01ce)\n* Japanese: \u99ac (uma)\n* Korean: \ub9d0 (mal)\n* Arabic: \u062d\u0635\u0627\u0646 (\u1e25i\u1e63\u0101n)\n* Russian: \u043b\u043e\u0448\u0430\u0434\u044c (lo\u0161ad')\n\nI hope that helps! Let me know if you have any other questions.",
+          "metadata": {
+            "id": "chatcmpl-65525d68-e12b-90eb-9bc2-f0bca623d356",
+            "created": 1709677699,
+            "model": "mixtral-8x7b-32768",
+            "object": "chat.completion.chunk",
+            "x_groq": {
+              "usage": {
+                "completion_time": 0.237,
+                "completion_tokens": 125,
+                "prompt_time": 0.008,
+                "prompt_tokens": 31,
+                "queue_time": 0.077245964,
+                "total_time": 0.245,
+                "total_tokens": 156
+              }
+            },
+            "raw_response": {
+              "content": "Of course! Here are the words for \"horse\" in a few different languages:\n\n* Spanish: caballo\n* French: cheval\n* German: Pferd\n* Italian: cavallo\n* Portuguese: cavalo\n* Chinese: \u9a6c (m\u01ce)\n* Japanese: \u99ac (uma)\n* Korean: \ub9d0 (mal)\n* Arabic: \u062d\u0635\u0627\u0646 (\u1e25i\u1e63\u0101n)\n* Russian: \u043b\u043e\u0448\u0430\u0434\u044c (lo\u0161ad')\n\nI hope that helps! Let me know if you have any other questions.",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pronounciation",
+      "input": "Can you explain how to pronounce \"{{animal}}\" in Chinese?",
+      "metadata": {
+        "model": "mixtral-8x7b-32768",
+        "parameters": {
+          "animal": "turtle"
+        },
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "In Chinese, the word for \"turtle\" is typically written as \u4e4c\u9f9f (w\u016bgu\u012b). The first character, \u4e4c (w\u016b), is pronounced like \"oo\" in \"cool\" or \"dude.\" The second character, \u9f9f (gu\u012b), is pronounced like \"gway\" with a rising tone on the second syllable.\n\nSo, the word \"turtle\" in Chinese is pronounced something like \"oo-gway\" with a rising tone on the second syllable.\n\nIt's worth noting that there are many different dialects of Chinese, and the pronunciation of words can vary between them. The pronunciation I've provided is based on the Mandarin dialect, which is the official language of China and the most widely spoken dialect of Chinese.\n\nI hope that helps! Let me know if you have any other questions.",
+          "metadata": {
+            "id": "chatcmpl-3a19d3de-d0d1-9cc8-bb03-a663360836e6",
+            "created": 1709677701,
+            "model": "mixtral-8x7b-32768",
+            "object": "chat.completion.chunk",
+            "x_groq": {
+              "usage": {
+                "completion_time": 0.371,
+                "completion_tokens": 195,
+                "prompt_time": 0.044,
+                "prompt_tokens": 179,
+                "queue_time": 0.114007297,
+                "total_time": 0.415,
+                "total_tokens": 374
+              }
+            },
+            "raw_response": {
+              "content": "In Chinese, the word for \"turtle\" is typically written as \u4e4c\u9f9f (w\u016bgu\u012b). The first character, \u4e4c (w\u016b), is pronounced like \"oo\" in \"cool\" or \"dude.\" The second character, \u9f9f (gu\u012b), is pronounced like \"gway\" with a rising tone on the second syllable.\n\nSo, the word \"turtle\" in Chinese is pronounced something like \"oo-gway\" with a rising tone on the second syllable.\n\nIt's worth noting that there are many different dialects of Chinese, and the pronunciation of words can vary between them. The pronunciation I've provided is based on the Mandarin dialect, which is the official language of China and the most widely spoken dialect of Chinese.\n\nI hope that helps! Let me know if you have any other questions.",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "set_params_in_code",
+      "input": "",
+      "metadata": {
+        "model": "mixtral-8x7b-32768",
+        "parameters": {}
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "I'm glad to hear that! Is there anything specific you would like to know about Chinese or any other topic? I'm here to help, so don't hesitate to ask me anything.\n\nIn the meantime, here are a few interesting facts about China that you might find interesting:\n\n* China is the most populous country in the world, with a population of over 1.4 billion people.\n* China is home to the Great Wall of China, which is one of the Seven Wonders of the World and the longest wall in the world.\n* China is the fourth largest country in the world by geographical area, after Russia, Canada, and the United States.\n* China has a rich and diverse culture that dates back thousands of years. It is known for its art, literature, music, and philosophy, as well as its inventions, such as paper, the compass, and gunpowder.\n* China is a socialist one-party state governed by the Communist Party of China. It is a major world power and a permanent member of the United Nations Security Council.\n\nI hope you find those facts interesting! Let me know if you have any other questions.",
+          "metadata": {
+            "id": "chatcmpl-40839064-2d2c-9e40-ba88-f0afc763bf67",
+            "created": 1709677706,
+            "model": "mixtral-8x7b-32768",
+            "object": "chat.completion.chunk",
+            "x_groq": {
+              "usage": {
+                "completion_time": 0.477,
+                "completion_tokens": 251,
+                "prompt_time": 0.082,
+                "prompt_tokens": 379,
+                "queue_time": 0.528537472,
+                "total_time": 0.5589999999999999,
+                "total_tokens": 630
+              }
+            },
+            "raw_response": {
+              "content": "I'm glad to hear that! Is there anything specific you would like to know about Chinese or any other topic? I'm here to help, so don't hesitate to ask me anything.\n\nIn the meantime, here are a few interesting facts about China that you might find interesting:\n\n* China is the most populous country in the world, with a population of over 1.4 billion people.\n* China is home to the Great Wall of China, which is one of the Seven Wonders of the World and the longest wall in the world.\n* China is the fourth largest country in the world by geographical area, after Russia, Canada, and the United States.\n* China has a rich and diverse culture that dates back thousands of years. It is known for its art, literature, music, and philosophy, as well as its inventions, such as paper, the compass, and gunpowder.\n* China is a socialist one-party state governed by the Communist Party of China. It is a major world power and a permanent member of the United Nations Security Council.\n\nI hope you find those facts interesting! Let me know if you have any other questions.",
+              "role": "assistant"
+            },
+            "role": "assistant"
+          }
+        }
+      ]
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}
