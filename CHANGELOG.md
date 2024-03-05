@@ -1,5 +1,26 @@
 # Changelog
 
+## (2024-03-05) Python Version 1.1.29, NPM Version 1.1.13
+
+Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1401
+
+### Features
+
+- **vscode:** Enabled find widget (`CMD/CTRL + F`) in AIConfig editor webviews (https://github.com/lastmile-ai/aiconfig/pull/1369)
+- **editor:** Added input model schema for Hugging Face Visual Question Answering tasks
+  (https://github.com/lastmile-ai/aiconfig/pull/1396)
+- **vscode:** Set the environment variables in an `.env` file that gets saved into the VS Code configuration settings and refreshed during the current session (https://github.com/lastmile-ai/aiconfig/pull/1390)
+
+### Bug Fixes / Tasks
+
+- **vscode:** Fixed issue where autosaving was causing outputs to disappear and prompt inputs to lose focus when typing (https://github.com/lastmile-ai/aiconfig/pull/1380)
+- **vscode:** Updated new/untitled AIConfig file flow to follow regular new/untitled file flow in VS Code, prompting for file name on first save (https://github.com/lastmile-ai/aiconfig/pull/1351)
+- **vscode:** Used untitled name instead of first line contents for untitled file tab name (https://github.com/lastmile-ai/aiconfig/pull/1354)
+- **vscode:** Removed surfacing ‘Error updating aiconfig server’ message when closing untitled AIConfig files (https://github.com/lastmile-ai/aiconfig/pull/1352)
+- **editor:** Fixed an issue where readonly rendering of prompt settings was causing the page rendering to fail (https://github.com/lastmile-ai/aiconfig/pull/1358)
+- **editor:** Fixed default cell styles when no mode or themeOverride is specified (https://github.com/lastmile-ai/aiconfig/pull/1388)
+- **vscode:** Reran extension server to re-read environment variables after they’re been updated (https://github.com/lastmile-ai/aiconfig/pull/1376)
+
 ## (2024-02-27) Python Version 1.1.28, NPM Version 1.1.12
 
 Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1379
