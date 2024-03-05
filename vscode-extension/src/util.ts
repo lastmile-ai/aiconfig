@@ -330,12 +330,11 @@ export async function setupEnvironmentVariables(
 ) {
   const homedir = require("os").homedir(); // This is cross-platform: https://stackoverflow.com/a/9081436
   const defaultEnvPath = path.join(homedir, ".env");
-  const lowestCommonWorkspacePath = getLowestCommonAncestorAcrossWorkspaces();
 
   const envPath = await vscode.window.showInputBox({
     prompt: "Enter the path of your .env file",
     value: defaultEnvPath,
-    validateInput: (input) => validateEnvPath(input, lowestCommonWorkspacePath),
+    validateInput: (input) => validateEnvPath(input),
   });
 
   if (!envPath) {
@@ -402,69 +401,13 @@ export async function setupEnvironmentVariables(
   await config.update(ENV_FILE_PATH, envPath, getConfigurationTarget());
 }
 
-/**
- * Some VS Code setups can have multiple workspaces, in which
- * case we should take the lowest common ancestor path that is shared
- * across all of them so that the same .env file can be used for multiple
- * AIConfig files
- * @returns lowestCommonAncestorPath (string | undefined)
- *    -> string of path to lowest common ancestor: empty means no shared path
- *    -> undefined if no workspaces are defined in VS Code session
- */
-function getLowestCommonAncestorAcrossWorkspaces(): string | undefined {
-  const workspaceFolders = vscode.workspace.workspaceFolders;
-  if (workspaceFolders === undefined || workspaceFolders.length === 0) {
-    return undefined;
-  }
-
-  const workspacePaths = workspaceFolders.map((folder) =>
-    path.normalize(folder.uri.fsPath)
-  );
-  let lowestCommonAncestorPath: string;
-  const separator = path.sep; // Handles Windows and Linux
-  lowestCommonAncestorPath = workspacePaths.reduce(
-    (currLowestCommonAncestorPath, currPath) => {
-      const ancestorFolders = currLowestCommonAncestorPath.split(separator);
-      const currPathFolders = currPath.split(separator);
-      const commonPathFolders: Array<string> = [];
-      for (var i = 0; i < ancestorFolders.length; i++) {
-        if (ancestorFolders[i] === currPathFolders[i]) {
-          commonPathFolders.push(ancestorFolders[i]);
-        } else {
-          break;
-        }
-      }
-      return commonPathFolders.join(separator);
-    }
-  );
-  return lowestCommonAncestorPath;
-}
-
 function validateEnvPath(
   inputPath: string,
-  workspacePath: string | undefined
 ): string | null {
   if (!inputPath) {
     return "File path is required";
   } else if (path.basename(inputPath) !== ".env") {
     return 'Filename must be ".env"';
-  } else if (workspacePath != null && workspacePath !== "") {
-    // loadenv() from Python checks each folder from the file/program where
-    // it's invoked for the presence of an `.env` file. Therefore, the `.env
-    // file must be saved either at the top-level directory of the workspace
-    // directory, or one of it's parent directories. This will ensure that if
-    // two AIConfig files are contained in separate paths within the workspace
-    // they'll still be able to access the same `.env` file.
-
-    // Note: If the `inputPath` directory is equal to the `workspacePath`,
-    // `relativePathFromEnvToWorkspace` will be an empty string
-    const relativePathFromEnvToWorkspace = path.relative(
-      path.dirname(inputPath),
-      workspacePath
-    );
-    if (relativePathFromEnvToWorkspace.startsWith("..")) {
-      return `File path must either be contained within the VS Code workspace directory ('${workspacePath}') or within a one of it's parent folders`;
-    }
-  }
+  } 
   return null;
 }
