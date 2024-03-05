@@ -3,6 +3,7 @@ import { EXTENSION_NAME } from "../util";
 import { getPythonPath } from "../utilities/pythonSetupUtils";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import serverPortManager from "./serverPortManager";
+import { ENV_FILE_PATH } from "../constants";
 
 export enum EditorServerState {
   Starting = "Starting",
@@ -73,6 +74,8 @@ export class EditorServer {
       const modelRegistryPathArgs = modelRegistryPath
         ? ["--parsers-module-path", modelRegistryPath]
         : [];
+      const filePath = config.get(ENV_FILE_PATH) as string;
+      const envFilePathArgs = filePath ? ["--env-file-path", filePath] : [];
 
       this.port = await serverPortManager.getPort();
 
@@ -89,6 +92,7 @@ export class EditorServer {
           "--server-port",
           this.port.toString(),
           ...modelRegistryPathArgs,
+          ...envFilePathArgs,
         ],
         {
           cwd: this.cwd,

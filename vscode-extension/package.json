@@ -5,7 +5,7 @@
   "author": "LastMile AI",
   "displayName": "AIConfig Editor",
   "description": "AIConfig notebook editor that turns VSCode into a generative AI studio.",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
@@ -128,12 +128,17 @@
           "type": "string",
           "default": "",
           "description": "Version of the AIConfig Editor extension last time it was activated. We use this value to check if the extension has been updated to prompt users to reload VS Code"
+        },
+        "vscode-aiconfig.env_file_path": {
+          "type": "string",
+          "default": "",
+          "description": "File path to your .env file containing your API keys"
         }
       }
     },
     "configurationDefaults": {
       "workbench.editorAssociations": {
-        "{git,gitlens,sapling-diff}:/**/*.{aiconfig.json, aiconfig.yaml}": "default"
+        "{git,gitlens,sapling-diff}:/**/*.{aiconfig,aiconfig.json,aiconfig.yaml}": "default"
       },
       "workbench.editor.untitled.labelFormat": "name"
     },
