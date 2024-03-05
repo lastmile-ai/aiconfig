@@ -14,9 +14,9 @@ GROQ_API_KEY=<your-api-key-here>
 
 For the following steps below, see the [Groq cookbook](https://github.com/lastmile-ai/aiconfig/blob/b9a9e59dfd6251ab91580c0b8a4ef37906e8b9d4/cookbooks/Groq/aiconfig_model_registry.py) and associated [AIConfig file](https://github.com/lastmile-ai/aiconfig/blob/b9a9e59dfd6251ab91580c0b8a4ef37906e8b9d4/cookbooks/Groq/groq.aiconfig.json) for a reference example.
 
-1. Import the library to your code: `from aiconfig_extension_groq import GroqOpenAIParser`.
+1. Import the library to your code: `from aiconfig_extension_groq import GroqParser`.
 2. Import the AIConfig model registery: `from aiconfig import ModelRegistryParser`
-3. In code, add all the relevant model parser objects that you want to use from this extension to the registry. Ex: `ModelParserRegistry.register_model_parser(GroqOpenAIParser("mixtral-8x7b-32768"))`. You can read the docstrings under `ModelParserRegistry` class for more info
+3. In code, add all the relevant model parser objects that you want to use from this extension to the registry. Ex: `ModelParserRegistry.register_model_parser(GroqParser("mixtral-8x7b-32768"))`. You can read the docstrings under `ModelParserRegistry` class for more info
 4. In your AIConfig file, add a field `model_parsers` with the model name you want to use and map it to the id of model parser you want to use. Ex (here both the model name and model id for this model parser are the same): https://github.com/lastmile-ai/aiconfig/blob/cddf72bba2bd011355d88f98bdd1d7385de53883/cookbooks/Groq/groq.aiconfig.json#L7-L9
 5. Now whenever you call `aiconfig.run()` these model parsers will be loaded and available!
 
