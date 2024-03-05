@@ -45,6 +45,8 @@ export const EDITOR_SERVER_ROUTE_TABLE = {
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_content"),
   LOAD_MODEL_PARSER_MODULE: (hostUrl: string) =>
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_model_parser_module"),
+  SET_ENV_FILE_PATH: (hostUrl: string) =>
+    urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/set_env_file_path"),
 };
 
 export async function isServerReady(serverUrl: string) {
