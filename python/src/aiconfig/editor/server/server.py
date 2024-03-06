@@ -38,6 +38,7 @@ from aiconfig.editor.server.server_utils import (
     run_aiconfig_operation_with_request_json,
     safe_load_from_disk,
     safe_run_aiconfig_static_method,
+    validate_env_file_path,
 )
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.registry import ModelParserRegistry
@@ -848,40 +849,13 @@ def set_env_path() -> FlaskResponse:
     # Validate
     request_env_path = request_json.get("env_file_path")
     
-    if request_env_path is None:
-        return FlaskResponse(({"message": "No .env file path provided."}, 400))
+    env_file_path_is_valid, message = validate_env_file_path(request_env_path)
 
-    if not isinstance(request_env_path, str):
+    if not env_file_path_is_valid:
         return FlaskResponse(
             (
                 {
-                    "message": "Invalid request, specified .env file path is not a string."
-                },
-                400,
-            )
-        )
-
-    # Check if path exists / is accessible
-    path_exists = os.path.exists(request_env_path)
-
-    # Check if filename format is correct
-    filename_format_correct = request_env_path.endswith(".env")
-
-    if filename_format_correct is False:
-        return FlaskResponse(
-            (
-                {
-                    "message": "Specified env file path is not a .env file.",
-                },
-                400,
-            )
-        )
-
-    if path_exists is False:
-        return FlaskResponse(
-            (
-                {
-                    "message": "Specified .env file path does not exist.",
+                    "message": f'Invalid request, {message}:',
                 },
                 400,
             )
