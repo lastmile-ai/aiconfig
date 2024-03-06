@@ -1,12 +1,14 @@
 import asyncio
 import copy
 import ctypes
+import dotenv
 import json
 import logging
 import threading
 import time
 import uuid
 import webbrowser
+import os
 from typing import Any, Dict, Literal, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
@@ -330,6 +332,13 @@ def run() -> FlaskResponse:
         "callback_manager": True,
     }
     state = get_server_state(app)
+
+    # Allow user to modify their environment keys without reloading the server.
+    # Execution time of `0.001s` is arbitrary, but should be small enough to not be noticeable.
+    # Override if env_file_path is specified, user expects provided .env values take precedence over existing values
+    override_behaviour = state.env_file_path is not None
+    dotenv.load_dotenv(state.env_file_path, override = override_behaviour)
+
     aiconfig = state.aiconfig
     request_json = request.get_json()
     cancellation_token_id: str | None = None
@@ -823,3 +832,61 @@ def set_aiconfigrc() -> FlaskResponse:
     # yaml = YAML()
     # with open(state.aiconfigrc_path, "w") as f:
     #     yaml.dump(request_json["aiconfigrc"], f)
+
+@app.route("/api/set_env_file_path", methods=["POST"])
+def set_env_path() -> FlaskResponse:
+    """
+    Updates the server state with the new .env file path.
+
+    This method does NOT load the .env file into the server state.
+    It only updates the path to the .env file. See api/run
+
+    """
+    request_json = request.get_json()
+    state = get_server_state(app)
+
+    # Validate
+    request_env_path = request_json.get("env_file_path")
+    
+    if request_env_path is None:
+        return FlaskResponse(({"message": "No .env file path provided."}, 400))
+
+    if not isinstance(request_env_path, str):
+        return FlaskResponse(
+            (
+                {
+                    "message": "Invalid request, specified .env file path is not a string."
+                },
+                400,
+            )
+        )
+
+    # Check if path exists / is accessible
+    path_exists = os.path.exists(request_env_path)
+
+    # Check if filename format is correct
+    filename_format_correct = request_env_path.endswith(".env")
+
+    if filename_format_correct is False:
+        return FlaskResponse(
+            (
+                {
+                    "message": "Specified env file path is not a .env file.",
+                },
+                400,
+            )
+        )
+
+    if path_exists is False:
+        return FlaskResponse(
+            (
+                {
+                    "message": "Specified .env file path does not exist.",
+                },
+                400,
+            )
+        )
+
+    state.env_file_path = request_env_path
+
+    return FlaskResponse(({"message": "Updated .env file path."}, 200))
