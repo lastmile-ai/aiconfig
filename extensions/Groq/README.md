@@ -16,7 +16,7 @@ NOTE: When new models are supported by the GroqAPI that you want to use, make su
 
 Make sure you have AIConfig VS Code Extension installed [here](https://marketplace.visualstudio.com/items?itemName=lastmile-ai.vscode-aiconfig).
 
-1. `CMD/Ctrl+Shift+P` and enter `'AIConfig: Create new AIConfig (yaml)'`
+1. `CMD/Ctrl + Shift + P` and enter `'AIConfig: Create New AIConfig (yaml)'`
 2. Groq models (ex. `mixtral-8x7b-32768`) will now be available via model dropdown for your prompts.
 3. Run a prompt with a Groq model!
 
