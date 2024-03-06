@@ -136,9 +136,11 @@ Output = Union[ExecuteResult, Error]
 
 
 class ModelMetadata(BaseModel):
-    # The ID of the model to use.
-    name: str
-    # Model Inference settings that apply to this prompt.
+    # The ID of the inference provider aka Model Parser to use.
+    parserID: str # aka providerID
+    # The model being used
+    model: Optional[str] = None
+    # Model Inference settings that apply to this prompt. Model Parsers will then parse model into settings.
     settings: Optional[InferenceSettings] = {}
 
 
@@ -147,7 +149,7 @@ class PromptMetadata(BaseModel):
     # These settings override any global model settings that may have been defined in the AIConfig metadata.
     # If this is a string, it is assumed to be the model name.
     # Ift this is undefined, the default model specified in the default_model_property will be used for this Prompt.
-    model: Optional[Union[ModelMetadata, str]] = None
+    model: Optional[ModelMetadata] = None
     # Tags for this prompt. Tags must be unique, and must not contain commas.
     tags: Optional[List[str]] = None
     # Parameter definitions that are accessible to this prompt
@@ -220,7 +222,7 @@ class ConfigMetadata(BaseModel):
     # unless they override them with their own model settings.
     models: Optional[Dict[str, InferenceSettings]] = {}
     # Default model to use for prompts that do not specify a model.
-    default_model: Optional[str] = None
+    default_model: Optional[PromptMetadata] = None
     # Model ID to ModelParser ID mapping.
     # This is useful if you want to use a custom ModelParser for a model, or if a single ModelParser can handle multiple models.
     # Key is Model ID , Value is ModelParserID
@@ -293,7 +295,7 @@ class AIConfig(BaseModel):
 
     def get_model_name(self, prompt: Union[str, Prompt]) -> str:
         """
-        Extracts the model ID from the prompt.
+        Extracts the model ID from the prompt, NOT the model parser id.
 
         Args:
             prompt: Either the name of the prompt or a prompt object.
@@ -314,11 +316,9 @@ class AIConfig(BaseModel):
                     f"No model specified in AIConfig metadata, prompt {prompt.name} does not specify a model."
                 )
             return default_model
-        if isinstance(prompt.metadata.model, str):
-            return prompt.metadata.model
         else:
             # Expect a ModelMetadata object
-            return prompt.metadata.model.name
+            return prompt.metadata.model.model
 
     def set_default_model(self, model_name: Union[str, None]):
         """
