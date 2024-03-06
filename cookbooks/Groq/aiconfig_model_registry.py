@@ -15,4 +15,7 @@ def register_model_parsers() -> None:
     groq_mixtral = GroqParser(model="mixtral-8x7b-32768")
     ModelParserRegistry.register_model_parser(groq_mixtral)
 
+    groq_llama = GroqParser(model="llama2-70b-4096")
+    ModelParserRegistry.register_model_parser(groq_llama)
+
     dotenv.load_dotenv()
