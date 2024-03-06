@@ -6,15 +6,15 @@ from mock import patch
 from .conftest import mock_openai_chat_completion
 from .util.file_path_utils import get_absolute_file_path_from_relative
 
-@pytest.mark.xfail
+
 @pytest.mark.asyncio
-async def test_load_parametrized_data_config(set_temporary_env_vars):
+async def test_load_parametrized_data_config():
     """Test loading a parametrized data config and resolving it
 
     Config has 2 prompts. Prompt2 uses prompt1.output in its input.
     """
     with patch.object(
-        openai.chat.completions,
+        openai.resources.chat.Completions,
         "create",
         side_effect=mock_openai_chat_completion,
     ):
