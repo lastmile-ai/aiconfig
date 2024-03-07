@@ -341,6 +341,10 @@ def refine_chat_completion_params(model_settings, aiconfig, prompt):
         model_name = aiconfig.get_model_name(prompt)
         completion_data["model"] = model_name
 
+    # Default max tokens is too low to be useful in most cases. Manually default to 100
+    if completion_data.get("max_tokens") is None:
+        completion_data["max_tokens"] = 100
+
     return completion_data
 
 
