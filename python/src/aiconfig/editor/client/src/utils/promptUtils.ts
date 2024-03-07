@@ -1,6 +1,6 @@
 import { JSONObject, JSONValue, Prompt } from "aiconfig";
 import { OpenAIChatModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatModelParserPromptSchema";
-import { OpenAIChatVisionModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatVisionModelParserPromptSchema";
+import { OpenAIVisionParserPromptSchema } from "../shared/prompt_schemas/OpenAIVisionParserPromptSchema";
 import {
   Dalle2ImageGenerationParserPromptSchema,
   Dalle3ImageGenerationParserPromptSchema,
@@ -81,8 +81,8 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "gpt-3.5-turbo-0613": OpenAIChatModelParserPromptSchema,
   "gpt-3.5-turbo-16k-0613": OpenAIChatModelParserPromptSchema,
 
-  // TODO: Add GPT4-V parser in AIConfig
-  "gpt-4-vision-preview": OpenAIChatVisionModelParserPromptSchema,
+  // OpenAIVisionParser
+  "gpt-4-vision-preview": OpenAIVisionParserPromptSchema,
 
   // DalleImageGenerationParser
   "dall-e-2": Dalle2ImageGenerationParserPromptSchema,
