@@ -216,7 +216,7 @@ See [instructions](https://aiconfig.lastmileai.dev/docs/extensibility#1-bring-yo
 
 ## Extensibility
 
-AIConfig is designed to be customized and extended for your use-case. The [Extensibility](/docs/extensibility) guide goes into more detail.
+AIConfig is designed to be customized and extended for your use-case. The [Extensibility](https://aiconfig.lastmileai.dev/docs/extensibility) guide goes into more detail.
 
 Currently, there are 3 core ways to extend AIConfig:
 
