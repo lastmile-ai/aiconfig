@@ -12,6 +12,7 @@ from .default_parsers.anyscale_endpoint import (
 from .default_parsers.claude import ClaudeBedrockModelParser
 from .default_parsers.dalle import DalleImageGenerationParser
 from .default_parsers.openai import DefaultOpenAIParser
+from .default_parsers.openai_vision import OpenAIVisionParser
 from .default_parsers.gemini import GeminiModelParser
 from .default_parsers.hf import HuggingFaceTextGenerationParser
 from .default_parsers.palm import PaLMChatParser, PaLMTextParser
@@ -41,6 +42,10 @@ gpt_models_extra = [
 ]
 for model in gpt_models_main:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
+
+ModelParserRegistry.register_model_parser(
+    OpenAIVisionParser("gpt-4-vision-preview")
+)
 ModelParserRegistry.register_model_parser(
     GeminiModelParser("gemini-pro"), ["gemini-pro"]
 )
