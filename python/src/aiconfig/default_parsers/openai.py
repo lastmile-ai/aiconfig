@@ -328,7 +328,7 @@ class OpenAIInference(ParameterizedModelParser):
 
         completion_data["stream"] = stream
 
-        response = self.client.chat.completions.create(**completion_data)
+        response = await self.client.chat.completions.create(**completion_data)
         outputs = []
         if not stream:
             # # OpenAI>1.0.0 uses pydantic models for response
@@ -420,7 +420,7 @@ class OpenAIInference(ParameterizedModelParser):
             )
         )
         return prompt.outputs
-    
+
     def initialize_openai_client(self) -> None:
         """
         Initializes the client to be used with the OpenAI Module.
@@ -430,7 +430,7 @@ class OpenAIInference(ParameterizedModelParser):
         openai_api_key = get_api_key_from_environment(
             "OPENAI_API_KEY"
         ).unwrap()
-        self.client = openai.Client(api_key=openai_api_key)   
+        self.client = openai.AsyncOpenAI(api_key=openai_api_key)
 
     def get_prompt_template(
         self, prompt: Prompt, aiconfig: "AIConfigRuntime"
