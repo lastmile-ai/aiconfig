@@ -61,6 +61,7 @@ export const OpenAIVisionParserPromptSchema: PromptSchema = {
         type: "integer",
         description: `The maximum number of tokens that can be generated in the completion.
         The token count of your prompt plus max_tokens cannot exceed the model's context length.`,
+        default: 100,
       },
       n: {
         type: "integer",
