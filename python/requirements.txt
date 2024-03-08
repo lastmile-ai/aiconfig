@@ -12,7 +12,7 @@ lastmile-utils==0.0.23
 mock
 nest_asyncio
 nltk
-openai >= 1.0.0, < 1.5
+openai >= 1.13.3
 prompt_toolkit
 pybars3
 pydantic>=2.1
