@@ -31,6 +31,8 @@ import { VSCODE_THEME } from "./VSCodeTheme";
 // TODO: Update package to export AIConfigEditorNotification and ThemeMode types
 import { AIConfigEditorNotification } from "@lastmileai/aiconfig-editor/dist/components/notifications/NotificationProvider";
 import { ThemeMode } from "@lastmileai/aiconfig-editor/dist/shared/types";
+import {v4 as uuidv4} from "uuid";
+
 
 import {v4 as uuidv4} from "uuid";
 
