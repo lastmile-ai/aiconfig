@@ -49,6 +49,7 @@ class ModelParserRegistry:
             for id in ids:
                 ModelParserRegistry._parsers[id] = model_parser
         ModelParserRegistry._parsers[model_parser.id()] = model_parser
+        # No changes needed here
 
     @staticmethod
     def get_model_parser(model_id: str) -> ModelParser:
