@@ -2,16 +2,16 @@ import json
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import google.generativeai as palm
-from aiconfig.callback import CallbackEvent
-from aiconfig.default_parsers.parameterized_model_parser import (
+from aiconfig.v2.callback import CallbackEvent
+from aiconfig.v2.default_parsers.parameterized_model_parser import (
     ParameterizedModelParser,
 )
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.util.params import resolve_parameters, resolve_prompt
+from aiconfig.v2.model_parser import InferenceOptions
+from aiconfig.v2.util.params import resolve_parameters, resolve_prompt
 from google.generativeai.text import Completion
 from google.generativeai.types.discuss_types import MessageDict
 
-from aiconfig.schema import (
+from aiconfig.v2.schema import (
     ExecuteResult,
     Output,
     OutputDataWithValue,
@@ -20,7 +20,7 @@ from aiconfig.schema import (
 )
 
 if TYPE_CHECKING:
-    from aiconfig.Config import AIConfigRuntime
+    from aiconfig.v2.Config import AIConfigRuntime
 
 
 class PaLMTextParser(ParameterizedModelParser):

@@ -1,12 +1,12 @@
 import typing
 from typing import Dict, List, Optional
 
-from aiconfig.schema import Prompt
+from aiconfig.v2.schema import Prompt
 
 from .model_parser import ModelParser
 
 if typing.TYPE_CHECKING:
-    from aiconfig.Config import AIConfigRuntime
+    from aiconfig.v2.Config import AIConfigRuntime
 
 
 class ModelParserRegistry:

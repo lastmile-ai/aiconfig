@@ -3,10 +3,10 @@ import copy
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
-from aiconfig.schema import AIConfig, ExecuteResult, Output, Prompt
+from aiconfig.v2.schema import AIConfig, ExecuteResult, Output, Prompt
 
 if TYPE_CHECKING:
-    from aiconfig.Config import AIConfigRuntime
+    from aiconfig.v2.Config import AIConfigRuntime
 
 
 class ModelParser(ABC):

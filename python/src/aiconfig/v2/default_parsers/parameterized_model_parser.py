@@ -5,10 +5,16 @@ import typing
 from abc import abstractmethod
 from typing import Dict, List, Optional
 
-from aiconfig.model_parser import InferenceOptions, ModelParser
-from aiconfig.util.params import get_dependency_graph, resolve_prompt_string
+from aiconfig.v2.model_parser import InferenceOptions, ModelParser
+from aiconfig.v2.util.params import get_dependency_graph, resolve_prompt_string
 
-from aiconfig.schema import AIConfig, JSONObject, Output, Prompt, PromptInput
+from aiconfig.v2.schema import (
+    AIConfig,
+    JSONObject,
+    Output,
+    Prompt,
+    PromptInput,
+)
 
 if typing.TYPE_CHECKING:
     from aiconfig import AIConfigRuntime

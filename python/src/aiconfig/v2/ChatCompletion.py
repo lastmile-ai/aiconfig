@@ -3,6 +3,7 @@ wrapper around openai that will serialize prompts and save them to config
 
 usage: see openai_wrapper.ipynb.
 """
+
 import asyncio
 import copy
 from types import ModuleType
@@ -11,10 +12,10 @@ from typing import Any, Dict, Generator, List, cast
 import lastmile_utils.lib.core.api as core_utils
 import nest_asyncio
 import openai
-from aiconfig.Config import AIConfigRuntime
-from aiconfig.default_parsers.openai import multi_choice_message_reducer
+from aiconfig.v2.Config import AIConfigRuntime
+from aiconfig.v2.default_parsers.openai import multi_choice_message_reducer
 
-from aiconfig.schema import ExecuteResult, Output, Prompt
+from aiconfig.v2.schema import ExecuteResult, Output, Prompt
 
 
 def validate_and_add_prompts_to_config(

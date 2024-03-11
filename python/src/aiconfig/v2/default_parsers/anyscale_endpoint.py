@@ -2,12 +2,12 @@ import copy
 import os
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from aiconfig.callback import CallbackEvent
-from aiconfig.model_parser import InferenceOptions
+from aiconfig.v2.callback import CallbackEvent
+from aiconfig.v2.model_parser import InferenceOptions
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessage
 
-from aiconfig.schema import (
+from aiconfig.v2.schema import (
     ExecuteResult,
     FunctionCallData,
     Output,
@@ -20,7 +20,7 @@ from aiconfig.schema import (
 from .openai import OpenAIInference
 
 if TYPE_CHECKING:
-    from aiconfig.Config import AIConfigRuntime
+    from aiconfig.v2.Config import AIConfigRuntime
 
 
 class AnyscaleEndpoint(OpenAIInference):
