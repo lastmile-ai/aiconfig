@@ -1,5 +1,9 @@
 # Changelog
 
+## (2024-03-11) Python Version 1.1.30, NPM Version 1.1.14
+
+Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1401
+
 ## (2024-03-05) Python Version 1.1.29, NPM Version 1.1.13
 
 Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1401
