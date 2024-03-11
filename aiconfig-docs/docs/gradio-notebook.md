@@ -230,7 +230,7 @@ You can easily build generative apps inspired by your work in Gradio Notebook Sp
 Use the `aiconfig.json` file in your code with the [AIConfig SDK](https://github.com/lastmile-ai/aiconfig) in 2 lines:
 
 ```python
-config = await AIConfigRuntime.load('my_app.aiconfig.json')
+config = AIConfigRuntime.load('my_app.aiconfig.json')
 model_output = await config.run('prompt_name')
 ```
 
