@@ -5,14 +5,43 @@
   "author": "LastMile AI",
   "displayName": "AIConfig Editor",
   "description": "AIConfig notebook editor that turns VSCode into a generative AI studio.",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
   },
   "icon": "static/Logo.png",
   "categories": [
-    "Other"
+    "Machine Learning",
+    "Notebooks",
+    "Programming Languages",
+    "Snippets"
+  ],
+  "tags": [
+    "ai",
+    "assistant",
+    "chatbot",
+    "notebook",
+    "aiconfig",
+    "lastmile",
+    "openai",
+    "chatgpt",
+    "gpt",
+    "gpt4",
+    "dalle",
+    "dalle3",
+    "llama",
+    "llama2",
+    "anthropic",
+    "claude",
+    "claude3",
+    "gemini",
+    "huggingface",
+    "transformers",
+    "generative",
+    "editor",
+    "python",
+    "typescript"
   ],
   "main": "./out/extension.js",
   "activationEvents": [
