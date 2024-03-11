@@ -3,7 +3,7 @@ import PromptInputRenderer from "./prompt_input/PromptInputRenderer";
 import PromptOutputsRenderer from "./prompt_outputs/PromptOutputsRenderer";
 import { ClientPrompt } from "../../shared/types";
 import { getPromptSchema } from "../../utils/promptUtils";
-import { Flex, Card } from "@mantine/core";
+import { Flex, Card, createStyles } from "@mantine/core";
 import { PromptInput as AIConfigPromptInput, JSONObject } from "aiconfig";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import PromptOutputBar from "./PromptOutputBar";
@@ -38,6 +38,25 @@ type Props = {
 
 export const PROMPT_CONTAINER_HEIGHT_MAP = new Map<string, number>();
 
+// Set default styles, which can be overridden by the provided themeOverride
+// or theme associated with mode
+const useStyles = createStyles((theme) => ({
+  cellStyle: {
+    borderBottomRightRadius: "0px",
+    borderTopRightRadius: "0px",
+    flex: 1,
+  },
+
+  sidePanel: {
+    border: `1px solid ${
+      theme.colorScheme === "dark" ? theme.colors.dark[4] : theme.colors.gray[3]
+    }`,
+    borderBottomRightRadius: "4px",
+    borderLeft: "none",
+    borderTopRightRadius: "4px",
+  },
+}));
+
 export default memo(function PromptContainer({
   prompt,
   cancel,
@@ -52,6 +71,7 @@ export default memo(function PromptContainer({
   onUpdatePromptMetadata,
   isRunButtonDisabled = false,
 }: Props) {
+  const { classes } = useStyles();
   const promptId = prompt._ui.id;
   const onChangeInput = useCallback(
     (newInput: AIConfigPromptInput) => onChangePromptInput(promptId, newInput),
@@ -139,7 +159,11 @@ export default memo(function PromptContainer({
 
   return (
     <Flex justify="space-between" w="100%">
-      <Card withBorder className="cellStyle" ref={cellInputOutputRef}>
+      <Card
+        withBorder
+        className={`${classes.cellStyle} cellStyle`}
+        ref={cellInputOutputRef}
+      >
         <Flex direction="column">
           <Flex justify="space-between" mb="0.5em">
             <PromptName
@@ -172,7 +196,7 @@ export default memo(function PromptContainer({
           )}
         </Flex>
       </Card>
-      <div className="sidePanel">
+      <div className={`${classes.sidePanel} sidePanel`}>
         <PromptActionBar
           defaultConfigModelName={defaultConfigModelName}
           prompt={prompt}

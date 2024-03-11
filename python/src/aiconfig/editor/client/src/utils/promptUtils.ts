@@ -1,6 +1,6 @@
 import { JSONObject, JSONValue, Prompt } from "aiconfig";
 import { OpenAIChatModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatModelParserPromptSchema";
-import { OpenAIChatVisionModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatVisionModelParserPromptSchema";
+import { OpenAIVisionParserPromptSchema } from "../shared/prompt_schemas/OpenAIVisionParserPromptSchema";
 import {
   Dalle2ImageGenerationParserPromptSchema,
   Dalle3ImageGenerationParserPromptSchema,
@@ -22,9 +22,9 @@ import { HuggingFaceTextGenerationRemoteInferencePromptSchema } from "../shared/
 import { HuggingFaceTextSummarizationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationRemoteInferencePromptSchema";
 import { HuggingFaceTextTranslationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextTranslationRemoteInferencePromptSchema";
 import { HuggingFaceImage2TextRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextRemoteInferencePromptSchema";
+import { HuggingFaceVisualQuestionAnsweringRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceVisualQuestionAnsweringRemoteInferencePromptSchema";
 import { ClaudeBedrockPromptSchema } from "../shared/prompt_schemas/ClaudeBedrockPromptSchema";
 import { HuggingFaceConversationalRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceConversationalRemoteInferencePromptSchema";
-
 
 /**
  * Get the name of the model for the specified prompt. The name will either be specified in the prompt's
@@ -81,8 +81,8 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "gpt-3.5-turbo-0613": OpenAIChatModelParserPromptSchema,
   "gpt-3.5-turbo-16k-0613": OpenAIChatModelParserPromptSchema,
 
-  // TODO: Add GPT4-V parser in AIConfig
-  "gpt-4-vision-preview": OpenAIChatVisionModelParserPromptSchema,
+  // OpenAIVisionParser
+  "gpt-4-vision-preview": OpenAIVisionParserPromptSchema,
 
   // DalleImageGenerationParser
   "dall-e-2": Dalle2ImageGenerationParserPromptSchema,
@@ -116,6 +116,9 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
 
   HuggingFaceTextTranslationRemoteInference:
     HuggingFaceTextTranslationRemoteInferencePromptSchema,
+
+  HuggingFaceVisualQuestionAnsweringRemoteInference:
+    HuggingFaceVisualQuestionAnsweringRemoteInferencePromptSchema,
 
   // PaLMTextParser
   "models/text-bison-001": PaLMTextParserPromptSchema,
@@ -162,6 +165,8 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   Summarization: HuggingFaceTextSummarizationRemoteInferencePromptSchema,
   Translation: HuggingFaceTextTranslationRemoteInferencePromptSchema,
   Conversational: HuggingFaceConversationalRemoteInferencePromptSchema,
+  "Visual Question Answering":
+    HuggingFaceVisualQuestionAnsweringRemoteInferencePromptSchema,
 
   "Automatic Speech Recognition (Local)":
     HuggingFaceAutomaticSpeechRecognitionPromptSchema,

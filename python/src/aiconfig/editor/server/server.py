@@ -1,12 +1,14 @@
 import asyncio
 import copy
 import ctypes
+import dotenv
 import json
 import logging
 import threading
 import time
 import uuid
 import webbrowser
+import os
 from typing import Any, Dict, Literal, Type, Union
 
 import lastmile_utils.lib.core.api as core_utils
@@ -36,6 +38,7 @@ from aiconfig.editor.server.server_utils import (
     run_aiconfig_operation_with_request_json,
     safe_load_from_disk,
     safe_run_aiconfig_static_method,
+    validate_env_file_path,
 )
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.registry import ModelParserRegistry
@@ -330,6 +333,13 @@ def run() -> FlaskResponse:
         "callback_manager": True,
     }
     state = get_server_state(app)
+
+    # Allow user to modify their environment keys without reloading the server.
+    # Execution time of `0.001s` is arbitrary, but should be small enough to not be noticeable.
+    # Override if env_file_path is specified, user expects provided .env values take precedence over existing values
+    override_behaviour = state.env_file_path is not None
+    dotenv.load_dotenv(state.env_file_path, override = override_behaviour)
+
     aiconfig = state.aiconfig
     request_json = request.get_json()
     cancellation_token_id: str | None = None
@@ -823,3 +833,34 @@ def set_aiconfigrc() -> FlaskResponse:
     # yaml = YAML()
     # with open(state.aiconfigrc_path, "w") as f:
     #     yaml.dump(request_json["aiconfigrc"], f)
+
+@app.route("/api/set_env_file_path", methods=["POST"])
+def set_env_path() -> FlaskResponse:
+    """
+    Updates the server state with the new .env file path.
+
+    This method does NOT load the .env file into the server state.
+    It only updates the path to the .env file. See api/run
+
+    """
+    request_json = request.get_json()
+    state = get_server_state(app)
+
+    # Validate
+    request_env_path = request_json.get("env_file_path")
+    
+    env_file_path_is_valid, message = validate_env_file_path(request_env_path)
+
+    if not env_file_path_is_valid:
+        return FlaskResponse(
+            (
+                {
+                    "message": f'Invalid request, {message}: {request_env_path}',
+                },
+                400,
+            )
+        )
+
+    state.env_file_path = request_env_path
+
+    return FlaskResponse(({"message": "Updated .env file path."}, 200))

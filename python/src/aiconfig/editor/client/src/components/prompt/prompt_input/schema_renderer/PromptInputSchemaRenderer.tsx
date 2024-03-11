@@ -45,18 +45,18 @@ function SchemaRenderer({ input, schema, onChangeInput }: SchemaRendererProps) {
 
   return (
     <Flex direction="column">
-      {dataSchema && (
-        <DataRenderer
-          schema={dataSchema}
-          data={data}
-          onChangeData={onChangeData}
-        />
-      )}
       {attachmentsSchema && (
         <AttachmentsRenderer
           schema={attachmentsSchema}
           onChangeAttachments={onChangeAttachments}
           attachments={attachments ?? []}
+        />
+      )}
+      {dataSchema && (
+        <DataRenderer
+          schema={dataSchema}
+          data={data}
+          onChangeData={onChangeData}
         />
       )}
       {/* <JSONRenderer properties={restProperties} data={restData}/> */}
