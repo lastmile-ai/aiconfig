@@ -12,6 +12,7 @@ from .default_parsers.anyscale_endpoint import (
 from .default_parsers.claude import ClaudeBedrockModelParser
 from .default_parsers.dalle import DalleImageGenerationParser
 from .default_parsers.openai import DefaultOpenAIParser
+from .default_parsers.openai_vision import OpenAIVisionParser
 from .default_parsers.gemini import GeminiModelParser
 from .default_parsers.hf import HuggingFaceTextGenerationParser
 from .default_parsers.palm import PaLMChatParser, PaLMTextParser
@@ -41,6 +42,10 @@ gpt_models_extra = [
 ]
 for model in gpt_models_main:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
+
+ModelParserRegistry.register_model_parser(
+    OpenAIVisionParser("gpt-4-vision-preview")
+)
 ModelParserRegistry.register_model_parser(
     GeminiModelParser("gemini-pro"), ["gemini-pro"]
 )
@@ -318,14 +323,17 @@ class AIConfigRuntime(AIConfig):
             )
 
         prompt_data = self.prompt_index[prompt_name]
+        # get new model name, ModelMetadata.model (also this sounds like data more than metadata)
         model_name = self.get_model_name(prompt_data)
         model_provider = AIConfigRuntime.get_model_parser(model_name)
 
         # Clear previous run outputs if they exist
         self.delete_output(prompt_name)
 
+        # Ideally we have some helper method that easily parses this model value.
         response = await model_provider.run(
             prompt_data,
+            model,
             self,
             options,
             params,

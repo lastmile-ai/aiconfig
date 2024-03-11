@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 
 # TODO: Centralize this into utils function with the HuggingFaceTextParser class
-def refine_image_completion_params(model_settings, aiconfig, prompt):
+def refine_image_completion_params(model_settings, aiconfig, prompt:Prompt):
     """
     Refines the completion params for the Dall-E request API. Removes any unsupported params.
     The supported keys were found by looking at the OpenAI Dall-E API: https://platform.openai.com/docs/api-reference/images/create?lang=python`
@@ -54,7 +54,7 @@ def refine_image_completion_params(model_settings, aiconfig, prompt):
 
     # Explicitly set the model to use if not already specified
     if completion_data.get("model") is None:
-        model_name = aiconfig.get_model_name(prompt)
+        model_name = prompt.metadata.model.model
         completion_data["model"] = model_name
 
     return completion_data
