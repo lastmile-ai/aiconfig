@@ -2,17 +2,17 @@ import copy
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import openai
-from aiconfig.default_parsers.parameterized_model_parser import (
+from aiconfig.v2.default_parsers.parameterized_model_parser import (
     ParameterizedModelParser,
 )
-from aiconfig.util.config_utils import get_api_key_from_environment
-from aiconfig.util.params import resolve_prompt
+from aiconfig.v2.util.config_utils import get_api_key_from_environment
+from aiconfig.v2.util.params import resolve_prompt
 from openai import OpenAI
 
 # Dall-E API imports
 from openai.types import Image, ImagesResponse
 
-from aiconfig.schema import (
+from aiconfig.v2.schema import (
     ExecuteResult,
     Output,
     OutputDataWithStringValue,
@@ -26,7 +26,7 @@ from aiconfig.schema import (
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
-    from aiconfig.Config import AIConfigRuntime
+    from aiconfig.v2.Config import AIConfigRuntime
 
 
 # Step 1: define Helpers

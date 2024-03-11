@@ -1,7 +1,7 @@
 import warnings
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from aiconfig.util.config_utils import extract_override_settings
+from aiconfig.v2.util.config_utils import extract_override_settings
 from pydantic import BaseModel
 
 # Pydantic doesn't handle circular type references very well, TODO: handle this better than defining as type Any

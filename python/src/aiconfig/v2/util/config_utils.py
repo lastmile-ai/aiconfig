@@ -8,7 +8,7 @@ from result import Err, Ok, Result
 if TYPE_CHECKING:
     pass
 
-    from aiconfig.schema import InferenceSettings
+    from aiconfig.v2.schema import InferenceSettings
 
     from ..schema import AIConfig
 

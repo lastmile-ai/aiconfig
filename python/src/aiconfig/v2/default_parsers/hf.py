@@ -2,12 +2,12 @@ import copy
 import json
 from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Union
 
-from aiconfig.default_parsers.parameterized_model_parser import (
+from aiconfig.v2.default_parsers.parameterized_model_parser import (
     ParameterizedModelParser,
 )
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.util.config_utils import get_api_key_from_environment
-from aiconfig.util.params import resolve_prompt
+from aiconfig.v2.model_parser import InferenceOptions
+from aiconfig.v2.util.config_utils import get_api_key_from_environment
+from aiconfig.v2.util.params import resolve_prompt
 
 # HuggingFace API imports
 from huggingface_hub import InferenceClient
@@ -17,11 +17,11 @@ from huggingface_hub.inference._text_generation import (
 )
 
 from aiconfig import CallbackEvent
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
+from aiconfig.v2.schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
-    from aiconfig.Config import AIConfigRuntime
+    from aiconfig.v2.Config import AIConfigRuntime
 
 
 # Step 1: define Helpers

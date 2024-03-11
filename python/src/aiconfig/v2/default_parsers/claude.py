@@ -2,18 +2,18 @@ import copy
 import json
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-from aiconfig.callback import CallbackEvent
-from aiconfig.default_parsers.parameterized_model_parser import (
+from aiconfig.v2.callback import CallbackEvent
+from aiconfig.v2.default_parsers.parameterized_model_parser import (
     ParameterizedModelParser,
 )
-from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
-from aiconfig.util.params import resolve_prompt
+from aiconfig.v2.model_parser import InferenceOptions
+from aiconfig.v2.schema import ExecuteResult, Output, Prompt, PromptMetadata
+from aiconfig.v2.util.params import resolve_prompt
 from anthropic_bedrock import AI_PROMPT, HUMAN_PROMPT, AnthropicBedrock, Stream
 from anthropic_bedrock.types import Completion
 
 if TYPE_CHECKING:
-    from aiconfig.Config import AIConfigRuntime
+    from aiconfig.v2.Config import AIConfigRuntime
 
 
 class ClaudeBedrockModelParser(ParameterizedModelParser):
@@ -126,9 +126,9 @@ class ClaudeBedrockModelParser(ParameterizedModelParser):
 
         # Claude is trained using RLHF, need to add the human prompt to the beginning of the prompt
         # See https://docs.anthropic.com/claude/docs/introduction-to-prompt-design#human--assistant-formatting
-        completion_data[
-            "prompt"
-        ] = f"{HUMAN_PROMPT} {resolved_prompt}{AI_PROMPT}"
+        completion_data["prompt"] = (
+            f"{HUMAN_PROMPT} {resolved_prompt}{AI_PROMPT}"
+        )
 
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(

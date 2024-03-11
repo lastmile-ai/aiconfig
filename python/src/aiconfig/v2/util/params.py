@@ -2,10 +2,10 @@ import re
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Dict, List, Set
 
-from aiconfig.registry import ModelParserRegistry
+from aiconfig.v2.registry import ModelParserRegistry
 from pybars import Compiler
 
-from aiconfig.schema import Prompt
+from aiconfig.v2.schema import Prompt
 
 if TYPE_CHECKING:
     from ..Config import AIConfig, AIConfigRuntime
@@ -264,7 +264,7 @@ def collect_prompt_references(
 
         # Note: not all model inputs are parameterizable. This can be None.
         prompt_input = get_prompt_template(previous_prompt, ai_config)
-        
+
         prompt_output = (
             ai_config.get_output_text(
                 previous_prompt, ai_config.get_latest_output(previous_prompt)
