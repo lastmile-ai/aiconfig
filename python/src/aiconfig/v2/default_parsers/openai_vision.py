@@ -1,18 +1,18 @@
 import copy
 import re
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-from aiconfig.util.params import (
+from aiconfig.v2.util.params import (
     resolve_prompt_string,
     resolve_system_prompt,
 )
 
-from aiconfig.callback import CallbackEvent
+from aiconfig.v2.callback import CallbackEvent
 
 from .openai import DefaultOpenAIParser, build_output_data
 
 from openai.types.chat import ChatCompletionMessage
 
-from aiconfig.schema import (
+from aiconfig.v2.schema import (
     Attachment,
     AttachmentDataWithStringValue,
     ExecuteResult,
@@ -23,7 +23,7 @@ from aiconfig.schema import (
 )
 
 if TYPE_CHECKING:
-    from aiconfig.Config import AIConfigRuntime
+    from aiconfig.v2.Config import AIConfigRuntime
 
 IMAGE_FORMAT_PATTERN = r"data:image/(\w+);base64"
 

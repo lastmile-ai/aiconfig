@@ -1,24 +1,24 @@
-from aiconfig.default_parsers.openai import DefaultOpenAIParser
-from aiconfig.util.config_utils import get_api_key_from_environment
+from aiconfig.v2.default_parsers.openai import DefaultOpenAIParser
+from aiconfig.v2.util.config_utils import get_api_key_from_environment
 
 from openai import AzureOpenAI
 
 
 class AzureOpenAIParser(DefaultOpenAIParser):
     def __init__(self, deployment: str):
-        super().__init__(model_id = deployment)
+        super().__init__(model_id=deployment)
 
-        # Deployment is a custom name that user defines in Azure portal. 
-        self.deployment = deployment 
+        # Deployment is a custom name that user defines in Azure portal.
+        self.deployment = deployment
 
     async def deserialize(self, *args, **kwargs):
-        # Logic doesn't depend on input, pass it forward to the openai model parser deserialize 
+        # Logic doesn't depend on input, pass it forward to the openai model parser deserialize
         openai_deserialized_params = await super().deserialize(*args, **kwargs)
 
-        # Should this just be the "model name" from config? 
-        # If so, Then the "model name" will have to be deployment name and be consistent 
+        # Should this just be the "model name" from config?
+        # If so, Then the "model name" will have to be deployment name and be consistent
         # Which would mean we don't need to have this custom deserialization
-        openai_deserialized_params["model"] = self.deployment 
+        openai_deserialized_params["model"] = self.deployment
         return openai_deserialized_params
 
     def initialize_openai_client(self) -> None:
