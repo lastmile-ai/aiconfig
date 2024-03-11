@@ -32,6 +32,9 @@ import { VSCODE_THEME } from "./VSCodeTheme";
 import { AIConfigEditorNotification } from "@lastmileai/aiconfig-editor/dist/components/notifications/NotificationProvider";
 import { ThemeMode } from "@lastmileai/aiconfig-editor/dist/shared/types";
 
+import {v4 as uuidv4} from "uuid";
+
+
 const useStyles = createStyles(() => ({
   editorBackground: {
     margin: "0 auto",
@@ -175,6 +178,7 @@ export default function VSCodeEditor() {
     );
 
     const enableTelemetry = res.allow_usage_data_sharing;
+    const sessionId: string = uuidv4();
 
     if (enableTelemetry) {
       datadogLogs.init({
@@ -187,6 +191,7 @@ export default function VSCodeEditor() {
       });
 
       datadogLogs.setGlobalContextProperty("mode", MODE);
+      datadogLogs.setGlobalContextProperty("session_id_internal", sessionId);
     }
   }, [aiConfigServerUrl]);
 
