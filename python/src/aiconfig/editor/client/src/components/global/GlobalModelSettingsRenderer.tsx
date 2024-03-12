@@ -4,6 +4,7 @@ import {
   ActionIcon,
   Card,
   Divider,
+  Flex,
   Menu,
   ScrollArea,
   Text,
@@ -13,11 +14,12 @@ import {
 import ModelSettingsRenderer from "../models/model_settings/ModelSettingsRenderer";
 import AIConfigContext from "../../contexts/AIConfigContext";
 import { useCallback, useContext, useState } from "react";
-import { IconPlus } from "@tabler/icons-react";
+import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { getPromptSchemaForModel } from "../../utils/promptUtils";
 import ModelMenuDropdown from "../models/ModelMenuDropdown";
 
 type Props = {
+  deleteModelSettings?: (modelName: string) => void;
   getModels?: (search?: string) => Promise<string[]>;
   modelSettings: JSONObject;
   onUpdateModelSettings: (
@@ -27,6 +29,7 @@ type Props = {
 };
 
 export default function GlobalModelSettingsRenderer({
+  deleteModelSettings,
   getModels,
   modelSettings,
   onUpdateModelSettings,
@@ -95,9 +98,19 @@ export default function GlobalModelSettingsRenderer({
             <>
               {i > 0 && <Divider mt="xl" mb="xl" size="xl" />}
               <Card key={modelName}>
-                <Title order={4} underline>
-                  {modelName}
-                </Title>
+                <Flex>
+                  <Title order={4} underline>
+                    {modelName}
+                  </Title>
+                  {!readOnly && deleteModelSettings && (
+                    <ActionIcon
+                      onClick={() => deleteModelSettings(modelName)}
+                      ml="0.5em"
+                    >
+                      <IconTrash size={16} color={"red"} />
+                    </ActionIcon>
+                  )}
+                </Flex>
                 <ModelSettingsRenderer
                   model={modelName}
                   onUpdateModelSettings={(settings) =>
