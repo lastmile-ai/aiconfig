@@ -463,13 +463,41 @@ function AIConfigEditorBase({
 
   const onUpdateGlobalModelSettings = useCallback(
     async (modelName: string, newModelSettings: JSONObject) => {
-      // TODO: Implement in next PR
-      console.log(
-        `Update global settings for model ${modelName}`,
-        newModelSettings
-      );
+      if (!debouncedUpdateModel) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
+      dispatch({
+        type: "UPDATE_GLOBAL_MODEL_SETTINGS",
+        modelName,
+        modelSettings: newModelSettings,
+      });
+      logEventHandler?.("UPDATE_GLOBAL_MODEL_SETTINGS", { model: modelName });
+
+      const onError = (err: unknown) => {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error updating global model settings",
+          message,
+          type: "error",
+        });
+      };
+
+      try {
+        await debouncedUpdateModel(
+          {
+            modelName,
+            settings: newModelSettings as InferenceSettings,
+          },
+          onError
+        );
+      } catch (err: unknown) {
+        onError(err);
+      }
     },
-    []
+    [debouncedUpdateModel, logEventHandler, showNotification]
   );
 
   const onUpdatePromptModelSettings = useCallback(
