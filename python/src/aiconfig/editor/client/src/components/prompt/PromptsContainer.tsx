@@ -10,7 +10,7 @@ import { JSONObject, PromptInput } from "aiconfig";
 type Props = {
   cancelRunPrompt?: (cancellationToken: string) => Promise<void>;
   defaultModel?: string;
-  getModels?: (search: string) => Promise<string[]>;
+  getModels?: (search?: string) => Promise<string[]>;
   onAddPrompt: (promptIndex: number, model: string) => Promise<void>;
   onChangePromptInput: (
     promptId: string,

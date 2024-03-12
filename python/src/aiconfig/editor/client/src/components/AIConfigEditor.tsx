@@ -125,7 +125,7 @@ export type AIConfigCallbacks = {
   deletePrompt: (promptName: string) => Promise<void>;
   download?: () => Promise<void>;
   openInTextEditor?: () => Promise<void>;
-  getModels: (search: string) => Promise<string[]>;
+  getModels: (search?: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
   runPrompt: (

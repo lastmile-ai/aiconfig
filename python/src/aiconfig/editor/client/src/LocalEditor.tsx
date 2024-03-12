@@ -37,7 +37,6 @@ const useStyles = createStyles(() => ({
   },
 }));
 
-
 const MODE = "local";
 
 export default function LocalEditor() {
@@ -75,7 +74,7 @@ export default function LocalEditor() {
         sessionSampleRate: 100,
       });
 
-      datadogLogs.setGlobalContextProperty('mode', MODE);
+      datadogLogs.setGlobalContextProperty("mode", MODE);
     }
   }, []);
 
@@ -91,7 +90,7 @@ export default function LocalEditor() {
     return res;
   }, []);
 
-  const getModels = useCallback(async (search: string) => {
+  const getModels = useCallback(async (search?: string) => {
     // For now, rely on caching and handle client-side search filtering
     // We will use server-side search filtering for Gradio
     const res = await ufetch.get(ROUTE_TABLE.LIST_MODELS);
@@ -289,11 +288,7 @@ export default function LocalEditor() {
           <Loader size="xl" />
         </Flex>
       ) : (
-        <AIConfigEditor
-          aiconfig={aiconfig}
-          callbacks={callbacks}
-          mode={MODE}
-        />
+        <AIConfigEditor aiconfig={aiconfig} callbacks={callbacks} mode={MODE} />
       )}
     </div>
   );

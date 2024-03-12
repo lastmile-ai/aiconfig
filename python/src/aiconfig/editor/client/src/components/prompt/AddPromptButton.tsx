@@ -14,7 +14,7 @@ import { PROMPT_CELL_LEFT_MARGIN_PX } from "../../utils/constants";
 
 type Props = {
   addPrompt: (prompt: string) => void;
-  getModels?: (search: string) => Promise<string[]>;
+  getModels?: (search?: string) => Promise<string[]>;
 };
 
 const useStyles = createStyles((theme) => ({
@@ -74,7 +74,7 @@ function ModelMenuItems({
 }
 
 export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
-  const [modelSearch, setModelSearch] = useState("");
+  const [modelSearch, setModelSearch] = useState<string | undefined>();
   const [isOpen, setIsOpen] = useState(false);
 
   const onAddPrompt = useCallback(
@@ -85,7 +85,7 @@ export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
     [addPrompt]
   );
 
-  const models = useLoadModels(modelSearch, getModels);
+  const models = useLoadModels(getModels, modelSearch);
   const { classes } = useStyles();
 
   return (
