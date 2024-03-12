@@ -66,6 +66,7 @@ export function aiConfigToClientConfig(aiconfig: AIConfig): ClientAIConfig {
 export type LogEvent =
   | "ADD_PROMPT"
   | "CLEAR_OUTPUTS"
+  | "DELETE_GLOBAL_MODEL_SETTINGS"
   | "DELETE_PROMPT"
   | "DOWNLOAD_BUTTON_CLICKED"
   | "RUN_PROMPT_CANCELED"

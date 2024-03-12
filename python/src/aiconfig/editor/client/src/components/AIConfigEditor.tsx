@@ -122,6 +122,7 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   cancel: (cancellationToken: string) => Promise<void>;
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
+  deleteModelSettings?: (modelName: string) => Promise<void>;
   deletePrompt: (promptName: string) => Promise<void>;
   download?: () => Promise<void>;
   openInTextEditor?: () => Promise<void>;
@@ -459,6 +460,33 @@ function AIConfigEditorBase({
       }
     },
     [debouncedUpdatePrompt, showNotification]
+  );
+
+  const deleteModelSettingsCallback = callbacks?.deleteModelSettings;
+  const onDeleteGlobalModelSettings = useCallback(
+    async (modelName: string) => {
+      if (!deleteModelSettingsCallback) {
+        return;
+      }
+
+      dispatch({
+        type: "DELETE_GLOBAL_MODEL_SETTINGS",
+        modelName,
+      });
+      logEventHandler?.("DELETE_GLOBAL_MODEL_SETTINGS", { model: modelName });
+
+      try {
+        await deleteModelSettingsCallback(modelName);
+      } catch (err: unknown) {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error deleting global model settings",
+          message: message,
+          type: "error",
+        });
+      }
+    },
+    [deleteModelSettingsCallback, logEventHandler, showNotification]
   );
 
   const onUpdateGlobalModelSettings = useCallback(
@@ -1196,6 +1224,7 @@ function AIConfigEditorBase({
         <ConfigMetadataContainer
           getModels={callbacks?.getModels}
           metadata={aiconfigState?.metadata}
+          onDeleteModelSettings={onDeleteGlobalModelSettings}
           onUpdateModelSettings={onUpdateGlobalModelSettings}
           onUpdateParameters={onUpdateGlobalParameters}
         />

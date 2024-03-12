@@ -150,6 +150,17 @@ export default function aiconfigReducer(
         prompts,
       };
     }
+    case "DELETE_GLOBAL_MODEL_SETTINGS": {
+      const newModels = { ...state.metadata.models };
+      delete newModels[action.modelName];
+      return {
+        ...dirtyState,
+        metadata: {
+          ...state.metadata,
+          models: newModels,
+        },
+      };
+    }
     case "DELETE_PROMPT": {
       return {
         ...dirtyState,
