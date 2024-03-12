@@ -1,5 +1,23 @@
 # Changelog
 
+## (2024-03-11) Python Version 1.1.31, NPM Version 1.1.14
+
+Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1426
+
+### Features
+
+- **python-sdk:** Added OpenAIVisionParser to core model parsers, allowing integrations with OpenAI chat/vision models and adding `gpt-4-vision-preview` as a core model parser (https://github.com/lastmile-ai/aiconfig/pull/1416, https://github.com/lastmile-ai/aiconfig/pull/1417)
+- **editor:** Added model schema and prompt input formatting for GPT-4 vision (https://github.com/lastmile-ai/aiconfig/pull/1397)
+- **extension:** Created extension for Groq inference (https://github.com/lastmile-ai/aiconfig/pull/1402)
+
+### Bug Fixes / Tasks
+
+- **python-sdk:** Unpinned `openai` dependency and updated to 1.13.3 (https://github.com/lastmile-ai/aiconfig/pull/1415)
+- **vscode:** Removed check for `.env` file path needing to be a parent of user’s VS Code workspace, allowing users to specify an `.env` file that they can define anywhere (https://github.com/lastmile-ai/aiconfig/pull/1398)
+  Documentation
+- [new] Created README and cookbook to show how to use the Groq inference extension (https://github.com/lastmile-ai/aiconfig/pull/1405, https://github.com/lastmile-ai/aiconfig/pull/1402)
+- [updated] Removed warning text from Gradio Notebooks docs saying that Gradio SDK needs to be `<= v4.16.0` because that issue is now resolved and we can now use the latest Gradio SDK versions (https://github.com/lastmile-ai/aiconfig/pull/1421)
+
 ## (2024-03-05) Python Version 1.1.29, NPM Version 1.1.13
 
 Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1401
