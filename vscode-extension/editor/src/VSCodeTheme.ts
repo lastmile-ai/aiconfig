@@ -217,7 +217,7 @@ export const VSCODE_THEME: MantineThemeOverride = {
       marginBottom: "0.5em",
     },
 
-    ".parametersContainer": {
+    ".configMetadataContainer": {
       maxHeight: "-webkit-fill-available",
       margin: "16px auto 16px 36px",
       padding: "0",

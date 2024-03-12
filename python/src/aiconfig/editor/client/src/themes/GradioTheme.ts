@@ -313,7 +313,7 @@ export const GRADIO_THEME: MantineThemeOverride = {
           width: "400px",
         },
 
-        ".parametersContainer": {
+        ".configMetadataContainer": {
           maxWidth: "1250px",
           maxHeight: "-webkit-fill-available",
           padding: "0",

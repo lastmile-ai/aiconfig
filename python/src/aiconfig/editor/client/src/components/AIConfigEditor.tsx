@@ -44,7 +44,6 @@ import {
   getPrompt,
 } from "../utils/aiconfigStateUtils";
 import { debounce, uniqueId } from "lodash";
-import GlobalParametersContainer from "./GlobalParametersContainer";
 import AIConfigContext from "../contexts/AIConfigContext";
 import ConfigNameDescription from "./ConfigNameDescription";
 import {
@@ -66,6 +65,7 @@ import NotificationProvider, {
   AIConfigEditorNotification,
 } from "./notifications/NotificationProvider";
 import NotificationContext from "./notifications/NotificationContext";
+import ConfigMetadataContainer from "./global/ConfigMetadataContainer";
 
 type Props = {
   aiconfig: AIConfig;
@@ -1154,8 +1154,8 @@ function AIConfigEditorBase({
             setName={onSetName}
           />
         </div>
-        <GlobalParametersContainer
-          initialValue={aiconfigState?.metadata?.parameters ?? {}}
+        <ConfigMetadataContainer
+          metadata={aiconfigState?.metadata}
           onUpdateParameters={onUpdateGlobalParameters}
         />
         <PromptsContainer
