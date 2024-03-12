@@ -266,6 +266,7 @@ export default function LocalEditor() {
       addPrompt,
       cancel,
       clearOutputs,
+      deleteModelSettings,
       deletePrompt,
       getModels,
       getServerStatus,
