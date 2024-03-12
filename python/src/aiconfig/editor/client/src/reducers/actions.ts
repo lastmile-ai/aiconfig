@@ -21,6 +21,7 @@ export type MutateAIConfigAction =
   | UpdatePromptModelSettingsAction
   | UpdatePromptNameAction
   | UpdatePromptParametersAction
+  | UpdateGlobalModelSettingsAction
   | UpdateGlobalParametersAction;
 
 // Action that can occur when user runs a prompt
@@ -108,6 +109,12 @@ export type UpdatePromptParametersAction = {
   type: "UPDATE_PROMPT_PARAMETERS";
   id: string;
   parameters: JSONObject;
+};
+
+export type UpdateGlobalModelSettingsAction = {
+  type: "UPDATE_GLOBAL_MODEL_SETTINGS";
+  modelName: string;
+  modelSettings: JSONObject;
 };
 
 export type UpdateGlobalParametersAction = {

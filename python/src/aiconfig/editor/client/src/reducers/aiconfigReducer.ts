@@ -269,6 +269,18 @@ export default function aiconfigReducer(
         },
       }));
     }
+    case "UPDATE_GLOBAL_MODEL_SETTINGS": {
+      return {
+        ...dirtyState,
+        metadata: {
+          ...state.metadata,
+          models: {
+            ...state.metadata.models,
+            [action.modelName]: action.modelSettings,
+          },
+        },
+      };
+    }
     case "UPDATE_GLOBAL_PARAMETERS": {
       return {
         ...dirtyState,
