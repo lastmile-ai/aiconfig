@@ -461,6 +461,17 @@ function AIConfigEditorBase({
     [debouncedUpdatePrompt, showNotification]
   );
 
+  const onUpdateGlobalModelSettings = useCallback(
+    async (modelName: string, newModelSettings: JSONObject) => {
+      // TODO: Implement in next PR
+      console.log(
+        `Update global settings for model ${modelName}`,
+        newModelSettings
+      );
+    },
+    []
+  );
+
   const onUpdatePromptModelSettings = useCallback(
     async (promptId: string, newModelSettings: JSONObject) => {
       if (!debouncedUpdateModel) {
@@ -1155,7 +1166,9 @@ function AIConfigEditorBase({
           />
         </div>
         <ConfigMetadataContainer
+          getModels={callbacks?.getModels}
           metadata={aiconfigState?.metadata}
+          onUpdateModelSettings={onUpdateGlobalModelSettings}
           onUpdateParameters={onUpdateGlobalParameters}
         />
         <PromptsContainer

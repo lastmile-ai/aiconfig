@@ -4,9 +4,15 @@ import { memo, useContext, useState } from "react";
 import AIConfigContext from "../../contexts/AIConfigContext";
 import { PROMPT_CELL_LEFT_MARGIN_PX } from "../../utils/constants";
 import ParametersRenderer from "../ParametersRenderer";
+import GlobalModelSettingsRenderer from "./GlobalModelSettingsRenderer";
 
 type Props = {
+  getModels?: (search?: string) => Promise<string[]>;
   metadata: JSONObject;
+  onUpdateModelSettings: (
+    modelName: string,
+    newModelSettings: JSONObject
+  ) => void;
   onUpdateParameters: (newParameters: JSONObject) => void;
 };
 
@@ -20,7 +26,9 @@ const useStyles = createStyles(() => ({
 }));
 
 export default memo(function ConfigMetadataContainer({
+  getModels,
   metadata,
+  onUpdateModelSettings,
   onUpdateParameters,
 }: Props) {
   const { classes } = useStyles();
@@ -52,6 +60,20 @@ export default memo(function ConfigMetadataContainer({
         }}
         onChange={(value) => setOpenPanel(value)}
       >
+        <Accordion.Item value="modelSettings">
+          <Accordion.Control>
+            <Text color="blue">Global Model Settings</Text>
+          </Accordion.Control>
+          <Accordion.Panel>
+            {openPanel === "modelSettings" && (
+              <GlobalModelSettingsRenderer
+                getModels={getModels}
+                modelSettings={metadata?.models ?? {}}
+                onUpdateModelSettings={onUpdateModelSettings}
+              />
+            )}
+          </Accordion.Panel>
+        </Accordion.Item>
         <Accordion.Item value="parameters">
           <Accordion.Control>
             <Text color="blue">Global Parameters {"{}"}</Text>
