@@ -8,7 +8,7 @@ import AIConfigContext from "../../contexts/AIConfigContext";
 
 type Props = {
   prompt: Prompt;
-  getModels?: (search: string) => Promise<string[]>;
+  getModels?: (search?: string) => Promise<string[]>;
   onSetModel: (model?: string) => void;
   defaultConfigModelName?: string;
 };
@@ -30,8 +30,8 @@ export default memo(function ModelSelector({
   );
 
   const models = useLoadModels(
-    showAll ? "" : autocompleteSearch ?? "",
-    getModels
+    getModels,
+    showAll ? undefined : autocompleteSearch
   );
 
   const onSelectModel = (model?: string) => {

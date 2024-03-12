@@ -11,6 +11,7 @@ export type AIConfigReducerAction =
 export type MutateAIConfigAction =
   | AddPromptAction
   | ClearOutputsAction
+  | DeleteGlobalModelSettingsAction
   | DeletePromptAction
   | ProvidedAIConfigUpdateAction
   | SetDescriptionAction
@@ -21,6 +22,7 @@ export type MutateAIConfigAction =
   | UpdatePromptModelSettingsAction
   | UpdatePromptNameAction
   | UpdatePromptParametersAction
+  | UpdateGlobalModelSettingsAction
   | UpdateGlobalParametersAction;
 
 // Action that can occur when user runs a prompt
@@ -52,6 +54,11 @@ export type AddPromptAction = {
 
 export type ClearOutputsAction = {
   type: "CLEAR_OUTPUTS";
+};
+
+export type DeleteGlobalModelSettingsAction = {
+  type: "DELETE_GLOBAL_MODEL_SETTINGS";
+  modelName: string;
 };
 
 export type DeletePromptAction = {
@@ -108,6 +115,12 @@ export type UpdatePromptParametersAction = {
   type: "UPDATE_PROMPT_PARAMETERS";
   id: string;
   parameters: JSONObject;
+};
+
+export type UpdateGlobalModelSettingsAction = {
+  type: "UPDATE_GLOBAL_MODEL_SETTINGS";
+  modelName: string;
+  modelSettings: JSONObject;
 };
 
 export type UpdateGlobalParametersAction = {

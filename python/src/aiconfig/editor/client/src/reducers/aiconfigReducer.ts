@@ -150,6 +150,17 @@ export default function aiconfigReducer(
         prompts,
       };
     }
+    case "DELETE_GLOBAL_MODEL_SETTINGS": {
+      const newModels = { ...state.metadata.models };
+      delete newModels[action.modelName];
+      return {
+        ...dirtyState,
+        metadata: {
+          ...state.metadata,
+          models: newModels,
+        },
+      };
+    }
     case "DELETE_PROMPT": {
       return {
         ...dirtyState,
@@ -268,6 +279,18 @@ export default function aiconfigReducer(
           parameters: action.parameters,
         },
       }));
+    }
+    case "UPDATE_GLOBAL_MODEL_SETTINGS": {
+      return {
+        ...dirtyState,
+        metadata: {
+          ...state.metadata,
+          models: {
+            ...state.metadata.models,
+            [action.modelName]: action.modelSettings,
+          },
+        },
+      };
     }
     case "UPDATE_GLOBAL_PARAMETERS": {
       return {

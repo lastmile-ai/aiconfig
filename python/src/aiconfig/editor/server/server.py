@@ -338,7 +338,7 @@ def run() -> FlaskResponse:
     # Execution time of `0.001s` is arbitrary, but should be small enough to not be noticeable.
     # Override if env_file_path is specified, user expects provided .env values take precedence over existing values
     override_behaviour = state.env_file_path is not None
-    dotenv.load_dotenv(state.env_file_path, override = override_behaviour)
+    dotenv.load_dotenv(state.env_file_path, override=override_behaviour)
 
     aiconfig = state.aiconfig
     request_json = request.get_json()
@@ -633,6 +633,21 @@ def update_prompt() -> FlaskResponse:
     )
 
 
+@app.route("/api/delete_model", methods=["POST"])
+def delete_model() -> FlaskResponse:
+    method_name = MethodName("delete_model")
+    signature: dict[str, Type[Any]] = {"model_name": str}
+
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    operation = make_op_run_method(method_name)
+    return run_aiconfig_operation_with_request_json(
+        aiconfig, request_json, f"method_{method_name}", operation, signature
+    )
+
+
 @app.route("/api/delete_prompt", methods=["POST"])
 def delete_prompt() -> FlaskResponse:
     method_name = MethodName("delete_prompt")
@@ -834,6 +849,7 @@ def set_aiconfigrc() -> FlaskResponse:
     # with open(state.aiconfigrc_path, "w") as f:
     #     yaml.dump(request_json["aiconfigrc"], f)
 
+
 @app.route("/api/set_env_file_path", methods=["POST"])
 def set_env_path() -> FlaskResponse:
     """
@@ -848,14 +864,14 @@ def set_env_path() -> FlaskResponse:
 
     # Validate
     request_env_path = request_json.get("env_file_path")
-    
+
     env_file_path_is_valid, message = validate_env_file_path(request_env_path)
 
     if not env_file_path_is_valid:
         return FlaskResponse(
             (
                 {
-                    "message": f'Invalid request, {message}: {request_env_path}',
+                    "message": f"Invalid request, {message}: {request_env_path}",
                 },
                 400,
             )

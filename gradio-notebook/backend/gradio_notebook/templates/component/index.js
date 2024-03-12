@@ -42615,7 +42615,7 @@ const D1e = {
         ".actionTabsPanel": {
           width: "400px"
         },
-        ".parametersContainer": {
+        ".configMetadataContainer": {
           maxWidth: "1250px",
           maxHeight: "-webkit-fill-available",
           padding: "0",
@@ -42807,7 +42807,7 @@ const D1e = {
       borderTopColor: "var(--vscode-notebook-cellBorderColor)",
       marginBottom: "0.5em"
     },
-    ".parametersContainer": {
+    ".configMetadataContainer": {
       width: "100%",
       maxHeight: "-webkit-fill-available",
       margin: "16px auto",

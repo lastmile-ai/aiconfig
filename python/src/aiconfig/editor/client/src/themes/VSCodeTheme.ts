@@ -7,7 +7,7 @@ export const VSCODE_THEME: MantineThemeOverride = {
     deg: 45,
   },
 
-  globalStyles: (theme) => ({
+  globalStyles: () => ({
     body: {
       padding: "0 !important",
       color: "var(--vscode-editor-foreground)",
@@ -147,7 +147,7 @@ export const VSCODE_THEME: MantineThemeOverride = {
       marginBottom: "0.5em",
     },
 
-    ".parametersContainer": {
+    ".configMetadataContainer": {
       width: "100%",
       maxHeight: "-webkit-fill-available",
       margin: "16px auto",

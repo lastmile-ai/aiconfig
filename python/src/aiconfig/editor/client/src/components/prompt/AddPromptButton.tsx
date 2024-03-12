@@ -1,20 +1,12 @@
-import {
-  ActionIcon,
-  Menu,
-  ScrollArea,
-  TextInput,
-  Tooltip,
-  createStyles,
-  rem,
-} from "@mantine/core";
-import { IconPlus, IconSearch, IconTextCaption } from "@tabler/icons-react";
+import { ActionIcon, Menu, Tooltip, createStyles, rem } from "@mantine/core";
+import { IconPlus } from "@tabler/icons-react";
 import { memo, useCallback, useState } from "react";
-import useLoadModels from "../../hooks/useLoadModels";
 import { PROMPT_CELL_LEFT_MARGIN_PX } from "../../utils/constants";
+import ModelMenuDropdown from "../models/ModelMenuDropdown";
 
 type Props = {
   addPrompt: (prompt: string) => void;
-  getModels?: (search: string) => Promise<string[]>;
+  getModels?: (search?: string) => Promise<string[]>;
 };
 
 const useStyles = createStyles((theme) => ({
@@ -42,39 +34,7 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
-function ModelMenuItems({
-  models,
-  onSelectModel,
-  collapseLimit,
-}: {
-  models: string[];
-  onSelectModel: (model: string) => void;
-  collapseLimit: number;
-}) {
-  const [isCollapsed, setIsCollapsed] = useState(models.length > collapseLimit);
-
-  const displayModels = isCollapsed ? models.slice(0, collapseLimit) : models;
-
-  return (
-    <ScrollArea mah={300} style={{ overflowY: "auto" }}>
-      {displayModels.map((model) => (
-        <Menu.Item
-          key={model}
-          icon={<IconTextCaption size="16" />}
-          onClick={() => onSelectModel(model)}
-        >
-          {model}
-        </Menu.Item>
-      ))}
-      {isCollapsed && (
-        <Menu.Item onClick={() => setIsCollapsed(false)}>...</Menu.Item>
-      )}
-    </ScrollArea>
-  );
-}
-
 export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
-  const [modelSearch, setModelSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
   const onAddPrompt = useCallback(
@@ -85,7 +45,6 @@ export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
     [addPrompt]
   );
 
-  const models = useLoadModels(modelSearch, getModels);
   const { classes } = useStyles();
 
   return (
@@ -105,22 +64,10 @@ export default memo(function AddPromptButton({ addPrompt, getModels }: Props) {
           </Tooltip>
         </Menu.Target>
 
-        <Menu.Dropdown>
-          <TextInput
-            icon={<IconSearch size="16" />}
-            placeholder="Search"
-            value={modelSearch}
-            onChange={(e) => setModelSearch(e.currentTarget.value)}
-          />
-          <ModelMenuItems
-            models={models ?? []}
-            collapseLimit={5}
-            onSelectModel={onAddPrompt}
-          />
-          {/* TODO: Add back once we have custom model parsers fully supported
+        <ModelMenuDropdown getModels={getModels} onSelectModel={onAddPrompt} />
+        {/* TODO: Add back once we have custom model parsers fully supported
         <Menu.Divider />
         <Menu.Item icon={<IconPlus size="16" />}>Add New Model</Menu.Item> */}
-        </Menu.Dropdown>
       </Menu>
     </div>
   );
