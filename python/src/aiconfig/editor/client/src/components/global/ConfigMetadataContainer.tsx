@@ -7,6 +7,7 @@ import ParametersRenderer from "../ParametersRenderer";
 import GlobalModelSettingsRenderer from "./GlobalModelSettingsRenderer";
 
 type Props = {
+  onDeleteModelSettings?: (modelName: string) => void;
   getModels?: (search?: string) => Promise<string[]>;
   metadata: JSONObject;
   onUpdateModelSettings: (
@@ -28,6 +29,7 @@ const useStyles = createStyles(() => ({
 export default memo(function ConfigMetadataContainer({
   getModels,
   metadata,
+  onDeleteModelSettings,
   onUpdateModelSettings,
   onUpdateParameters,
 }: Props) {
@@ -67,6 +69,7 @@ export default memo(function ConfigMetadataContainer({
           <Accordion.Panel>
             {openPanel === "modelSettings" && (
               <GlobalModelSettingsRenderer
+                deleteModelSettings={onDeleteModelSettings}
                 getModels={getModels}
                 modelSettings={metadata?.models ?? {}}
                 onUpdateModelSettings={onUpdateModelSettings}

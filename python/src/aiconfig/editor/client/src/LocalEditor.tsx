@@ -116,6 +116,12 @@ export default function LocalEditor() {
     []
   );
 
+  const deleteModelSettings = useCallback(async (modelName: string) => {
+    return await ufetch.post(ROUTE_TABLE.DELETE_MODEL, {
+      model_name: modelName,
+    });
+  }, []);
+
   const deletePrompt = useCallback(async (promptName: string) => {
     return await ufetch.post(ROUTE_TABLE.DELETE_PROMPT, {
       prompt_name: promptName,
@@ -243,6 +249,7 @@ export default function LocalEditor() {
       addPrompt,
       cancel,
       clearOutputs,
+      deleteModelSettings,
       deletePrompt,
       getModels,
       getServerStatus,
