@@ -76,7 +76,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   const createAIConfigYAMLCommand = vscode.commands.registerCommand(
-    COMMANDS.CREATE_NEW_YAML,
+    COMMANDS.CREATE_EXAMPLE_YAML,
     async () => {
       return await createNewAIConfig(context, "yaml");
     }

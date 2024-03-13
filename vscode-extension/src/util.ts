@@ -13,7 +13,7 @@ import { ENV_FILE_PATH } from "./constants";
 export const EXTENSION_NAME = "vscode-aiconfig";
 export const COMMANDS = {
   INIT: `${EXTENSION_NAME}.init`,
-  CREATE_NEW_YAML: `${EXTENSION_NAME}.createAIConfigYAML`,
+  CREATE_EXAMPLE_YAML: `${EXTENSION_NAME}.createExampleAIConfigYAML`,
   HELLO_WORLD: `${EXTENSION_NAME}.helloWorld`,
   CUSTOM_MODEL_REGISTRY_PATH: `${EXTENSION_NAME}.customModelRegistryPath`,
   CREATE_CUSTOM_MODEL_REGISTRY: `${EXTENSION_NAME}.createCustomModelRegistry`,
