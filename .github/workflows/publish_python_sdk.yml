@@ -1,10 +1,9 @@
 # Build and publish the python-sdk to pypi. This workflow does NOT update the version number. Open a pr to update the version number and merge it to master before running this workflow.
 # This workflow is triggered manually. see https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow
-name: Publish Python SDK to PyPI
+name: Build and Publish Python SDK to PyPI
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   # Allows you to run this workflow manually from the Actions tab
   pull_request:
     branches: ["main"]
