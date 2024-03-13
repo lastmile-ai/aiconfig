@@ -14,6 +14,8 @@ export const EXTENSION_NAME = "vscode-aiconfig";
 export const COMMANDS = {
   INIT: `${EXTENSION_NAME}.init`,
   CREATE_EXAMPLE_YAML: `${EXTENSION_NAME}.createExampleAIConfigYAML`,
+  CREATE_EMPTY_YAML: `${EXTENSION_NAME}.createExampleAIConfigYAML`,
+  CREATE_EMPTY_JSON: `${EXTENSION_NAME}.createEmptyAIConfigJSON`,
   HELLO_WORLD: `${EXTENSION_NAME}.helloWorld`,
   CUSTOM_MODEL_REGISTRY_PATH: `${EXTENSION_NAME}.customModelRegistryPath`,
   CREATE_CUSTOM_MODEL_REGISTRY: `${EXTENSION_NAME}.createCustomModelRegistry`,

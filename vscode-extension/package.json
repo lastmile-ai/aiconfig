@@ -207,7 +207,9 @@
               "markdown": "media/createAIConfig.md"
             },
             "completionEvents": [
-              "onCommand:vscode-aiconfig.createExampleAIConfigYAML"
+              "onCommand:vscode-aiconfig.createExampleAIConfigYAML",
+              "onCommand:vscode-aiconfig.createEmptyAIConfigYAML",
+              "onCommand:vscode-aiconfig.createEmptyAIConfigJSON"
             ]
           },
           {
