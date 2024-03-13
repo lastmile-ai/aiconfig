@@ -1,0 +1,14 @@
+$schema: https://json.schemastore.org/aiconfig-1.0
+description: ""
+metadata:
+  models: {}
+  parameters: {}
+name: ""
+prompts:
+  - input: ""
+    metadata:
+      model: gpt-3.5-turbo
+      parameters: {}
+    name: prompt_1
+    outputs: []
+schema_version: latest
