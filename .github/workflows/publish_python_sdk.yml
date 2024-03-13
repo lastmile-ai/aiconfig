@@ -1,0 +1,37 @@
+# Build and publish the python-sdk to pypi. This workflow does NOT update the version number. Open a pr to update the version number and merge it to master before running this workflow.
+# This workflow is triggered manually. see https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow
+name: Publish Python SDK to PyPI
+on: workflow_dispatch
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10" # don't know what the impact of this is
+
+      - name: Build editor & client packages. # Otherwise the aiconfig local editor will have a blank screen. This gets included in the python package
+        run: |
+          cd python/src/aiconfig/editor/client && yarn && yarn build
+      - name: Build Package
+        run: |
+          pip install build && cd python && python -m build
+
+  pypi-publish:
+    runs-on: ubuntu-latest
+    needs:
+      - build-release
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Retrieve release distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: release-dists
+          path: dist/
+
+      - name: Publish release distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
