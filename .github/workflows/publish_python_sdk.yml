@@ -1,15 +1,20 @@
 # Build and publish the python-sdk to pypi. This workflow does NOT update the version number. Open a pr to update the version number and merge it to master before running this workflow.
 # This workflow is triggered manually. see https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow
-name: Publish Python SDK to PyPI
+name: Build and Publish Python SDK to PyPI
 
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   # Allows you to run this workflow manually from the Actions tab
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
+
 jobs:
   build-release:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -23,17 +28,7 @@ jobs:
       - name: Build Package
         run: |
           pip install build && cd python && python -m build
-
-  pypi-publish:
-    runs-on: ubuntu-latest
-    needs:
-      - build-release
-    permissions:
-      id-token: write
-
-    steps:
       - name: Publish release distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: python/dist/
-
