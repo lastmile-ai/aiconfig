@@ -4,7 +4,7 @@ import AIConfigEditor, {
   RunPromptStreamErrorCallback,
   RunPromptStreamErrorEvent,
 } from "./components/AIConfigEditor";
-import { Flex, Loader, Image, createStyles } from "@mantine/core";
+import { Flex, Loader } from "@mantine/core";
 import {
   AIConfig,
   InferenceSettings,
@@ -19,29 +19,10 @@ import { streamingApiChain } from "./utils/oboeHelpers";
 import { datadogLogs } from "@datadog/browser-logs";
 import { LogEvent, LogEventData } from "./shared/types";
 
-const useStyles = createStyles(() => ({
-  editorBackground: {
-    background:
-      "radial-gradient(ellipse at top,#08122d,#030712),radial-gradient(ellipse at bottom,#030712,#030712)",
-    margin: "0 auto",
-    minHeight: "100vh",
-  },
-
-  logo: {
-    maxWidth: "80rem",
-    margin: "0 auto",
-    padding: "32px 0 0 32px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-}));
-
 const MODE = "local";
 
 export default function LocalEditor() {
   const [aiconfig, setAiConfig] = useState<AIConfig | undefined>();
-  const { classes } = useStyles();
 
   const loadConfig = useCallback(async () => {
     const res = await ufetch.post(ROUTE_TABLE.LOAD, {});
@@ -282,15 +263,7 @@ export default function LocalEditor() {
   );
 
   return (
-    <div className={classes.editorBackground}>
-      <div className={classes.logo}>
-        <Image
-          withPlaceholder
-          maw={140}
-          src="images/aiconfigLogo.png"
-          alt="AiConfig Logo"
-        />
-      </div>
+    <div>
       {!aiconfig ? (
         <Flex justify="center" mt="xl">
           <Loader size="xl" />
