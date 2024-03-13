@@ -56,13 +56,13 @@
         "category": "AIConfig"
       },
       {
-        "command": "vscode-aiconfig.createAIConfigJSON",
-        "title": "Create New AIConfig (json)",
+        "command": "vscode-aiconfig.createExampleAIConfigJSON",
+        "title": "Create New Example AIConfig (json)",
         "category": "AIConfig"
       },
       {
-        "command": "vscode-aiconfig.createAIConfigYAML",
-        "title": "Create New AIConfig (yaml)",
+        "command": "vscode-aiconfig.createExampleAIConfigYAML",
+        "title": "Create New Example AIConfig (yaml)",
         "category": "AIConfig"
       },
       {
