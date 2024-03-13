@@ -1,10 +1,9 @@
 import { PromptInputObjectAttachmentsSchema } from "../../../../utils/promptUtils";
 import type { Attachment as InputAttachment, JSONObject } from "aiconfig";
-import { memo, useContext, useState } from "react";
+import { memo, useState } from "react";
 import AttachmentContainer from "../attachments/AttachmentContainer";
 import AttachmentUploader from "../attachments/AttachmentUploader";
 import { Container } from "@mantine/core";
-import AIConfigContext from "../../../../contexts/AIConfigContext";
 
 type Props = {
   schema: PromptInputObjectAttachmentsSchema;
@@ -26,7 +25,6 @@ function EditableAttachmentRenderer({
   onRemoveAttachment?: () => void;
 }) {
   const [showUploader, setShowUploader] = useState(attachment?.data == null);
-  const {readOnly} = useContext(AIConfigContext);
 
   return (
     <Container m="xs">
