@@ -1,4 +1,4 @@
-import ModelSettingsRenderer from "./model_settings/ModelSettingsRenderer";
+import ModelSettingsRenderer from "../models/model_settings/ModelSettingsRenderer";
 import PromptMetadataRenderer from "./prompt_metadata/PromptMetadataRenderer";
 import { ClientPrompt } from "../../shared/types";
 import {

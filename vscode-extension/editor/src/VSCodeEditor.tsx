@@ -199,7 +199,7 @@ export default function VSCodeEditor() {
   }, [setupTelemetryIfAllowed]);
 
   const getModels = useCallback(
-    async (search: string) => {
+    async (search?: string) => {
       // For now, rely on caching and handle client-side search filtering
       // We will use server-side search filtering for Gradio
       const res = await ufetch.get(ROUTE_TABLE.LIST_MODELS(aiConfigServerUrl));

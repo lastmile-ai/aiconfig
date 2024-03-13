@@ -242,7 +242,13 @@ export function getPromptSchema(
   if (!modelName) {
     return undefined;
   }
-  return PROMPT_SCHEMAS[modelName];
+  return getPromptSchemaForModel(modelName);
+}
+
+export function getPromptSchemaForModel(
+  model: string
+): PromptSchema | undefined {
+  return PROMPT_SCHEMAS[model];
 }
 
 function isTextInputModality(prompt: Prompt): boolean {
