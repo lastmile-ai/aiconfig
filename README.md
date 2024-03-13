@@ -8,22 +8,12 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/lastmile-ai/aiconfig/actions/workflows/main_python.yml">
-    <img src="https://github.com/lastmile-ai/aiconfig/actions/workflows/main_python.yml/badge.svg" alt="Python">
-  </a> |
-  <a href="https://github.com/lastmile-ai/aiconfig/actions/workflows/main-typescript.yml">
-    <img src="https://github.com/lastmile-ai/aiconfig/actions/workflows/main-typescript.yml/badge.svg" alt="Node">
-  </a> |
-  <a href="https://github.com/lastmile-ai/aiconfig/actions/workflows/test-deploy-docs.yml">
-    <img src="https://github.com/lastmile-ai/aiconfig/actions/workflows/test-deploy-docs.yml/badge.svg" alt="Docs">
-  </a> |
-  <a href="https://discord.com/invite/xBhNKTetGx">
-    <img src="https://img.shields.io/badge/Discord-LastMile%20AI-Blue?color=rgb(37%2C%20150%2C%20190)" alt="Discord">
-  </a> |
+  <a href="https://github.com/lastmile-ai/aiconfig/actions/workflows/main_python.yml"><img src="https://github.com/lastmile-ai/aiconfig/actions/workflows/main_python.yml/badge.svg" alt="Python"></a>&nbsp;
+  <a href="https://github.com/lastmile-ai/aiconfig/actions/workflows/main-typescript.yml"><img src="https://github.com/lastmile-ai/aiconfig/actions/workflows/main-typescript.yml/badge.svg" alt="Node"></a>&nbsp;
+  <a href="https://github.com/lastmile-ai/aiconfig/actions/workflows/test-deploy-docs.yml"><img src="https://github.com/lastmile-ai/aiconfig/actions/workflows/test-deploy-docs.yml/badge.svg" alt="Docs"></a>&nbsp;
+  <a href="https://discord.com/invite/xBhNKTetGx"><img src="https://img.shields.io/badge/Discord-LastMile%20AI-Blue?color=rgb(37%2C%20150%2C%20190)" alt="Discord"></a>
   <br>
-  <a href="https://aiconfig.lastmileai.dev/">
-    <strong> Documentation</strong>
-  </a>
+  <a href="https://aiconfig.lastmileai.dev/"><strong>Documentation</strong></a>
 </p>
 
 AIConfig is a framework that makes it easy to build generative AI applications for production. It manages generative AI prompts, models and model parameters as JSON-serializable configs that can be version controlled, evaluated, monitored and opened in a local editor for rapid prototyping.
