@@ -76,7 +76,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   const createAIConfigJSONCommand = vscode.commands.registerCommand(
-    COMMANDS.CREATE_NEW_JSON,
+    COMMANDS.CREATE_EXAMPLE_JSON,
     async () => {
       return await createNewAIConfig(context, "json");
     }
@@ -84,7 +84,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(createAIConfigJSONCommand);
 
   const createAIConfigYAMLCommand = vscode.commands.registerCommand(
-    COMMANDS.CREATE_NEW_YAML,
+    COMMANDS.CREATE_EXAMPLE_YAML,
     async () => {
       return await createNewAIConfig(context, "yaml");
     }
