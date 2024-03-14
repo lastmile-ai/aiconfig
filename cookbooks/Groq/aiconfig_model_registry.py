@@ -11,6 +11,7 @@ from aiconfig_extension_groq import GroqParser
 from aiconfig import ModelParserRegistry
 import dotenv
 
+
 def register_model_parsers() -> None:
     groq_mixtral = GroqParser(model="mixtral-8x7b-32768")
     ModelParserRegistry.register_model_parser(groq_mixtral)
