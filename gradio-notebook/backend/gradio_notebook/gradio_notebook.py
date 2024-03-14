@@ -15,7 +15,9 @@ class GradioNotebook:
 
     config_manager: AIConfigManager
 
-    def __init__(self, config_path: str = "", parsers_path: str = "", **kwargs):
+    def __init__(
+        self, config_path: str = "", parsers_path: str = "", **kwargs
+    ):
         """
         Args:
             config_path: (str, optional): The filepath to load the AIConfig from.
@@ -35,7 +37,9 @@ class GradioNotebook:
         self.component = GradioNotebookComponent(
             value=json.dumps(
                 {
-                    "aiconfig": self.config_manager.get_config_json("original"),
+                    "aiconfig": self.config_manager.get_config_json(
+                        "original"
+                    ),
                     "model_ids": self.config_manager.get_models(),
                 }
             ),
@@ -87,16 +91,28 @@ class GradioNotebook:
             event_handler.cancel_run_impl, [], [component], show_progress=False
         )
         component.clear_outputs(
-            event_handler.clear_outputs_impl, [], [component], show_progress=False
+            event_handler.clear_outputs_impl,
+            [],
+            [component],
+            show_progress=False,
         )
         component.delete_prompt(
-            event_handler.delete_prompt_impl, [], [component], show_progress=False
+            event_handler.delete_prompt_impl,
+            [],
+            [component],
+            show_progress=False,
         )
         component.get_aiconfig(
-            event_handler.get_aiconfig_impl, [], [component], show_progress=False
+            event_handler.get_aiconfig_impl,
+            [],
+            [component],
+            show_progress=False,
         )
         component.remove_session_id(
-            event_handler.remove_session_id_impl, [], [component], show_progress=False
+            event_handler.remove_session_id_impl,
+            [],
+            [component],
+            show_progress=False,
         )
         component.run_prompt(
             event_handler.run_prompt_impl, [], [component], show_progress=False
@@ -108,17 +124,32 @@ class GradioNotebook:
             show_progress=False,
         )
         component.set_config_name(
-            event_handler.set_config_name_impl, [], [component], show_progress=False
+            event_handler.set_config_name_impl,
+            [],
+            [component],
+            show_progress=False,
         )
         component.set_parameters(
-            event_handler.set_parameters_impl, [], [component], show_progress=False
+            event_handler.set_parameters_impl,
+            [],
+            [component],
+            show_progress=False,
         )
         component.share_config(
-            event_handler.share_config_impl, [], [component], show_progress=False
+            event_handler.share_config_impl,
+            [],
+            [component],
+            show_progress=False,
         )
         component.update_model(
-            event_handler.update_model_impl, [], [component], show_progress=False
+            event_handler.update_model_impl,
+            [],
+            [component],
+            show_progress=False,
         )
         component.update_prompt(
-            event_handler.update_prompt_impl, [], [component], show_progress=False
+            event_handler.update_prompt_impl,
+            [],
+            [component],
+            show_progress=False,
         )

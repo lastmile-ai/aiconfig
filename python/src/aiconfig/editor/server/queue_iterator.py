@@ -1,5 +1,6 @@
 """Queue iterator for streaming. Can only process strings for now
 but in future will try to make it generic"""
+
 # import asyncio
 from queue import Queue
 

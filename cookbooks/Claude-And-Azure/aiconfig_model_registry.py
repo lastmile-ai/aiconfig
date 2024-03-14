@@ -7,7 +7,6 @@
     See example below.
 """
 
-
 from aiconfig import AzureOpenAIParser, ModelParserRegistry
 import dotenv
 
