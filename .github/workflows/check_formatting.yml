@@ -1,0 +1,12 @@
+name: Check Python Formatting
+
+on: [pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: psf/black@stable
+        with:
+          options: "--check --line-length=79" # In line with .vscode/settings.json
