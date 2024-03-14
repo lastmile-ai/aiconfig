@@ -16,7 +16,6 @@ def ai_config_runtime():
 
 
 class TestModelParserRegistry:
-
     """
     ModelParserRegistry is a static class with static variables. Setup and Teardown methods ensure that the static variable _parsers is restored to its original value after these tests. Isolates the tests from others.
     """

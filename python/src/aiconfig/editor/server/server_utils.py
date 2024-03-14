@@ -301,7 +301,9 @@ def init_server_state(
     )
     state = get_server_state(app)
     state.aiconfigrc_path = aiconfigrc_path
-    env_file_path_is_valid, message = validate_env_file_path(initialization_settings.env_file_path)
+    env_file_path_is_valid, message = validate_env_file_path(
+        initialization_settings.env_file_path
+    )
     if not env_file_path_is_valid:
         LOGGER.warning(f"{message}: '{initialization_settings.env_file_path}'")
     else:
@@ -506,7 +508,10 @@ def run_aiconfig_operation_with_request_json(
                 aiconfig=None,
             ).to_flask_format()
 
-def validate_env_file_path(request_env_path: str | None | Any) -> Tuple[bool, str]:
+
+def validate_env_file_path(
+    request_env_path: str | None | Any,
+) -> Tuple[bool, str]:
     """
     Validates the given env file path. If its not valid, returns a tuple of (False, str) with a message.
 
@@ -529,5 +534,5 @@ def validate_env_file_path(request_env_path: str | None | Any) -> Tuple[bool, st
 
     if filename_format_correct is False:
         return False, "Specified env file path is not a .env file"
-    
+
     return True, f".env file path {request_env_path} is valid"
