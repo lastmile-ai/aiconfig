@@ -19,9 +19,7 @@ async def test_load_parametrized_data_config(set_temporary_env_vars):
         side_effect=mock_openai_chat_completion,
     ):
         config_relative_path = "aiconfigs/parametrized_data_config.json"
-        config_absolute_path = get_absolute_file_path_from_relative(
-            __file__, config_relative_path
-        )
+        config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
         config = AIConfigRuntime.load(config_absolute_path)
 
         prompt1_params = {

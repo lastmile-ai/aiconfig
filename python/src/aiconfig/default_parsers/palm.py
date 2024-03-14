@@ -78,9 +78,7 @@ class PaLMTextParser(ParameterizedModelParser):
             )
         ]
 
-        event = CallbackEvent(
-            "on_serialize_complete", __name__, {"result": prompts}
-        )
+        event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
         await ai_config.callback_manager.run_callbacks(event)
 
         return prompts
@@ -111,9 +109,7 @@ class PaLMTextParser(ParameterizedModelParser):
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
 
-        completion_data = refine_chat_completion_params(
-            model_settings, aiconfig, prompt
-        )
+        completion_data = refine_chat_completion_params(model_settings, aiconfig, prompt)
 
         prompt_str = resolve_prompt(prompt, params, aiconfig)
 
@@ -185,9 +181,7 @@ class PaLMTextParser(ParameterizedModelParser):
 
         prompt.outputs = outputs
         await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent(
-                "on_run_complete", __name__, {"result": prompt.outputs}
-            )
+            CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs})
         )
         return outputs
 
@@ -262,9 +256,7 @@ class PaLMChatParser(ParameterizedModelParser):
             )
         ]
 
-        event = CallbackEvent(
-            "on_serialize_complete", __name__, {"result": prompts}
-        )
+        event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
         await ai_config.callback_manager.run_callbacks(event)
         return prompts
 
@@ -296,9 +288,7 @@ class PaLMChatParser(ParameterizedModelParser):
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
 
-        completion_data = refine_chat_completion_params(
-            model_settings, aiconfig, prompt
-        )
+        completion_data = refine_chat_completion_params(model_settings, aiconfig, prompt)
 
         # TODO: handle if user specifies previous messages in settings
         completion_data["messages"] = []
@@ -335,18 +325,14 @@ class PaLMChatParser(ParameterizedModelParser):
                             {
                                 "content": aiconfig.get_output_text(
                                     previous_prompt,
-                                    aiconfig.get_latest_output(
-                                        previous_prompt
-                                    ),
+                                    aiconfig.get_latest_output(previous_prompt),
                                 ),
                                 "author": "1",
                             }
                         )
 
         # pass in the user prompt
-        completion_data["messages"].append(
-            {"content": resolved_prompt, "author": "0"}
-        )
+        completion_data["messages"].append({"content": resolved_prompt, "author": "0"})
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_deserialize_complete",
@@ -407,9 +393,7 @@ class PaLMChatParser(ParameterizedModelParser):
 
         prompt.outputs = outputs
         await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent(
-                "on_run_complete", __name__, {"result": prompt.outputs}
-            )
+            CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs})
         )
         return prompt.outputs
 

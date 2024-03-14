@@ -152,9 +152,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         if use_api_token:
             # You are allowed to use Hugging Face for a bit before you get
             # rate limited, in which case you will receive a clear error
-            token = get_api_key_from_environment(
-                "HUGGING_FACE_API_TOKEN", required=False
-            ).unwrap()
+            token = get_api_key_from_environment("HUGGING_FACE_API_TOKEN", required=False).unwrap()
 
         self.client = InferenceClient(model_id, token=token)
 
@@ -209,17 +207,13 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(
-                model=model_metadata, parameters=parameters, **kwargs
-            ),
+            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **kwargs),
         )
 
         prompts.append(prompt)
 
         await ai_config.callback_manager.run_callbacks(
-            CallbackEvent(
-                "on_serialize_complete", __name__, {"result": prompts}
-            )
+            CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
         )
 
         return prompts
@@ -319,9 +313,7 @@ class HuggingFaceTextGenerationParser(ParameterizedModelParser):
             outputs.append(output)
         else:
             # Handles stream callback
-            output = construct_stream_output(
-                response, response_is_detailed, options
-            )
+            output = construct_stream_output(response, response_is_detailed, options)
             outputs.append(output)
 
         prompt.outputs = outputs

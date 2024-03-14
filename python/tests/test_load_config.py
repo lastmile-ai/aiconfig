@@ -12,9 +12,7 @@ from .util.file_path_utils import get_absolute_file_path_from_relative
 async def test_load_basic_chatgpt_query_config(set_temporary_env_vars):
     """Test loading a basic chatgpt query config"""
     config_relative_path = "aiconfigs/basic_chatgpt_query_config.json"
-    config_absolute_path = get_absolute_file_path_from_relative(
-        __file__, config_relative_path
-    )
+    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
     config = AIConfigRuntime.load(config_absolute_path)
 
     data_for_inference = await config.resolve("prompt1")
@@ -37,9 +35,7 @@ async def test_load_basic_chatgpt_query_config(set_temporary_env_vars):
 async def test_load_basic_dalle2_config(set_temporary_env_vars):
     """Test loading a basic Dall-E 2 config"""
     config_relative_path = "aiconfigs/basic_dalle2_config.json"
-    config_absolute_path = get_absolute_file_path_from_relative(
-        __file__, config_relative_path
-    )
+    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
     config = AIConfigRuntime.load(config_absolute_path)
 
     data_for_inference = await config.resolve("panda_eating_dumplings")
@@ -56,9 +52,7 @@ async def test_load_basic_dalle2_config(set_temporary_env_vars):
 async def test_load_basic_dalle3_config(set_temporary_env_vars):
     """Test loading a basic Dall-E 3 config"""
     config_relative_path = "aiconfigs/basic_dalle3_config.json"
-    config_absolute_path = get_absolute_file_path_from_relative(
-        __file__, config_relative_path
-    )
+    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
     config = AIConfigRuntime.load(config_absolute_path)
 
     data_for_inference = await config.resolve("panda_eating_dumplings")
@@ -75,9 +69,7 @@ async def test_load_basic_dalle3_config(set_temporary_env_vars):
 async def test_chained_gpt_config(set_temporary_env_vars):
     """Test loading a chained gpt config and resolving it, with chat context enabled"""
     config_relative_path = "aiconfigs/chained_gpt_config.json"
-    config_absolute_path = get_absolute_file_path_from_relative(
-        __file__, config_relative_path
-    )
+    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
     config = AIConfigRuntime.load(config_absolute_path)
 
     data_for_inference1 = await config.resolve("prompt1")
@@ -122,14 +114,10 @@ async def test_resolve_system_prompt():
     Resolves a system prompt with a provided parameter
     """
     config_relative_path = "aiconfigs/system_prompt_parameters_config.json"
-    config_absolute_path = get_absolute_file_path_from_relative(
-        __file__, config_relative_path
-    )
+    config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
     config = AIConfigRuntime.load(config_absolute_path)
 
-    data_for_inference = await config.resolve(
-        "prompt1", {"system": "skip odd numbers"}
-    )
+    data_for_inference = await config.resolve("prompt1", {"system": "skip odd numbers"})
     assert data_for_inference == {
         "temperature": 1,
         "model": "gpt-3.5-turbo",

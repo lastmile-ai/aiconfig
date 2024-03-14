@@ -32,9 +32,7 @@ class ModelParserRegistry:
     _parsers: Dict[str, ModelParser] = {}
 
     @staticmethod
-    def register_model_parser(
-        model_parser: ModelParser, ids: Optional[List[str]] = None
-    ):
+    def register_model_parser(model_parser: ModelParser, ids: Optional[List[str]] = None):
         """
         Adds a model parser to the registry. This model parser is used to parse Prompts
         in the AIConfig that use the given model.
@@ -131,9 +129,7 @@ def update_model_parser_registry_with_config_runtime(
         model_id,
         model_parser_id,
     ) in config_runtime.metadata.model_parsers.items():
-        retrieved_model_parser = ModelParserRegistry.get_model_parser(
-            model_parser_id
-        )  # Fix
+        retrieved_model_parser = ModelParserRegistry.get_model_parser(model_parser_id)  # Fix
         if retrieved_model_parser is None:
             error_message = (
                 f"Unable to load AIConfig: It specifies {config_runtime.metadata.model_parsers}, "
@@ -143,6 +139,4 @@ def update_model_parser_registry_with_config_runtime(
             )
             raise Exception(error_message)
 
-        ModelParserRegistry.register_model_parser(
-            retrieved_model_parser, [model_id]
-        )
+        ModelParserRegistry.register_model_parser(retrieved_model_parser, [model_id])

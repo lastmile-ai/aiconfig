@@ -49,13 +49,9 @@ class ParameterizedModelParser(ModelParser):
     ) -> List[Output]:
         # maybe use prompt metadata instead of kwargs?
         if kwargs.get("run_with_dependencies", False):
-            return await self.run_with_dependencies(
-                prompt, aiconfig, options, parameters
-            )
+            return await self.run_with_dependencies(prompt, aiconfig, options, parameters)
         else:
-            return await self.run_inference(
-                prompt, aiconfig, options, parameters
-            )
+            return await self.run_inference(prompt, aiconfig, options, parameters)
 
     async def run_with_dependencies(
         self,
@@ -75,9 +71,7 @@ class ParameterizedModelParser(ModelParser):
         Returns:
             ExecuteResult: An Object containing the response from the AI model.
         """
-        dependency_graph = get_dependency_graph(
-            prompt, aiconfig.prompts, aiconfig.prompt_index
-        )
+        dependency_graph = get_dependency_graph(prompt, aiconfig.prompts, aiconfig.prompt_index)
 
         # Create a set to keep track of visited prompts
         visited_prompts = set()
@@ -127,23 +121,15 @@ class ParameterizedModelParser(ModelParser):
         Returns:
             str: The resolved string.
         """
-        return resolve_prompt_string(
-            prompt, params, ai_config, prompt_template
-        )
+        return resolve_prompt_string(prompt, params, ai_config, prompt_template)
 
-    def get_prompt_template(
-        self, prompt: Prompt, aiConfig: "AIConfigRuntime"
-    ) -> str:
+    def get_prompt_template(self, prompt: Prompt, aiConfig: "AIConfigRuntime") -> str:
         """
         An overrideable method that returns a template for a prompt.
         """
         if isinstance(prompt.input, str):
             return prompt.input
-        elif isinstance(prompt.input, PromptInput) and isinstance(
-            prompt.input.data, str
-        ):
+        elif isinstance(prompt.input, PromptInput) and isinstance(prompt.input.data, str):
             return prompt.input.data
         else:
-            raise Exception(
-                f"Cannot get prompt template string from prompt input: {prompt.input}"
-            )
+            raise Exception(f"Cannot get prompt template string from prompt input: {prompt.input}")

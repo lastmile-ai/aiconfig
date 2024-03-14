@@ -71,18 +71,14 @@ def run_backend_server(
 ) -> Result[str, str]:
     LOGGER.setLevel(initialization_settings.log_level)
     LOGGER.info("Edit config: %s", initialization_settings.model_dump_json())
-    LOGGER.info(
-        f"Starting server on http://localhost:{initialization_settings.server_port}"
-    )
+    LOGGER.info(f"Starting server on http://localhost:{initialization_settings.server_port}")
 
     if isinstance(initialization_settings, EditServerConfig):
         try:
             LOGGER.info(
                 f"Opening browser at http://localhost:{initialization_settings.server_port}"
             )
-            webbrowser.open(
-                f"http://localhost:{initialization_settings.server_port}"
-            )
+            webbrowser.open(f"http://localhost:{initialization_settings.server_port}")
         except Exception as e:
             LOGGER.warning(
                 f"Failed to open browser: {e}. Please open http://localhost:{initialization_settings.server_port} manually."
@@ -92,9 +88,7 @@ def run_backend_server(
         pass
 
     app.server_state = ServerState()  # type: ignore
-    res_server_state_init = init_server_state(
-        app, initialization_settings, aiconfigrc_path
-    )
+    res_server_state_init = init_server_state(app, initialization_settings, aiconfigrc_path)
     match res_server_state_init:
         case Ok(_):
             LOGGER.info("Initialized server state")
@@ -102,9 +96,7 @@ def run_backend_server(
                 ServerMode.DEBUG_BACKEND,
                 ServerMode.DEBUG_SERVERS,
             ]
-            LOGGER.info(
-                f"Running in {initialization_settings.server_mode} mode"
-            )
+            LOGGER.info(f"Running in {initialization_settings.server_mode} mode")
             app.run(
                 port=initialization_settings.server_port,
                 debug=debug,
@@ -120,13 +112,9 @@ def _validated_request_path(
     request_json: core_utils.JSONObject, allow_create: bool = False
 ) -> Result[ValidatedPath, str]:
     if "path" not in request_json or not isinstance(request_json["path"], str):
-        return Err(
-            "Request JSON must contain a 'path' field with a string value."
-        )
+        return Err("Request JSON must contain a 'path' field with a string value.")
     else:
-        return get_validated_path(
-            request_json["path"], allow_create=allow_create
-        )
+        return get_validated_path(request_json["path"], allow_create=allow_create)
 
 
 @app.route("/")
@@ -227,9 +215,7 @@ def load_content() -> FlaskResponse:
             )
 
             state.aiconfig = aiconfig
-            return HttpResponseWithAIConfig(
-                message="Created", aiconfig=aiconfig
-            ).to_flask_format()
+            return HttpResponseWithAIConfig(message="Created", aiconfig=aiconfig).to_flask_format()
 
     # If we have been provided with the aiconfig string, use it to instantiate
     # an AIConfigRuntime object
@@ -239,9 +225,7 @@ def load_content() -> FlaskResponse:
         aiconfig = AIConfigRuntime.load_yaml(content)
 
     state.aiconfig = aiconfig
-    return HttpResponseWithAIConfig(
-        message="Loaded", aiconfig=aiconfig
-    ).to_flask_format()
+    return HttpResponseWithAIConfig(message="Loaded", aiconfig=aiconfig).to_flask_format()
 
 
 @app.route("/api/save", methods=["POST"])
@@ -257,21 +241,15 @@ def save() -> FlaskResponse:
                 message="No AIConfig loaded", code=400, aiconfig=None
             ).to_flask_format()
         else:
-            LOGGER.info(
-                f"No path provided, saving to original path, {aiconfig.file_path}"
-            )
+            LOGGER.info(f"No path provided, saving to original path, {aiconfig.file_path}")
             path = aiconfig.file_path
 
     res_path_val = get_validated_path(path, allow_create=True)
     match res_path_val:
         case Ok(path_ok):
             _op = make_op_run_method(MethodName("save"))
-            op_args: Result[OpArgs, str] = result.Ok(
-                OpArgs({"config_filepath": path_ok})
-            )
-            return run_aiconfig_operation_with_op_args(
-                aiconfig, "save", _op, op_args
-            )
+            op_args: Result[OpArgs, str] = result.Ok(OpArgs({"config_filepath": path_ok}))
+            return run_aiconfig_operation_with_op_args(aiconfig, "save", _op, op_args)
 
         case Err(e):
             return HttpResponseWithAIConfig(
@@ -299,18 +277,14 @@ def to_string() -> FlaskResponse:
             message="No AIConfig loaded", code=400, aiconfig=None
         ).to_flask_format()
     else:
-        aiconfig_string = aiconfig.to_string(
-            include_outputs=include_outputs, mode=mode
-        )
+        aiconfig_string = aiconfig.to_string(include_outputs=include_outputs, mode=mode)
         return FlaskResponse(({"aiconfig_string": aiconfig_string}, 200))
 
 
 @app.route("/api/create", methods=["POST"])
 def create() -> FlaskResponse:
     state = get_server_state(app)
-    aiconfig = safe_run_aiconfig_static_method(
-        MethodName("create"), OpArgs({}), AIConfigRuntime
-    )
+    aiconfig = safe_run_aiconfig_static_method(MethodName("create"), OpArgs({}), AIConfigRuntime)
     match aiconfig:
         case Ok(aiconfig_ok):
             state.aiconfig = aiconfig_ok
@@ -367,9 +341,7 @@ def run() -> FlaskResponse:
     # Define stream callback and queue object for streaming results
     output_text_queue = QueueIterator()
 
-    def update_output_queue(
-        data: str, _accumulated_data: str, _index: int
-    ) -> None:
+    def update_output_queue(data: str, _accumulated_data: str, _index: int) -> None:
         should_end_stream: bool = data == STOP_STREAMING_SIGNAL
         output_text_queue.put(data, should_end_stream)
 
@@ -411,9 +383,7 @@ def run() -> FlaskResponse:
             )
 
         def create_cancellation_payload():
-            return create_error_payload(
-                message="The task was cancelled.", code=499
-            )
+            return create_error_payload(message="The task was cancelled.", code=499)
 
         def handle_cancellation():
             yield "["
@@ -466,9 +436,7 @@ def run() -> FlaskResponse:
             # we can fix later
             time.sleep(0.1)
             wait_time_in_seconds += SLEEP_DELAY_SECONDS
-            print(
-                f"Output queue is currently empty. Waiting for {wait_time_in_seconds:.1f}s..."
-            )
+            print(f"Output queue is currently empty. Waiting for {wait_time_in_seconds:.1f}s...")
 
         # Yield in flask is weird and you either need to send responses as a
         # string, or artificially wrap them around "[" and "]"
@@ -481,9 +449,7 @@ def run() -> FlaskResponse:
                     return
 
                 if isinstance(text, Exception):
-                    yield from create_error_payload(
-                        message=f"Exception: {text}", code=500
-                    )
+                    yield from create_error_payload(message=f"Exception: {text}", code=500)
                     return
                 elif isinstance(text, str):
                     accumulated_output_text += text
@@ -506,9 +472,7 @@ def run() -> FlaskResponse:
                     }  # type: ignore
                 )
                 yield "["
-                yield json.dumps(
-                    {"output_chunk": accumulated_output.to_json()}
-                )
+                yield json.dumps({"output_chunk": accumulated_output.to_json()})
                 yield "]"
 
         # Ensure that the run process is complete to yield final output
@@ -521,12 +485,10 @@ def run() -> FlaskResponse:
             state.events.pop(cancellation_token_id, None)
 
             aiconfig_json = (
-                aiconfig.model_dump(exclude=EXCLUDE_OPTIONS)
-                if aiconfig is not None
-                else None
+                aiconfig.model_dump(exclude=EXCLUDE_OPTIONS) if aiconfig is not None else None
             )
             yield "["
-            yield json.dumps({"aiconfig_chunk": aiconfig_json})
+            yield json.dumps({"aiconfig_chunk": aiconfig_json, "output_stats"})
             yield "]"
 
         yield "["
@@ -534,9 +496,7 @@ def run() -> FlaskResponse:
         yield "]"
 
     try:
-        LOGGER.info(
-            f"Running `aiconfig.run()` command with request: {request_json}"
-        )
+        LOGGER.info(f"Running `aiconfig.run()` command with request: {request_json}")
         # Note; We run the streaming API even for non-streaming runs so that
         # we can unify the way we process data on the client
         # Streaming based on
@@ -560,9 +520,7 @@ def cancel() -> FlaskResponse:
     state = get_server_state(app)
     request_json = request.get_json()
 
-    cancellation_token_id: str | None = request_json.get(
-        "cancellation_token_id"
-    )
+    cancellation_token_id: str | None = request_json.get("cancellation_token_id")
     if cancellation_token_id is not None:
         event = state.events.get(cancellation_token_id)
         if event is not None:
@@ -570,9 +528,7 @@ def cancel() -> FlaskResponse:
             # Remove the event from the events dict
             state.events.pop(cancellation_token_id)
 
-            return FlaskResponse(
-                ({"cancellation_token_id": cancellation_token_id}, 200)
-            )
+            return FlaskResponse(({"cancellation_token_id": cancellation_token_id}, 200))
         else:
             # Return a 422 Unprocessable Entity
             return FlaskResponse(
@@ -683,9 +639,7 @@ def update_model() -> FlaskResponse:
             }
         )
     )
-    return run_aiconfig_operation_with_op_args(
-        aiconfig, "update_model", operation, operation_args
-    )
+    return run_aiconfig_operation_with_op_args(aiconfig, "update_model", operation, operation_args)
 
 
 @app.route("/api/set_parameter", methods=["POST"])
@@ -695,9 +649,7 @@ def set_parameter() -> FlaskResponse:
     request_json = request.get_json()
 
     parameter_name: str | None = request_json.get("parameter_name")
-    parameter_value: Union[str, Dict[str, Any]] | None = request_json.get(
-        "parameter_value"
-    )
+    parameter_value: Union[str, Dict[str, Any]] | None = request_json.get("parameter_value")
     prompt_name: str | None = request_json.get("prompt_name")
 
     operation = make_op_run_method(MethodName("set_parameter"))
@@ -761,9 +713,7 @@ def set_name() -> FlaskResponse:
 
     operation = make_op_run_method(MethodName("set_name"))
     operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"name": name}))
-    return run_aiconfig_operation_with_op_args(
-        aiconfig, "set_name", operation, operation_args
-    )
+    return run_aiconfig_operation_with_op_args(aiconfig, "set_name", operation, operation_args)
 
 
 @app.route("/api/set_description", methods=["POST"])
@@ -775,9 +725,7 @@ def set_description() -> FlaskResponse:
     description: str | None = request_json.get("description")
 
     operation = make_op_run_method(MethodName("set_description"))
-    operation_args: Result[OpArgs, str] = result.Ok(
-        OpArgs({"description": description})
-    )
+    operation_args: Result[OpArgs, str] = result.Ok(OpArgs({"description": description}))
     return run_aiconfig_operation_with_op_args(
         aiconfig, "set_description", operation, operation_args
     )
@@ -800,9 +748,7 @@ def clear_outputs() -> FlaskResponse:
             aiconfig=None,
         ).to_flask_format()
 
-    def _op(
-        aiconfig_runtime: AIConfigRuntime, _op_args: OpArgs
-    ) -> Result[None, str]:
+    def _op(aiconfig_runtime: AIConfigRuntime, _op_args: OpArgs) -> Result[None, str]:
         for prompt in aiconfig_runtime.prompts:
             prompt_name = prompt.name
             # fn name `delete_output`` is misleading. TODO: Rename to `delete_outputs`` in AIConfig API
@@ -826,9 +772,7 @@ def get_aiconfigrc() -> FlaskResponse:
         case Ok(yaml_mapping_ok):
             return FlaskResponse((yaml_mapping_ok.model_dump(), 200))
         case Err(e):
-            return FlaskResponse(
-                ({"message": f"Failed to load aiconfigrc: {e}"}, 400)
-            )
+            return FlaskResponse(({"message": f"Failed to load aiconfigrc: {e}"}, 400))
 
 
 @app.route("/api/set_aiconfigrc", methods=["POST"])

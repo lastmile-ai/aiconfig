@@ -80,14 +80,8 @@ async def test_metrics():
     assert await brevity("hello") == 5.0
 
     assert await substring_match("lo w")("hello world") == 1.0
-    assert (
-        await substring_match("hello", case_sensitive=False)("HELLO world")
-        == 1.0
-    )
-    assert (
-        await substring_match("hello", case_sensitive=True)("HELLO world")
-        == 0.0
-    )
+    assert await substring_match("hello", case_sensitive=False)("HELLO world") == 1.0
+    assert await substring_match("hello", case_sensitive=True)("HELLO world") == 0.0
 
 
 @pytest.mark.asyncio
@@ -235,9 +229,7 @@ async def test_run_test_suite_with_inputs_general_params(data: st.DataObject):
     Also see test_run_with_inputs_sanity_check.
     """
     metrics_list = [brevity, substring_match("hello")]
-    inputs = st.dictionaries(
-        st.text(min_size=1), st.text(min_size=1), min_size=0, max_size=2
-    )
+    inputs = st.dictionaries(st.text(min_size=1), st.text(min_size=1), min_size=0, max_size=2)
     test_pairs = st.tuples(inputs, st.sampled_from(metrics_list))
     user_test_suite_with_inputs = data.draw(
         st.lists(
@@ -246,9 +238,7 @@ async def test_run_test_suite_with_inputs_general_params(data: st.DataObject):
         )
     )
 
-    async def mock_run_text_to_text(
-        prompt_name: str, params: dict[str, str]
-    ) -> str:
+    async def mock_run_text_to_text(prompt_name: str, params: dict[str, str]) -> str:
         return f"{prompt_name}_output." + ",".join(
             f"{key=};{value=}" for key, value in params.items()
         )
@@ -293,9 +283,7 @@ async def test_run_test_suite_with_inputs_general_params(data: st.DataObject):
                 df[["input", "metric_id"]].itertuples(index=False, name=None)  # type: ignore[no-untyped-call]
             )
 
-            assert (
-                input_pairs == result_pairs
-            ), f"fail: {input_pairs=}, {result_pairs=}"
+            assert input_pairs == result_pairs, f"fail: {input_pairs=}, {result_pairs=}"
 
             df_brevity = df[df["metric_name"] == "brevity"]  # type: ignore
             assert (df_brevity["aiconfig_output"].apply(len) == df_brevity["value"]).all()  # type: ignore
@@ -325,15 +313,13 @@ def _make_mock_nltk_metrics() -> MetricList[str]:
         description="Highest-probability NLTK sentiment class using Vader",
     )
 
-    mock_nltk_sentiment_score_overall_positive = (
-        metrics.make_sentiment_scores_metric(
-            get_polarity_scores=_mock_get_nltk_polarity_scores,
-            make_evaluation_fn=metrics.make_get_overall_positive_sentiment,
-            name="nltk_sentiment_score_overall_positive",
-            description="Positive minus negative",
-            best_value=metrics.TextOverallPositiveSentiment(pos=1.0, neg=0.0),
-            worst_value=metrics.TextOverallPositiveSentiment(pos=0.0, neg=1.0),
-        )
+    mock_nltk_sentiment_score_overall_positive = metrics.make_sentiment_scores_metric(
+        get_polarity_scores=_mock_get_nltk_polarity_scores,
+        make_evaluation_fn=metrics.make_get_overall_positive_sentiment,
+        name="nltk_sentiment_score_overall_positive",
+        description="Positive minus negative",
+        best_value=metrics.TextOverallPositiveSentiment(pos=1.0, neg=0.0),
+        worst_value=metrics.TextOverallPositiveSentiment(pos=0.0, neg=1.0),
     )
 
     return [
@@ -354,10 +340,7 @@ async def test_custom_metric_type():
     )
     df = await run_test_suite_outputs_only(user_test_suite_outputs_only)
     result = df.set_index(["metric_name", "aiconfig_output"]).value.unstack(0).to_dict()  # type: ignore
-    assert (
-        result["nltk_sentiment_class_vader"]
-        == MOCK_NLTK_SENTIMENT_CLASS_MAPPING
-    )
+    assert result["nltk_sentiment_class_vader"] == MOCK_NLTK_SENTIMENT_CLASS_MAPPING
 
     assert all(isinstance(v, metrics.TextSentimentScores) for v in result["nltk_sentiment_scores_vader"].values())  # type: ignore
 
@@ -365,13 +348,8 @@ async def test_custom_metric_type():
 
     neutral = metrics.TextOverallPositiveSentiment(pos=0.0, neg=0.0)
 
-    assert (
-        result["nltk_sentiment_score_overall_positive"]["nltk is amazing"]
-        > neutral
-    )
-    assert (
-        result["nltk_sentiment_score_overall_positive"]["oh, bother"] < neutral
-    )
+    assert result["nltk_sentiment_score_overall_positive"]["nltk is amazing"] > neutral
+    assert result["nltk_sentiment_score_overall_positive"]["oh, bother"] < neutral
 
 
 @pytest.mark.asyncio
@@ -390,6 +368,5 @@ async def test_exception_metric(caplog: pytest.LogCaptureFixture):
     assert pd.isnull(mapping[""])  # type: ignore
 
     assert any(
-        "Brevity is meaningless for empty string." in record.msg
-        for record in caplog.records
+        "Brevity is meaningless for empty string." in record.msg for record in caplog.records
     )

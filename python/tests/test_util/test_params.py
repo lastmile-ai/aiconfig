@@ -30,9 +30,7 @@ def test_template_with_no_parameters():
 
 
 def test_template_with_empty_params():
-    result = get_parameters_in_template(
-        "This is a plain text template with a fake param {{}}."
-    )
+    result = get_parameters_in_template("This is a plain text template with a fake param {{}}.")
     assert result == {}
 
 
@@ -106,9 +104,7 @@ def test_find_dependencies_in_prompt_with_two_dependencies(
     prompt_list_with_5_prompts,
 ):
     # generate a list of 5 Prompts with name prompt1, prompt2, ...
-    prompt_template = (
-        "I am referring to {{prompt2.output}} and {{prompt1.output}}"  #
-    )
+    prompt_template = "I am referring to {{prompt2.output}} and {{prompt1.output}}"  #
     current_prompt_name = "prompt4"
 
     result = find_dependencies_in_prompt(

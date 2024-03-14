@@ -43,23 +43,15 @@ gpt_models_extra = [
 for model in gpt_models_main:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
 
-ModelParserRegistry.register_model_parser(
-    OpenAIVisionParser("gpt-4-vision-preview")
-)
-ModelParserRegistry.register_model_parser(
-    GeminiModelParser("gemini-pro"), ["gemini-pro"]
-)
+ModelParserRegistry.register_model_parser(OpenAIVisionParser("gpt-4-vision-preview"))
+ModelParserRegistry.register_model_parser(GeminiModelParser("gemini-pro"), ["gemini-pro"])
 dalle_image_generation_models = [
     "dall-e-2",
     "dall-e-3",
 ]
 for model in dalle_image_generation_models:
-    ModelParserRegistry.register_model_parser(
-        DalleImageGenerationParser(model)
-    )
-ModelParserRegistry.register_model_parser(
-    DefaultAnyscaleEndpointParser("AnyscaleEndpoint")
-)
+    ModelParserRegistry.register_model_parser(DalleImageGenerationParser(model))
+ModelParserRegistry.register_model_parser(DefaultAnyscaleEndpointParser("AnyscaleEndpoint"))
 ModelParserRegistry.register_model_parser(ClaudeBedrockModelParser())
 for model in gpt_models_extra:
     ModelParserRegistry.register_model_parser(DefaultOpenAIParser(model))
@@ -176,18 +168,14 @@ class AIConfigRuntime(AIConfig):
             lastmileapi_token = os.environ.get("LASTMILE_API_TOKEN")
 
             if not lastmileapi_token:
-                raise ValueError(
-                    "LASTMILE_API_TOKEN environment variable is not set."
-                )
+                raise ValueError("LASTMILE_API_TOKEN environment variable is not set.")
 
             headers = {"Authorization": "Bearer " + lastmileapi_token}
             url = f"{API_ENDPOINT}/workbooks/aiconfig?id={workbook_id}"
             resp = requests.get(url, headers=headers)
 
             if resp.status_code != 200:
-                raise Exception(
-                    f"Failed to load workbook. Status code: {resp.status_code}"
-                )
+                raise Exception(f"Failed to load workbook. Status code: {resp.status_code}")
 
             data = resp.json()
 
@@ -236,9 +224,7 @@ class AIConfigRuntime(AIConfig):
 
         prompts = await model_parser.serialize(prompt_name, data, self, params)
 
-        event = CallbackEvent(
-            "on_serialize_complete", __name__, {"result": prompts}
-        )
+        event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
         await self.callback_manager.run_callbacks(event)
         return prompts
 
@@ -279,9 +265,7 @@ class AIConfigRuntime(AIConfig):
 
         response = await model_provider.deserialize(prompt_data, self, params)
 
-        event = CallbackEvent(
-            "on_resolve_complete", __name__, {"result": response}
-        )
+        event = CallbackEvent("on_resolve_complete", __name__, {"result": response})
         await self.callback_manager.run_callbacks(event)
         return response
 
@@ -337,9 +321,7 @@ class AIConfigRuntime(AIConfig):
             **kwargs,  # TODO: We should remove and make argument explicit
         )
 
-        event = CallbackEvent(
-            "on_run_complete", __name__, {"result": response}
-        )
+        event = CallbackEvent("on_run_complete", __name__, {"result": response})
         await self.callback_manager.run_callbacks(event)
         return response
 
@@ -414,9 +396,7 @@ class AIConfigRuntime(AIConfig):
             parameters_dict_used = parameters_list[i]
 
             aiconfig_execute_results = aiconfig.get_prompt(prompt_name).outputs
-            prompt_data_resolved = await aiconfig.resolve(
-                prompt_name, parameters_dict_used
-            )
+            prompt_data_resolved = await aiconfig.resolve(prompt_name, parameters_dict_used)
 
             batch_results_formatted.append(
                 tuple(
@@ -444,9 +424,7 @@ class AIConfigRuntime(AIConfig):
         options: Optional[InferenceOptions] = None,
         **kwargs,
     ) -> str:
-        result: Any = await self.run(
-            prompt_name, params, options=options, **kwargs
-        )
+        result: Any = await self.run(prompt_name, params, options=options, **kwargs)
         return self.get_output_text(prompt_name, result[0])
 
     def save(
@@ -463,9 +441,7 @@ class AIConfigRuntime(AIConfig):
                 Defaults to "aiconfig.json" or "aiconfig.yaml", depending on the mode.
         """
 
-        default_filepath = (
-            "aiconfig.yaml" if mode == "yaml" else "aiconfig.json"
-        )
+        default_filepath = "aiconfig.yaml" if mode == "yaml" else "aiconfig.json"
 
         if not config_filepath:
             config_filepath = self.file_path or default_filepath
@@ -526,9 +502,7 @@ class AIConfigRuntime(AIConfig):
                 indent=2,
             )
 
-    def get_output_text(
-        self, prompt: str | Prompt, output: Optional[dict] = None
-    ) -> str:
+    def get_output_text(self, prompt: str | Prompt, output: Optional[dict] = None) -> str:
         """
         Get the string representing the output from a prompt (if any)
 
@@ -541,9 +515,7 @@ class AIConfigRuntime(AIConfig):
         """
         if isinstance(prompt, str):
             prompt = self.get_prompt(prompt)
-        model_parser = ModelParserRegistry.get_model_parser_for_prompt(
-            prompt, self
-        )
+        model_parser = ModelParserRegistry.get_model_parser_for_prompt(prompt, self)
         return model_parser.get_output_text(prompt, self, output)
 
     @staticmethod

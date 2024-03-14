@@ -14,15 +14,11 @@ class MockRunTextToText(Protocol):
 def make_mock_aiconfig_runtime(
     mock_run_text_to_text: MockRunTextToText | None = None,
 ) -> AIConfigRuntime:
-    async def _default_mock_run_text_to_text(
-        prompt_name: str, params: dict[str, str]
-    ) -> str:
+    async def _default_mock_run_text_to_text(prompt_name: str, params: dict[str, str]) -> str:
         return f"output_for_{prompt_name}_the_query_{params['the_query']}"
 
     mock_run_text_to_text_impl = (
-        _default_mock_run_text_to_text
-        if mock_run_text_to_text is None
-        else mock_run_text_to_text
+        _default_mock_run_text_to_text if mock_run_text_to_text is None else mock_run_text_to_text
     )
 
     class _MockAIConfigRuntime(AIConfigRuntime):
