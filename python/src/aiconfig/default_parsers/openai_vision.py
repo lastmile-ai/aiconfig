@@ -291,13 +291,13 @@ class OpenAIVisionParser(DefaultOpenAIParser):
                 if not prompt_content:
                     continue
                 if isinstance(prompt_content, str):
-                    completion_params["messages"][i]["content"] = (
-                        resolve_prompt_string(
-                            prompt,
-                            params,
-                            aiconfig,
-                            prompt_content,
-                        )
+                    completion_params["messages"][i][
+                        "content"
+                    ] = resolve_prompt_string(
+                        prompt,
+                        params,
+                        aiconfig,
+                        prompt_content,
                     )
                 else:
                     # If the prompt content is an array, then it's a ChatCompletionContentPartParam object
