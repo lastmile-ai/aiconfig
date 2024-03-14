@@ -157,6 +157,9 @@ export default function LocalEditor() {
           output_chunk: (data) => {
             onStream({ type: "output_chunk", data: data as Output });
           },
+          output_stats: (data) => {
+            onStream({ type: "output_chunk", data: data as Output });
+          },
           aiconfig_chunk: (data) => {
             onStream({ type: "aiconfig_chunk", data: data as AIConfig });
           },
