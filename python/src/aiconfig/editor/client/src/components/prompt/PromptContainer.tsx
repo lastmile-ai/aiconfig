@@ -15,7 +15,7 @@ import { debounce } from "lodash";
 type Props = {
   prompt: ClientPrompt;
   cancel?: (cancellationToken: string) => Promise<void>;
-  getModels?: (search: string) => Promise<string[]>;
+  getModels?: (search?: string) => Promise<string[]>;
   onChangePromptInput: (
     promptId: string,
     newPromptInput: AIConfigPromptInput

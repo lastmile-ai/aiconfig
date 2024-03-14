@@ -107,7 +107,7 @@ export const LOCAL_THEME: MantineThemeOverride = {
       width: "400px",
     },
 
-    ".parametersContainer": {
+    ".configMetadataContainer": {
       maxWidth: "1250px",
       maxHeight: "-webkit-fill-available",
       padding: "0",
