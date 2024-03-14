@@ -106,11 +106,15 @@ class RunPromptEventData(EventWithSessionIdData):
         self.prompt_name: str = data["prompt_name"]
 
         # Token to use for cancelling this particular run
-        self.cancellation_token: Optional[str] = data.get("cancellation_token", None)
+        self.cancellation_token: Optional[str] = data.get(
+            "cancellation_token", None
+        )
 
         # Whether we should run the other prompts that this depends on
         # TODO(rossdanlm): Make this generic kwargs
-        self.run_with_dependencies: bool = data.get("run_with_dependencies", True)
+        self.run_with_dependencies: bool = data.get(
+            "run_with_dependencies", True
+        )
 
         self.api_token: Optional[str] = data.get("api_token", None)
 
@@ -184,7 +188,9 @@ class UpdateModelEventData(EventWithSessionIdData):
         self.model_name: Optional[str] = data.get("model_name", None)
 
         # Model settings to update the prompt (if not None) or AIConfig with
-        self.model_settings: Optional[Dict[str, Any]] = data.get("model_settings", None)
+        self.model_settings: Optional[Dict[str, Any]] = data.get(
+            "model_settings", None
+        )
 
         # Name of the prompt to be updated. If None, update the overall config
         self.prompt_name: Optional[str] = data.get("prompt_name", None)
@@ -227,8 +233,12 @@ class EventHandler:
         prompt = Prompt.model_validate_json(prompt_json_str)
 
         config: AIConfigRuntime = self.config_manager.get_config(session_id)
-        config.add_prompt(prompt_name=prompt_name, prompt_data=prompt, index=index)
-        return json.dumps({"aiconfig": self.config_manager.get_config_json(session_id)})
+        config.add_prompt(
+            prompt_name=prompt_name, prompt_data=prompt, index=index
+        )
+        return json.dumps(
+            {"aiconfig": self.config_manager.get_config_json(session_id)}
+        )
 
     def cancel_run_impl(self, event: CancelRunEventData) -> str:
         """
@@ -236,11 +246,15 @@ class EventHandler:
         """
         cancellation_token_id: str = event.cancellation_token_id
         if cancellation_token_id is not None:
-            thread_event = self.config_manager.thread_events.get(cancellation_token_id)
+            thread_event = self.config_manager.thread_events.get(
+                cancellation_token_id
+            )
             if thread_event is not None:
                 thread_event.set()
                 self.config_manager.thread_events.pop(cancellation_token_id)
-                return json.dumps({"cancellation_token_id": cancellation_token_id})
+                return json.dumps(
+                    {"cancellation_token_id": cancellation_token_id}
+                )
 
             # Return a 422 Unprocessable Entity
             error_info = {
@@ -270,7 +284,9 @@ class EventHandler:
         for prompt in config.prompts:
             prompt_name = prompt.name
             config.delete_output(prompt_name)
-        return json.dumps({"aiconfig": self.config_manager.get_config_json(session_id)})
+        return json.dumps(
+            {"aiconfig": self.config_manager.get_config_json(session_id)}
+        )
 
     def delete_prompt_impl(self, event: DeletePromptEventData) -> str:
         """
@@ -287,7 +303,9 @@ class EventHandler:
         Run this for the get_aiconfig event
         """
         session_id = event.session_id
-        return json.dumps({"aiconfig": self.config_manager.get_config_json(session_id)})
+        return json.dumps(
+            {"aiconfig": self.config_manager.get_config_json(session_id)}
+        )
 
     def remove_session_id_impl(self, event: EventWithSessionIdData) -> str:
         """
@@ -330,7 +348,9 @@ class EventHandler:
             cancellation_token_id = event.cancellation_token
             if not cancellation_token_id:
                 cancellation_token_id = str(uuid.uuid4())
-            self.config_manager.thread_events[cancellation_token_id] = threading.Event()
+            self.config_manager.thread_events[
+                cancellation_token_id
+            ] = threading.Event()
 
             def generate(cancellation_token_id: str):  # type: ignore
                 # Use multi-threading so that we don't block run command from
@@ -400,7 +420,9 @@ class EventHandler:
                         # If the response is not 1, the function didn't work
                         # correctly, and you should call it again with
                         # exc=NULL to reset it.
-                        ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, None)
+                        ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                            thread_id, None
+                        )
 
                 cancellation_event = self.config_manager.thread_events[
                     cancellation_token_id
@@ -433,7 +455,9 @@ class EventHandler:
                         elif isinstance(text, dict) and "content" in text:
                             # TODO: Fix streaming output format so that it returns text
                             accumulated_output_text += text["content"]
-                        elif isinstance(text, dict) and "generated_text" in text:
+                        elif (
+                            isinstance(text, dict) and "generated_text" in text
+                        ):
                             # TODO: Fix streaming output format so that it returns text
                             accumulated_output_text += text["generated_text"]
 
@@ -450,7 +474,9 @@ class EventHandler:
                         )
                         if show_debug():
                             print(f"{accumulated_output_text=}")
-                        yield json.dumps({"output_chunk": accumulated_output.to_json()})
+                        yield json.dumps(
+                            {"output_chunk": accumulated_output.to_json()}
+                        )
 
                 # Ensure that the run process is complete to yield final output
                 t.join()
@@ -459,13 +485,17 @@ class EventHandler:
                     yield from handle_cancellation()
                     return
 
-                self.config_manager.thread_events.pop(cancellation_token_id, None)
+                self.config_manager.thread_events.pop(
+                    cancellation_token_id, None
+                )
                 aiconfig_json = self.config_manager.get_config_json(session_id)
                 yield json.dumps({"aiconfig_chunk": aiconfig_json})
                 yield json.dumps({"stop_streaming": True})
 
             if show_debug():
-                print(f"Running `aiconfig.run()` command with request: {event}")
+                print(
+                    f"Running `aiconfig.run()` command with request: {event}"
+                )
             yield from generate(cancellation_token_id)
         except Exception as e:
             # Return a 400 Bad Request error
@@ -478,7 +508,9 @@ class EventHandler:
             }
             yield json.dumps(error_info)
 
-    def set_config_description_impl(self, event: SetConfigDescriptionEventData) -> str:
+    def set_config_description_impl(
+        self, event: SetConfigDescriptionEventData
+    ) -> str:
         """
         Run this for the set_config_description event. We don't need to return AIConfig
         for the Gradio frontend
@@ -526,14 +558,18 @@ class EventHandler:
         #   const policy = await policyResponse.json();
         random_int: int = random.randint(0, 10001)
         bucket: str = "lastmileai.aiconfig.public"
-        upload_key: str = f"aiconfigs/{_get_date_time_string()}/{random_int}/{filename}"
+        upload_key: str = (
+            f"aiconfigs/{_get_date_time_string()}/{random_int}/{filename}"
+        )
 
         config_str: str = json.dumps(
             self.config_manager.get_config_json(session_id), indent=2
         )
         config_bytes: bytes = config_str.encode("utf-8")
 
-        s3_client = boto3.client("s3", config=Config(signature_version=UNSIGNED))
+        s3_client = boto3.client(
+            "s3", config=Config(signature_version=UNSIGNED)
+        )
         s3_client.put_object(
             Body=config_bytes,
             Bucket=bucket,
@@ -545,9 +581,7 @@ class EventHandler:
         # For some reason, the URL returned by boto3 doesn't work if you
         # replace " " with "%20" directly within the "put_object" API for
         # the Key field, so instead we are replacing it over here
-        s3_url: str = (
-            f"https://s3.amazonaws.com/{bucket}/{upload_key.replace(' ', '%20')}"
-        )
+        s3_url: str = f"https://s3.amazonaws.com/{bucket}/{upload_key.replace(' ', '%20')}"
 
         lastmile_upload_url: str = LASTMILE_BASE_URI + "api/aiconfig/upload"
         payload = {"url": s3_url, "source": "gradio"}
@@ -560,7 +594,9 @@ class EventHandler:
             response.raise_for_status()
 
         uploaded_config_id: str = response.json()["id"]
-        rendering_uri: str = LASTMILE_BASE_URI + f"aiconfig/{uploaded_config_id}"
+        rendering_uri: str = (
+            LASTMILE_BASE_URI + f"aiconfig/{uploaded_config_id}"
+        )
         return json.dumps({"share_url": rendering_uri})
 
     def update_model_impl(self, event: UpdateModelEventData) -> str:
@@ -569,8 +605,12 @@ class EventHandler:
         """
         session_id = event.session_id
         config: AIConfigRuntime = self.config_manager.get_config(session_id)
-        config.update_model(event.model_name, event.model_settings, event.prompt_name)
-        return json.dumps({"aiconfig": self.config_manager.get_config_json(session_id)})
+        config.update_model(
+            event.model_name, event.model_settings, event.prompt_name
+        )
+        return json.dumps(
+            {"aiconfig": self.config_manager.get_config_json(session_id)}
+        )
 
     def update_prompt_impl(self, event: UpdatePromptEventData) -> str:
         """
@@ -582,7 +622,9 @@ class EventHandler:
 
         config: AIConfigRuntime = self.config_manager.get_config(session_id)
         config.update_prompt(event.prompt_name, prompt)
-        return json.dumps({"aiconfig": self.config_manager.get_config_json(session_id)})
+        return json.dumps(
+            {"aiconfig": self.config_manager.get_config_json(session_id)}
+        )
 
 
 def _sanitize_filename(filename: str) -> str:
