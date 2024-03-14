@@ -1,0 +1,1 @@
+black --check --line-length 79 .
