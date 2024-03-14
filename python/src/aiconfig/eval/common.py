@@ -58,7 +58,6 @@ class EvaluationFunction(Protocol, Generic[T_Evaluable, T_MetricValue]):
 class EvaluationMetricMetadata(
     core_utils.Record, Generic[T_Evaluable, T_MetricValue]
 ):
-
     """A record to tie together metadata about an evaluation metric
     to ensure that numbers are interpreted as intended.
 

@@ -1,5 +1,6 @@
 """Helper class to reference the AIConfigRuntime state
 """
+
 import copy
 import heapq
 import time
@@ -100,10 +101,14 @@ class AIConfigManager:
         AIConfigRuntime.register_model_parser(text_to_speech, "Text-to-Speech")
 
         text_generation = HuggingFaceTextGenerationRemoteInference()
-        AIConfigRuntime.register_model_parser(text_generation, "Text Generation")
+        AIConfigRuntime.register_model_parser(
+            text_generation, "Text Generation"
+        )
 
         text_summarization = HuggingFaceTextSummarizationRemoteInference()
-        AIConfigRuntime.register_model_parser(text_summarization, "Summarization")
+        AIConfigRuntime.register_model_parser(
+            text_summarization, "Summarization"
+        )
 
         text_translation = HuggingFaceTextTranslationRemoteInference()
         AIConfigRuntime.register_model_parser(text_translation, "Translation")
@@ -133,7 +138,9 @@ class AIConfigManager:
 
         self._load_user_parser_module_if_exists(parsers_path)
 
-    def _load_user_parser_module_if_exists(self, parsers_module_path: str) -> None:
+    def _load_user_parser_module_if_exists(
+        self, parsers_module_path: str
+    ) -> None:
         try:
             parsers_path = get_validated_path(parsers_module_path)
             load_user_parser_module(parsers_path)
@@ -149,10 +156,16 @@ class AIConfigManager:
         """Get a config that is mapped to a session id"""
         update_time = time.time()
         if session_id not in self.session_data_map:
-            copied_config = copy.deepcopy(self.session_data_map["original"].config)
-            session_data = SessionData(config=copied_config, update_time=update_time)
+            copied_config = copy.deepcopy(
+                self.session_data_map["original"].config
+            )
+            session_data = SessionData(
+                config=copied_config, update_time=update_time
+            )
             self.session_data_map[session_id] = session_data
-            heapq.heappush(self.session_id_lru_min_heap, (update_time, session_id))
+            heapq.heappush(
+                self.session_id_lru_min_heap, (update_time, session_id)
+            )
 
         if show_debug():
             print(f"{self.session_data_map.keys()=}")
@@ -235,7 +248,9 @@ class AIConfigManager:
             if should_delete:
                 self.session_data_map.pop(session_id, None)
 
-    def remove_lru_session_if_not_updated(self, threshold_cutoff_time: float) -> bool:
+    def remove_lru_session_if_not_updated(
+        self, threshold_cutoff_time: float
+    ) -> bool:
         """
         Remove the least recently used session from the session_id_lru_min_heap
         If the session has been updated since it was added to the min_heap, and the
@@ -244,7 +259,9 @@ class AIConfigManager:
 
         @return bool: Whether the session was removed or not
         """
-        old_update_time, session_id = heapq.heappop(self.session_id_lru_min_heap)
+        old_update_time, session_id = heapq.heappop(
+            self.session_id_lru_min_heap
+        )
         actual_update_time = self.session_data_map[session_id].update_time
         if (
             old_update_time < actual_update_time
