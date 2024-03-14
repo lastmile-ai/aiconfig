@@ -28,9 +28,7 @@ class CallbackEvent:
     Represents an event with data to be passed to a callback.
     """
 
-    def __init__(
-        self, name: str, file: str, data: Any, ts_ns: int = time.time_ns()
-    ):
+    def __init__(self, name: str, file: str, data: Any, ts_ns: int = time.time_ns()):
         self.name = name
         # The name of the file that triggered the event.
         self.file = file
@@ -87,9 +85,7 @@ class CallbackManager:
     Manages a sequence of callbacks to be executed in response to Events
     """
 
-    def __init__(
-        self, callbacks: Sequence[Callback], timeout: int = None
-    ) -> None:
+    def __init__(self, callbacks: Sequence[Callback], timeout: int = None) -> None:
         if timeout is None:
             timeout = DEFAULT_TIMEOUT
         self.callbacks: Final[Sequence[Callback]] = callbacks
@@ -100,9 +96,7 @@ class CallbackManager:
         event = CallbackEventModel(**event.__dict__)
         tasks = []
         for callback in self.callbacks:
-            task = execute_coroutine_with_timeout(
-                callback(event), self.timeout
-            )
+            task = execute_coroutine_with_timeout(callback(event), self.timeout)
             tasks.append(task)
 
         self.results = await asyncio.gather(*tasks)
@@ -129,9 +123,7 @@ def create_logging_callback(log_file: str = None) -> Callback:
         name = "my-logger"
         log_file = "aiconfig.log"
 
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         handler = logging.FileHandler(log_file)
         handler.setFormatter(formatter)
 

@@ -58,9 +58,7 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
     # If cli_config is Ok(), pass its contents to _get_cli_process_result_from_config().
     # Otherwise, short circuit and assign process_result to the Err.
     # Nothing gets mutated except for log level (see inside _get_cli_process_result_from_config()
-    process_result = cli_config.and_then(
-        _set_log_level_and_create_default_yaml
-    )
+    process_result = cli_config.and_then(_set_log_level_and_create_default_yaml)
     LOGGER.info(f"{process_result=}")
 
     subparser_name = core_utils.get_subparser_name(main_parser, argv[1:])
@@ -68,24 +66,18 @@ def run_subcommand(argv: list[str]) -> Result[str, str]:
 
     if subparser_name == "edit":
         LOGGER.debug("Running edit subcommand")
-        edit_config = core_utils.parse_args(
-            main_parser, argv[1:], EditServerConfig
-        )
+        edit_config = core_utils.parse_args(main_parser, argv[1:], EditServerConfig)
         LOGGER.debug(f"{edit_config.is_ok()=}")
         out = _run_editor_servers_with_configs(edit_config, cli_config)
         return out
     elif subparser_name == "start":
         LOGGER.debug("Running start subcommand")
-        start_config = core_utils.parse_args(
-            main_parser, argv[1:], StartServerConfig
-        )
+        start_config = core_utils.parse_args(main_parser, argv[1:], StartServerConfig)
         LOGGER.debug(f"{start_config.is_ok()=}")
         out = _start_editor_servers_with_configs(start_config, cli_config)
         return out
     elif subparser_name == "rage":
-        res_rage_config = core_utils.parse_args(
-            main_parser, argv[1:], rage.RageConfig
-        )
+        res_rage_config = core_utils.parse_args(main_parser, argv[1:], rage.RageConfig)
         res_rage = res_rage_config.and_then(rage.rage)
         match res_rage:
             case Ok(msg):
@@ -101,9 +93,7 @@ def _run_editor_servers_with_configs(
     cli_config: Result[AIConfigCLIConfig, str],
 ) -> Result[str, str]:
     if not (edit_config.is_ok() and cli_config.is_ok()):
-        return Err(
-            f"Something went wrong with configs: {edit_config=}, {cli_config=}"
-        )
+        return Err(f"Something went wrong with configs: {edit_config=}, {cli_config=}")
 
     server_outcomes = _run_editor_servers(
         edit_config.unwrap(), cli_config.unwrap().aiconfigrc_path
@@ -119,17 +109,11 @@ def _start_editor_servers_with_configs(
     cli_config: Result[AIConfigCLIConfig, str],
 ) -> Result[str, str]:
     if not (start_config.is_ok() and cli_config.is_ok()):
-        return Err(
-            f"Something went wrong with configs: {start_config=}, {cli_config=}"
-        )
+        return Err(f"Something went wrong with configs: {start_config=}, {cli_config=}")
 
-    server_outcomes = _start_server(
-        start_config.unwrap(), cli_config.unwrap().aiconfigrc_path
-    )
+    server_outcomes = _start_server(start_config.unwrap(), cli_config.unwrap().aiconfigrc_path)
     if server_outcomes.is_err():
-        return Err(
-            f"Something went wrong with starting the aiconfig server: {server_outcomes=}"
-        )
+        return Err(f"Something went wrong with starting the aiconfig server: {server_outcomes=}")
 
     return Ok(",".join(server_outcomes.unwrap()))
 
@@ -152,9 +136,7 @@ def is_port_in_use(port: int) -> bool:
         return s.connect_ex(("localhost", port)) == 0
 
 
-def _start_server(
-    start_config: StartServerConfig, aiconfigrc_path: str
-) -> Result[list[str], str]:
+def _start_server(start_config: StartServerConfig, aiconfigrc_path: str) -> Result[list[str], str]:
     port = start_config.server_port
 
     if is_port_in_use(port):
@@ -263,15 +245,11 @@ def _set_log_level_and_create_default_yaml(
         return core_utils.ErrWithTraceback(e)
 
 
-def _run_frontend_server_background() -> (
-    Result[list[subprocess.Popen[bytes]], str]
-):
+def _run_frontend_server_background() -> Result[list[subprocess.Popen[bytes]], str]:
     LOGGER.info("Running frontend server in background")
     p1, p2 = None, None
     try:
-        p1 = subprocess.Popen(
-            ["yarn"], cwd="python/src/aiconfig/editor/client"
-        )
+        p1 = subprocess.Popen(["yarn"], cwd="python/src/aiconfig/editor/client")
     except Exception as e:
         return core_utils.ErrWithTraceback(e)
 

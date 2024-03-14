@@ -68,9 +68,7 @@ class OpenAIVisionParser(DefaultOpenAIParser):
         conversation_data = {**data}
 
         if not "messages" in conversation_data:
-            raise ValueError(
-                "Data must have `messages` array to match openai api spec"
-            )
+            raise ValueError("Data must have `messages` array to match openai api spec")
 
         # Find first system prompt. Every prompt in the config will bet set to use this system prompt.
         system_prompt = None
@@ -81,15 +79,9 @@ class OpenAIVisionParser(DefaultOpenAIParser):
                 break
 
         # Get the global settings for the model
-        model_name = (
-            conversation_data["model"]
-            if "model" in conversation_data
-            else self.id()
-        )
+        model_name = conversation_data["model"] if "model" in conversation_data else self.id()
 
-        model_metadata = ai_config.get_model_metadata(
-            conversation_data, model_name
-        )
+        model_metadata = ai_config.get_model_metadata(conversation_data, model_name)
         # Remove messages array from model metadata. Handled separately
         if model_metadata.settings:
             model_metadata.settings.pop("messages", None)
@@ -125,27 +117,19 @@ class OpenAIVisionParser(DefaultOpenAIParser):
                         if input.get("attachments") is None:
                             input["attachments"] = []
                         image_url: str = val["image_url"]["url"]
-                        attachment_kind = (
-                            "base64"
-                            if image_url.startswith("data:")
-                            else "file_uri"
-                        )
+                        attachment_kind = "base64" if image_url.startswith("data:") else "file_uri"
                         attachment_data = AttachmentDataWithStringValue(
                             kind=attachment_kind, value=image_url
                         )
 
                         mime_type = "image/*"
                         if attachment_kind == "base64":
-                            type_match = re.search(
-                                IMAGE_FORMAT_PATTERN, image_url
-                            )
+                            type_match = re.search(IMAGE_FORMAT_PATTERN, image_url)
                             if type_match:
                                 mime_type = f"image/{type_match.group(1)}"
 
                         input["attachments"].append(
-                            Attachment(
-                                data=attachment_data, mime_type=mime_type
-                            )
+                            Attachment(data=attachment_data, mime_type=mime_type)
                         )
 
                 # openai sdk currently only supports images with user messages
@@ -184,9 +168,7 @@ class OpenAIVisionParser(DefaultOpenAIParser):
                 # and the assistant response as the output
 
                 # Pull assistant response
-                assistant_output = build_output_data(
-                    conversation_data["messages"][i]
-                )
+                assistant_output = build_output_data(conversation_data["messages"][i])
                 prompt = Prompt(
                     name=f"{prompt_name}_{len(prompts) + 1}",
                     input="",
@@ -210,9 +192,7 @@ class OpenAIVisionParser(DefaultOpenAIParser):
         if prompts:
             prompts[len(prompts) - 1].name = prompt_name
 
-        event = CallbackEvent(
-            "on_serialize_complete", __name__, {"result": prompts}
-        )
+        event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
         await ai_config.callback_manager.run_callbacks(event)
         return prompts
 
@@ -242,9 +222,7 @@ class OpenAIVisionParser(DefaultOpenAIParser):
         # Build Completion params
         model_settings = self.get_model_settings(prompt, aiconfig)
 
-        completion_params = refine_chat_completion_params(
-            model_settings, aiconfig, prompt
-        )
+        completion_params = refine_chat_completion_params(model_settings, aiconfig, prompt)
 
         # In the case that the messages array weren't saved as part of the model settings, build it here. Messages array is used for conversation history.
         if not completion_params.get("messages"):
@@ -274,9 +252,7 @@ class OpenAIVisionParser(DefaultOpenAIParser):
                     if previous_prompt.name == prompt.name:
                         break
 
-                    if aiconfig.get_model_name(
-                        previous_prompt
-                    ) == aiconfig.get_model_name(prompt):
+                    if aiconfig.get_model_name(previous_prompt) == aiconfig.get_model_name(prompt):
                         # Add prompt and its output to completion data. Constructing this prompt will take into account available parameters.
                         add_prompt_as_message(
                             previous_prompt,
@@ -291,13 +267,11 @@ class OpenAIVisionParser(DefaultOpenAIParser):
                 if not prompt_content:
                     continue
                 if isinstance(prompt_content, str):
-                    completion_params["messages"][i]["content"] = (
-                        resolve_prompt_string(
-                            prompt,
-                            params,
-                            aiconfig,
-                            prompt_content,
-                        )
+                    completion_params["messages"][i]["content"] = resolve_prompt_string(
+                        prompt,
+                        params,
+                        aiconfig,
+                        prompt_content,
                     )
                 else:
                     # If the prompt content is an array, then it's a ChatCompletionContentPartParam object
@@ -311,9 +285,7 @@ class OpenAIVisionParser(DefaultOpenAIParser):
                             )
 
         # Add in the latest prompt
-        add_prompt_as_message(
-            prompt, aiconfig, completion_params["messages"], params
-        )
+        add_prompt_as_message(prompt, aiconfig, completion_params["messages"], params)
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
                 "on_deserialize_complete",
@@ -383,9 +355,7 @@ def add_prompt_as_message(
         content_parts.append(
             {
                 "type": "text",
-                "text": resolve_prompt_string(
-                    prompt, params, aiconfig, prompt.input
-                ),
+                "text": resolve_prompt_string(prompt, params, aiconfig, prompt.input),
             }
         )
     else:
@@ -393,9 +363,7 @@ def add_prompt_as_message(
             content_parts.append(
                 {
                     "type": "text",
-                    "text": resolve_prompt_string(
-                        prompt, params, aiconfig, prompt.input.data
-                    ),
+                    "text": resolve_prompt_string(prompt, params, aiconfig, prompt.input.data),
                 }
             )
         if prompt.input.attachments:

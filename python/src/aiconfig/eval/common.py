@@ -33,9 +33,7 @@ class CustomMetricValue(ABC):
     """
 
 
-T_MetricValue = TypeVar(
-    "T_MetricValue", int, float, str, bool, CustomMetricValue, covariant=True
-)
+T_MetricValue = TypeVar("T_MetricValue", int, float, str, bool, CustomMetricValue, covariant=True)
 
 
 class CompletionTextToSerializedJSON(Protocol):
@@ -55,9 +53,7 @@ class EvaluationFunction(Protocol, Generic[T_Evaluable, T_MetricValue]):
         pass
 
 
-class EvaluationMetricMetadata(
-    core_utils.Record, Generic[T_Evaluable, T_MetricValue]
-):
+class EvaluationMetricMetadata(core_utils.Record, Generic[T_Evaluable, T_MetricValue]):
 
     """A record to tie together metadata about an evaluation metric
     to ensure that numbers are interpreted as intended.

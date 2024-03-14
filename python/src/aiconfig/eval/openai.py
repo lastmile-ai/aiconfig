@@ -65,9 +65,9 @@ def make_fn_completion_text_to_serialized_json(
         openai_chat_completion_params = _make_openai_completion_params(
             output_datum, eval_llm_name, properties, required
         )
-        return openai_chat_completion_create(
-            openai_chat_completion_params
-        ).and_then(extract_json_from_chat_completion)
+        return openai_chat_completion_create(openai_chat_completion_params).and_then(
+            extract_json_from_chat_completion
+        )
 
     out: common.CompletionTextToSerializedJSON = _chat_completion_create
     return out

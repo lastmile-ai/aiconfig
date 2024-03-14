@@ -69,9 +69,7 @@ class EditServerConfig(core_utils.Record):
     env_file_path: Optional[str] = None
 
     @field_validator("server_mode", mode="before")
-    def convert_to_mode(
-        cls, value: Any
-    ) -> ServerMode:  # pylint: disable=no-self-argument
+    def convert_to_mode(cls, value: Any) -> ServerMode:  # pylint: disable=no-self-argument
         if isinstance(value, str):
             try:
                 return ServerMode[value.upper()]
@@ -88,9 +86,7 @@ class StartServerConfig(core_utils.Record):
     env_file_path: Optional[str] = None
 
     @field_validator("server_mode", mode="before")
-    def convert_to_mode(
-        cls, value: Any
-    ) -> ServerMode:  # pylint: disable=no-self-argument
+    def convert_to_mode(cls, value: Any) -> ServerMode:  # pylint: disable=no-self-argument
         if isinstance(value, str):
             try:
                 return ServerMode[value.upper()]
@@ -114,9 +110,7 @@ class AIConfigRC(core_utils.Record):
         extra = "forbid"
 
     @classmethod
-    def from_yaml(
-        cls: Type["AIConfigRC"], yaml: str
-    ) -> Result["AIConfigRC", str]:
+    def from_yaml(cls: Type["AIConfigRC"], yaml: str) -> Result["AIConfigRC", str]:
         try:
             loaded = YAML().load(yaml)
             loaded_dict = dict(loaded)
@@ -194,15 +188,11 @@ def _import_module_from_path(path_to_module: str) -> Result[ModuleType, str]:
     module_name = os.path.basename(resolved_path).replace(".py", "")
 
     try:
-        spec = importlib.util.spec_from_file_location(
-            module_name, resolved_path
-        )
+        spec = importlib.util.spec_from_file_location(module_name, resolved_path)
         if spec is None:
             return Err(f"Could not import module from path: {resolved_path}")
         elif spec.loader is None:
-            return Err(
-                f"Could not import module from path: {resolved_path} (no loader)"
-            )
+            return Err(f"Could not import module from path: {resolved_path} (no loader)")
         else:
             module = importlib.util.module_from_spec(spec)
             sys.modules[module_name] = module
@@ -216,21 +206,15 @@ def _load_register_fn_from_user_module(
     user_module: ModuleType,
 ) -> Result[Callable[[], None], str]:
     if not hasattr(user_module, "register_model_parsers"):
-        return Err(
-            f"User module {user_module} does not have a register_model_parsers function."
-        )
+        return Err(f"User module {user_module} does not have a register_model_parsers function.")
     register_fn = getattr(user_module, "register_model_parsers")
     if not callable(register_fn):
-        return Err(
-            f"User module {user_module} does not have a register_model_parsers function"
-        )
+        return Err(f"User module {user_module} does not have a register_model_parsers function")
     else:
         return Ok(register_fn)
 
 
-def _register_user_model_parsers(
-    user_register_fn: Callable[[], None]
-) -> Result[None, str]:
+def _register_user_model_parsers(user_register_fn: Callable[[], None]) -> Result[None, str]:
     try:
         return Ok(user_register_fn())
     except Exception as e:
@@ -254,25 +238,17 @@ def get_http_response_load_user_parser_module(
     register_result = load_user_parser_module(path_to_module)
     match register_result:
         case Ok(_):
-            msg = (
-                f"Successfully registered model parsers from {path_to_module}"
-            )
+            msg = f"Successfully registered model parsers from {path_to_module}"
             LOGGER.info(msg)
             return HttpResponseWithAIConfig(message=msg, aiconfig=None)
         case Err(e):
-            msg = (
-                f"Failed to register model parsers from {path_to_module}: {e}"
-            )
+            msg = f"Failed to register model parsers from {path_to_module}: {e}"
             LOGGER.error(msg)
-            return HttpResponseWithAIConfig(
-                message=msg, code=400, aiconfig=None
-            )
+            return HttpResponseWithAIConfig(message=msg, code=400, aiconfig=None)
 
 
 def _load_user_parser_module_if_exists(parsers_module_path: str) -> None:
-    res = get_validated_path(parsers_module_path).and_then(
-        load_user_parser_module
-    )
+    res = get_validated_path(parsers_module_path).and_then(load_user_parser_module)
     match res:
         case Ok(_):
             LOGGER.info(f"Loaded parsers module from {parsers_module_path}")
@@ -296,9 +272,7 @@ def init_server_state(
     aiconfigrc_path: str,
 ) -> Result[None, str]:
     LOGGER.info("Initializing server state for 'edit' command")
-    _load_user_parser_module_if_exists(
-        initialization_settings.parsers_module_path
-    )
+    _load_user_parser_module_if_exists(initialization_settings.parsers_module_path)
     state = get_server_state(app)
     state.aiconfigrc_path = aiconfigrc_path
     env_file_path_is_valid, message = validate_env_file_path(initialization_settings.env_file_path)
@@ -321,17 +295,11 @@ def init_server_state(
         match aiconfig_runtime:
             case Ok(aiconfig_runtime_):
                 state.aiconfig = aiconfig_runtime_
-                LOGGER.info(
-                    f"Loaded AIConfig from {edit_config.aiconfig_path}"
-                )
+                LOGGER.info(f"Loaded AIConfig from {edit_config.aiconfig_path}")
                 return Ok(None)
             case Err(e):
-                LOGGER.error(
-                    f"Failed to load AIConfig from {edit_config.aiconfig_path}: {e}"
-                )
-                return Err(
-                    f"Failed to load AIConfig from {edit_config.aiconfig_path}: {e}"
-                )
+                LOGGER.error(f"Failed to load AIConfig from {edit_config.aiconfig_path}: {e}")
+                return Err(f"Failed to load AIConfig from {edit_config.aiconfig_path}: {e}")
     else:
         LOGGER.info(f"Creating new AIConfig at {edit_config.aiconfig_path}")
         aiconfig_runtime = AIConfigRuntime.create()  # type: ignore
@@ -357,9 +325,7 @@ def init_server_state(
             state.aiconfig = aiconfig_runtime
             return Ok(None)
         except Exception as e:
-            LOGGER.error(
-                f"Failed to create new AIConfig at {edit_config.aiconfig_path}: {e}"
-            )
+            LOGGER.error(f"Failed to create new AIConfig at {edit_config.aiconfig_path}: {e}")
             return core_utils.ErrWithTraceback(e)
 
 
@@ -391,9 +357,7 @@ def safe_run_aiconfig_static_method(
 
 
 def make_op_run_method(method_name: MethodName) -> Operation[None]:
-    def _op(
-        aiconfig: AIConfigRuntime, operation_args: OpArgs
-    ) -> Result[None, str]:
+    def _op(aiconfig: AIConfigRuntime, operation_args: OpArgs) -> Result[None, str]:
         LOGGER.info(f"Running method: {method_name}, {operation_args=}")
         return _safe_run_aiconfig_method(aiconfig, method_name, operation_args)
 
@@ -447,12 +411,8 @@ def _validated_op_args_from_request_json(
     signature: dict[str, Type[Any]],
 ) -> Result[OpArgs, str]:
     if signature.keys() != request_json.keys():
-        LOGGER.info(
-            f"Expected keys: {signature.keys()}, got: {request_json.keys()}"
-        )
-        return Err(
-            f"Expected keys: {signature.keys()}, got: {request_json.keys()}"
-        )
+        LOGGER.info(f"Expected keys: {signature.keys()}, got: {request_json.keys()}")
+        return Err(f"Expected keys: {signature.keys()}, got: {request_json.keys()}")
 
     def _resolve(
         key: str, value: core_utils.JSONValue, signature: dict[str, Type[Any]]
@@ -465,8 +425,7 @@ def _validated_op_args_from_request_json(
             return Ok(value)
 
     operation_args_results = {
-        key: _resolve(key, value, signature)
-        for key, value in request_json.items()
+        key: _resolve(key, value, signature) for key, value in request_json.items()
     }
     LOGGER.info(f"{operation_args_results=}")
     res_op_args: Result[OpArgs, str] = cast(
@@ -506,6 +465,7 @@ def run_aiconfig_operation_with_request_json(
                 aiconfig=None,
             ).to_flask_format()
 
+
 def validate_env_file_path(request_env_path: str | None | Any) -> Tuple[bool, str]:
     """
     Validates the given env file path. If its not valid, returns a tuple of (False, str) with a message.
@@ -529,5 +489,5 @@ def validate_env_file_path(request_env_path: str | None | Any) -> Tuple[bool, st
 
     if filename_format_correct is False:
         return False, "Specified env file path is not a .env file"
-    
+
     return True, f".env file path {request_env_path} is valid"

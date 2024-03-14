@@ -19,9 +19,7 @@ LOGGER = logging.getLogger(__name__)
 
 # TODO: figure out a way to do heterogenous list without Any
 # Each test is a (input_datum, Metric) pair
-UserTestSuiteWithInputs = Sequence[
-    Tuple[str | dict[str, str], Metric[str, Any]]
-]
+UserTestSuiteWithInputs = Sequence[Tuple[str | dict[str, str], Metric[str, Any]]]
 
 # Each test is a (output_datum, Metric) pair
 UserTestSuiteOutputsOnly = Sequence[Tuple[str, Metric[str, Any]]]
@@ -73,9 +71,7 @@ async def run_test_suite_outputs_only(
     settings: TestSuiteOutputsOnlySettings = TestSuiteOutputsOnlySettings(),
 ) -> pd.DataFrame:
     res = await run_test_suite_helper(
-        TestSuiteOutputsOnlySpec(
-            test_suite=test_suite, general_settings=settings.general_settings
-        )
+        TestSuiteOutputsOnlySpec(test_suite=test_suite, general_settings=settings.general_settings)
     )
     return res.map(text_eval_res_to_df).unwrap_or_raise(ValueError)
 
@@ -97,9 +93,7 @@ class SampleEvaluationResult(
 ):
     input_datum: common.T_InputDatum | None
     output_datum: common.T_OutputDatum
-    metric_value: common.SampleMetricValue[
-        common.T_OutputDatum, common.T_MetricValue
-    ]
+    metric_value: common.SampleMetricValue[common.T_OutputDatum, common.T_MetricValue]
 
 
 @dataclass(frozen=True)
@@ -132,9 +126,7 @@ async def _evaluate_for_sample(
         common.T_InputDatum, common.T_OutputDatum, common.T_MetricValue
     ],
     timeout_s: int,
-) -> SampleEvaluationResult[
-    common.T_InputDatum, common.T_OutputDatum, common.T_MetricValue
-]:
+) -> SampleEvaluationResult[common.T_InputDatum, common.T_OutputDatum, common.T_MetricValue]:
     sample, metric = (
         eval_params.output_sample,
         eval_params.metric,
@@ -143,9 +135,7 @@ async def _evaluate_for_sample(
     async def _calculate() -> common.T_MetricValue:
         return await metric.evaluation_fn(sample)
 
-    def _ok_with_log(
-        res_: Result[common.T_MetricValue, str]
-    ) -> common.T_MetricValue | None:
+    def _ok_with_log(res_: Result[common.T_MetricValue, str]) -> common.T_MetricValue | None:
         match res_:
             case Ok(res):
                 return res
@@ -167,13 +157,9 @@ async def _evaluate_for_sample(
 
 
 async def evaluate(
-    evaluation_params_list: DatasetEvaluationParams[
-        common.T_InputDatum, common.T_OutputDatum
-    ],
+    evaluation_params_list: DatasetEvaluationParams[common.T_InputDatum, common.T_OutputDatum],
     eval_fn_timeout_s: int,
-) -> Result[
-    DatasetEvaluationResult[common.T_InputDatum, common.T_OutputDatum], str
-]:
+) -> Result[DatasetEvaluationResult[common.T_InputDatum, common.T_OutputDatum], str]:
     return Ok(
         await asyncio.gather(
             *map(
@@ -200,9 +186,7 @@ def text_eval_res_to_df(
                     case str(input_text):
                         return input_text
                     case frozendict():
-                        return json.dumps(
-                            input_text_datum.value, sort_keys=True
-                        )
+                        return json.dumps(input_text_datum.value, sort_keys=True)
 
         return [
             SampleEvaluationResult(
@@ -267,9 +251,7 @@ async def user_test_suite_with_inputs_to_eval_params_list(
     # Group by input so that we only run each input through the AIConfig once.
     # This is sort of an optimization because the user can give the same input
     # multiple times (with different metrics).
-    input_to_metrics_mapping: dict[
-        TextBasedInputDatum, MetricList[TextOutput]
-    ] = {}
+    input_to_metrics_mapping: dict[TextBasedInputDatum, MetricList[TextOutput]] = {}
     for input_datum, metric in test_suite_internal_types:
         if input_datum not in input_to_metrics_mapping:
             input_to_metrics_mapping[input_datum] = []
@@ -280,11 +262,9 @@ async def user_test_suite_with_inputs_to_eval_params_list(
     async def _run(
         input_datum: TextBasedInputDatum,
     ) -> Result[TextOutput, str]:
-        return (
-            await run_aiconfig_on_text_based_input(
-                aiconfig, prompt_name, input_datum
-            )
-        ).map(TextOutput)
+        return (await run_aiconfig_on_text_based_input(aiconfig, prompt_name, input_datum)).map(
+            TextOutput
+        )
 
     # TODO: fix the race condition and then use gather
     # https://github.com/lastmile-ai/aiconfig/issues/434
@@ -384,25 +364,17 @@ async def run_test_suite_helper(
                     test_suite, prompt_name, aiconfig
                 )
             case TestSuiteOutputsOnlySpec(test_suite=test_suite):
-                return Ok(
-                    user_test_suite_outputs_only_to_eval_params_list(
-                        test_suite
-                    )
-                )
+                return Ok(user_test_suite_outputs_only_to_eval_params_list(test_suite))
 
     eval_params_list = await _get_eval_params_list(test_suite_spec)
 
     async def _evaluate_with_timeout(
-        eval_params_list: DatasetEvaluationParams[
-            TextBasedInputDatum, TextOutput
-        ],
+        eval_params_list: DatasetEvaluationParams[TextBasedInputDatum, TextOutput],
     ) -> Result[DatasetEvaluationResult[TextBasedInputDatum, TextOutput], str]:
         return await evaluate(
             eval_params_list,
             eval_fn_timeout_s=test_suite_spec.general_settings.eval_fn_timeout_s,
         )
 
-    res_evaluated = await eval_params_list.and_then_async(
-        _evaluate_with_timeout
-    )
+    res_evaluated = await eval_params_list.and_then_async(_evaluate_with_timeout)
     return res_evaluated

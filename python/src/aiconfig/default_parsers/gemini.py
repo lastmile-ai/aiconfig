@@ -6,13 +6,7 @@ import google.generativeai as genai
 from aiconfig.callback import CallbackEvent
 from aiconfig.default_parsers.parameterized_model_parser import ParameterizedModelParser
 from aiconfig.model_parser import InferenceOptions
-from aiconfig.schema import (
-    ExecuteResult,
-    Output,
-    OutputDataWithValue,
-    Prompt,
-    PromptInput
-)
+from aiconfig.schema import ExecuteResult, Output, OutputDataWithValue, Prompt, PromptInput
 from aiconfig.util.config_utils import get_api_key_from_environment
 from aiconfig.util.params import resolve_prompt, resolve_prompt_string
 from google.protobuf.json_format import MessageToDict
@@ -66,7 +60,9 @@ def construct_regular_outputs(response: "AsyncGenerateContentResponse") -> list[
     return output_list
 
 
-async def construct_stream_outputs(response: "AsyncGenerateContentResponse", options: InferenceOptions) -> list[Output]:
+async def construct_stream_outputs(
+    response: "AsyncGenerateContentResponse", options: InferenceOptions
+) -> list[Output]:
     """
     Construct Outputs while also streaming the response with stream callback
 
@@ -195,7 +191,11 @@ class GeminiModelParser(ParameterizedModelParser):
         prompts = []
 
         contents_is_str = isinstance(contents, str)
-        contents_is_list_of_strings = all(isinstance(item, str) for item in contents) if isinstance(contents, list) else False
+        contents_is_list_of_strings = (
+            all(isinstance(item, str) for item in contents)
+            if isinstance(contents, list)
+            else False
+        )
 
         # Role Dict looks like this:
         #     {'role':'user',
@@ -208,10 +208,18 @@ class GeminiModelParser(ParameterizedModelParser):
         )
 
         if contents is None:
-            raise ValueError("No contents found in data. Gemini api request requires a contents field")
+            raise ValueError(
+                "No contents found in data. Gemini api request requires a contents field"
+            )
         if contents_is_str or contents_is_list_of_strings or contents_is_role_dict:
             # Just one string. Assume it's a single-turn prompt
-            prompt = Prompt(**{"name": prompt_name, "input": {"contents": contents}, "metadata": {"model": model_metadata}})
+            prompt = Prompt(
+                **{
+                    "name": prompt_name,
+                    "input": {"contents": contents},
+                    "metadata": {"model": model_metadata},
+                }
+            )
             prompts.append(prompt)
         elif contents_is_multi_turn:
             # Assume it's a multi-turn prompt. Each item in the list is a dict with role and parts
@@ -247,14 +255,18 @@ class GeminiModelParser(ParameterizedModelParser):
                 prompts.append(prompt)
                 i += 1
         else:
-            raise ValueError("Unable to parse Data into prompts. Contents data is either invalid or contains unsupported objects like protobufs.")
+            raise ValueError(
+                "Unable to parse Data into prompts. Contents data is either invalid or contains unsupported objects like protobufs."
+            )
 
         event = CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
         await ai_config.callback_manager.run_callbacks(event)
 
         return prompts
 
-    async def deserialize(self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = None) -> Dict:
+    async def deserialize(
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Optional[Dict] = None
+    ) -> Dict:
         """
         Defines how to parse a prompt in the .aiconfig for a particular model
         and constructs the completion params for that model.
@@ -265,7 +277,9 @@ class GeminiModelParser(ParameterizedModelParser):
         Returns:
             dict: Model-specific completion parameters.
         """
-        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params}))
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent("on_deserialize_start", __name__, {"prompt": prompt, "params": params})
+        )
 
         # Build Completion data
         model_settings = self.get_model_settings(prompt, aiconfig)
@@ -297,9 +311,13 @@ class GeminiModelParser(ParameterizedModelParser):
                     "Unable to deserialize input. Prompt input type is not a string, Gemini Model Parser expects prompt input to contain a 'contents' field as expected by Gemini API"
                 )
 
-            completion_data["contents"] = parameterize_supported_gemini_input_data(prompt_input.contents, prompt, aiconfig, params)
+            completion_data["contents"] = parameterize_supported_gemini_input_data(
+                prompt_input.contents, prompt, aiconfig, params
+            )
 
-        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data}))
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent("on_deserialize_complete", __name__, {"output": completion_data})
+        )
         return completion_data
 
     async def run_inference(
@@ -356,7 +374,9 @@ class GeminiModelParser(ParameterizedModelParser):
             outputs = construct_regular_outputs(response)
 
         prompt.outputs = outputs
-        await aiconfig.callback_manager.run_callbacks(CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs}))
+        await aiconfig.callback_manager.run_callbacks(
+            CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs})
+        )
         return prompt.outputs
 
     def get_output_text(
@@ -389,14 +409,17 @@ https://github.com/lastmile-ai/aiconfig/blob/v1.1.8/extensions/Gemini/python/src
 """
         raise ValueError(error_message)
 
-    def _construct_chat_history(self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Dict) -> List:
+    def _construct_chat_history(
+        self, prompt: Prompt, aiconfig: "AIConfigRuntime", params: Dict
+    ) -> List:
         """
         Constructs the chat history for the model
         """
         messages = []
         # Default to always use chat context
         remember_chat_context = not hasattr(prompt.metadata, "remember_chat_context") or (
-            hasattr(prompt.metadata, "remember_chat_context") and prompt.metadata.remember_chat_context != False
+            hasattr(prompt.metadata, "remember_chat_context")
+            and prompt.metadata.remember_chat_context != False
         )
         if remember_chat_context:
             # handle chat history. check previous prompts for the same model. if same model, add prompt and its output to completion data if it has a completed output
@@ -405,13 +428,19 @@ https://github.com/lastmile-ai/aiconfig/blob/v1.1.8/extensions/Gemini/python/src
                 if previous_prompt.name == prompt.name:
                     break
 
-                previous_prompt_is_same_model = aiconfig.get_model_name(previous_prompt) == aiconfig.get_model_name(prompt)
+                previous_prompt_is_same_model = aiconfig.get_model_name(
+                    previous_prompt
+                ) == aiconfig.get_model_name(prompt)
                 if previous_prompt_is_same_model:
                     previous_prompt_template = resolve_prompt(previous_prompt, params, aiconfig)
                     previous_prompt_output = aiconfig.get_latest_output(previous_prompt)
-                    previous_prompt_output_text = self.get_output_text(previous_prompt, aiconfig, previous_prompt_output)
+                    previous_prompt_output_text = self.get_output_text(
+                        previous_prompt, aiconfig, previous_prompt_output
+                    )
 
-                    messages.append({"role": "user", "parts": [{"text": previous_prompt_template}]})
+                    messages.append(
+                        {"role": "user", "parts": [{"text": previous_prompt_template}]}
+                    )
                     messages.append(
                         {
                             "role": "model",
@@ -444,9 +473,13 @@ https://github.com/lastmile-ai/aiconfig/blob/v1.1.8/extensions/Gemini/python/src
                     elif isinstance(parts, list):
                         return " ".join(parts)
                     else:
-                        raise Exception(f"Cannot get prompt template string from prompt input: {prompt.input}")
+                        raise Exception(
+                            f"Cannot get prompt template string from prompt input: {prompt.input}"
+                        )
                 else:
-                    raise Exception(f"Cannot get prompt template string from prompt input: {prompt.input}")
+                    raise Exception(
+                        f"Cannot get prompt template string from prompt input: {prompt.input}"
+                    )
 
         else:
             raise Exception(f"Cannot get prompt template string from prompt input: {prompt.input}")
@@ -469,7 +502,9 @@ def refine_chat_completion_params(model_settings):
     return completion_data
 
 
-def parameterize_supported_gemini_input_data(part: Any, prompt: Prompt, aiconfig: "AIConfigRuntime", input_params: dict[str, Any]):
+def parameterize_supported_gemini_input_data(
+    part: Any, prompt: Prompt, aiconfig: "AIConfigRuntime", input_params: dict[str, Any]
+):
     """
     Parameterizes the input for the Gemini API based on the type of the input part.
     This function specifically handles string-based types in the context of Gemini API.
@@ -490,21 +525,32 @@ def parameterize_supported_gemini_input_data(part: Any, prompt: Prompt, aiconfig
         return resolve_prompt_string(prompt, input_params, aiconfig, part)
     elif isinstance(part, list):
         # This is expecting a list of strings. If its anything else, this will probably fail.
-        return [parameterize_supported_gemini_input_data(item, prompt, aiconfig, input_params) for item in part]
+        return [
+            parameterize_supported_gemini_input_data(item, prompt, aiconfig, input_params)
+            for item in part
+        ]
     elif isinstance(part, dict):
         # Expect "parts" key to be present in role dict
         if "parts" in part:
             part = copy.deepcopy(part)
-            part["parts"] = parameterize_supported_gemini_input_data(part["parts"], prompt, aiconfig, input_params)
+            part["parts"] = parameterize_supported_gemini_input_data(
+                part["parts"], prompt, aiconfig, input_params
+            )
             return part
         else:
-            raise ValueError(f"Input Dictionary to Gemini Model Parser must contain a 'parts' key. Input provided: {part}")
+            raise ValueError(
+                f"Input Dictionary to Gemini Model Parser must contain a 'parts' key. Input provided: {part}"
+            )
     else:
-        raise ValueError(f"Unable to parameterize part. Unsupported type: {type(part)} with value: {part}")
+        raise ValueError(
+            f"Unable to parameterize part. Unsupported type: {type(part)} with value: {part}"
+        )
 
 
 def contains_prompt_template(prompt: Prompt):
     """
     Check if a prompt's input is a valid string.
     """
-    return isinstance(prompt.input, str) or (hasattr(prompt.input, "data") and isinstance(prompt.input.data, str))
+    return isinstance(prompt.input, str) or (
+        hasattr(prompt.input, "data") and isinstance(prompt.input.data, str)
+    )

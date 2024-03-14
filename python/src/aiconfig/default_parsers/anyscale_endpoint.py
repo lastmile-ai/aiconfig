@@ -67,9 +67,7 @@ class AnyscaleEndpoint(OpenAIInference):
         else:
             api_key = os.environ[anyscale_api_key_name]
 
-        client = OpenAI(
-            api_key=api_key, base_url="https://api.endpoints.anyscale.com/v1"
-        )
+        client = OpenAI(api_key=api_key, base_url="https://api.endpoints.anyscale.com/v1")
 
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
         # if stream enabled in runtime options and config, then stream. Otherwise don't stream.
@@ -90,17 +88,13 @@ class AnyscaleEndpoint(OpenAIInference):
             response = response.model_dump(exclude_none=True)
 
             response_without_choices = {
-                key: copy.deepcopy(value)
-                for key, value in response.items()
-                if key != "choices"
+                key: copy.deepcopy(value) for key, value in response.items() if key != "choices"
             }
             for i, choice in enumerate(response.get("choices")):
                 output_message = choice["message"]
                 output_data = build_output_data(output_message)
 
-                response_without_choices.update(
-                    {"finish_reason": choice.get("finish_reason")}
-                )
+                response_without_choices.update({"finish_reason": choice.get("finish_reason")})
                 metadata = {
                     "raw_response": output_message,
                     **response_without_choices,
@@ -125,9 +119,7 @@ class AnyscaleEndpoint(OpenAIInference):
                 # OpenAI>1.0.0 uses pydantic models. Chunk is of type ChatCompletionChunk; type is not directly importable from openai Library, will require some diffing
                 chunk = chunk.model_dump(exclude_none=True)
                 chunk_without_choices = {
-                    key: copy.deepcopy(value)
-                    for key, value in chunk.items()
-                    if key != "choices"
+                    key: copy.deepcopy(value) for key, value in chunk.items() if key != "choices"
                 }
                 # streaming only returns one chunk, one choice at a time (before 1.0.0). The order in which the choices are returned is not guaranteed.
                 messages = multi_choice_message_reducer(messages, chunk)
@@ -138,9 +130,7 @@ class AnyscaleEndpoint(OpenAIInference):
                     delta = choice.get("delta")
 
                     if options and options.stream_callback:
-                        options.stream_callback(
-                            delta, accumulated_message_for_choice, index
-                        )
+                        options.stream_callback(delta, accumulated_message_for_choice, index)
 
                     output = ExecuteResult(
                         **{
@@ -169,9 +159,7 @@ class AnyscaleEndpoint(OpenAIInference):
         prompt.outputs = outputs
 
         await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent(
-                "on_run_complete", __name__, {"result": prompt.outputs}
-            )
+            CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs})
         )
         return prompt.outputs
 

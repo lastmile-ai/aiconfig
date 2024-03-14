@@ -17,9 +17,7 @@ from aiconfig.default_parsers.openai import multi_choice_message_reducer
 from aiconfig.schema import ExecuteResult, Output, Prompt
 
 
-def validate_and_add_prompts_to_config(
-    prompts: List[Prompt], aiconfig
-) -> None:
+def validate_and_add_prompts_to_config(prompts: List[Prompt], aiconfig) -> None:
     """
     Validates and adds new prompts to the AI configuration, ensuring no duplicates and updating outputs if necessary.
 
@@ -61,14 +59,10 @@ def extract_outputs_from_response(response) -> List[Output]:
     response = response.model_dump(exclude_none=True)
 
     response_without_choices = {
-        key: copy.deepcopy(value)
-        for key, value in response.items()
-        if key != "choices"
+        key: copy.deepcopy(value) for key, value in response.items() if key != "choices"
     }
     for i, choice in enumerate(response.get("choices")):
-        response_without_choices.update(
-            {"finish_reason": choice.get("finish_reason")}
-        )
+        response_without_choices.update({"finish_reason": choice.get("finish_reason")})
         output = ExecuteResult(
             **{
                 "output_type": "execute_result",
@@ -94,9 +88,7 @@ def async_run_serialize_helper(
     serialized_prompts = None
 
     async def run_and_await_serialize():
-        result = await aiconfig.serialize(
-            request_kwargs.get("model"), request_kwargs, "prompt"
-        )
+        result = await aiconfig.serialize(request_kwargs.get("model"), request_kwargs, "prompt")
         return result
 
     # serialize prompts from ChatCompletion kwargs
@@ -147,17 +139,13 @@ def create_and_save_to_config(
     def _create_chat_completion_with_config_saving(*args, **kwargs) -> Any:  # type: ignore
         response = openai_api.chat.completions.create(*args, **kwargs)
 
-        serialized_prompts = async_run_serialize_helper(
-            output_aiconfig, kwargs
-        )
+        serialized_prompts = async_run_serialize_helper(output_aiconfig, kwargs)
 
         # serialize output from response
         outputs = []
 
         # Check if response is a stream
-        stream = kwargs.get("stream", False) is True and isinstance(
-            response, openai.Stream
-        )
+        stream = kwargs.get("stream", False) is True and isinstance(response, openai.Stream)
 
         # Convert Response to output for last prompt
         if not stream:
@@ -166,9 +154,7 @@ def create_and_save_to_config(
             # Add outputs to last prompt
             serialized_prompts[-1].outputs = outputs
 
-            validate_and_add_prompts_to_config(
-                serialized_prompts, output_aiconfig
-            )
+            validate_and_add_prompts_to_config(serialized_prompts, output_aiconfig)
 
             # Save config to file
             output_aiconfig.save(output_config_file_path, include_outputs=True)
@@ -186,41 +172,28 @@ def create_and_save_to_config(
                     chunk_dict = chunk.model_dump(exclude_none=True)  # type: ignore [fixme]
 
                     # streaming only returns one chunk, one choice at a time. The order in which the choices are returned is not guaranteed.
-                    messages = multi_choice_message_reducer(
-                        messages, chunk_dict
-                    )
+                    messages = multi_choice_message_reducer(messages, chunk_dict)
 
                     for choice in chunk_dict["choices"]:
                         index = choice.get("index")
-                        accumulated_message_for_choice = messages.get(
-                            index, {}
-                        )
+                        accumulated_message_for_choice = messages.get(index, {})
                         output = ExecuteResult(
                             output_type="execute_result",
                             data=copy.deepcopy(accumulated_message_for_choice),
                             execution_count=index,
-                            metadata={
-                                "finish_reason": choice.get("finish_reason")
-                            },
+                            metadata={"finish_reason": choice.get("finish_reason")},
                         )
                         stream_outputs[index] = output
                     yield chunk
-                stream_outputs = [
-                    stream_outputs[i]
-                    for i in sorted(list(stream_outputs.keys()))
-                ]
+                stream_outputs = [stream_outputs[i] for i in sorted(list(stream_outputs.keys()))]
 
                 # Add outputs to last prompt
                 serialized_prompts[-1].outputs = stream_outputs
 
-                validate_and_add_prompts_to_config(
-                    serialized_prompts, output_aiconfig
-                )
+                validate_and_add_prompts_to_config(serialized_prompts, output_aiconfig)
 
                 # Save config to file
-                output_aiconfig.save(
-                    output_config_file_path, include_outputs=True
-                )
+                output_aiconfig.save(output_config_file_path, include_outputs=True)
 
             return generate_streamed_response()
 
@@ -255,8 +228,6 @@ def get_completion_create_wrapped_openai_client(
         openai_api=api,
         aiconfig_settings=aiconfig_settings,
     )
-    client_mocked = core_utils.make_wrap_object(
-        api, "chat.completions.create", wrapped
-    )
+    client_mocked = core_utils.make_wrap_object(api, "chat.completions.create", wrapped)
 
     return cast(openai.OpenAI, client_mocked)

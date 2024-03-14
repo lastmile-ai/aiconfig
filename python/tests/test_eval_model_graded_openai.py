@@ -116,7 +116,4 @@ async def test_bad_structured_eval_metric():
             openai_chat_completion_create=_mock_create,
         )
 
-    assert (
-        "The following field_descriptions keys are not in the schema"
-        in str(exc)
-    )
+    assert "The following field_descriptions keys are not in the schema" in str(exc)

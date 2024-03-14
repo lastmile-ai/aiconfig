@@ -48,9 +48,7 @@ async def main():
 
 
 def _load_settings(settings_path: str) -> Result[Settings, str]:
-    return core_utils.pydantic_model_validate_from_json_file_path(
-        settings_path, Settings
-    )
+    return core_utils.pydantic_model_validate_from_json_file_path(settings_path, Settings)
 
 
 if __name__ == "__main__":

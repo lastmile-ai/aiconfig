@@ -32,9 +32,7 @@ def get_parameters_in_template(template) -> dict:
     re_pattern = r"{{[{]?(.*?)[}]?}}"
 
     # Find all Handlebars tags in the template
-    tags = [
-        match.group(1).strip() for match in re.finditer(re_pattern, template)
-    ]
+    tags = [match.group(1).strip() for match in re.finditer(re_pattern, template)]
 
     # Initialize a dictionary to store parameters
     root = defaultdict(lambda: defaultdict(bool))
@@ -187,9 +185,7 @@ def get_dependency_graph(
             return
         visited.add(current_prompt_name)
 
-        prompt_template = prompt_dict[
-            current_prompt_name
-        ].get_raw_prompt_from_config()
+        prompt_template = prompt_dict[current_prompt_name].get_raw_prompt_from_config()
         prompt_dependencies = find_dependencies_in_prompt(
             prompt_template, current_prompt_name, all_prompts
         )
@@ -219,9 +215,7 @@ def resolve_parameters(params, prompt: Prompt, ai_config: "AIConfig"):
     return resolved_prompt
 
 
-def get_prompt_template(
-    prompt: Prompt, aiconfig: "AIConfigRuntime"
-) -> str | None:
+def get_prompt_template(prompt: Prompt, aiconfig: "AIConfigRuntime") -> str | None:
     """
     Returns the template for a prompt.
 
@@ -232,9 +226,7 @@ def get_prompt_template(
     Returns:
         str: Returns the template for a prompt.
     """
-    model_parser = ModelParserRegistry.get_model_parser_for_prompt(
-        prompt, aiconfig
-    )
+    model_parser = ModelParserRegistry.get_model_parser_for_prompt(prompt, aiconfig)
     # Circular type reference
     from ..default_parsers.parameterized_model_parser import (
         ParameterizedModelParser,
@@ -264,7 +256,7 @@ def collect_prompt_references(
 
         # Note: not all model inputs are parameterizable. This can be None.
         prompt_input = get_prompt_template(previous_prompt, ai_config)
-        
+
         prompt_output = (
             ai_config.get_output_text(
                 previous_prompt, ai_config.get_latest_output(previous_prompt)
@@ -289,9 +281,7 @@ def resolve_prompt(
     """
     raw_prompt = get_prompt_template(current_prompt, ai_config)
 
-    return resolve_prompt_string(
-        current_prompt, input_params, ai_config, raw_prompt
-    )
+    return resolve_prompt_string(current_prompt, input_params, ai_config, raw_prompt)
 
 
 def resolve_system_prompt(
@@ -303,9 +293,7 @@ def resolve_system_prompt(
     """
     Parameterizes a system prompt using provided prompt and parameters, references to other prompts, and parameters stored in config..
     """
-    return resolve_prompt_string(
-        current_prompt, input_params, ai_config, system_prompt
-    )
+    return resolve_prompt_string(current_prompt, input_params, ai_config, system_prompt)
 
 
 def resolve_prompt_string(

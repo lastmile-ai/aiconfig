@@ -24,9 +24,7 @@ class TestModelParserRegistry:
     @classmethod
     def setup_class(cls):
         # Store the original value of static_variable
-        cls.original_static_variable = copy.deepcopy(
-            ModelParserRegistry._parsers
-        )
+        cls.original_static_variable = copy.deepcopy(ModelParserRegistry._parsers)
 
     @classmethod
     def teardown_class(cls):
@@ -35,9 +33,7 @@ class TestModelParserRegistry:
 
     def test_register_multiple_ids_to_one_parser(self):
         mock_model_parser = MockModelParser()
-        ModelParserRegistry.register_model_parser(
-            mock_model_parser, ["id1", "id2"]
-        )
+        ModelParserRegistry.register_model_parser(mock_model_parser, ["id1", "id2"])
 
         assert ModelParserRegistry.get_model_parser("id1") == mock_model_parser
         assert ModelParserRegistry.get_model_parser("id2") == mock_model_parser
@@ -46,10 +42,7 @@ class TestModelParserRegistry:
         mock_model_parser = MockModelParser()
         ModelParserRegistry.register_model_parser(mock_model_parser)
 
-        assert (
-            ModelParserRegistry.get_model_parser(mock_model_parser.id())
-            == mock_model_parser
-        )
+        assert ModelParserRegistry.get_model_parser(mock_model_parser.id()) == mock_model_parser
 
     def test_register_multiple_model_parsers_with_different_ids(self):
         # Create model parsers
@@ -57,29 +50,19 @@ class TestModelParserRegistry:
         model_parser_2 = MockModelParser()
 
         # Register the model parsers with different IDs
-        ModelParserRegistry.register_model_parser(
-            model_parser_1, ids=["model-4"]
-        )
-        ModelParserRegistry.register_model_parser(
-            model_parser_2, ids=["model-5"]
-        )
+        ModelParserRegistry.register_model_parser(model_parser_1, ids=["model-4"])
+        ModelParserRegistry.register_model_parser(model_parser_2, ids=["model-5"])
 
         # Assert that each model parser is registered under its respective ID
-        assert (
-            ModelParserRegistry.get_model_parser("model-4") == model_parser_1
-        )
-        assert (
-            ModelParserRegistry.get_model_parser("model-5") == model_parser_2
-        )
+        assert ModelParserRegistry.get_model_parser("model-4") == model_parser_1
+        assert ModelParserRegistry.get_model_parser("model-5") == model_parser_2
 
     def test_retrieve_model_parser(self):
         # Create a model parser
         model_parser = MockModelParser()
 
         # Register the model parser
-        ModelParserRegistry.register_model_parser(
-            model_parser, ids=["model-6"]
-        )
+        ModelParserRegistry.register_model_parser(model_parser, ids=["model-6"])
 
         # Retrieve the model parser using its ID
         retrieved_parser = ModelParserRegistry.get_model_parser("model-6")
@@ -92,16 +75,12 @@ class TestModelParserRegistry:
         with pytest.raises(KeyError):
             ModelParserRegistry.get_model_parser("nonexistent-model")
 
-    def test_retrieve_model_parser_for_prompt(
-        self, ai_config_runtime: AIConfigRuntime
-    ):
+    def test_retrieve_model_parser_for_prompt(self, ai_config_runtime: AIConfigRuntime):
         # Create a model parser
         model_parser = MockModelParser()
 
         # Register the model parser with a specific model name
-        ModelParserRegistry.register_model_parser(
-            model_parser, ids=["model-7"]
-        )
+        ModelParserRegistry.register_model_parser(model_parser, ids=["model-7"])
 
         # Create a Prompt object with the registered model name
         prompt = Prompt(
@@ -136,18 +115,14 @@ class TestModelParserRegistry:
 
         # Attempt to retrieve a model parser for the Prompt
         with pytest.raises(KeyError):
-            ModelParserRegistry.get_model_parser_for_prompt(
-                prompt, ai_config_runtime
-            ).id()
+            ModelParserRegistry.get_model_parser_for_prompt(prompt, ai_config_runtime).id()
 
     def test_remove_model_parser(self):
         # Create a model parser
         model_parser = MockModelParser()
 
         # Register the model parser
-        ModelParserRegistry.register_model_parser(
-            model_parser, ids=["model-8"]
-        )
+        ModelParserRegistry.register_model_parser(model_parser, ids=["model-8"])
         assert ModelParserRegistry.get_model_parser("model-8") == model_parser
 
         # Remove the registered model parser
@@ -163,12 +138,8 @@ class TestModelParserRegistry:
         model_parser_2 = MockModelParser()
 
         # Register the model parsers
-        ModelParserRegistry.register_model_parser(
-            model_parser_1, ids=["model-9"]
-        )
-        ModelParserRegistry.register_model_parser(
-            model_parser_2, ids=["model-10"]
-        )
+        ModelParserRegistry.register_model_parser(model_parser_1, ids=["model-9"])
+        ModelParserRegistry.register_model_parser(model_parser_2, ids=["model-10"])
 
         # Clear the registry
         ModelParserRegistry.clear_registry()

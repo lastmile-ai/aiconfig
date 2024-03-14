@@ -77,17 +77,13 @@ class ClaudeBedrockModelParser(ParameterizedModelParser):
         prompt = Prompt(
             name=prompt_name,
             input=prompt_input,
-            metadata=PromptMetadata(
-                model=model_metadata, parameters=parameters, **kwargs
-            ),
+            metadata=PromptMetadata(model=model_metadata, parameters=parameters, **kwargs),
         )
 
         prompts.append(prompt)
 
         await ai_config.callback_manager.run_callbacks(
-            CallbackEvent(
-                "on_serialize_complete", __name__, {"result": prompts}
-            )
+            CallbackEvent("on_serialize_complete", __name__, {"result": prompts})
         )
 
         return prompts
@@ -118,17 +114,13 @@ class ClaudeBedrockModelParser(ParameterizedModelParser):
         # Build Completion params
         model_settings = self.get_model_settings(prompt, aiconfig)
 
-        completion_data = refine_chat_completion_params(
-            model_settings, aiconfig, prompt
-        )
+        completion_data = refine_chat_completion_params(model_settings, aiconfig, prompt)
 
         resolved_prompt = resolve_prompt(prompt, params, aiconfig)
 
         # Claude is trained using RLHF, need to add the human prompt to the beginning of the prompt
         # See https://docs.anthropic.com/claude/docs/introduction-to-prompt-design#human--assistant-formatting
-        completion_data[
-            "prompt"
-        ] = f"{HUMAN_PROMPT} {resolved_prompt}{AI_PROMPT}"
+        completion_data["prompt"] = f"{HUMAN_PROMPT} {resolved_prompt}{AI_PROMPT}"
 
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(
@@ -187,9 +179,7 @@ class ClaudeBedrockModelParser(ParameterizedModelParser):
         prompt.outputs = [output]
 
         await aiconfig.callback_manager.run_callbacks(
-            CallbackEvent(
-                "on_run_complete", __name__, {"result": prompt.outputs}
-            )
+            CallbackEvent("on_run_complete", __name__, {"result": prompt.outputs})
         )
         return prompt.outputs
 
@@ -285,9 +275,7 @@ def construct_stream_output(
 
         accumulated_message += new_text
 
-        if options is not None and isinstance(
-            options.stream_callback, Callable
-        ):
+        if options is not None and isinstance(options.stream_callback, Callable):
             options.stream_callback(new_text, accumulated_message, index)
 
     output = ExecuteResult(

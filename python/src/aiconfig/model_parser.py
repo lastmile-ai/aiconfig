@@ -146,9 +146,7 @@ class ModelParser(ABC):
             str: The output text from the model inference response.
         """
 
-    def get_model_settings(
-        self, prompt: Prompt, aiconfig: "AIConfigRuntime"
-    ) -> Dict[str, Any]:
+    def get_model_settings(self, prompt: Prompt, aiconfig: "AIConfigRuntime") -> Dict[str, Any]:
         """
         Extracts the AI model's settings from the configuration. If both prompt and config level settings are defined, merge them with prompt settings taking precedence.
 
@@ -201,11 +199,7 @@ def print_stream_callback(data, accumulated_data, index: int):
     """
     Default streamCallback function that prints the output to the console.
     """
-    print(
-        "\ndata: {}\naccumulated_data:{}\nindex:{}\n".format(
-            data, accumulated_data, index
-        )
-    )
+    print("\ndata: {}\naccumulated_data:{}\nindex:{}\n".format(data, accumulated_data, index))
 
 
 def print_stream_delta(data, accumulated_data, index: int):

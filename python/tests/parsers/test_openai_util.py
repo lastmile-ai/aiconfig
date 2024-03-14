@@ -33,9 +33,7 @@ def test_refine_chat_completion_params():
         ),
     )
 
-    aiconfig = AIConfigRuntime.create(
-        name="test_refine_chat_completion_params", prompts=[prompt]
-    )
+    aiconfig = AIConfigRuntime.create(name="test_refine_chat_completion_params", prompts=[prompt])
 
     refined_params = refine_chat_completion_params(
         prompt.metadata.model.settings, aiconfig, prompt
@@ -55,9 +53,7 @@ async def test_get_output_text(set_temporary_env_vars):
         side_effect=mock_openai_chat_completion,
     ):
         config_relative_path = "../aiconfigs/basic_chatgpt_query_config.json"
-        config_absolute_path = get_absolute_file_path_from_relative(
-            __file__, config_relative_path
-        )
+        config_absolute_path = get_absolute_file_path_from_relative(__file__, config_relative_path)
         aiconfig = AIConfigRuntime.load(config_absolute_path)
 
         await aiconfig.run("prompt1", {})
@@ -128,9 +124,7 @@ async def test_serialize():
         ],
     }
 
-    serialized_prompts = await aiconfig.serialize(
-        "gpt-3.5-turbo", completion_params, "prompt"
-    )
+    serialized_prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
     new_prompt = serialized_prompts[0]
 
     expected_prompt = Prompt(
@@ -210,9 +204,7 @@ async def test_serialize():
         ],
     }
 
-    serialized_prompts = await aiconfig.serialize(
-        "gpt-3.5-turbo", completion_params, "prompt"
-    )
+    serialized_prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
     new_prompt = serialized_prompts[0]
     assert new_prompt == Prompt(
         name="prompt",
@@ -312,9 +304,7 @@ async def test_serialize():
         ],
     }
 
-    prompts = await aiconfig.serialize(
-        "gpt-3.5-turbo", completion_params, "prompt"
-    )
+    prompts = await aiconfig.serialize("gpt-3.5-turbo", completion_params, "prompt")
     new_prompt = prompts[1]
 
     expected_prompt = Prompt(
