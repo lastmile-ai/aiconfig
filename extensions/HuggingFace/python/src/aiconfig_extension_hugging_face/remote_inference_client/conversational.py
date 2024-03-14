@@ -50,15 +50,15 @@ def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
     if "model" in completion_data:
         # HF is in the process of revamping their libraries. Default behaviour of Converstaional is broken
         # This temporary fix is reccomended by HF https://github.com/huggingface/huggingface_hub/issues/2023#issuecomment-1935760040
-        completion_data["model"] = (
-            f"https://api-inference.huggingface.co/pipeline/conversational/{completion_data['model']}"
-        )
+        completion_data[
+            "model"
+        ] = f"https://api-inference.huggingface.co/pipeline/conversational/{completion_data['model']}"
     else:
         # manually set default model because, otherwise this will fail. see comment above.
         # see this thread for more info: https://github.com/huggingface/huggingface_hub/issues/2023
-        completion_data["model"] = (
-            "https://api-inference.huggingface.co/pipeline/conversational/facebook/blenderbot-400M-distill"
-        )
+        completion_data[
+            "model"
+        ] = "https://api-inference.huggingface.co/pipeline/conversational/facebook/blenderbot-400M-distill"
 
     return completion_data
 
