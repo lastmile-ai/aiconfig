@@ -126,9 +126,9 @@ class ClaudeBedrockModelParser(ParameterizedModelParser):
 
         # Claude is trained using RLHF, need to add the human prompt to the beginning of the prompt
         # See https://docs.anthropic.com/claude/docs/introduction-to-prompt-design#human--assistant-formatting
-        completion_data[
-            "prompt"
-        ] = f"{HUMAN_PROMPT} {resolved_prompt}{AI_PROMPT}"
+        completion_data["prompt"] = (
+            f"{HUMAN_PROMPT} {resolved_prompt}{AI_PROMPT}"
+        )
 
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(

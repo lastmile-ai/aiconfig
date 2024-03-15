@@ -76,7 +76,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   const createAIConfigJSONCommand = vscode.commands.registerCommand(
-    COMMANDS.CREATE_NEW_JSON,
+    COMMANDS.CREATE_EXAMPLE_JSON,
     async () => {
       return await createNewAIConfig(context, "json");
     }
@@ -84,12 +84,28 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(createAIConfigJSONCommand);
 
   const createAIConfigYAMLCommand = vscode.commands.registerCommand(
-    COMMANDS.CREATE_NEW_YAML,
+    COMMANDS.CREATE_EXAMPLE_YAML,
     async () => {
       return await createNewAIConfig(context, "yaml");
     }
   );
   context.subscriptions.push(createAIConfigYAMLCommand);
+
+  const createEmptyAIConfigYAMLCommand = vscode.commands.registerCommand(
+    COMMANDS.CREATE_EMPTY_YAML,
+    async () => {
+      return await createNewAIConfig(context, "yaml", true);
+    }
+  );
+  context.subscriptions.push(createEmptyAIConfigYAMLCommand);
+
+  const createEmptyAIConfigJSONCommand = vscode.commands.registerCommand(
+    COMMANDS.CREATE_EMPTY_JSON,
+    async () => {
+      return await createNewAIConfig(context, "json", true);
+    }
+  );
+  context.subscriptions.push(createEmptyAIConfigJSONCommand);
 
   const shareModelParserCommand = vscode.commands.registerCommand(
     COMMANDS.SHARE,
@@ -241,22 +257,15 @@ export function deactivate() {
  */
 async function createNewAIConfig(
   context: vscode.ExtensionContext,
-  mode: "json" | "yaml" = "json"
+  mode: "json" | "yaml" = "yaml",
+  empty: boolean = false
 ) {
   // Specify the initial content here
-  const newAIConfigJSON = vscode.Uri.joinPath(
+  const fileContentPath = vscode.Uri.joinPath(
     context.extensionUri,
     "static",
-    "untitled.aiconfig.json"
+    relativeStaticAIConfigFilePath(mode, empty)
   );
-
-  const newAIConfigYAML = vscode.Uri.joinPath(
-    context.extensionUri,
-    "static",
-    "untitled.aiconfig.yaml"
-  );
-
-  const fileContentPath = mode === "json" ? newAIConfigJSON : newAIConfigYAML;
   const fileContentBuffer = await vscode.workspace.fs.readFile(fileContentPath);
   const initialContent = fileContentBuffer.toString();
 
@@ -286,6 +295,25 @@ async function createNewAIConfig(
     vscode.window.showErrorMessage(
       `Error opening new AIConfig file ${newConfigFilePath}`
     );
+  }
+}
+
+function relativeStaticAIConfigFilePath(
+  mode: "json" | "yaml" = "yaml",
+  empty: boolean = true
+): string {
+  if (mode === "json") {
+    if (empty) {
+      return "empty.aiconfig.json";
+    } else {
+      return "example.aiconfig.json";
+    }
+  } else {
+    if (empty) {
+      return "empty.aiconfig.yaml";
+    } else {
+      return "example.aiconfig.yaml";
+    }
   }
 }
 
