@@ -3,9 +3,10 @@ from aiconfig.default_parsers.openai import DefaultOpenAIParser
 
 import os
 
+
 class GroqParser(DefaultOpenAIParser):
     def __init__(self, model: str):
-        super().__init__(model_id = model)
+        super().__init__(model_id=model)
 
         # "Model" field is a custom name for the specific model they want to use
         # when registering the Groq model parser. See the cookbook for reference:
@@ -21,5 +22,5 @@ class GroqParser(DefaultOpenAIParser):
     def initialize_openai_client(self) -> None:
         # Initialize Groq Client
         self.client = Groq(
-          api_key=os.getenv("GROQ_API_KEY"),
+            api_key=os.getenv("GROQ_API_KEY"),
         )

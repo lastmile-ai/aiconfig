@@ -223,9 +223,9 @@ class HuggingFaceImage2TextRemoteInference(ModelParser):
         completion_data = refine_completion_params(model_settings)
 
         # Add image input
-        completion_data[
-            "image"
-        ] = validate_and_retrieve_image_from_attachments(prompt)
+        completion_data["image"] = (
+            validate_and_retrieve_image_from_attachments(prompt)
+        )
 
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(

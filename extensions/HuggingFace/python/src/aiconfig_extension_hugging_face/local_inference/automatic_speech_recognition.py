@@ -346,9 +346,9 @@ def construct_outputs(response: list[Any]) -> list[Output]:
                 "output_type": "execute_result",
                 "data": text_output,
                 "execution_count": i,
-                "metadata": {"result": result}
-                if result.get("chunks", False)
-                else {},  # may contain timestamps and chunks, for now pass result
+                "metadata": (
+                    {"result": result} if result.get("chunks", False) else {}
+                ),  # may contain timestamps and chunks, for now pass result
             }
         )
         outputs.append(output)

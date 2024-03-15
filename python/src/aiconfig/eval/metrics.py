@@ -216,9 +216,9 @@ def make_sentiment_scores_metric(
     best_value: common.T_MetricValue | None = None,
     worst_value: common.T_MetricValue | None = None,
 ) -> Metric[str, common.T_MetricValue]:
-    evaluation_fn: common.EvaluationFunction[
-        str, common.T_MetricValue
-    ] = make_evaluation_fn(get_polarity_scores)
+    evaluation_fn: common.EvaluationFunction[str, common.T_MetricValue] = (
+        make_evaluation_fn(get_polarity_scores)
+    )
     out: Metric[str, common.T_MetricValue] = Metric(
         evaluation_fn=evaluation_fn,
         metric_metadata=common.EvaluationMetricMetadata(
@@ -313,7 +313,9 @@ def _make_openai_structured_llm_metric_helper(
 
     required = required or list(properties.keys())
 
-    openai_eval_llm_chat_completion_create: common.CompletionTextToSerializedJSON = make_fn_completion_text_to_serialized_json(
+    openai_eval_llm_chat_completion_create: (
+        common.CompletionTextToSerializedJSON
+    ) = make_fn_completion_text_to_serialized_json(
         eval_llm_name=eval_llm_name,
         properties=properties,
         required=required,
