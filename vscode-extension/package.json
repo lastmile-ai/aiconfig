@@ -252,6 +252,12 @@
       ],
       "file/newFile": [
         {
+          "command": "vscode-aiconfig.createEmptyAIConfigYAML"
+        },
+        {
+          "command": "vscode-aiconfig.createEmptyAIConfigJSON"
+        },
+        {
           "command": "vscode-aiconfig.createExampleAIConfigJSON"
         },
         {
