@@ -66,6 +66,16 @@
         "category": "AIConfig"
       },
       {
+        "command": "vscode-aiconfig.createEmptyAIConfigYAML",
+        "title": "Create New AIConfig (yaml)",
+        "category": "AIConfig"
+      },
+      {
+        "command": "vscode-aiconfig.createEmptyAIConfigJSON",
+        "title": "Create New AIConfig (json)",
+        "category": "AIConfig"
+      },
+      {
         "command": "vscode-aiconfig.share",
         "title": "Share (get permalink)",
         "category": "AIConfig",
@@ -246,6 +256,12 @@
         },
         {
           "command": "vscode-aiconfig.createExampleAIConfigYAML"
+        },
+        {
+          "command": "vscode-aiconfig.createEmptyAIConfigYAML"
+        },
+        {
+          "command": "vscode-aiconfig.createEmptyAIConfigYAML"
         }
       ],
       "webview/context": [
