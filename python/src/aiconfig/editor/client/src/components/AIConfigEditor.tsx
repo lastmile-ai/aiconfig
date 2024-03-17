@@ -814,7 +814,7 @@ function AIConfigEditorBase({
 
   const deleteOutputCallback = callbacks?.deleteOutput;
   const onDeleteOutput = useCallback(
-    async (promptName: string) => {
+    async (promptId: string) => {
       if (!deleteOutputCallback) {
         // Just no-op if no callback specified. We could technically perform
         // client-side updates but that might be confusing
@@ -823,12 +823,16 @@ function AIConfigEditorBase({
 
       dispatch({
         type: "DELETE_OUTPUT",
-        id: promptName,
+        id: promptId,
       });
       logEventHandler?.("DELETE_OUTPUT");
 
       try {
-        await deleteOutputCallback(promptName);
+        const prompt = getPrompt(stateRef.current, promptId);
+        if (!prompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        await deleteOutputCallback(prompt.name);
       } catch (err: unknown) {
         const message = (err as RequestCallbackError).message ?? null;
         showNotification({
