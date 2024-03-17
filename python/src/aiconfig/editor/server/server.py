@@ -833,7 +833,7 @@ def delete_output() -> FlaskResponse:
             aiconfig=None,
         ).to_flask_format()
 
-    signature: dict[str, Type[Any]] = { "prompt_name": str }
+    signature: dict[str, Type[Any]] = {"prompt_name": str}
     operation = make_op_run_method(method_name)
     return run_aiconfig_operation_with_request_json(
         aiconfig, request_json, f"method_{method_name}", operation, signature

@@ -46,6 +46,15 @@ export default memo(function PromptMenuButton({
       </Menu.Target>
 
       <Menu.Dropdown>
+        {prompt.outputs?.length ? (
+          <Menu.Item
+            icon={<IconEraser size={16} />}
+            color="white"
+            onClick={deleteOutput}
+          >
+            Clear Output
+          </Menu.Item>
+        ) : null}
         <Menu.Item
           icon={<IconTrash size={16} />}
           color="red"
@@ -53,15 +62,6 @@ export default memo(function PromptMenuButton({
         >
           Delete Prompt
         </Menu.Item>
-        {prompt.outputs?.length ? (
-          <Menu.Item
-            icon={<IconEraser size={16} />}
-            color="red"
-            onClick={deleteOutput}
-          >
-            Clear Output
-          </Menu.Item>
-        ) : null}
       </Menu.Dropdown>
     </Menu>
   );
