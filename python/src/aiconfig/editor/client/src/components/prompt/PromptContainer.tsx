@@ -3,7 +3,7 @@ import PromptInputRenderer from "./prompt_input/PromptInputRenderer";
 import PromptOutputsRenderer from "./prompt_outputs/PromptOutputsRenderer";
 import { ClientPrompt } from "../../shared/types";
 import { getPromptSchema } from "../../utils/promptUtils";
-import { Flex, Card, createStyles, Button } from "@mantine/core";
+import { Flex, Card, createStyles } from "@mantine/core";
 import { PromptInput as AIConfigPromptInput, JSONObject } from "aiconfig";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import PromptOutputBar from "./PromptOutputBar";
@@ -22,7 +22,6 @@ type Props = {
   ) => void;
   onChangePromptName: (promptId: string, newName: string) => void;
   onRunPrompt(promptId: string): Promise<void>;
-  onDeleteOutput: (promptId: string) => void;
   onUpdateModel: (promptId: string, newModel?: string) => void;
   onUpdateModelSettings: (
     promptId: string,
@@ -35,7 +34,6 @@ type Props = {
   onUpdatePromptMetadata: (promptId: string, newMetadata: JSONObject) => void;
   defaultConfigModelName?: string;
   isRunButtonDisabled?: boolean;
-  readOnly?: boolean;
 };
 
 export const PROMPT_CONTAINER_HEIGHT_MAP = new Map<string, number>();
@@ -57,20 +55,14 @@ const useStyles = createStyles((theme) => ({
     borderLeft: "none",
     borderTopRightRadius: "4px",
   },
-  deleteOutput: {
-    marginBottom: "8px",
-    marginTop: "8px",
-  }
 }));
 
 export default memo(function PromptContainer({
-  readOnly,
   prompt,
   cancel,
   getModels,
   onChangePromptInput,
   onChangePromptName,
-  onDeleteOutput,
   defaultConfigModelName,
   onRunPrompt,
   onUpdateModel,
@@ -110,11 +102,6 @@ export default memo(function PromptContainer({
   const runPrompt = useCallback(
     async () => await onRunPrompt(promptId),
     [promptId, onRunPrompt]
-  );
-
-  const deleteOutput = useCallback(
-    async () => await onDeleteOutput(promptId),
-    [promptId, onDeleteOutput]
   );
 
   const onCancelRun = useCallback(async () => {
@@ -205,18 +192,6 @@ export default memo(function PromptContainer({
             <>
             <Flex justify="space-between" direction="column">
               <PromptOutputBar />
-              {!readOnly && prompt.outputs?.length && deleteOutput ? (
-                <div className={`${classes.deleteOutput} deleteOutput`}>
-                  <Button
-                    loading={undefined}
-                    onClick={deleteOutput}
-                    size="xs"
-                    variant="gradient"
-                  >
-                    Clear
-                  </Button>
-                </div>
-              ) : null}
             </Flex>
               <PromptOutputsRenderer outputs={prompt.outputs} />
             </>

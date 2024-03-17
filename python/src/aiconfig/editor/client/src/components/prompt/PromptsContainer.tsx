@@ -68,17 +68,17 @@ export default memo(function PromptsContainer(props: Props) {
             <Flex mt="md">
               {!readOnly && (
                 <PromptMenuButton
+                  prompt={prompt}
                   promptId={prompt._ui.id}
                   onDeletePrompt={() => props.onDeletePrompt(prompt._ui.id)}
+                  onDeleteOutput={props.onDeleteOutput}
                 />
               )}
               <PromptContainer
-                readOnly={readOnly}
                 prompt={prompt}
                 getModels={props.getModels}
                 onChangePromptInput={props.onChangePromptInput}
                 onChangePromptName={props.onChangePromptName}
-                onDeleteOutput={props.onDeleteOutput}
                 cancel={props.cancelRunPrompt}
                 onRunPrompt={props.onRunPrompt}
                 onUpdateModel={props.onUpdatePromptModel}
