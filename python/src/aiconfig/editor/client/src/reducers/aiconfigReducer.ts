@@ -150,6 +150,25 @@ export default function aiconfigReducer(
         prompts,
       };
     }
+
+    case "DELETE_OUTPUT": {
+      const prompts = state.prompts.map((prompt) => {
+        if (prompt._ui.id === action.id) {
+          return {
+            ...prompt,
+            outputs: undefined,
+          };
+        } else {
+          return prompt;
+        }
+      });
+
+      return {
+        ...dirtyState,
+        prompts,
+      };
+    }
+
     case "DELETE_GLOBAL_MODEL_SETTINGS": {
       const newModels = { ...state.metadata.models };
       delete newModels[action.modelName];

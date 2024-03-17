@@ -18,6 +18,7 @@ type Props = {
   ) => Promise<void>;
   onChangePromptName: (promptId: string, newName: string) => Promise<void>;
   onDeletePrompt: (promptId: string) => Promise<void>;
+  onDeleteOutput: (promptId: string) => Promise<void>;
   onRunPrompt: (promptId: string) => Promise<void>;
   onUpdatePromptMetadata: (
     promptId: string,
@@ -34,6 +35,7 @@ type Props = {
   ) => Promise<void>;
   prompts: ClientPrompt[];
   runningPromptId?: string;
+  readOnly?: boolean;
 };
 
 const useStyles = createStyles((theme) => ({
@@ -71,10 +73,12 @@ export default memo(function PromptsContainer(props: Props) {
                 />
               )}
               <PromptContainer
+                readOnly={readOnly}
                 prompt={prompt}
                 getModels={props.getModels}
                 onChangePromptInput={props.onChangePromptInput}
                 onChangePromptName={props.onChangePromptName}
+                onDeleteOutput={props.onDeleteOutput}
                 cancel={props.cancelRunPrompt}
                 onRunPrompt={props.onRunPrompt}
                 onUpdateModel={props.onUpdatePromptModel}

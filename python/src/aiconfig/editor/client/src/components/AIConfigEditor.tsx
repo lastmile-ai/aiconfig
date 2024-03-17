@@ -122,6 +122,7 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   cancel: (cancellationToken: string) => Promise<void>;
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
+  deleteOutput: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
   deleteModelSettings?: (modelName: string) => Promise<void>;
   deletePrompt: (promptName: string) => Promise<void>;
   download?: () => Promise<void>;
@@ -811,6 +812,35 @@ function AIConfigEditorBase({
     [deletePromptCallback, dispatch, logEventHandler, showNotification]
   );
 
+  const deleteOutputCallback = callbacks?.deleteOutput;
+  const onDeleteOutput = useCallback(
+    async (promptName: string) => {
+      if (!deleteOutputCallback) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
+      dispatch({
+        type: "DELETE_OUTPUT",
+        id: promptName,
+      });
+      logEventHandler?.("DELETE_OUTPUT");
+
+      try {
+        await deleteOutputCallback(promptName);
+      } catch (err: unknown) {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error deleting output for prompt",
+          message,
+          type: "error",
+        });
+      }
+    },
+    [deleteOutputCallback, dispatch, logEventHandler, showNotification]
+  );
+
   const clearOutputsCallback = callbacks?.clearOutputs;
   const onClearOutputs = useCallback(async () => {
     if (!clearOutputsCallback) {
@@ -1229,6 +1259,7 @@ function AIConfigEditorBase({
           onUpdateParameters={onUpdateGlobalParameters}
         />
         <PromptsContainer
+          readOnly={readOnly}
           cancelRunPrompt={callbacks?.cancel}
           defaultModel={aiconfigState.metadata.default_model}
           getModels={callbacks?.getModels}
@@ -1236,6 +1267,7 @@ function AIConfigEditorBase({
           onChangePromptInput={onChangePromptInput}
           onChangePromptName={onChangePromptName}
           onDeletePrompt={onDeletePrompt}
+          onDeleteOutput={onDeleteOutput}
           onRunPrompt={onRunPrompt}
           onUpdatePromptMetadata={onUpdatePromptMetadata}
           onUpdatePromptModel={onUpdatePromptModel}

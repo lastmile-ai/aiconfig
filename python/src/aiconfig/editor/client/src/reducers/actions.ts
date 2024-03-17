@@ -11,6 +11,7 @@ export type AIConfigReducerAction =
 export type MutateAIConfigAction =
   | AddPromptAction
   | ClearOutputsAction
+  | DeleteOutputAction
   | DeleteGlobalModelSettingsAction
   | DeletePromptAction
   | ProvidedAIConfigUpdateAction
@@ -55,6 +56,11 @@ export type AddPromptAction = {
 export type ClearOutputsAction = {
   type: "CLEAR_OUTPUTS";
 };
+
+export type DeleteOutputAction = {
+  type: "DELETE_OUTPUT";
+  id: string;
+}
 
 export type DeleteGlobalModelSettingsAction = {
   type: "DELETE_GLOBAL_MODEL_SETTINGS";

@@ -788,6 +788,7 @@ def clear_outputs() -> FlaskResponse:
     """
     Clears all outputs in the server state's AIConfig.
     """
+    method_name = MethodName("clear_outputs")
     state = get_server_state(app)
     aiconfig = state.aiconfig
     request_json = request.get_json()
@@ -811,9 +812,32 @@ def clear_outputs() -> FlaskResponse:
 
     signature: dict[str, Type[Any]] = {}
     return run_aiconfig_operation_with_request_json(
-        aiconfig, request_json, f"method_", _op, signature
+        aiconfig, request_json, f"method_{method_name}", _op, signature
     )
 
+@app.route("/api/delete_output", methods=["POST"])
+def delete_output() -> FlaskResponse:
+    """
+    Clears a single outputs in the server state's AIConfig based on prompt name.
+    """
+    method_name = MethodName("delete_output")
+    state = get_server_state(app)
+    aiconfig = state.aiconfig
+    request_json = request.get_json()
+
+    if aiconfig is None:
+        LOGGER.info("No AIConfig in memory, can't run clear outputs.")
+        return HttpResponseWithAIConfig(
+            message="No AIConfig in memory, can't run clear outputs.",
+            code=400,
+            aiconfig=None,
+        ).to_flask_format()
+
+    signature: dict[str, Type[Any]] = { "prompt_name": str }
+    operation = make_op_run_method(method_name)
+    return run_aiconfig_operation_with_request_json(
+        aiconfig, request_json, f"method_{method_name}", operation, signature
+    )
 
 @app.route("/api/get_aiconfigrc", methods=["GET"])
 def get_aiconfigrc() -> FlaskResponse:
