@@ -309,6 +309,7 @@ export default function aiconfigReducer(
           ...prompt._ui,
           isRunning: true,
           cancellationToken: action.cancellationToken,
+          outputStats: {},
         },
         // clear the outputs before running so that new outputs are noticeable, even if they are identical
         outputs: [],
