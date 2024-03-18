@@ -3,6 +3,7 @@ wrapper around openai that will serialize prompts and save them to config
 
 usage: see openai_wrapper.ipynb.
 """
+
 import asyncio
 import copy
 from types import ModuleType

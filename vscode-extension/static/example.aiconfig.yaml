@@ -1,0 +1,83 @@
+$schema: https://json.schemastore.org/aiconfig-1.0
+description:
+  "Welcome to AIConfig Editor! Write, test, and manage your prompts in
+  VS Code. Learn more [here](https://aiconfig.lastmileai.dev/docs/category/overview)!
+
+  &nbsp;
+
+  **Tip:** Open 'Global Parameters' to see variables that are used in some of the
+  prompts below."
+metadata:
+  default_model: gpt-3.5-turbo
+  models:
+    gpt-3.5-turbo:
+      model: gpt-3.5-turbo
+      temperature: 1
+      top_p: 1
+  parameters:
+    animal: llama
+    location: NYC
+name: New Untitled AIConfig
+prompts:
+  - input: write a haiku about a cat
+    metadata:
+      model:
+        name: gpt-3.5-turbo
+        settings: {}
+      parameters: {}
+    name: prompt_1
+    outputs:
+      - data: "Soft purring whispers
+
+          Curled up in a sunny spot
+
+          Eyes gleaming with peace"
+        execution_count: 0
+        metadata:
+          created: 1708578043
+          id: chatcmpl-8uvUJSqJ6Y4laXxpPPdGAmnw8xQZz
+          model: gpt-3.5-turbo-0125
+          object: chat.completion.chunk
+          raw_response:
+            content: "Soft purring whispers
+
+              Curled up in a sunny spot
+
+              Eyes gleaming with peace"
+            role: assistant
+          role: assistant
+          system_fingerprint: fp_cbdb91ce3f
+        output_type: execute_result
+  - input: Write a haiku about {{animal}} living in {{location}}
+    metadata:
+      model:
+        name: gpt-4
+        settings: {}
+      parameters: {}
+    name: prompt_2
+    outputs:
+      - data: "Llama in high rise,
+
+          Neon lights meet wild brown eyes,
+
+          In taxis, he flies.
+
+          "
+        execution_count: 0
+        metadata:
+          created: 1708971469
+          id: chatcmpl-8wZptszlEW14hFiPFagpdWsoqkuIE
+          model: gpt-4-0613
+          object: chat.completion.chunk
+          raw_response:
+            content: "Llama in high rise,
+
+              Neon lights meet wild brown eyes,
+
+              In taxis, he flies.
+
+              "
+            role: assistant
+          role: assistant
+        output_type: execute_result
+schema_version: latest

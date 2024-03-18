@@ -19,7 +19,8 @@ if __name__ == "__main__":
     pyproject_toml = parse(pyproject_source)
     keywords = pyproject_toml["project"]["keywords"]
     custom_component = (
-        "gradio-custom-component" in keywords or "gradio custom component" in keywords
+        "gradio-custom-component" in keywords
+        or "gradio custom component" in keywords
     )
     if not custom_component:
         exit(0)
@@ -27,7 +28,9 @@ if __name__ == "__main__":
     module_name = pyproject_toml["project"]["name"]
     module = importlib.import_module(module_name)
 
-    artifacts: list[str] = pyproject_toml["tool"]["hatch"]["build"]["artifacts"]
+    artifacts: list[str] = pyproject_toml["tool"]["hatch"]["build"][
+        "artifacts"
+    ]
 
     def get_relative_path(path):
         return (

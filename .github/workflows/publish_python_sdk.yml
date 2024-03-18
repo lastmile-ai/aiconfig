@@ -1,0 +1,42 @@
+# Build and publish the python-sdk to pypi. This workflow does NOT update the version number. Open a pr to update the version number and merge it to master before running this workflow.
+# This workflow is triggered manually. see https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow
+name: Build and Publish Python SDK to PyPI
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10" # don't know what the impact of this is
+
+      - name: Build editor & client packages. # Otherwise the aiconfig local editor will have a blank screen. This gets included in the python package
+        run: |
+          cd python/src/aiconfig/editor/client && yarn && yarn build
+      - name: Build Package
+        run: |
+          pip install build && cd python && python -m build
+      - name: Publish release distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/dist/
+      - name: Send slack message
+        id: slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          # This data can be any valid JSON from a previous step in the GitHub Action
+          payload: |
+            {
+              "text": "Headsup - The python-sdk has been version bumped and published to pypi",
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

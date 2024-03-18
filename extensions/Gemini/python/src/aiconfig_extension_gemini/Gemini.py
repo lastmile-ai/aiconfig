@@ -342,10 +342,10 @@ class GeminiModelParser(ParameterizedModelParser):
                     "Unable to deserialize input. Prompt input type is not a string, Gemini Model Parser expects prompt input to contain a 'contents' field as expected by Gemini API"
                 )
 
-            completion_data[
-                "contents"
-            ] = parameterize_supported_gemini_input_data(
-                prompt_input.contents, prompt, aiconfig, params
+            completion_data["contents"] = (
+                parameterize_supported_gemini_input_data(
+                    prompt_input.contents, prompt, aiconfig, params
+                )
             )
 
         await aiconfig.callback_manager.run_callbacks(

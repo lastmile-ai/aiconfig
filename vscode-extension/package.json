@@ -56,13 +56,23 @@
         "category": "AIConfig"
       },
       {
-        "command": "vscode-aiconfig.createAIConfigJSON",
-        "title": "Create New AIConfig (json)",
+        "command": "vscode-aiconfig.createExampleAIConfigYAML",
+        "title": "Create AIConfig From Example  (yaml)",
         "category": "AIConfig"
       },
       {
-        "command": "vscode-aiconfig.createAIConfigYAML",
+        "command": "vscode-aiconfig.createExampleAIConfigJSON",
+        "title": "Create AIConfig From Example (json)",
+        "category": "AIConfig"
+      },
+      {
+        "command": "vscode-aiconfig.createEmptyAIConfigYAML",
         "title": "Create New AIConfig (yaml)",
+        "category": "AIConfig"
+      },
+      {
+        "command": "vscode-aiconfig.createEmptyAIConfigJSON",
+        "title": "Create New AIConfig (json)",
         "category": "AIConfig"
       },
       {
@@ -202,13 +212,13 @@
           {
             "id": "createAIConfig",
             "title": "Create your first AIConfig",
-            "description": "Turn your VS Code into a generative AI studio\n**Note:** Please complete the ``Initialize Extension`` step before opening an AIConfig file!\n[Create .aiconfig.yaml](command:vscode-aiconfig.createAIConfigYAML)\nIf you prefer JSON:\n[Create .aiconfig.json](command:vscode-aiconfig.createAIConfigJSON)",
+            "description": "Turn your VS Code into a generative AI studio\n**Note:** Please complete the ``Initialize Extension`` step before opening an AIConfig file!\n[Create .aiconfig.yaml](command:vscode-aiconfig.createExampleAIConfigYAML)\nIf you prefer JSON:\n[Create .aiconfig.json](command:vscode-aiconfig.createExampleAIConfigJSON)",
             "media": {
               "markdown": "media/createAIConfig.md"
             },
             "completionEvents": [
-              "onCommand:vscode-aiconfig.createAIConfigYAML",
-              "onCommand:vscode-aiconfig.createAIConfigJSON"
+              "onCommand:vscode-aiconfig.createExampleAIConfigYAML",
+              "onCommand:vscode-aiconfig.createExampleAIConfigJSON"
             ]
           },
           {
@@ -242,10 +252,16 @@
       ],
       "file/newFile": [
         {
-          "command": "vscode-aiconfig.createAIConfigJSON"
+          "command": "vscode-aiconfig.createEmptyAIConfigYAML"
         },
         {
-          "command": "vscode-aiconfig.createAIConfigYAML"
+          "command": "vscode-aiconfig.createEmptyAIConfigJSON"
+        },
+        {
+          "command": "vscode-aiconfig.createExampleAIConfigJSON"
+        },
+        {
+          "command": "vscode-aiconfig.createExampleAIConfigYAML"
         }
       ],
       "webview/context": [

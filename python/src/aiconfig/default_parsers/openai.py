@@ -158,25 +158,29 @@ class OpenAIInference(ParameterizedModelParser):
                 prompts.append(prompt)
             elif i == 0 and role == "assistant":
                 # If the first message is an assistant message,
-                # build a prompt with an empty input, 
+                # build a prompt with an empty input,
                 # and the assistant response as the output
 
                 # Pull assistant response
-                assistant_output = build_output_data(conversation_data["messages"][i])
+                assistant_output = build_output_data(
+                    conversation_data["messages"][i]
+                )
                 prompt = Prompt(
-                    name= f"{prompt_name}_{len(prompts) + 1}",
+                    name=f"{prompt_name}_{len(prompts) + 1}",
                     input="",
                     metadata=PromptMetadata(
-                        model= copy.deepcopy(model_metadata),
-                        parameters= parameters,
-                        remember_chat_context = True
+                        model=copy.deepcopy(model_metadata),
+                        parameters=parameters,
+                        remember_chat_context=True,
                     ),
-                    outputs=[                        ExecuteResult(
+                    outputs=[
+                        ExecuteResult(
                             output_type="execute_result",
                             execution_count=None,
                             data=assistant_output,
                             metadata={},
-                        )],
+                        )
+                    ],
                 )
                 prompts.append(prompt)
             i += 1
@@ -261,13 +265,13 @@ class OpenAIInference(ParameterizedModelParser):
         else:
             # If messages are already specified in the model settings, then just resolve each message with the given parameters and append the latest message
             for i in range(len(completion_params.get("messages"))):
-                completion_params["messages"][i][
-                    "content"
-                ] = resolve_prompt_string(
-                    prompt,
-                    params,
-                    aiconfig,
-                    completion_params["messages"][i]["content"],
+                completion_params["messages"][i]["content"] = (
+                    resolve_prompt_string(
+                        prompt,
+                        params,
+                        aiconfig,
+                        completion_params["messages"][i]["content"],
+                    )
                 )
 
         # Add in the latest prompt
@@ -420,7 +424,7 @@ class OpenAIInference(ParameterizedModelParser):
             )
         )
         return prompt.outputs
-    
+
     def initialize_openai_client(self) -> None:
         """
         Initializes the client to be used with the OpenAI Module.
@@ -430,7 +434,7 @@ class OpenAIInference(ParameterizedModelParser):
         openai_api_key = get_api_key_from_environment(
             "OPENAI_API_KEY"
         ).unwrap()
-        self.client = openai.Client(api_key=openai_api_key)   
+        self.client = openai.Client(api_key=openai_api_key)
 
     def get_prompt_template(
         self, prompt: Prompt, aiconfig: "AIConfigRuntime"

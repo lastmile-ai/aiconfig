@@ -16,28 +16,42 @@ from aiconfig_extension_hugging_face import (
 # Here we are registering all the local HuggingFace model parsers as an example
 def register_model_parsers() -> None:
     """Register model parsers for local HuggingFace models."""
-    automatic_speech_recognition = HuggingFaceAutomaticSpeechRecognitionTransformer()
+    automatic_speech_recognition = (
+        HuggingFaceAutomaticSpeechRecognitionTransformer()
+    )
     AIConfigRuntime.register_model_parser(
         automatic_speech_recognition, "Automatic Speech Recognition (Local)"
     )
 
     image_to_text = HuggingFaceImage2TextTransformer()
-    AIConfigRuntime.register_model_parser(image_to_text, "Image-to-Text (Local)")
+    AIConfigRuntime.register_model_parser(
+        image_to_text, "Image-to-Text (Local)"
+    )
 
     text_to_image = HuggingFaceText2ImageDiffusor()
-    AIConfigRuntime.register_model_parser(text_to_image, "Text-to-Image (Local)")
+    AIConfigRuntime.register_model_parser(
+        text_to_image, "Text-to-Image (Local)"
+    )
 
     text_to_speech = HuggingFaceText2SpeechTransformer()
-    AIConfigRuntime.register_model_parser(text_to_speech, "Text-to-Speech (Local)")
+    AIConfigRuntime.register_model_parser(
+        text_to_speech, "Text-to-Speech (Local)"
+    )
 
     text_generation = HuggingFaceTextGenerationTransformer()
-    AIConfigRuntime.register_model_parser(text_generation, "Text Generation (Local)")
+    AIConfigRuntime.register_model_parser(
+        text_generation, "Text Generation (Local)"
+    )
 
     text_summarization = HuggingFaceTextSummarizationTransformer()
-    AIConfigRuntime.register_model_parser(text_summarization, "Summarization (Local)")
+    AIConfigRuntime.register_model_parser(
+        text_summarization, "Summarization (Local)"
+    )
 
     text_translation = HuggingFaceTextTranslationTransformer()
-    AIConfigRuntime.register_model_parser(text_translation, "Translation (Local)")
+    AIConfigRuntime.register_model_parser(
+        text_translation, "Translation (Local)"
+    )
 
     # By default, model parsers will also have their own ids registered. Remove those
     # since we just want the task-based names registered
