@@ -1,5 +1,26 @@
 # Changelog
 
+Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1468
+
+## (2024-03-11) Python Version 1.1.32, NPM Version 1.1.15
+
+### Features
+
+- **editor:** Added UI for updating global model settings in AIConfig files (https://github.com/lastmile-ai/aiconfig/pull/1441)
+- **vscode:** Added commands to allow creating an empty AIConfig in addition to the example starter file (https://github.com/lastmile-ai/aiconfig/pull/1448)
+
+### Bug Fixes / Tasks
+
+- **python-sdk:** Removed test dependencies from the `python-aiconfig` package (https://github.com/lastmile-ai/aiconfig/pull/1463)
+- **python-dev:** Added Python auto-formatting check as a Github action to prevent unformatted files from merging into the repository (https://github.com/lastmile-ai/aiconfig/pull/1458)
+- **typescript-dev:** Specified jest to ignore `dist` files that get generated from running `yarn` so that automated tests do not incorrectly fail (https://github.com/lastmile-ai/aiconfig/pull/1466)
+
+### Documentation
+
+- [update] Added keywords and categories to the VS Code extension, making it easier to find (https://github.com/lastmile-ai/aiconfig/pull/1430)
+- [update] Removed erroneous `await` statement for loading AIConfig file in Gradio Notebook docs (https://github.com/lastmile-ai/aiconfig/pull/1435) → thanks @Anikait10 !
+- [update] Removed spaces between Github README badges to remove visible underscores (https://github.com/lastmile-ai/aiconfig/pull/1446) → thanks @jonathanagustin !
+
 ## (2024-03-11) Python Version 1.1.31, NPM Version 1.1.14
 
 Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1426
@@ -16,7 +37,7 @@ Last PR included in this release: https://github.com/lastmile-ai/aiconfig/pull/1
 - **vscode:** Removed check for `.env` file path needing to be a parent of user’s VS Code workspace, allowing users to specify an `.env` file that they can define anywhere (https://github.com/lastmile-ai/aiconfig/pull/1398)
   Documentation
 - [new] Created README and cookbook to show how to use the Groq inference extension (https://github.com/lastmile-ai/aiconfig/pull/1405, https://github.com/lastmile-ai/aiconfig/pull/1402)
-- [updated] Removed warning text from Gradio Notebooks docs saying that Gradio SDK needs to be `<= v4.16.0` because that issue is now resolved and we can now use the latest Gradio SDK versions (https://github.com/lastmile-ai/aiconfig/pull/1421)
+- [update] Removed warning text from Gradio Notebooks docs saying that Gradio SDK needs to be `<= v4.16.0` because that issue is now resolved and we can now use the latest Gradio SDK versions (https://github.com/lastmile-ai/aiconfig/pull/1421)
 
 ## (2024-03-05) Python Version 1.1.29, NPM Version 1.1.13
 
