@@ -1,18 +1,22 @@
 import asyncio
 import copy
 import ctypes
-import dotenv
 import json
 import logging
+import os
 import threading
 import time
 import uuid
 import webbrowser
-import os
 from typing import Any, Dict, Literal, Type, Union
 
+import dotenv
 import lastmile_utils.lib.core.api as core_utils
 import result
+from flask import Flask, Response, request, stream_with_context
+from flask_cors import CORS
+from result import Err, Ok, Result
+
 from aiconfig.Config import AIConfigRuntime
 from aiconfig.editor.server.queue_iterator import (
     STOP_STREAMING_SIGNAL,
@@ -42,10 +46,6 @@ from aiconfig.editor.server.server_utils import (
 )
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.registry import ModelParserRegistry
-from flask import Flask, Response, request, stream_with_context
-from flask_cors import CORS
-from result import Err, Ok, Result
-
 from aiconfig.schema import ExecuteResult, Output, Prompt, PromptMetadata
 
 logging.getLogger("werkzeug").disabled = True
@@ -812,7 +812,7 @@ def clear_outputs() -> FlaskResponse:
 
     signature: dict[str, Type[Any]] = {}
     return run_aiconfig_operation_with_request_json(
-        aiconfig, request_json, f"method_{method_name}", _op, signature
+        aiconfig, request_json, method_name, _op, signature
     )
 
 @app.route("/api/delete_output", methods=["POST"])
@@ -836,7 +836,7 @@ def delete_output() -> FlaskResponse:
     signature: dict[str, Type[Any]] = {"prompt_name": str}
     operation = make_op_run_method(method_name)
     return run_aiconfig_operation_with_request_json(
-        aiconfig, request_json, f"method_{method_name}", operation, signature
+        aiconfig, request_json, method_name, operation, signature
     )
 
 @app.route("/api/get_aiconfigrc", methods=["GET"])

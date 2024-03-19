@@ -152,21 +152,18 @@ export default function aiconfigReducer(
     }
 
     case "DELETE_OUTPUT": {
-      const prompts = state.prompts.map((prompt) => {
-        if (prompt._ui.id === action.id) {
-          return {
-            ...prompt,
-            outputs: undefined,
-          };
-        } else {
-          return prompt;
-        }
-      });
+      const clearOutput = (statePrompt: ClientPrompt) => {
+        return {
+          ...statePrompt,
+          outputs: undefined,
+        };
+      }
 
-      return {
-        ...dirtyState,
-        prompts,
-      };
+      return reduceReplacePrompt(
+        dirtyState,
+        action.id,
+        clearOutput
+      );
     }
 
     case "DELETE_GLOBAL_MODEL_SETTINGS": {

@@ -1263,7 +1263,6 @@ function AIConfigEditorBase({
           onUpdateParameters={onUpdateGlobalParameters}
         />
         <PromptsContainer
-          readOnly={readOnly}
           cancelRunPrompt={callbacks?.cancel}
           defaultModel={aiconfigState.metadata.default_model}
           getModels={callbacks?.getModels}

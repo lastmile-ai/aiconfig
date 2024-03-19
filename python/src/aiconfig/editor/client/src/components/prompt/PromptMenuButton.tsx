@@ -1,7 +1,6 @@
 import { Button, Menu, createStyles } from "@mantine/core";
 import { IconDotsVertical, IconEraser, IconTrash } from "@tabler/icons-react";
-import { memo, useCallback } from "react";
-import { ClientPrompt } from "../../shared/types";
+import { memo } from "react";
 
 const useStyles = createStyles(() => ({
   promptMenuButton: {
@@ -10,27 +9,15 @@ const useStyles = createStyles(() => ({
 }));
 
 export default memo(function PromptMenuButton({
-  promptId,
-  prompt,
+  showDeleteOutput,
   onDeleteOutput,
   onDeletePrompt,
 }: {
-  promptId: string;
-  prompt: ClientPrompt;
-  onDeletePrompt: (id: string) => void;
-  onDeleteOutput: (promptId: string) => void;
+  showDeleteOutput: boolean;
+  onDeletePrompt: () => void;
+  onDeleteOutput: () => void;
 }) {
   const { classes } = useStyles();
-
-  const deleteOutput = useCallback(
-    async () => await onDeleteOutput(promptId),
-    [promptId, onDeleteOutput]
-  );
-
-  const deletePrompt = useCallback(
-    async () => await onDeletePrompt(promptId),
-    [promptId, onDeletePrompt]
-  );
 
   return (
     <Menu position="bottom-end">
@@ -46,11 +33,10 @@ export default memo(function PromptMenuButton({
       </Menu.Target>
 
       <Menu.Dropdown>
-        {prompt.outputs?.length ? (
+        {showDeleteOutput ? (
           <Menu.Item
             icon={<IconEraser size={16} />}
-            color="white"
-            onClick={deleteOutput}
+            onClick={onDeleteOutput}
           >
             Clear Output
           </Menu.Item>
@@ -58,7 +44,7 @@ export default memo(function PromptMenuButton({
         <Menu.Item
           icon={<IconTrash size={16} />}
           color="red"
-          onClick={deletePrompt}
+          onClick={onDeletePrompt}
         >
           Delete Prompt
         </Menu.Item>

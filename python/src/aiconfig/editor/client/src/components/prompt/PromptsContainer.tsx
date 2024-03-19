@@ -3,7 +3,6 @@ import { memo, useContext } from "react";
 import AIConfigContext from "../../contexts/AIConfigContext";
 import AddPromptButton from "./AddPromptButton";
 import { ClientPrompt } from "../../shared/types";
-import PromptMenuButton from "./PromptMenuButton";
 import PromptContainer from "./PromptContainer";
 import { JSONObject, PromptInput } from "aiconfig";
 
@@ -35,7 +34,6 @@ type Props = {
   ) => Promise<void>;
   prompts: ClientPrompt[];
   runningPromptId?: string;
-  readOnly?: boolean;
 };
 
 const useStyles = createStyles((theme) => ({
@@ -55,25 +53,19 @@ export default memo(function PromptsContainer(props: Props) {
     <div className={`${classes.promptsContainer} promptsContainer`}>
       {!readOnly && (
         <AddPromptButton
-          getModels={props.getModels}
-          addPrompt={(model: string) => props.onAddPrompt(0, model)}
+        getModels={props.getModels}
+        addPrompt={(model: string) => props.onAddPrompt(0, model)}
         />
-      )}
+        )}
       {props.prompts.map((prompt: ClientPrompt, i: number) => {
+        const promptId = prompt._ui.id;
         const isAnotherPromptRunning =
           props.runningPromptId !== undefined &&
-          props.runningPromptId !== prompt._ui.id;
+          props.runningPromptId !== promptId;
+
         return (
           <Stack key={prompt._ui.id}>
             <Flex mt="md">
-              {!readOnly && (
-                <PromptMenuButton
-                  prompt={prompt}
-                  promptId={prompt._ui.id}
-                  onDeletePrompt={() => props.onDeletePrompt(prompt._ui.id)}
-                  onDeleteOutput={props.onDeleteOutput}
-                />
-              )}
               <PromptContainer
                 prompt={prompt}
                 getModels={props.getModels}
@@ -81,6 +73,8 @@ export default memo(function PromptsContainer(props: Props) {
                 onChangePromptName={props.onChangePromptName}
                 cancel={props.cancelRunPrompt}
                 onRunPrompt={props.onRunPrompt}
+                onDeletePrompt={props.onDeletePrompt}
+                onDeleteOutput={props.onDeleteOutput}
                 onUpdateModel={props.onUpdatePromptModel}
                 onUpdateModelSettings={props.onUpdatePromptModelSettings}
                 onUpdateParameters={props.onUpdatePromptParameters}
