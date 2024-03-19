@@ -53,10 +53,10 @@ export default memo(function PromptsContainer(props: Props) {
     <div className={`${classes.promptsContainer} promptsContainer`}>
       {!readOnly && (
         <AddPromptButton
-        getModels={props.getModels}
-        addPrompt={(model: string) => props.onAddPrompt(0, model)}
+          getModels={props.getModels}
+          addPrompt={(model: string) => props.onAddPrompt(0, model)}
         />
-        )}
+      )}
       {props.prompts.map((prompt: ClientPrompt, i: number) => {
         const promptId = prompt._ui.id;
         const isAnotherPromptRunning =
