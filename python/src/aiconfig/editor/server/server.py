@@ -3,7 +3,6 @@ import copy
 import ctypes
 import json
 import logging
-import os
 import threading
 import time
 import uuid
@@ -815,6 +814,7 @@ def clear_outputs() -> FlaskResponse:
         aiconfig, request_json, method_name, _op, signature
     )
 
+
 @app.route("/api/delete_output", methods=["POST"])
 def delete_output() -> FlaskResponse:
     """
@@ -838,6 +838,7 @@ def delete_output() -> FlaskResponse:
     return run_aiconfig_operation_with_request_json(
         aiconfig, request_json, method_name, operation, signature
     )
+
 
 @app.route("/api/get_aiconfigrc", methods=["GET"])
 def get_aiconfigrc() -> FlaskResponse:
