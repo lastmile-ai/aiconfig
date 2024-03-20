@@ -142,7 +142,7 @@ class HuggingFaceImage2TextTransformer(ModelParser):
         aiconfig: "AIConfigRuntime",
         options: InferenceOptions,
         parameters: Dict[str, Any],
-        **kwargs,
+        run_with_dependencies: Optional[bool] = False,
     ) -> list[Output]:
         await aiconfig.callback_manager.run_callbacks(
             CallbackEvent(

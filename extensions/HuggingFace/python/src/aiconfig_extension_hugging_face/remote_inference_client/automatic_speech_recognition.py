@@ -237,7 +237,7 @@ class HuggingFaceAutomaticSpeechRecognitionRemoteInference(ModelParser):
         aiconfig: "AIConfigRuntime",
         options: InferenceOptions,
         parameters: Dict[str, Any],
-        **kwargs,
+        run_with_dependencies: Optional[bool] = False,
     ) -> list[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
