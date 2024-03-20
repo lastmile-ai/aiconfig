@@ -6,6 +6,8 @@ import {
   RunPromptStreamErrorEvent,
   LogEvent,
   LogEventData,
+  ThemeMode,
+  AIConfigEditorNotification,
 } from "@lastmileai/aiconfig-editor";
 import { Flex, Loader, createStyles } from "@mantine/core";
 import {
@@ -28,9 +30,7 @@ import {
   updateWebviewState,
 } from "./utils/vscodeUtils";
 import { VSCODE_THEME } from "./VSCodeTheme";
-// TODO: Update package to export AIConfigEditorNotification and ThemeMode types
-import { AIConfigEditorNotification } from "@lastmileai/aiconfig-editor/dist/components/notifications/NotificationProvider";
-import { ThemeMode } from "@lastmileai/aiconfig-editor/dist/shared/types";
+import { v4 as uuidv4 } from "uuid";
 
 const useStyles = createStyles(() => ({
   editorBackground: {
@@ -175,6 +175,7 @@ export default function VSCodeEditor() {
     );
 
     const enableTelemetry = res.allow_usage_data_sharing;
+    const sessionId: string = uuidv4();
 
     if (enableTelemetry) {
       datadogLogs.init({
@@ -187,6 +188,7 @@ export default function VSCodeEditor() {
       });
 
       datadogLogs.setGlobalContextProperty("mode", MODE);
+      datadogLogs.setGlobalContextProperty("session_id_internal", sessionId);
     }
   }, [aiConfigServerUrl]);
 
@@ -195,7 +197,7 @@ export default function VSCodeEditor() {
   }, [setupTelemetryIfAllowed]);
 
   const getModels = useCallback(
-    async (search: string) => {
+    async (search?: string) => {
       // For now, rely on caching and handle client-side search filtering
       // We will use server-side search filtering for Gradio
       const res = await ufetch.get(ROUTE_TABLE.LIST_MODELS(aiConfigServerUrl));
@@ -227,6 +229,15 @@ export default function VSCodeEditor() {
       return res;
     },
     [aiConfigServerUrl, vscode]
+  );
+
+  const deleteModelSettings = useCallback(
+    async (modelName: string) => {
+      return await ufetch.post(ROUTE_TABLE.DELETE_MODEL(aiConfigServerUrl), {
+        model_name: modelName,
+      });
+    },
+    [aiConfigServerUrl]
   );
 
   const deletePrompt = useCallback(
@@ -462,6 +473,7 @@ export default function VSCodeEditor() {
       addPrompt,
       cancel,
       clearOutputs,
+      deleteModelSettings,
       deletePrompt,
       getModels,
       getServerStatus,
@@ -481,6 +493,7 @@ export default function VSCodeEditor() {
       addPrompt,
       cancel,
       clearOutputs,
+      deleteModelSettings,
       deletePrompt,
       getModels,
       getServerStatus,

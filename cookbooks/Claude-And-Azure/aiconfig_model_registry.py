@@ -7,7 +7,6 @@
     See example below.
 """
 
-
 from aiconfig import AzureOpenAIParser, ModelParserRegistry
 import dotenv
 
@@ -15,5 +14,5 @@ import dotenv
 def register_model_parsers() -> None:
     azure_gpt_35 = AzureOpenAIParser(deployment="gpt-35-turbo")
     ModelParserRegistry.register_model_parser(azure_gpt_35)
-    
+
     dotenv.load_dotenv()

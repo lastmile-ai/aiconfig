@@ -8,22 +8,12 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/lastmile-ai/aiconfig/actions/workflows/main_python.yml">
-    <img src="https://github.com/lastmile-ai/aiconfig/actions/workflows/main_python.yml/badge.svg" alt="Python">
-  </a> |
-  <a href="https://github.com/lastmile-ai/aiconfig/actions/workflows/main-typescript.yml">
-    <img src="https://github.com/lastmile-ai/aiconfig/actions/workflows/main-typescript.yml/badge.svg" alt="Node">
-  </a> |
-  <a href="https://github.com/lastmile-ai/aiconfig/actions/workflows/test-deploy-docs.yml">
-    <img src="https://github.com/lastmile-ai/aiconfig/actions/workflows/test-deploy-docs.yml/badge.svg" alt="Docs">
-  </a> |
-  <a href="https://discord.com/invite/xBhNKTetGx">
-    <img src="https://img.shields.io/badge/Discord-LastMile%20AI-Blue?color=rgb(37%2C%20150%2C%20190)" alt="Discord">
-  </a> |
+  <a href="https://github.com/lastmile-ai/aiconfig/actions/workflows/main_python.yml"><img src="https://github.com/lastmile-ai/aiconfig/actions/workflows/main_python.yml/badge.svg" alt="Python"></a>&nbsp;
+  <a href="https://github.com/lastmile-ai/aiconfig/actions/workflows/main-typescript.yml"><img src="https://github.com/lastmile-ai/aiconfig/actions/workflows/main-typescript.yml/badge.svg" alt="Node"></a>&nbsp;
+  <a href="https://github.com/lastmile-ai/aiconfig/actions/workflows/test-deploy-docs.yml"><img src="https://github.com/lastmile-ai/aiconfig/actions/workflows/test-deploy-docs.yml/badge.svg" alt="Docs"></a>&nbsp;
+  <a href="https://discord.com/invite/xBhNKTetGx"><img src="https://img.shields.io/badge/Discord-LastMile%20AI-Blue?color=rgb(37%2C%20150%2C%20190)" alt="Discord"></a>
   <br>
-  <a href="https://aiconfig.lastmileai.dev/">
-    <strong> Documentation</strong>
-  </a>
+  <a href="https://aiconfig.lastmileai.dev/"><strong>Documentation</strong></a>
 </p>
 
 AIConfig is a framework that makes it easy to build generative AI applications for production. It manages generative AI prompts, models and model parameters as JSON-serializable configs that can be version controlled, evaluated, monitored and opened in a local editor for rapid prototyping.
@@ -37,6 +27,12 @@ It allows you to store and iterate on generative AI behavior _separately from yo
 **[More context here](#why-is-this-important).**
 
 ## Quickstart
+
+For VS Code Users:
+
+- Install the [AIConfig Editor VS Code Extension](https://marketplace.visualstudio.com/items?itemName=lastmile-ai.vscode-aiconfig)
+
+If you're not using VS Code, follow these steps:
 
 1. `pip3 install python-aiconfig`
 2. `export OPENAI_API_KEY='your-key'`
@@ -210,7 +206,7 @@ See [instructions](https://aiconfig.lastmileai.dev/docs/extensibility#1-bring-yo
 
 ## Extensibility
 
-AIConfig is designed to be customized and extended for your use-case. The [Extensibility](/docs/extensibility) guide goes into more detail.
+AIConfig is designed to be customized and extended for your use-case. The [Extensibility](https://aiconfig.lastmileai.dev/docs/extensibility) guide goes into more detail.
 
 Currently, there are 3 core ways to extend AIConfig:
 

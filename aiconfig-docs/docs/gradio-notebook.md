@@ -152,10 +152,6 @@ Duplicate the [Gradio Notebook Quickstart Space](https://huggingface.co/spaces/l
   - [app.py](https://huggingface.co/spaces/lastmileai/gradio-notebook-template/blob/main/app.py)
   - [requirements.txt](https://huggingface.co/spaces/lastmileai/gradio-notebook-template/blob/main/requirements.txt)
 
-:::caution
-Please ensure the `sdk_version` in your Space's `README.md` is set to `sdk_version: 4.16.0` or lower due to compatibilty issues in higher `gradio` package versions. See https://huggingface.co/spaces/lastmileai/gradio-notebook-template/blob/main/README.md for example.
-:::
-
 ### 2. Design your Space
 
 Use the Gradio Notebook UI in your Space to set up models and prompts.
@@ -234,7 +230,7 @@ You can easily build generative apps inspired by your work in Gradio Notebook Sp
 Use the `aiconfig.json` file in your code with the [AIConfig SDK](https://github.com/lastmile-ai/aiconfig) in 2 lines:
 
 ```python
-config = await AIConfigRuntime.load('my_app.aiconfig.json')
+config = AIConfigRuntime.load('my_app.aiconfig.json')
 model_output = await config.run('prompt_name')
 ```
 

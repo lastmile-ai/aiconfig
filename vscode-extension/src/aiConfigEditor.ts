@@ -36,7 +36,12 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     );
     const providerRegistration = vscode.window.registerCustomEditorProvider(
       AIConfigEditorProvider.viewType,
-      provider
+      provider,
+      {
+        webviewOptions: {
+          enableFindWidget: true,
+        },
+      }
     );
     return providerRegistration;
   }
@@ -208,6 +213,11 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
               "Ignoring server update error due to webview disposal"
             );
             return;
+          } else if (document.isUntitled) {
+            // Saving untitled document triggers content change (i.e. setting full document
+            // content) but the server can't load from untitled:/ file scheme. Just ignore
+            // this scenario instead of showing the notification
+            console.info("Ignoring server update error for untitled document");
           }
 
           webviewPanel.webview.postMessage({
@@ -298,6 +308,9 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
                   console.log(
                     `${e.document.fileName}: willSaveDocument - creating textedit`
                   );
+                  // Treat this as internal change so that we skip handling it in onDidChangeTextDocument
+                  // The client should already match the server state, so we don't need to update the webview
+                  isInternalDocumentChange = true;
                   resolve([
                     vscode.TextEdit.replace(
                       new vscode.Range(0, 0, e.document.lineCount, 0),
@@ -488,22 +501,23 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
         vscode.window
           .showErrorMessage(
             "Failed to start aiconfig server. You can view the aiconfig but cannot modify it.",
-            ...["Details", "Retry"]
+            ...["Details", "Retry", "Change Python Interpreter"]
           )
-          .then((selection) => {
+          .then(async (selection) => {
             if (selection === "Details") {
               this.extensionOutputChannel.error(
                 e?.message ?? JSON.stringify(e)
               );
               this.extensionOutputChannel.show(/*preserveFocus*/ true);
-            }
-
-            if (selection === "Retry") {
+            } else if (selection === "Retry") {
               this.initializeServerStateWithRetry(
                 serverUrl,
                 document,
                 webviewPanel
               );
+            } else if (selection === "Change Python Interpreter") {
+              // Change interpreter will prompt to restart the editor server
+              await vscode.commands.executeCommand("python.setInterpreter");
             }
           });
       });

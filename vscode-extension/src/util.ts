@@ -8,11 +8,15 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
+import { ENV_FILE_PATH } from "./constants";
+
 export const EXTENSION_NAME = "vscode-aiconfig";
 export const COMMANDS = {
   INIT: `${EXTENSION_NAME}.init`,
-  CREATE_NEW_JSON: `${EXTENSION_NAME}.createAIConfigJSON`,
-  CREATE_NEW_YAML: `${EXTENSION_NAME}.createAIConfigYAML`,
+  CREATE_EXAMPLE_YAML: `${EXTENSION_NAME}.createExampleAIConfigYAML`,
+  CREATE_EXAMPLE_JSON: `${EXTENSION_NAME}.createExampleAIConfigJSON`,
+  CREATE_EMPTY_YAML: `${EXTENSION_NAME}.createEmptyAIConfigYAML`,
+  CREATE_EMPTY_JSON: `${EXTENSION_NAME}.createEmptyAIConfigJSON`,
   HELLO_WORLD: `${EXTENSION_NAME}.helloWorld`,
   CUSTOM_MODEL_REGISTRY_PATH: `${EXTENSION_NAME}.customModelRegistryPath`,
   CREATE_CUSTOM_MODEL_REGISTRY: `${EXTENSION_NAME}.createCustomModelRegistry`,
@@ -21,7 +25,8 @@ export const COMMANDS = {
   RESTART_ACTIVE_EDITOR_SERVER: `${EXTENSION_NAME}.restartActiveEditorServer`,
   SET_API_KEYS: `${EXTENSION_NAME}.setApiKeys`,
   SHARE: `${EXTENSION_NAME}.share`,
-  SHOW_WELCOME: `${EXTENSION_NAME}.showWelcome`,
+  SUBMIT_FEEDBACK: `${EXTENSION_NAME}.submitFeedback`,
+  SHOW_WELCOME: `${EXTENSION_NAME}.showWelcomePage`,
 };
 
 export const SUPPORTED_FILE_EXTENSIONS = [".json", ".yaml", ".yml"];
@@ -44,6 +49,8 @@ export const EDITOR_SERVER_ROUTE_TABLE = {
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_content"),
   LOAD_MODEL_PARSER_MODULE: (hostUrl: string) =>
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/load_model_parser_module"),
+  SET_ENV_FILE_PATH: (hostUrl: string) =>
+    urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/set_env_file_path"),
 };
 
 export async function isServerReady(serverUrl: string) {
@@ -81,6 +88,12 @@ export function updateWebviewEditorThemeMode(webview: vscode.Webview) {
   });
 }
 
+export function getConfigurationTarget() {
+  return vscode.workspace.workspaceFolders !== undefined
+    ? vscode.ConfigurationTarget.Workspace
+    : vscode.ConfigurationTarget.Global;
+}
+
 export async function updateServerState(
   serverUrl: string,
   document: vscode.TextDocument
@@ -89,6 +102,15 @@ export async function updateServerState(
     content: document.getText(),
     mode: getModeFromDocument(document),
   });
+}
+
+export async function updateServerEnv(serverUrl: string, filePath: string) {
+  return await ufetch.post(
+    EDITOR_SERVER_ROUTE_TABLE.SET_ENV_FILE_PATH(serverUrl),
+    {
+      [ENV_FILE_PATH]: filePath,
+    }
+  );
 }
 
 // Figure out what kind of AIConfig this is that we are loading
@@ -311,16 +333,10 @@ export async function setupEnvironmentVariables(
   const homedir = require("os").homedir(); // This is cross-platform: https://stackoverflow.com/a/9081436
   const defaultEnvPath = path.join(homedir, ".env");
 
-  // TODO: If there are multiple workspace folders, use common lowest
-  // ancestor as workspacePath: https://github.com/lastmile-ai/aiconfig/issues/1299
-  const workspacePath = vscode.workspace.workspaceFolders
-    ? vscode.workspace.workspaceFolders[0].uri.fsPath
-    : null;
-
   const envPath = await vscode.window.showInputBox({
     prompt: "Enter the path of your .env file",
     value: defaultEnvPath,
-    validateInput: (input) => validateEnvPath(input, workspacePath),
+    validateInput: (input) => validateEnvPath(input),
   });
 
   if (!envPath) {
@@ -379,33 +395,21 @@ export async function setupEnvironmentVariables(
       "Please define your environment variables."
     );
   }
+
+  // Update Server Env FLow
+  // Set the .env file path in the settings
+  // vscode Extension has a listener for changes defined at activation.
+  const config = vscode.workspace.getConfiguration(EXTENSION_NAME);
+  await config.update(ENV_FILE_PATH, envPath, getConfigurationTarget());
 }
 
 function validateEnvPath(
   inputPath: string,
-  workspacePath: string | null
 ): string | null {
   if (!inputPath) {
     return "File path is required";
   } else if (path.basename(inputPath) !== ".env") {
     return 'Filename must be ".env"';
-  } else if (workspacePath !== null) {
-    // loadenv() from Python checks each folder from the file/program where
-    // it's invoked for the presence of an `.env` file. Therefore, the `.env
-    // file must be saved either at the top-level directory of the workspace
-    // directory, or one of it's parent directories. This will ensure that if
-    // two AIConfig files are contained in separate paths within the workspace
-    // they'll still be able to access the same `.env` file.
-
-    // Note: If the `inputPath` directory is equal to the `workspacePath`,
-    // `relativePathFromEnvToWorkspace` will be an empty string
-    const relativePathFromEnvToWorkspace = path.relative(
-      path.dirname(inputPath),
-      workspacePath
-    );
-    if (relativePathFromEnvToWorkspace.startsWith("..")) {
-      return `File path must either be contained within the VS Code workspace directory ('${workspacePath}') or within a one of it's parent folders`;
-    }
-  }
+  } 
   return null;
 }

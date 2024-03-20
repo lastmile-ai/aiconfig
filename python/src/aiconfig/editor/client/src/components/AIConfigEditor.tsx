@@ -44,7 +44,6 @@ import {
   getPrompt,
 } from "../utils/aiconfigStateUtils";
 import { debounce, uniqueId } from "lodash";
-import GlobalParametersContainer from "./GlobalParametersContainer";
 import AIConfigContext from "../contexts/AIConfigContext";
 import ConfigNameDescription from "./ConfigNameDescription";
 import {
@@ -66,6 +65,7 @@ import NotificationProvider, {
   AIConfigEditorNotification,
 } from "./notifications/NotificationProvider";
 import NotificationContext from "./notifications/NotificationContext";
+import ConfigMetadataContainer from "./global/ConfigMetadataContainer";
 
 type Props = {
   aiconfig: AIConfig;
@@ -122,10 +122,12 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   cancel: (cancellationToken: string) => Promise<void>;
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
+  deleteOutput: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
+  deleteModelSettings?: (modelName: string) => Promise<void>;
   deletePrompt: (promptName: string) => Promise<void>;
   download?: () => Promise<void>;
   openInTextEditor?: () => Promise<void>;
-  getModels: (search: string) => Promise<string[]>;
+  getModels: (search?: string) => Promise<string[]>;
   getServerStatus?: () => Promise<{ status: "OK" | "ERROR" }>;
   logEventHandler?: (event: LogEvent, data?: LogEventData) => void;
   runPrompt: (
@@ -461,6 +463,72 @@ function AIConfigEditorBase({
     [debouncedUpdatePrompt, showNotification]
   );
 
+  const deleteModelSettingsCallback = callbacks?.deleteModelSettings;
+  const onDeleteGlobalModelSettings = useCallback(
+    async (modelName: string) => {
+      if (!deleteModelSettingsCallback) {
+        return;
+      }
+
+      dispatch({
+        type: "DELETE_GLOBAL_MODEL_SETTINGS",
+        modelName,
+      });
+      logEventHandler?.("DELETE_GLOBAL_MODEL_SETTINGS", { model: modelName });
+
+      try {
+        await deleteModelSettingsCallback(modelName);
+      } catch (err: unknown) {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error deleting global model settings",
+          message: message,
+          type: "error",
+        });
+      }
+    },
+    [deleteModelSettingsCallback, logEventHandler, showNotification]
+  );
+
+  const onUpdateGlobalModelSettings = useCallback(
+    async (modelName: string, newModelSettings: JSONObject) => {
+      if (!debouncedUpdateModel) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
+      dispatch({
+        type: "UPDATE_GLOBAL_MODEL_SETTINGS",
+        modelName,
+        modelSettings: newModelSettings,
+      });
+      logEventHandler?.("UPDATE_GLOBAL_MODEL_SETTINGS", { model: modelName });
+
+      const onError = (err: unknown) => {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error updating global model settings",
+          message,
+          type: "error",
+        });
+      };
+
+      try {
+        await debouncedUpdateModel(
+          {
+            modelName,
+            settings: newModelSettings as InferenceSettings,
+          },
+          onError
+        );
+      } catch (err: unknown) {
+        onError(err);
+      }
+    },
+    [debouncedUpdateModel, logEventHandler, showNotification]
+  );
+
   const onUpdatePromptModelSettings = useCallback(
     async (promptId: string, newModelSettings: JSONObject) => {
       if (!debouncedUpdateModel) {
@@ -742,6 +810,39 @@ function AIConfigEditorBase({
       }
     },
     [deletePromptCallback, dispatch, logEventHandler, showNotification]
+  );
+
+  const deleteOutputCallback = callbacks?.deleteOutput;
+  const onDeleteOutput = useCallback(
+    async (promptId: string) => {
+      if (!deleteOutputCallback) {
+        // Just no-op if no callback specified. We could technically perform
+        // client-side updates but that might be confusing
+        return;
+      }
+
+      dispatch({
+        type: "DELETE_OUTPUT",
+        id: promptId,
+      });
+      logEventHandler?.("DELETE_OUTPUT");
+
+      try {
+        const prompt = getPrompt(stateRef.current, promptId);
+        if (!prompt) {
+          throw new Error(`Could not find prompt with id ${promptId}`);
+        }
+        await deleteOutputCallback(prompt.name);
+      } catch (err: unknown) {
+        const message = (err as RequestCallbackError).message ?? null;
+        showNotification({
+          title: "Error deleting output for prompt",
+          message,
+          type: "error",
+        });
+      }
+    },
+    [deleteOutputCallback, dispatch, logEventHandler, showNotification]
   );
 
   const clearOutputsCallback = callbacks?.clearOutputs;
@@ -1033,7 +1134,7 @@ function AIConfigEditorBase({
   // Don't poll if server status is in an error state since it won't automatically recover
   const getServerStatusCallback = callbacks?.getServerStatus;
   useEffect(() => {
-    if (!getServerStatusCallback || serverStatus !== "OK") {
+    if (readOnly || !getServerStatusCallback || serverStatus !== "OK") {
       return;
     }
 
@@ -1047,7 +1148,7 @@ function AIConfigEditorBase({
     }, SERVER_HEARTBEAT_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [getServerStatusCallback, serverStatus]);
+  }, [getServerStatusCallback, readOnly, serverStatus]);
 
   const runningPromptId: string | undefined = aiconfigState._ui.runningPromptId;
 
@@ -1154,8 +1255,11 @@ function AIConfigEditorBase({
             setName={onSetName}
           />
         </div>
-        <GlobalParametersContainer
-          initialValue={aiconfigState?.metadata?.parameters ?? {}}
+        <ConfigMetadataContainer
+          getModels={callbacks?.getModels}
+          metadata={aiconfigState?.metadata}
+          onDeleteModelSettings={onDeleteGlobalModelSettings}
+          onUpdateModelSettings={onUpdateGlobalModelSettings}
           onUpdateParameters={onUpdateGlobalParameters}
         />
         <PromptsContainer
@@ -1166,6 +1270,7 @@ function AIConfigEditorBase({
           onChangePromptInput={onChangePromptInput}
           onChangePromptName={onChangePromptName}
           onDeletePrompt={onDeletePrompt}
+          onDeleteOutput={onDeleteOutput}
           onRunPrompt={onRunPrompt}
           onUpdatePromptMetadata={onUpdatePromptMetadata}
           onUpdatePromptModel={onUpdatePromptModel}

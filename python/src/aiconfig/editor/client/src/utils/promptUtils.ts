@@ -1,6 +1,6 @@
 import { JSONObject, JSONValue, Prompt } from "aiconfig";
 import { OpenAIChatModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatModelParserPromptSchema";
-import { OpenAIChatVisionModelParserPromptSchema } from "../shared/prompt_schemas/OpenAIChatVisionModelParserPromptSchema";
+import { OpenAIVisionParserPromptSchema } from "../shared/prompt_schemas/OpenAIVisionParserPromptSchema";
 import {
   Dalle2ImageGenerationParserPromptSchema,
   Dalle3ImageGenerationParserPromptSchema,
@@ -8,6 +8,7 @@ import {
 import { PaLMTextParserPromptSchema } from "../shared/prompt_schemas/PaLMTextParserPromptSchema";
 import { PaLMChatParserPromptSchema } from "../shared/prompt_schemas/PaLMChatParserPromptSchema";
 import { AnyscaleEndpointPromptSchema } from "../shared/prompt_schemas/AnyscaleEndpointPromptSchema";
+import { GeminiParserPromptSchema } from "../shared/prompt_schemas/GeminiPromptSchema";
 import { HuggingFaceAutomaticSpeechRecognitionPromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionPromptSchema";
 import { HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema";
 import { HuggingFaceImage2TextTransformerPromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextTransformerPromptSchema";
@@ -21,6 +22,7 @@ import { HuggingFaceTextGenerationRemoteInferencePromptSchema } from "../shared/
 import { HuggingFaceTextSummarizationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextSummarizationRemoteInferencePromptSchema";
 import { HuggingFaceTextTranslationRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceTextTranslationRemoteInferencePromptSchema";
 import { HuggingFaceImage2TextRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceImage2TextRemoteInferencePromptSchema";
+import { HuggingFaceVisualQuestionAnsweringRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceVisualQuestionAnsweringRemoteInferencePromptSchema";
 import { ClaudeBedrockPromptSchema } from "../shared/prompt_schemas/ClaudeBedrockPromptSchema";
 import { HuggingFaceConversationalRemoteInferencePromptSchema } from "../shared/prompt_schemas/HuggingFaceConversationalRemoteInferencePromptSchema";
 
@@ -79,8 +81,8 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   "gpt-3.5-turbo-0613": OpenAIChatModelParserPromptSchema,
   "gpt-3.5-turbo-16k-0613": OpenAIChatModelParserPromptSchema,
 
-  // TODO: Add GPT4-V parser in AIConfig
-  "gpt-4-vision-preview": OpenAIChatVisionModelParserPromptSchema,
+  // OpenAIVisionParser
+  "gpt-4-vision-preview": OpenAIVisionParserPromptSchema,
 
   // DalleImageGenerationParser
   "dall-e-2": Dalle2ImageGenerationParserPromptSchema,
@@ -115,11 +117,17 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   HuggingFaceTextTranslationRemoteInference:
     HuggingFaceTextTranslationRemoteInferencePromptSchema,
 
+  HuggingFaceVisualQuestionAnsweringRemoteInference:
+    HuggingFaceVisualQuestionAnsweringRemoteInferencePromptSchema,
+
   // PaLMTextParser
   "models/text-bison-001": PaLMTextParserPromptSchema,
 
   // PaLMChatParser
   "models/chat-bison-001": PaLMChatParserPromptSchema,
+
+  // Gemini
+  "gemini-pro": GeminiParserPromptSchema,
 
   // AnyscaleEndpoint
   AnyscaleEndpoint: AnyscaleEndpointPromptSchema,
@@ -157,6 +165,8 @@ export const PROMPT_SCHEMAS: Record<string, PromptSchema> = {
   Summarization: HuggingFaceTextSummarizationRemoteInferencePromptSchema,
   Translation: HuggingFaceTextTranslationRemoteInferencePromptSchema,
   Conversational: HuggingFaceConversationalRemoteInferencePromptSchema,
+  "Visual Question Answering":
+    HuggingFaceVisualQuestionAnsweringRemoteInferencePromptSchema,
 
   "Automatic Speech Recognition (Local)":
     HuggingFaceAutomaticSpeechRecognitionPromptSchema,
@@ -232,7 +242,13 @@ export function getPromptSchema(
   if (!modelName) {
     return undefined;
   }
-  return PROMPT_SCHEMAS[modelName];
+  return getPromptSchemaForModel(modelName);
+}
+
+export function getPromptSchemaForModel(
+  model: string
+): PromptSchema | undefined {
+  return PROMPT_SCHEMAS[model];
 }
 
 function isTextInputModality(prompt: Prompt): boolean {

@@ -3,25 +3,29 @@ import PromptInputRenderer from "./prompt_input/PromptInputRenderer";
 import PromptOutputsRenderer from "./prompt_outputs/PromptOutputsRenderer";
 import { ClientPrompt } from "../../shared/types";
 import { getPromptSchema } from "../../utils/promptUtils";
-import { Flex, Card } from "@mantine/core";
+import { Flex, Card, createStyles } from "@mantine/core";
 import { PromptInput as AIConfigPromptInput, JSONObject } from "aiconfig";
-import { memo, useCallback, useEffect, useMemo, useRef } from "react";
+import { memo, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import PromptOutputBar from "./PromptOutputBar";
 import PromptName from "./PromptName";
 import ModelSelector from "./ModelSelector";
 import { DEBOUNCE_MS } from "../../utils/constants";
 import { debounce } from "lodash";
+import PromptMenuButton from "./PromptMenuButton";
+import AIConfigContext from "../../contexts/AIConfigContext";
 
 type Props = {
   prompt: ClientPrompt;
   cancel?: (cancellationToken: string) => Promise<void>;
-  getModels?: (search: string) => Promise<string[]>;
+  getModels?: (search?: string) => Promise<string[]>;
   onChangePromptInput: (
     promptId: string,
     newPromptInput: AIConfigPromptInput
   ) => void;
   onChangePromptName: (promptId: string, newName: string) => void;
   onRunPrompt(promptId: string): Promise<void>;
+  onDeletePrompt(promptId: string): void;
+  onDeleteOutput(promptId: string): void;
   onUpdateModel: (promptId: string, newModel?: string) => void;
   onUpdateModelSettings: (
     promptId: string,
@@ -38,6 +42,25 @@ type Props = {
 
 export const PROMPT_CONTAINER_HEIGHT_MAP = new Map<string, number>();
 
+// Set default styles, which can be overridden by the provided themeOverride
+// or theme associated with mode
+const useStyles = createStyles((theme) => ({
+  cellStyle: {
+    borderBottomRightRadius: "0px",
+    borderTopRightRadius: "0px",
+    flex: 1,
+  },
+
+  sidePanel: {
+    border: `1px solid ${
+      theme.colorScheme === "dark" ? theme.colors.dark[4] : theme.colors.gray[3]
+    }`,
+    borderBottomRightRadius: "4px",
+    borderLeft: "none",
+    borderTopRightRadius: "4px",
+  },
+}));
+
 export default memo(function PromptContainer({
   prompt,
   cancel,
@@ -46,12 +69,16 @@ export default memo(function PromptContainer({
   onChangePromptName,
   defaultConfigModelName,
   onRunPrompt,
+  onDeletePrompt,
+  onDeleteOutput,
   onUpdateModel,
   onUpdateModelSettings,
   onUpdateParameters,
   onUpdatePromptMetadata,
   isRunButtonDisabled = false,
 }: Props) {
+  const { classes } = useStyles();
+  const { readOnly } = useContext(AIConfigContext);
   const promptId = prompt._ui.id;
   const onChangeInput = useCallback(
     (newInput: AIConfigPromptInput) => onChangePromptInput(promptId, newInput),
@@ -82,6 +109,16 @@ export default memo(function PromptContainer({
   const runPrompt = useCallback(
     async () => await onRunPrompt(promptId),
     [promptId, onRunPrompt]
+  );
+
+  const deletePrompt = useCallback(
+    async () => await onDeletePrompt(promptId),
+    [promptId, onDeletePrompt]
+  );
+
+  const deleteOutput = useCallback(
+    async () => await onDeleteOutput(promptId),
+    [promptId, onDeleteOutput]
   );
 
   const onCancelRun = useCallback(async () => {
@@ -138,50 +175,65 @@ export default memo(function PromptContainer({
   const inputSchema = promptSchema?.input;
 
   return (
-    <Flex justify="space-between" w="100%">
-      <Card withBorder className="cellStyle" ref={cellInputOutputRef}>
-        <Flex direction="column">
-          <Flex justify="space-between" mb="0.5em">
-            <PromptName
-              promptId={promptId}
-              name={prompt.name}
-              onUpdate={onChangeName}
-            />
-            <ModelSelector
-              getModels={getModels}
-              prompt={prompt}
-              onSetModel={updateModel}
-              defaultConfigModelName={defaultConfigModelName}
-            />
-          </Flex>
-          <PromptInputRenderer
-            input={prompt.input}
-            schema={inputSchema}
-            onChangeInput={onChangeInput}
-            onCancelRun={onCancelRun}
-            onRunPrompt={runPrompt}
-            isRunning={prompt._ui.isRunning}
-            isRunButtonDisabled={isRunButtonDisabled}
-          />
-
-          {prompt.outputs && prompt.outputs.length > 0 && (
-            <>
-              <PromptOutputBar />
-              <PromptOutputsRenderer outputs={prompt.outputs} />
-            </>
-          )}
-        </Flex>
-      </Card>
-      <div className="sidePanel">
-        <PromptActionBar
-          defaultConfigModelName={defaultConfigModelName}
-          prompt={prompt}
-          promptSchema={promptSchema}
-          onUpdateModelSettings={updateModelSettings}
-          onUpdateParameters={updateParameters}
-          onUpdatePromptMetadata={updatePromptMetadata}
+    <>
+      {!readOnly && (
+        <PromptMenuButton
+          showDeleteOutput={!!prompt.outputs?.length}
+          onDeletePrompt={deletePrompt}
+          onDeleteOutput={deleteOutput}
         />
-      </div>
-    </Flex>
+      )}
+      <Flex justify="space-between" w="100%">
+        <Card
+          withBorder
+          className={`${classes.cellStyle} cellStyle`}
+          ref={cellInputOutputRef}
+          >
+          <Flex direction="column">
+            <Flex justify="space-between" mb="0.5em">
+              <PromptName
+                promptId={promptId}
+                name={prompt.name}
+                onUpdate={onChangeName}
+                />
+              <ModelSelector
+                getModels={getModels}
+                prompt={prompt}
+                onSetModel={updateModel}
+                defaultConfigModelName={defaultConfigModelName}
+                />
+            </Flex>
+            <PromptInputRenderer
+              input={prompt.input}
+              schema={inputSchema}
+              onChangeInput={onChangeInput}
+              onCancelRun={onCancelRun}
+              onRunPrompt={runPrompt}
+              isRunning={prompt._ui.isRunning}
+              isRunButtonDisabled={isRunButtonDisabled}
+              />
+
+            {prompt.outputs && prompt.outputs.length > 0 && (
+              <>
+              <Flex justify="space-between" direction="column">
+                <PromptOutputBar />
+              </Flex>
+                <PromptOutputsRenderer outputs={prompt.outputs} />
+              </>
+            )}
+          </Flex>
+        </Card>
+        <div className={`${classes.sidePanel} sidePanel`}>
+          <PromptActionBar
+            defaultConfigModelName={defaultConfigModelName}
+            prompt={prompt}
+            promptSchema={promptSchema}
+            onUpdateModelSettings={updateModelSettings}
+            onUpdateParameters={updateParameters}
+            onUpdatePromptMetadata={updatePromptMetadata}
+            />
+        </div>
+      </Flex>
+    </>
   );
 });

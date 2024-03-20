@@ -10,7 +10,7 @@ from enum import Enum
 from textwrap import dedent
 from threading import Event
 from types import ModuleType
-from typing import Any, Callable, NewType, Type, TypeVar, cast
+from typing import Any, Callable, NewType, Type, TypeVar, cast, Optional, Tuple
 
 import lastmile_utils.lib.core.api as core_utils
 import result
@@ -66,6 +66,7 @@ class EditServerConfig(core_utils.Record):
     log_level: str | int = "INFO"
     server_mode: ServerMode = ServerMode.PROD
     parsers_module_path: str = "aiconfig_model_registry.py"
+    env_file_path: Optional[str] = None
 
     @field_validator("server_mode", mode="before")
     def convert_to_mode(
@@ -84,6 +85,7 @@ class StartServerConfig(core_utils.Record):
     log_level: str | int = "INFO"
     server_mode: ServerMode = ServerMode.PROD
     parsers_module_path: str = "aiconfig_model_registry.py"
+    env_file_path: Optional[str] = None
 
     @field_validator("server_mode", mode="before")
     def convert_to_mode(
@@ -102,6 +104,7 @@ class ServerState:
     aiconfigrc_path: str = os.path.join(os.path.expanduser("~"), ".aiconfigrc")
     aiconfig: AIConfigRuntime | None = None
     events: dict[str, Event] = field(default_factory=dict)
+    env_file_path: str | None = None
 
 
 class AIConfigRC(core_utils.Record):
@@ -293,13 +296,18 @@ def init_server_state(
     aiconfigrc_path: str,
 ) -> Result[None, str]:
     LOGGER.info("Initializing server state for 'edit' command")
-    # TODO: saqadri - load specific .env file if specified
-    dotenv.load_dotenv()
     _load_user_parser_module_if_exists(
         initialization_settings.parsers_module_path
     )
     state = get_server_state(app)
     state.aiconfigrc_path = aiconfigrc_path
+    env_file_path_is_valid, message = validate_env_file_path(
+        initialization_settings.env_file_path
+    )
+    if not env_file_path_is_valid:
+        LOGGER.warning(f"{message}: '{initialization_settings.env_file_path}'")
+    else:
+        state.env_file_path = initialization_settings.env_file_path
 
     if isinstance(initialization_settings, StartServerConfig):
         # The aiconfig will be loaded later, when the editor sends the payload.
@@ -499,3 +507,32 @@ def run_aiconfig_operation_with_request_json(
                 code=400,
                 aiconfig=None,
             ).to_flask_format()
+
+
+def validate_env_file_path(
+    request_env_path: str | None | Any,
+) -> Tuple[bool, str]:
+    """
+    Validates the given env file path. If its not valid, returns a tuple of (False, str) with a message.
+
+    Returns: (bool, str)
+    """
+    if request_env_path is None:
+        return False, "No .env file path provided"
+
+    if not isinstance(request_env_path, str):
+        return False, "Specified .env file path is not a string"
+
+    # Check if path exists / is accessible
+    path_exists = os.path.exists(request_env_path)
+
+    if path_exists is False:
+        return False, "Specified .env file path does not exist"
+
+    # Check if filename format is correct
+    filename_format_correct = request_env_path.endswith(".env")
+
+    if filename_format_correct is False:
+        return False, "Specified env file path is not a .env file"
+
+    return True, f".env file path {request_env_path} is valid"

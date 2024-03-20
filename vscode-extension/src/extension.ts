@@ -2,10 +2,17 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 
+import {
+  ActiveEnvironmentPathChangeEvent,
+  PythonExtension,
+} from "@vscode/python-extension";
 import { ufetch } from "ufetch";
-import { exec, spawn } from "child_process";
-import fs from "fs";
 import path from "path";
+import { AIConfigEditorProvider } from "./aiConfigEditor";
+import {
+  AIConfigEditorManager,
+  AIConfigEditorState,
+} from "./aiConfigEditorManager";
 import {
   EXTENSION_NAME,
   COMMANDS,
@@ -18,24 +25,20 @@ import {
   isSupportedConfigExtension,
   SUPPORTED_FILE_EXTENSIONS,
   setupEnvironmentVariables,
+  getConfigurationTarget,
+  getModeFromDocument,
+  updateServerEnv
 } from "./util";
 import {
-  getPythonPath,
   initialize,
+  installDependencies,
   savePythonInterpreterToCache,
 } from "./utilities/pythonSetupUtils";
-import { AIConfigEditorProvider } from "./aiConfigEditor";
-import {
-  AIConfigEditorManager,
-  AIConfigEditorState,
-} from "./aiConfigEditorManager";
-import {
-  ActiveEnvironmentPathChangeEvent,
-  PythonExtension,
-} from "@vscode/python-extension";
+import { performVersionInstallAndUpdateActionsIfNeeded } from "./utilities/versionUpdateUtils";
+import { ENV_FILE_PATH } from "./constants";
 
 // This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+// Your extension is activated the very first time a command is executed
 export async function activate(context: vscode.ExtensionContext) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
@@ -48,24 +51,23 @@ export async function activate(context: vscode.ExtensionContext) {
     log: true,
   });
 
+  await performVersionInstallAndUpdateActionsIfNeeded(context);
+
+  const showWelcomeCommand = vscode.commands.registerCommand(
+    COMMANDS.SHOW_WELCOME,
+    () => {
+      vscode.commands.executeCommand(
+        "workbench.action.openWalkthrough",
+        "lastmile-ai.vscode-aiconfig#welcomeWalkthrough"
+      );
+    }
+  );
+  context.subscriptions.push(showWelcomeCommand);
+
   const setupCommand = vscode.commands.registerCommand(COMMANDS.INIT, () => {
     initialize(context, extensionOutputChannel);
   });
   context.subscriptions.push(setupCommand);
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.SHOW_WELCOME, () => {
-      const welcomeFilePath = path.join(
-        context.extensionPath,
-        "media",
-        "welcomePage.md"
-      );
-      vscode.commands.executeCommand(
-        "markdown.showPreview",
-        vscode.Uri.file(welcomeFilePath)
-      );
-    })
-  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(COMMANDS.SET_API_KEYS, async () => {
@@ -74,20 +76,36 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   const createAIConfigJSONCommand = vscode.commands.registerCommand(
-    COMMANDS.CREATE_NEW_JSON,
+    COMMANDS.CREATE_EXAMPLE_JSON,
     async () => {
-      return await createNewAIConfig(context, aiconfigEditorManager, "json");
+      return await createNewAIConfig(context, "json");
     }
   );
   context.subscriptions.push(createAIConfigJSONCommand);
 
   const createAIConfigYAMLCommand = vscode.commands.registerCommand(
-    COMMANDS.CREATE_NEW_YAML,
+    COMMANDS.CREATE_EXAMPLE_YAML,
     async () => {
-      return await createNewAIConfig(context, aiconfigEditorManager, "yaml");
+      return await createNewAIConfig(context, "yaml");
     }
   );
   context.subscriptions.push(createAIConfigYAMLCommand);
+
+  const createEmptyAIConfigYAMLCommand = vscode.commands.registerCommand(
+    COMMANDS.CREATE_EMPTY_YAML,
+    async () => {
+      return await createNewAIConfig(context, "yaml", true);
+    }
+  );
+  context.subscriptions.push(createEmptyAIConfigYAMLCommand);
+
+  const createEmptyAIConfigJSONCommand = vscode.commands.registerCommand(
+    COMMANDS.CREATE_EMPTY_JSON,
+    async () => {
+      return await createNewAIConfig(context, "json", true);
+    }
+  );
+  context.subscriptions.push(createEmptyAIConfigJSONCommand);
 
   const shareModelParserCommand = vscode.commands.registerCommand(
     COMMANDS.SHARE,
@@ -96,6 +114,18 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   );
   context.subscriptions.push(shareModelParserCommand);
+
+  const submitUserFeedbackCommand = vscode.commands.registerCommand(
+    COMMANDS.SUBMIT_FEEDBACK,
+    () => {
+      // TODO: Add issue template forms to standardize feedback that we submit
+      // Can include info like device OS, extension version, aiconfig.log content, pip list, etc
+      vscode.env.openExternal(
+        vscode.Uri.parse("https://github.com/lastmile-ai/aiconfig/issues/new")
+      );
+    }
+  );
+  context.subscriptions.push(submitUserFeedbackCommand);
 
   const customModelParserCommand = vscode.commands.registerCommand(
     COMMANDS.CUSTOM_MODEL_REGISTRY_PATH,
@@ -133,6 +163,7 @@ export async function activate(context: vscode.ExtensionContext) {
     COMMANDS.RESTART_ACTIVE_EDITOR_SERVER,
     async () => {
       const activeEditor = aiconfigEditorManager.getActiveEditor();
+      await installDependencies(context, extensionOutputChannel);
       activeEditor?.editorServer?.restart();
     }
   );
@@ -174,14 +205,19 @@ export async function activate(context: vscode.ExtensionContext) {
           aiconfigEditorManager.getRegisteredEditors()
         );
         if (editors.length > 0) {
+          // TODO: Check if user has set python interpreter, only do it if:
+          // after env is created
+          // python interpreter has actually changed
+
           vscode.window
             .showInformationMessage(
               "Python Interpreter Updated: Would you like to refresh active AIConfig files?",
               ...["Yes", "No"]
             )
-            .then((selection) => {
+            .then(async (selection) => {
               if (selection === "Yes") {
-                editors.forEach((editor) => {
+                await installDependencies(context, extensionOutputChannel);
+                editors.forEach(async (editor) => {
                   editor.editorServer.restart();
                 });
               }
@@ -190,6 +226,25 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     )
   );
+
+  // Handle changes to the .env path
+  context.subscriptions.push(vscode.workspace.onDidChangeConfiguration( async (event) => {
+    if (event.affectsConfiguration("vscode-aiconfig" + "." + ENV_FILE_PATH)) {
+      // Get new env
+      const envPath = vscode.workspace.getConfiguration("vscode-aiconfig").get(ENV_FILE_PATH) as string;
+      console.log(`New .env path set: ${envPath}`);
+      // set env on all AIConfig Servers
+      const editors: Array<AIConfigEditorState> = Array.from(
+        aiconfigEditorManager.getRegisteredEditors()
+      );
+      if (editors.length > 0) {
+        editors.forEach(async (editor) => {
+          await updateServerEnv(editor.editorServer.url, envPath);
+        });
+      
+      }
+  }
+  }));
 }
 
 // This method is called when your extension is deactivated
@@ -202,53 +257,64 @@ export function deactivate() {
  */
 async function createNewAIConfig(
   context: vscode.ExtensionContext,
-  aiconfigEditorManager: AIConfigEditorManager,
-  mode: "json" | "yaml" = "json"
+  mode: "json" | "yaml" = "yaml",
+  empty: boolean = false
 ) {
-  const workspaceUri = vscode.workspace.workspaceFolders
-    ? vscode.workspace.workspaceFolders[0].uri
-    : null;
-  const untitledUri = workspaceUri
-    ? workspaceUri.with({
-        scheme: "untitled",
-        path: `${workspaceUri.path}/untitled.aiconfig.${mode}`,
-      })
-    : vscode.Uri.parse(`untitled:untitled.aiconfig.${mode}`);
-
   // Specify the initial content here
-  const newAIConfigJSON = vscode.Uri.joinPath(
+  const fileContentPath = vscode.Uri.joinPath(
     context.extensionUri,
     "static",
-    "untitled.aiconfig.json"
+    relativeStaticAIConfigFilePath(mode, empty)
   );
-
-  const newAIConfigYAML = vscode.Uri.joinPath(
-    context.extensionUri,
-    "static",
-    "untitled.aiconfig.yaml"
-  );
-
-  const fileContentPath = mode === "json" ? newAIConfigJSON : newAIConfigYAML;
-
   const fileContentBuffer = await vscode.workspace.fs.readFile(fileContentPath);
   const initialContent = fileContentBuffer.toString();
 
-  const doc = await vscode.workspace.openTextDocument({
-    content: initialContent,
-    language: mode,
+  const workspacePath = vscode.workspace.workspaceFolders
+    ? vscode.workspace.workspaceFolders[0].uri.path
+    : null;
+
+  const untitledFileName = `untitled.aiconfig.${mode}`;
+  const newConfigFilePath = workspacePath
+    ? path.join(workspacePath, untitledFileName)
+    : untitledFileName;
+  const newConfigUri = vscode.Uri.file(newConfigFilePath).with({
+    scheme: "untitled",
   });
 
-  //const doc = await vscode.workspace.openTextDocument(untitledUri);
-  await vscode.window.showTextDocument(doc, {
-    preview: false,
-    viewColumn: vscode.ViewColumn.One,
-  });
+  const edit = new vscode.WorkspaceEdit();
+  edit.insert(newConfigUri, new vscode.Position(0, 0), initialContent);
+  await vscode.workspace.applyEdit(edit);
 
-  await vscode.commands.executeCommand(
-    "vscode.openWith",
-    doc.uri,
-    AIConfigEditorProvider.viewType
-  );
+  try {
+    await vscode.commands.executeCommand(
+      "vscode.openWith",
+      newConfigUri,
+      AIConfigEditorProvider.viewType
+    );
+  } catch (e) {
+    vscode.window.showErrorMessage(
+      `Error opening new AIConfig file ${newConfigFilePath}`
+    );
+  }
+}
+
+function relativeStaticAIConfigFilePath(
+  mode: "json" | "yaml" = "yaml",
+  empty: boolean = true
+): string {
+  if (mode === "json") {
+    if (empty) {
+      return "empty.aiconfig.json";
+    } else {
+      return "example.aiconfig.json";
+    }
+  } else {
+    if (empty) {
+      return "empty.aiconfig.yaml";
+    } else {
+      return "example.aiconfig.yaml";
+    }
+  }
 }
 
 /**
@@ -437,7 +503,7 @@ async function handleCustomModelRegistryUpdate(
   await config.update(
     "modelRegistryPath",
     modelRegistryPath,
-    vscode.ConfigurationTarget.Workspace
+    getConfigurationTarget()
   );
 
   vscode.window.showInformationMessage(
@@ -479,17 +545,13 @@ async function shareAIConfig(
   const fileName: string = activeEditor.document.fileName;
   const sanitizedFileName: string = sanitizeFileName(fileName);
 
-  // TODO: Add back once CORS is resolved
-  // const policyResponse = await fetch(
-  //   "https://lastmileai.dev/api/upload/publicpolicy"
-  // );
-  // const policy = await policyResponse.json();
   const uploadUrl = "https://s3.amazonaws.com/lastmileai.aiconfig.public/";
   const randomPath = Math.round(Math.random() * 10000);
   const uploadKey: string = `aiconfigs/${getTodayDateString()}/${randomPath}/${sanitizedFileName}`;
-
-  // TODO: Will also need to check for yaml files and change the contentType accordingly
-  const contentType = "application/json";
+  const contentType =
+    getModeFromDocument(activeEditor.document) === "json"
+      ? "application/json"
+      : "application/yaml";
 
   const formData = new FormData();
   formData.append("key", uploadKey);

@@ -3,15 +3,15 @@ import NotificationContext from "../components/notifications/NotificationContext
 import AIConfigContext from "../contexts/AIConfigContext";
 
 export default function useLoadModels(
-  modelSearch: string,
-  getModels?: (search: string) => Promise<string[]>
+  getModels?: (search?: string) => Promise<string[]>,
+  modelSearch?: string
 ) {
   const [models, setModels] = useState<string[]>([]);
   const { showNotification } = useContext(NotificationContext);
   const { readOnly } = useContext(AIConfigContext);
 
   const loadModels = useCallback(
-    async (modelSearch: string) => {
+    async (modelSearch?: string) => {
       if (!getModels || readOnly) {
         return;
       }

@@ -16,7 +16,7 @@ from .default_parsers.anyscale_endpoint import DefaultAnyscaleEndpointParser
 from .default_parsers.azure import AzureOpenAIParser
 from .default_parsers.claude import ClaudeBedrockModelParser
 from .default_parsers.dalle import DalleImageGenerationParser
-from .default_parsers.gemini import  GeminiModelParser
+from .default_parsers.gemini import GeminiModelParser
 from .default_parsers.openai import DefaultOpenAIParser, OpenAIInference
 from .default_parsers.palm import PaLMChatParser, PaLMTextParser
 from .default_parsers.parameterized_model_parser import (
