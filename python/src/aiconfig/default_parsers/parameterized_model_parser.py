@@ -48,7 +48,9 @@ class ParameterizedModelParser(ModelParser):
         run_with_dependencies: Optional[bool] = False,
     ) -> List[Output]:
         if run_with_dependencies:
-            return await self.run_with_dependencies(prompt, aiconfig, options, parameters)
+            return await self.run_with_dependencies(
+                prompt, aiconfig, options, parameters
+            )
         else:
             return await self.run_inference(
                 prompt, aiconfig, options, parameters
