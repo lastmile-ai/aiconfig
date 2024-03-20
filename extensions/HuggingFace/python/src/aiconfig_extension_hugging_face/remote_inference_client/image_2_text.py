@@ -270,6 +270,7 @@ class HuggingFaceImage2TextRemoteInference(ModelParser):
                     "prompt": prompt,
                     "options": sanitized_options,
                     "parameters": parameters,
+                    "run_with_dependencies": run_with_dependencies,
                 },
             )
         )

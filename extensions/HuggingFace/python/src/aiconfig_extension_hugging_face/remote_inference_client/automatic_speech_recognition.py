@@ -263,6 +263,7 @@ class HuggingFaceAutomaticSpeechRecognitionRemoteInference(ModelParser):
                     "prompt": prompt,
                     "options": options,
                     "parameters": parameters,
+                    "run_with_dependencies": run_with_dependencies,
                 },
             )
         )
