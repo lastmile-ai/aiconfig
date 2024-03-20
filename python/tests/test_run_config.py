@@ -69,7 +69,7 @@ async def test_running_prompt_with_dependencies(set_temporary_env_vars):
         new=mock_openai,
     ):
         config_relative_path = (
-            "aiconfigs/tarvel_gpt_prompts_with_dependency.json"
+            "aiconfigs/travel_gpt_prompts_with_dependency.json"
         )
         config_absolute_path = get_absolute_file_path_from_relative(
             __file__, config_relative_path
