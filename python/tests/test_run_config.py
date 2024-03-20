@@ -55,7 +55,6 @@ async def test_load_parametrized_data_config(set_temporary_env_vars):
         }
 
 
-@pytest.mark.xfail
 @pytest.mark.asyncio
 async def test_running_prompt_with_dependencies(set_temporary_env_vars):
     """Test running a prompt with dependencies with the run_with_dependencies flag set to True"""
@@ -64,7 +63,11 @@ async def test_running_prompt_with_dependencies(set_temporary_env_vars):
         side_effect=mock_openai_chat_completion_with_dependencies
     )
 
-    with patch.object(openai.chat.completions, "create", new=mock_openai):
+    with patch.object(
+        openai.resources.chat.Completions,
+        "create",
+        new=mock_openai,
+    ):
         config_relative_path = (
             "aiconfigs/tarvel_gpt_prompts_with_dependency.json"
         )
