@@ -66,6 +66,7 @@ class ModelParser(ABC):
         aiconfig: AIConfig,
         options: Optional["InferenceOptions"] = None,
         parameters: Dict = {},
+        run_with_dependencies: Optional[bool] = False,
     ) -> ExecuteResult:
         """
         Execute model inference based on completion data to be constructed in deserialize(), which includes the input prompt and
