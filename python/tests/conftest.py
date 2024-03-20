@@ -107,7 +107,12 @@ def mock_openai_chat_completion_with_dependencies(**kwargs):
                 "top_p": 1,
                 "temperature": 1,
                 "stream": False,
-                "messages": [{"content": "Tell me 10 fun attractions to do in NYC.", "role": "user"}],
+                "messages": [
+                    {
+                        "content": "Tell me 10 fun attractions to do in NYC.",
+                        "role": "user",
+                    }
+                ],
             },
             ChatCompletion(
                 **{
@@ -125,7 +130,11 @@ def mock_openai_chat_completion_with_dependencies(**kwargs):
                     "created": 1706140152,
                     "model": "gpt-3.5-turbo-0613",
                     "object": "chat.completion",
-                    "usage": {"completion_tokens": 363, "prompt_tokens": 18, "total_tokens": 381},
+                    "usage": {
+                        "completion_tokens": 363,
+                        "prompt_tokens": 18,
+                        "total_tokens": 381,
+                    },
                 }
             ),
         ],
@@ -137,7 +146,10 @@ def mock_openai_chat_completion_with_dependencies(**kwargs):
                 "top_p": 1,
                 "stream": False,
                 "messages": [
-                    {"content": "Tell me 10 fun attractions to do in NYC.", "role": "user"},
+                    {
+                        "content": "Tell me 10 fun attractions to do in NYC.",
+                        "role": "user",
+                    },
                     {
                         "content": '1. Visit Times Square: Experience the iconic "Crossroads of the World" with its dazzling billboards, Broadway shows, and lively atmosphere.\n2. Explore Central Park: Take a leisurely stroll or rent a bike to discover this sprawling oasis in the heart of Manhattan, complete with picturesque landscapes, walking trails, and various attractions.\n3. Take a ferry to the Statue of Liberty: Visit the renowned Statue of Liberty on Liberty Island and enjoy stunning views of the city skyline from the ferry ride itself.\n4. Visit the Metropolitan Museum of Art: Immerse yourself in world-class art collections spanning thousands of years and diverse cultures, all housed in the magnificent Met museum.\n5. Explore the High Line: Walk along the elevated park built on a historic freight rail line, offering beautiful green spaces, public art installations, and fantastic views of the city.\n6. Enjoy a Broadway show: Watch a live performance of a Broadway musical or play in one of the iconic theaters in the Theater District, offering a memorable experience for theater enthusiasts.\n7. Visit the 9/11 Memorial and Museum: Pay your respects at the site of the former World Trade Center twin towers and learn about the events of September 11, 2001, at the informative museum.\n8. Take a food tour in Greenwich Village: Indulge in a delicious gastronomic adventure, exploring the vibrant food scene in Greenwich Village, renowned for its diverse restaurants and eateries.\n9. Visit the Brooklyn Bridge: Take a walk across this iconic suspension bridge, providing breathtaking views of the Manhattan skyline and the East River.\n10. Explore the Museum of Modern Art (MoMA): Discover a vast collection of modern and contemporary art, including works by artists like Van Gogh, Picasso, Warhol, and many more at this renowned art institution.',
                         "role": "assistant",
@@ -164,7 +176,11 @@ def mock_openai_chat_completion_with_dependencies(**kwargs):
                     "created": 1706140158,
                     "model": "gpt-3.5-turbo-0613",
                     "object": "chat.completion",
-                    "usage": {"completion_tokens": 236, "prompt_tokens": 767, "total_tokens": 1003},
+                    "usage": {
+                        "completion_tokens": 236,
+                        "prompt_tokens": 767,
+                        "total_tokens": 1003,
+                    },
                 }
             ),
         ],
@@ -174,6 +190,7 @@ def mock_openai_chat_completion_with_dependencies(**kwargs):
         if kwargs == input_params:
             return response
     raise Exception("Unexpected arguments:\n {}".format(kwargs))
+
 
 @pytest.fixture
 def set_temporary_env_vars():
