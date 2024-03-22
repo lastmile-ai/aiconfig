@@ -365,7 +365,7 @@ class AIConfigRuntime(AIConfig):
 
         Raises:
             IndexError: If the identifier for the prompt doesn't exist in the list of available prompts.
-
+            IndexError: If the model name doesn't exist in the list of available model parsers.
         Returns:
             list[Tuple["ExecuteResult", JSONObject | Any, Dict[str, Any]]]: A list of tuples, each tuple consisting of the inference result, the corresponding resolved completion parameters, and the parameters dict used.
 
