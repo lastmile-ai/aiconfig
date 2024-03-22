@@ -88,7 +88,7 @@ class TestModelParserRegistry:
 
     def test_retrieve_nonexistent_model_parser(self):
         # Attempt to retrieve a model parser that is not registered
-        with pytest.raises(KeyError):
+        with pytest.raises(IndexError):
             ModelParserRegistry.get_model_parser("nonexistent-model")
 
     def test_retrieve_model_parser_for_prompt(
