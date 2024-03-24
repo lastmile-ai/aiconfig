@@ -61,6 +61,10 @@ class ModelParserRegistry:
         Returns:
             ModelParser: The retrieved model parser
         """
+        if model_id not in ModelParserRegistry.parser_ids():
+            raise IndexError(
+                f"Model parser '{model_id}' not found in registry, available model parsers are:\n {ModelParserRegistry.parser_ids()}"
+            )
         return ModelParserRegistry._parsers[model_id]
 
     @staticmethod
