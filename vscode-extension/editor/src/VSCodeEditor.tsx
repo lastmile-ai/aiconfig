@@ -233,11 +233,20 @@ export default function VSCodeEditor() {
 
   const deleteModelSettings = useCallback(
     async (modelName: string) => {
-      return await ufetch.post(ROUTE_TABLE.DELETE_MODEL(aiConfigServerUrl), {
-        model_name: modelName,
-      });
+      const res = await ufetch.post(
+        ROUTE_TABLE.DELETE_MODEL(aiConfigServerUrl),
+        {
+          model_name: modelName,
+        }
+      );
+
+      if (vscode) {
+        notifyDocumentDirty(vscode);
+      }
+
+      return res;
     },
-    [aiConfigServerUrl]
+    [aiConfigServerUrl, vscode]
   );
 
   const deletePrompt = useCallback(
@@ -270,6 +279,24 @@ export default function VSCodeEditor() {
 
     return res;
   }, [aiConfigServerUrl, vscode]);
+
+  const deleteOutput = useCallback(
+    async (promptName: string) => {
+      const res = await ufetch.post(
+        ROUTE_TABLE.DELETE_OUTPUT(aiConfigServerUrl),
+        {
+          prompt_name: promptName,
+        }
+      );
+
+      if (vscode) {
+        notifyDocumentDirty(vscode);
+      }
+
+      return res;
+    },
+    [aiConfigServerUrl, vscode]
+  );
 
   const runPrompt = useCallback(
     async (
@@ -474,6 +501,7 @@ export default function VSCodeEditor() {
       cancel,
       clearOutputs,
       deleteModelSettings,
+      deleteOutput,
       deletePrompt,
       getModels,
       getServerStatus,
@@ -494,6 +522,7 @@ export default function VSCodeEditor() {
       cancel,
       clearOutputs,
       deleteModelSettings,
+      deleteOutput,
       deletePrompt,
       getModels,
       getServerStatus,
