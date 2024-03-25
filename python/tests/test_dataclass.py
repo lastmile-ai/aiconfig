@@ -18,8 +18,7 @@ def test_get_raw_prompt_from_prompt_object_prompt_input():
     prompt = Prompt(
         name="test",
         input=PromptInput(
-            prompt="This is a basic prompt",
-            data={},
+            data="This is a basic prompt",
         ),
         metadata=PromptMetadata(
             model=ModelMetadata(name="FakeMetadata", settings={}),

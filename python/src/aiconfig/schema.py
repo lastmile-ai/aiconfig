@@ -196,14 +196,18 @@ class Prompt(BaseModel):
         extra = "allow"
 
     def add_output(self, output: Output):
+        """
+        Add the output to the prompt's output list
+        """
+        if self.outputs is None:
+            self.outputs = [output]
         self.outputs.append(output)
 
-    def get_raw_prompt_from_config(self):
+    def get_raw_prompt_from_config(self) -> str:
         """Gets raw prompt from config"""
         if isinstance(self.input, str):
             return self.input
-        else:
-            return self.input.prompt
+        return str(self.input.data)
 
 
 class SchemaVersion(BaseModel):

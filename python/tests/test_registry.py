@@ -88,7 +88,7 @@ class TestModelParserRegistry:
 
     def test_retrieve_nonexistent_model_parser(self):
         # Attempt to retrieve a model parser that is not registered
-        with pytest.raises(KeyError):
+        with pytest.raises(IndexError):
             ModelParserRegistry.get_model_parser("nonexistent-model")
 
     def test_retrieve_model_parser_for_prompt(
@@ -134,7 +134,7 @@ class TestModelParserRegistry:
         ai_config_runtime.add_prompt(prompt.name, prompt)
 
         # Attempt to retrieve a model parser for the Prompt
-        with pytest.raises(KeyError):
+        with pytest.raises(IndexError):
             ModelParserRegistry.get_model_parser_for_prompt(
                 prompt, ai_config_runtime
             ).id()
@@ -153,7 +153,7 @@ class TestModelParserRegistry:
         ModelParserRegistry.remove_model_parser("model-8")
 
         # Attempt to retrieve the removed model parser
-        with pytest.raises(KeyError):
+        with pytest.raises(IndexError):
             parser = ModelParserRegistry.get_model_parser("model-8") == None
 
     def test_clear_registry(self):
