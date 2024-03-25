@@ -10,6 +10,8 @@ export const ROUTE_TABLE = {
     urlJoin(hostUrl, API_ENDPOINT, "/clear_outputs"),
   DELETE_MODEL: (hostUrl: string) =>
     urlJoin(hostUrl, API_ENDPOINT, "/delete_model"),
+  DELETE_OUTPUT: (hostUrl: string) =>
+    urlJoin(hostUrl, API_ENDPOINT, "/delete_output"),
   DELETE_PROMPT: (hostUrl: string) =>
     urlJoin(hostUrl, API_ENDPOINT, "/delete_prompt"),
   GET_AICONFIGRC: (hostUrl: string) =>
