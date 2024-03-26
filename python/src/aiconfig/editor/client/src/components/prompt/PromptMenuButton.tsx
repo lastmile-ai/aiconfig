@@ -1,5 +1,5 @@
 import { Button, Menu, createStyles } from "@mantine/core";
-import { IconDotsVertical, IconTrash } from "@tabler/icons-react";
+import { IconDotsVertical, IconEraser, IconTrash } from "@tabler/icons-react";
 import { memo } from "react";
 
 const useStyles = createStyles(() => ({
@@ -9,11 +9,13 @@ const useStyles = createStyles(() => ({
 }));
 
 export default memo(function PromptMenuButton({
-  promptId,
+  showDeleteOutput,
+  onDeleteOutput,
   onDeletePrompt,
 }: {
-  promptId: string;
-  onDeletePrompt: (id: string) => void;
+  showDeleteOutput: boolean;
+  onDeletePrompt: () => void;
+  onDeleteOutput: () => void;
 }) {
   const { classes } = useStyles();
 
@@ -31,10 +33,18 @@ export default memo(function PromptMenuButton({
       </Menu.Target>
 
       <Menu.Dropdown>
+        {showDeleteOutput ? (
+          <Menu.Item
+            icon={<IconEraser size={16} />}
+            onClick={onDeleteOutput}
+          >
+            Clear Output
+          </Menu.Item>
+        ) : null}
         <Menu.Item
           icon={<IconTrash size={16} />}
           color="red"
-          onClick={() => onDeletePrompt(promptId)}
+          onClick={onDeletePrompt}
         >
           Delete Prompt
         </Menu.Item>

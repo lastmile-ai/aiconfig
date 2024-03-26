@@ -132,6 +132,12 @@ export default function LocalEditor() {
     return await ufetch.post(ROUTE_TABLE.CLEAR_OUTPUTS, {});
   }, []);
 
+  const deleteOutput = useCallback(async (promptName: string) => {
+    return await ufetch.post(ROUTE_TABLE.DELETE_OUTPUT, {
+      prompt_name: promptName,
+    });
+  }, []);
+
   const runPrompt = useCallback(
     async (
       promptName: string,
@@ -249,6 +255,7 @@ export default function LocalEditor() {
       addPrompt,
       cancel,
       clearOutputs,
+      deleteOutput,
       deleteModelSettings,
       deletePrompt,
       getModels,
@@ -267,6 +274,7 @@ export default function LocalEditor() {
       cancel,
       clearOutputs,
       deleteModelSettings,
+      deleteOutput,
       deletePrompt,
       getModels,
       getServerStatus,
