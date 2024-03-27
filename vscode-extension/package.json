@@ -5,7 +5,7 @@
   "author": "LastMile AI",
   "displayName": "AIConfig Editor",
   "description": "AIConfig notebook editor that turns VSCode into a generative AI studio.",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
