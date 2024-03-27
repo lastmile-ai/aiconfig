@@ -243,7 +243,7 @@ class HuggingFaceImage2TextRemoteInference(ModelParser):
         aiconfig: "AIConfigRuntime",
         options: InferenceOptions,
         parameters: Dict[str, Any],
-        **kwargs,
+        run_with_dependencies: Optional[bool] = False,
     ) -> list[Output]:
         """
         Invoked to run a prompt in the .aiconfig. This method should perform
@@ -270,6 +270,7 @@ class HuggingFaceImage2TextRemoteInference(ModelParser):
                     "prompt": prompt,
                     "options": sanitized_options,
                     "parameters": parameters,
+                    "run_with_dependencies": run_with_dependencies,
                 },
             )
         )

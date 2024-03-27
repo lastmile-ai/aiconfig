@@ -1,9 +1,14 @@
+from unittest.mock import Mock
+
 import openai
 import pytest
 from aiconfig.Config import AIConfigRuntime
 from mock import patch
 
-from .conftest import mock_openai_chat_completion
+from .conftest import (
+    mock_openai_chat_completion,
+    mock_openai_chat_completion_with_dependencies,
+)
 from .util.file_path_utils import get_absolute_file_path_from_relative
 
 
@@ -48,3 +53,37 @@ async def test_load_parametrized_data_config(set_temporary_env_vars):
                 },
             ],
         }
+
+
+@pytest.mark.asyncio
+async def test_running_prompt_with_dependencies(set_temporary_env_vars):
+    """Test running a prompt with dependencies with the run_with_dependencies flag set to True"""
+
+    mock_openai = Mock(
+        side_effect=mock_openai_chat_completion_with_dependencies
+    )
+
+    with patch.object(
+        openai.resources.chat.Completions,
+        "create",
+        new=mock_openai,
+    ):
+        config_relative_path = (
+            "aiconfigs/travel_gpt_prompts_with_dependency.json"
+        )
+        config_absolute_path = get_absolute_file_path_from_relative(
+            __file__, config_relative_path
+        )
+        config = AIConfigRuntime.load(config_absolute_path)
+
+        combined_prompt_parameters = {
+            "city": "NYC",
+            "order_by": "geographic location",
+        }
+        await config.run(
+            "gen_itinerary",
+            combined_prompt_parameters,
+            run_with_dependencies=True,
+        )
+
+    assert mock_openai.call_count == 2

@@ -1,0 +1,35 @@
+{
+  "name": "NYC Trip Planner",
+  "schema_version": "latest",
+  "description": "Intrepid explorer with ChatGPT and AIConfig",
+
+  "metadata": {
+    "parameters": {},
+    "models": {
+      "gpt-3.5-turbo": {
+        "model": "gpt-3.5-turbo",
+        "top_p": 1,
+        "temperature": 1,
+        "stream": false
+      }
+    }
+  },
+
+  "prompts": [
+    {
+      "name": "get_activities",
+      "input": "Tell me 10 fun attractions to do in {{city}}.",
+      "metadata": {
+        "model": "gpt-3.5-turbo"
+      }
+    },
+    {
+      "name": "gen_itinerary",
+      "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
+      "metadata": {
+        "model": "gpt-3.5-turbo"
+      }
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}
