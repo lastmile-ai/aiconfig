@@ -10,3 +10,21 @@ jobs:
       - uses: psf/black@stable
         with:
           options: "--check --line-length=79" # In line with .vscode/settings.json
+      - name: Install pylint
+        run: pip install pylint
+      - name: Run pylint
+        run: pylint python/src
+  lint_typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - name: Install dependencies
+        run: cd typescript && yarn install
+      - name: Run eslint
+        run: cd typescript && yarn lint --fix
+      - name: Run prettier
+        run: cd typescript && yarn prettier --write

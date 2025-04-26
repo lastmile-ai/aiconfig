@@ -1,9 +1,9 @@
 export default {
   root: true,
-  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
   parser: "@typescript-eslint/parser",
   parserOptions: { project: "./tsconfig.json", tsconfigRootDir: __dirname },
-  plugins: ["@typescript-eslint"],
+  plugins: ["@typescript-eslint", "prettier"],
   rules: {
     "@typescript-eslint/no-unused-vars": [
       "warn",
@@ -14,5 +14,6 @@ export default {
       },
     ],
     "@typescript-eslint/no-non-null-assertion": "off",
+    "prettier/prettier": "error",
   },
 };
