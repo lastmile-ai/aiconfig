@@ -446,7 +446,7 @@ class PaLMChatParser(ParameterizedModelParser):
 
 def refine_chat_completion_params(model_settings, aiconfig, prompt):
     # completion parameters to be used for Palm's chat completion api
-    # messages handled seperately
+    # messages handled separately
     supported_keys = {
         "candidate_count",
         "examples",
@@ -472,7 +472,7 @@ def refine_chat_completion_params(model_settings, aiconfig, prompt):
 
 def refine_completion_params(model_settings):
     # completion parameters to be used for Palm's text-generation completion api
-    # messages handled seperately
+    # messages handled separately
     supported_keys = {
         "candidate_count",
         "examples",
