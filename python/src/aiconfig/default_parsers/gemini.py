@@ -544,7 +544,7 @@ https://github.com/lastmile-ai/aiconfig/blob/v1.1.8/extensions/Gemini/python/src
 
 def refine_chat_completion_params(model_settings):
     # completion parameters to be used for Gemini's api
-    # messages handled seperately
+    # messages handled separately
     supported_keys = {
         "contents",
         "generation_config",
