@@ -1,0 +1,50 @@
+{
+    "name": "Exploring NYC through Mistral Config",
+    "description": "",
+    "schema_version": "latest",
+    "metadata": {
+        "parameters": {},
+        "models": {
+            "models/chat-bison-001": {
+                "model": "models/chat-bison-001",
+                "topP": 0.9,
+                "temperature": 0.9
+            }
+        },
+        "default_model": "models/chat-bison-001",
+        "model_parsers": {
+            "models/chat-bison-001": "models/chat-bison-001"
+        }
+    },
+    "prompts": [
+        {
+            "name": "prompt1",
+            "input": "What is your favorite condiment? Respond with the answer in one word."
+        },
+        {
+            "name": "prompt2",
+            "input": "What are 5 interesting things to do in Rome?",
+            "metadata": {
+                "model": {
+                    "name": "models/chat-bison-001",
+                    "settings": {
+                        "top_p": 0.7
+                    }
+                }
+            }
+        },
+        {
+            "name": "promptWithParams",
+            "input": "What's your favorite building in {{city}}?",
+            "metadata": {
+                "model": {
+                    "name": "models/chat-bison-001",
+                    "settings": {}
+                },
+                "parameters": {
+                    "city": "London"
+                }
+            }
+        }
+    ]
+}
