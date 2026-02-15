@@ -28,6 +28,9 @@
     "editor.rulers": [79]
   },
   "black-formatter.args": ["--line-length=79"],
-  // example: "--disable=C0114,C0115,C0116"
-  "pylint.args": [],
+  "pylint.args": ["--disable=C0114,C0115,C0116"],
+  "eslint.options": {
+    "extensions": [".js", ".jsx", ".ts", ".tsx"]
+  },
+  "prettier.requireConfig": true
 }
