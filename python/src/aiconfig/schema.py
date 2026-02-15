@@ -232,6 +232,7 @@ class ConfigMetadata(BaseModel):
 
     class Config:
         extra = "allow"
+        protected_namespaces = ()
 
 
 class AIConfig(BaseModel):
