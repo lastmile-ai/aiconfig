@@ -14,6 +14,13 @@ export type ClientPrompt = Prompt & {
     id: string;
     isRunning?: boolean;
     cancellationToken?: string;
+    outputStats?: any;
+  };
+};
+
+export type ClientOutput = Output & {
+  _ui: {
+    outputStats?: any;
   };
 };
 

@@ -42,6 +42,7 @@ const ExecuteResultOutput = memo(function ExecuteResultOutput({
         copyContent={output.data}
         output={output}
         withRawJSONToggle
+        outputStats={prompt._ui?.outputStats}
       >
         <TextRenderer content={output.data} />
       </PromptOutputWrapper>
