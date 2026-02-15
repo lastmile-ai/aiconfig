@@ -1,22 +1,25 @@
 {
   "compilerOptions": {
+    "rootDir": "src",
+    "baseUrl": ".",
+    "outDir": "dist",
+    "declaration": true,
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "composite": true,
+    "sourceMap": true
   },
-  "include": [
-    "src",
-    "@types",
-    "aiconfig-editor/src/shared/prompt_schemas/HuggingFaceAutomaticSpeechRecognitionRemoteInferencePromptSchema.ts"
-  ]
+  "include": ["src"],
+  "exclude": ["dist", "node_modules"]
 }

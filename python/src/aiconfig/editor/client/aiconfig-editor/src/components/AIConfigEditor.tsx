@@ -122,7 +122,7 @@ export type AIConfigCallbacks = {
   ) => Promise<{ aiconfig: AIConfig }>;
   cancel: (cancellationToken: string) => Promise<void>;
   clearOutputs: () => Promise<{ aiconfig: AIConfig }>;
-  deleteOutput: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
+  deleteOutput?: (promptName: string) => Promise<{ aiconfig: AIConfig }>;
   deleteModelSettings?: (modelName: string) => Promise<void>;
   deletePrompt: (promptName: string) => Promise<void>;
   download?: () => Promise<void>;
@@ -1287,7 +1287,7 @@ function AIConfigEditorBase({
 // Wrap the AIConfigEditorBase in the NotificationProvider to provide NotificationContext
 // to the AIConfigEditorBase. Wrap both NotificationProvider and AIConfigEditorBase with
 // the theme provider to ensure all components have the proper theme
-export default function AIConfigEditor(props: Props) {
+export function AIConfigEditor(props: Props) {
   return (
     <AIConfigEditorThemeProvider
       mode={props.mode}
