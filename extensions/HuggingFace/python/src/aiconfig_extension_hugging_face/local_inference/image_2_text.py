@@ -281,17 +281,15 @@ def validate_and_retrieve_images_from_attachments(
     - operation fails for any reason
     """
 
-    if (
-        not hasattr(prompt.input, "attachments")
-        or len(prompt.input.attachments) == 0
-    ):
+    attachments = getattr(prompt.input, "attachments", None)
+    if not attachments:
         raise ValueError(
             f"No attachments found in input for prompt '{prompt.name}'. Please add an image attachment to the prompt input."
         )
 
     images: list[Union[str, ImageType]] = []
 
-    for i, attachment in enumerate(prompt.input.attachments):
+    for i, attachment in enumerate(attachments):
         validate_attachment_type_is_image(prompt.name, attachment)
 
         if not isinstance(attachment.data, AttachmentDataWithStringValue):
