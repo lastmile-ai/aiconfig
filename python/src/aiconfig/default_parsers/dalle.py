@@ -108,10 +108,11 @@ class DalleImageGenerationParser(ParameterizedModelParser):
             "dall-e-2",
             "dall-e-3",
         }
-        if model_id.lower() not in supported_models:
+        model_id = model_id.lower()
+        if model_id not in supported_models:
             raise ValueError(
-                "{model_id}"
-                + " is not a valid model ID for Dall-E image generation. Supported models: {supported_models}."
+                f"{model_id} is not a valid model ID for Dall-E image "
+                f"generation. Supported models: {sorted(supported_models)}."
             )
         self.model_id = model_id
 
