@@ -301,6 +301,17 @@ describe("HuggingFaceTextGeneration ModelParser", () => {
     );
   });
 
+  test("run prompt with explicit streaming disabled", async () => {
+    const aiConfig = AIConfigRuntime.load(HF_CONFIG_PATH);
+    const textGenerationCalls = mockTextGeneration.mock.calls.length;
+    const streamCalls = mockTextGenerationStream.mock.calls.length;
+
+    await aiConfig.run("promptWithParams", undefined, { stream: false });
+
+    expect(mockTextGeneration.mock.calls).toHaveLength(textGenerationCalls + 1);
+    expect(mockTextGenerationStream.mock.calls).toHaveLength(streamCalls);
+  });
+
   test("run prompt, streaming", async () => {
     const aiConfig = AIConfigRuntime.load(HF_CONFIG_PATH);
     const streamCallback = jest.fn();
