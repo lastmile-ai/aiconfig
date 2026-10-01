@@ -34,7 +34,7 @@ router_prompt = Prompt(
         },
     },
 )
-aiconfig.add_prompt("router_prompt", router_prompt)
+aiconfig.add_prompt("router", router_prompt)
 
 # Math Assistant Prompt
 math_assistant = Prompt(
@@ -109,4 +109,4 @@ general_assistant = Prompt(
 aiconfig.add_prompt("general", general_assistant)
 
 # Save AIConfig
-aiconfig.save("assistant_aiconfig.json", include_outputs=False)
+aiconfig.save("assistant.aiconfig.json", include_outputs=False)
