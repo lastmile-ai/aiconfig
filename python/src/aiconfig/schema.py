@@ -979,6 +979,8 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         if overwrite:
             prompt.outputs = [output]
         else:
+            if prompt.outputs is None:
+                prompt.outputs = []
             prompt.outputs.append(output)
 
     def add_outputs(
@@ -1004,6 +1006,8 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         if overwrite:
             prompt.outputs = outputs
         else:
+            if prompt.outputs is None:
+                prompt.outputs = []
             prompt.outputs.extend(outputs)
 
     def delete_output(self, prompt_name: str):

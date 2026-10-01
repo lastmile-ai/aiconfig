@@ -719,6 +719,28 @@ def test_add_output_existing_prompt_overwrite(
     )
 
 
+def test_add_outputs_after_deleting_outputs(ai_config_runtime: AIConfigRuntime):
+    prompt = Prompt(name="GreetingPrompt", input="Hello")
+    ai_config_runtime.add_prompt(prompt.name, prompt)
+    first_output = ExecuteResult(
+        output_type="execute_result", data="first", metadata={}
+    )
+    second_output = ExecuteResult(
+        output_type="execute_result", data="second", metadata={}
+    )
+    third_output = ExecuteResult(
+        output_type="execute_result", data="third", metadata={}
+    )
+
+    ai_config_runtime.delete_output(prompt.name)
+    ai_config_runtime.add_output(prompt.name, first_output)
+    assert prompt.outputs == [first_output]
+
+    ai_config_runtime.delete_output(prompt.name)
+    ai_config_runtime.add_outputs(prompt.name, [second_output, third_output])
+    assert prompt.outputs == [second_output, third_output]
+
+
 def test_add_undefined_output_to_prompt(ai_config_runtime: AIConfigRuntime):
     """Test for adding an undefined output to a prompt with/without overwriting. Should result in an error."""
     prompt = Prompt(
