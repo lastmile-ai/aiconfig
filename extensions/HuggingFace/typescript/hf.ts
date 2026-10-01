@@ -204,7 +204,9 @@ export class HuggingFaceTextGenerationModelParserExtension extends Parameterized
     }
 
     // if no options are passed in, don't stream because streaming is dependent on a callback handler
-    const stream = options ? (options.stream ? options.stream : true) : false;
+    const stream = options
+      ? (options.stream ?? Boolean(options.callbacks?.streamCallback))
+      : false;
 
     let output: Output | undefined;
 
@@ -293,12 +295,10 @@ async function constructStreamOutput(
 
     accumulatedMessage += newText;
     const index = 0;
-    options.callbacks!.streamCallback(newText, accumulatedMessage, index);
+    options.callbacks?.streamCallback?.(newText, accumulatedMessage, index);
     output = {
       output_type: "execute_result",
-      // TODO: Investigate if we should use the accumulated message instead
-      // of newText: https://github.com/lastmile-ai/aiconfig/issues/620
-      data: newText,
+      data: accumulatedMessage,
       execution_count: index,
       metadata: iteration,
     } as ExecuteResult;

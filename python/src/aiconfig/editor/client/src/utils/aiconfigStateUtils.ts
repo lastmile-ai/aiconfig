@@ -34,13 +34,16 @@ export function getModelSettingsStream(
     }
   }
 
-  const promptModelName = getPromptModelName(prompt);
+  const promptModelName = getPromptModelName(
+    prompt,
+    config.metadata?.default_model
+  );
   if (promptModelName) {
     const globalModelSettings =
       config.metadata?.models?.[promptModelName]?.settings;
     if (globalModelSettings?.stream === true) {
       return true;
-    } else if (promptModelSettings?.stream === false) {
+    } else if (globalModelSettings?.stream === false) {
       return false;
     }
   }
