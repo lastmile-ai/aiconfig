@@ -254,29 +254,48 @@ function AIConfigEditorBase({
     if (!updatePromptCallback) {
       return;
     }
-    return debounce(
-      async (
-        promptName: string,
-        newPrompt: Prompt,
-        callbacks: {
-          onSuccess?: (aiconfigRes: AIConfig) => void;
-          onError?: (err: unknown) => void;
-        }
-      ) => {
-        try {
-          const serverConfigRes = await updatePromptCallback(
-            promptName,
-            newPrompt
-          );
-          if (serverConfigRes?.aiconfig) {
-            callbacks?.onSuccess?.(serverConfigRes.aiconfig);
-          }
-        } catch (err: unknown) {
-          callbacks?.onError?.(err);
-        }
-      },
-      DEBOUNCE_MS
-    );
+    type UpdateCallbacks = {
+      onSuccess?: (aiconfigRes: AIConfig) => void;
+      onError?: (err: unknown) => void;
+    };
+    type DebouncedUpdate = (
+      promptName: string,
+      newPrompt: Prompt,
+      callbacks: UpdateCallbacks
+    ) => void;
+
+    const updatesByPrompt = new Map<string, DebouncedUpdate>();
+    return (
+      promptName: string,
+      newPrompt: Prompt,
+      updateCallbacks: UpdateCallbacks
+    ) => {
+      let debouncedUpdate = updatesByPrompt.get(promptName);
+      if (!debouncedUpdate) {
+        debouncedUpdate = debounce(
+          async (
+            currentPromptName: string,
+            currentPrompt: Prompt,
+            currentCallbacks: UpdateCallbacks
+          ) => {
+            try {
+              const serverConfigRes = await updatePromptCallback(
+                currentPromptName,
+                currentPrompt
+              );
+              if (serverConfigRes?.aiconfig) {
+                currentCallbacks.onSuccess?.(serverConfigRes.aiconfig);
+              }
+            } catch (err: unknown) {
+              currentCallbacks.onError?.(err);
+            }
+          },
+          DEBOUNCE_MS
+        );
+        updatesByPrompt.set(promptName, debouncedUpdate);
+      }
+      return debouncedUpdate(promptName, newPrompt, updateCallbacks);
+    };
   }, [updatePromptCallback]);
 
   const onChangePromptInput = useCallback(
@@ -392,24 +411,40 @@ function AIConfigEditorBase({
     if (!updateModelCallback) {
       return;
     }
+    type ModelUpdate = {
+      modelName?: string;
+      settings?: InferenceSettings;
+      promptName?: string;
+    };
+    type DebouncedUpdate = (
+      value: ModelUpdate,
+      onError: (err: unknown) => void
+    ) => void;
 
-    return debounce(
-      async (
-        value: {
-          modelName?: string;
-          settings?: InferenceSettings;
-          promptName?: string;
-        },
-        onError: (err: unknown) => void
-      ) => {
-        try {
-          await updateModelCallback(value);
-        } catch (err: unknown) {
-          onError(err);
-        }
-      },
-      DEBOUNCE_MS
-    );
+    const updatesByTarget = new Map<string, DebouncedUpdate>();
+    return (value: ModelUpdate, onError: (err: unknown) => void) => {
+      const target = value.promptName
+        ? `prompt:${value.promptName}`
+        : `model:${value.modelName ?? ""}`;
+      let debouncedUpdate = updatesByTarget.get(target);
+      if (!debouncedUpdate) {
+        debouncedUpdate = debounce(
+          async (
+            currentValue: ModelUpdate,
+            currentOnError: (err: unknown) => void
+          ) => {
+            try {
+              await updateModelCallback(currentValue);
+            } catch (err: unknown) {
+              currentOnError(err);
+            }
+          },
+          DEBOUNCE_MS
+        );
+        updatesByTarget.set(target, debouncedUpdate);
+      }
+      return debouncedUpdate(value, onError);
+    };
   }, [updateModelCallback]);
 
   const onUpdatePromptMetadata = useCallback(
@@ -629,21 +664,38 @@ function AIConfigEditorBase({
     if (!setParametersCallback) {
       return;
     }
-
-    return debounce(
-      async (
-        parameters: JSONObject,
-        promptName?: string,
-        onError?: (err: unknown) => void
-      ) => {
-        try {
-          await setParametersCallback(parameters, promptName);
-        } catch (err: unknown) {
-          onError?.(err);
-        }
-      },
-      DEBOUNCE_MS
-    );
+    type ParameterUpdate = (
+      parameters: JSONObject,
+      promptName?: string,
+      onError?: (err: unknown) => void
+    ) => void;
+    const updatesByTarget = new Map<string, ParameterUpdate>();
+    return (
+      parameters: JSONObject,
+      promptName?: string,
+      onError?: (err: unknown) => void
+    ) => {
+      const target = promptName ? `prompt:${promptName}` : "global";
+      let debouncedUpdate = updatesByTarget.get(target);
+      if (!debouncedUpdate) {
+        debouncedUpdate = debounce(
+          async (
+            currentParameters: JSONObject,
+            currentPromptName?: string,
+            currentOnError?: (err: unknown) => void
+          ) => {
+            try {
+              await setParametersCallback(currentParameters, currentPromptName);
+            } catch (err: unknown) {
+              currentOnError?.(err);
+            }
+          },
+          DEBOUNCE_MS
+        );
+        updatesByTarget.set(target, debouncedUpdate);
+      }
+      return debouncedUpdate(parameters, promptName, onError);
+    };
   }, [setParametersCallback]);
 
   const onUpdateGlobalParameters = useCallback(
