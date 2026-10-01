@@ -1,1 +1,1 @@
-/Users/jonathan/Projects/aiconfig/extensions/llama/python/llama.py
+../../../extensions/llama/python/llama.py
