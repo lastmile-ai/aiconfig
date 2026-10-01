@@ -9,6 +9,22 @@ from glob import glob
 import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
+TEXT_FILE_EXTENSIONS = {
+    ".csv",
+    ".htm",
+    ".html",
+    ".json",
+    ".log",
+    ".md",
+    ".markdown",
+    ".rst",
+    ".text",
+    ".tsv",
+    ".txt",
+    ".xml",
+    ".yaml",
+    ".yml",
+}
 
 
 def chunk_markdown(text, chunk_size=1000):
@@ -22,13 +38,19 @@ async def run_ingest(directory, collection_name):
     chroma_client = chromadb.PersistentClient(path="chroma_2.db")
     collection = chroma_client.create_collection(name=collection_name)
 
-    for i, filename in enumerate(glob(f"{directory}/**/*", recursive=True)):
+    filenames = (
+        filename
+        for filename in glob(f"{directory}/**/*", recursive=True)
+        if os.path.isfile(filename)
+        and os.path.splitext(filename)[1].lower() in TEXT_FILE_EXTENSIONS
+    )
+    for i, filename in enumerate(filenames):
         print("Ingesting:", i, filename)
         documents = []
         metadatas = []
         ids = []
 
-        with open(filename, "r") as f:
+        with open(filename, "r", encoding="utf-8") as f:
             data = f.read()
             for j, chunk in enumerate(chunk_markdown(data)):
                 documents.append(chunk)
