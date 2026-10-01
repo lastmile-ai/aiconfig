@@ -23,13 +23,13 @@ import { PYTHON_INTERPRETER_CACHE_KEY_NAME } from "../constants";
 export async function initialize(
   context: vscode.ExtensionContext,
   outputChannel: vscode.LogOutputChannel
-) {
+): Promise<boolean> {
   // Make sure Python API is activated
   const pythonApi: PythonExtension = await PythonExtension.api();
 
   await vscode.commands.executeCommand("python.setInterpreter");
 
-  await installDependencies(context, outputChannel);
+  return installDependencies(context, outputChannel);
 }
 
 /**
@@ -38,8 +38,8 @@ export async function initialize(
 export async function installDependencies(
   context: vscode.ExtensionContext,
   outputChannel: vscode.LogOutputChannel
-): Promise<void> {
-  await vscode.window.withProgress(
+): Promise<boolean> {
+  return vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
       title: "Initializing AIConfig Extension",
@@ -57,7 +57,7 @@ export async function installDependencies(
       const isPythonInstalled = await checkPython();
       if (!isPythonInstalled) {
         outputChannel.appendLine("Python is not installed");
-        return;
+        return false;
       }
       await savePythonInterpreterToCache();
 
@@ -72,7 +72,7 @@ export async function installDependencies(
       const isPipInstalled = await checkPip();
       if (!isPipInstalled) {
         outputChannel.appendLine("Pip is not installed");
-        return;
+        return false;
       }
 
       outputChannel.append(" -- SUCCESS");
@@ -115,7 +115,7 @@ export async function installDependencies(
           outputChannel.error(
             "Failed to install dependencies. Please try again."
           );
-          return;
+          return false;
         } else {
           // Installation was successful
           progress.report({
@@ -126,6 +126,7 @@ export async function installDependencies(
           outputChannel.append(" -- SUCCESS");
         }
       }
+      return true;
     }
   );
 }
@@ -379,15 +380,13 @@ export async function savePythonInterpreterToCache(): Promise<void> {
 export async function initializePythonFlow(
   context: vscode.ExtensionContext,
   outputChannel: vscode.LogOutputChannel
-): Promise<void> {
+): Promise<boolean> {
   if (!checkIfPythonInterpreterCacheIsDefined()) {
-    await initialize(context, outputChannel);
-  } else {
-    // This is technically just a check if all the dependencies are all
-    // installed otherwise we don't need to install anything else and it
-    // simply runs through the installation flow
-    await installDependencies(context, outputChannel);
+    return initialize(context, outputChannel);
   }
+
+  // Check whether dependencies are ready before allowing the editor server to start.
+  return installDependencies(context, outputChannel);
 }
 
 export function checkIfPythonInterpreterCacheIsDefined(): boolean {

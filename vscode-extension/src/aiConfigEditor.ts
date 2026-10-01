@@ -125,20 +125,27 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     // Do not start the server until we ensure the Python setup is ready
     // Don't await at the top level here since that blocks the webview render (which happens
     // only when resolveCustomTextEditor returns)
-    initializePythonFlow(this.context, this.extensionOutputChannel).then(() =>
-      this.startEditorServer(editorServer, document).then(
-        async (startedServer) => {
-          const editor = new AIConfigEditorState(
-            document,
-            webviewPanel,
-            startedServer,
-            this.aiconfigEditorManager
-          );
-
-          this.aiconfigEditorManager.addEditor(editor);
-          await setupServerState(startedServer);
+    initializePythonFlow(this.context, this.extensionOutputChannel).then(
+      (pythonReady) => {
+        if (!pythonReady) {
+          editorServer.stop();
+          return;
         }
-      )
+
+        return this.startEditorServer(editorServer, document).then(
+          async (startedServer) => {
+            const editor = new AIConfigEditorState(
+              document,
+              webviewPanel,
+              startedServer,
+              this.aiconfigEditorManager
+            );
+
+            this.aiconfigEditorManager.addEditor(editor);
+            await setupServerState(startedServer);
+          }
+        );
+      }
     );
 
     const serverStateChangeSubscription = editorServer.onDidChangeState(

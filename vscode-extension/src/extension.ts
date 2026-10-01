@@ -163,8 +163,9 @@ export async function activate(context: vscode.ExtensionContext) {
     COMMANDS.RESTART_ACTIVE_EDITOR_SERVER,
     async () => {
       const activeEditor = aiconfigEditorManager.getActiveEditor();
-      await installDependencies(context, extensionOutputChannel);
-      activeEditor?.editorServer?.restart();
+      if (await installDependencies(context, extensionOutputChannel)) {
+        await activeEditor?.editorServer?.restart();
+      }
     }
   );
   context.subscriptions.push(restartActiveEditorCommand);
@@ -216,10 +217,11 @@ export async function activate(context: vscode.ExtensionContext) {
             )
             .then(async (selection) => {
               if (selection === "Yes") {
-                await installDependencies(context, extensionOutputChannel);
-                editors.forEach(async (editor) => {
-                  editor.editorServer.restart();
-                });
+                if (await installDependencies(context, extensionOutputChannel)) {
+                  await Promise.all(
+                    editors.map((editor) => editor.editorServer?.restart())
+                  );
+                }
               }
             });
         }
