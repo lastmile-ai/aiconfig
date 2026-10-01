@@ -224,7 +224,7 @@ export const HuggingFaceTextGenerationTransformerPromptSchema: PromptSchema = {
         description: `A list of tokens that will be suppressed at the beginning of the generation. The SupressBeginTokens logit 
         processor will set their log probs to -inf so that they are not sampled.`,
       },
-      forced_decover_ids: {
+      forced_decoder_ids: {
         type: "array",
         items: {
           type: "array",
