@@ -9,7 +9,7 @@ export interface CallbackEvent {
   file: string;
   // Anything available at the time the event happens. It is passed to the callback
   data: any;
-  // Timestamp in nanoseconds. Use Date.now()
+  // Unix epoch timestamp in nanoseconds (generated values have millisecond precision).
   ts_ns?: number;
 }
 
@@ -51,7 +51,7 @@ export class CallbackManager {
   async runCallbacks(event: CallbackEvent): Promise<void> {
     const eventWithTimeStamp = {
       ...event,
-      ts_ns: event.ts_ns ?? Date.now(),
+      ts_ns: event.ts_ns ?? Date.now() * 1_000_000,
     };
     const tasks = this.callbacks.map((callback) =>
       withTimeout(callback(eventWithTimeStamp), this.timeout)
