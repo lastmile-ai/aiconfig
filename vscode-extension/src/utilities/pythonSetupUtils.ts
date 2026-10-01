@@ -9,7 +9,7 @@
 
 import * as vscode from "vscode";
 
-import { exec, execSync, spawn } from "child_process";
+import { execFile, execFileSync, spawn } from "child_process";
 import path from "path";
 import { COMMANDS, EXTENSION_NAME, getConfigurationTarget } from "../util";
 import { PythonExtension } from "@vscode/python-extension";
@@ -278,7 +278,7 @@ export async function checkRequirements(
 export async function checkPython() {
   const pythonPath = await getPythonPath();
   return new Promise((resolve, _reject) => {
-    exec(pythonPath + " --version", (error, stdout, stderr) => {
+    execFile(pythonPath, ["--version"], (error, stdout, stderr) => {
       if (error) {
         console.error("Python was not found, can't install requirements");
         console.error("retrieved python path: " + pythonPath);
@@ -314,7 +314,7 @@ export async function checkPip() {
   return new Promise((resolve, _reject) => {
     // when calling pip using `python -m`, no need to worry about pip vs pip3.
     // You're directly specifying which Python environment's pip to use.
-    exec(pythonPath + " -m pip --version", (error, stdout, stderr) => {
+    execFile(pythonPath, ["-m", "pip", "--version"], (error, stdout, stderr) => {
       if (error) {
         console.log("pip is not found");
         // Guide for installation
@@ -414,8 +414,10 @@ export function isPythonVersionAtLeast310(pythonPath: string): boolean {
     // Use Python to check compatible version
     // This approach circumvents the complexity of parsing version strings from `python --version`,
     // which can vary in format and require custom parsing and comparison logic to handle different version schemes (e.g., major, minor, micro).
-    const command = `${pythonPath} -c "import sys; print(sys.version_info >= (3, 10))"`;
-    const output = execSync(command).toString().replace(/\s+/g, "").trim(); //replace newlines & whitespace
+    const output = execFileSync(pythonPath, ["-c", "import sys; print(sys.version_info >= (3, 10))"])
+      .toString()
+      .replace(/\s+/g, "")
+      .trim(); //replace newlines & whitespace
 
     return output === "True";
   } catch (error) {
