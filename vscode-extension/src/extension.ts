@@ -373,22 +373,19 @@ async function openModelRegistry(
     return;
   }
 
-  const doc = await vscode.workspace.openTextDocument(savedModelRegistryPath);
-  if (doc) {
+  try {
+    const doc = await vscode.workspace.openTextDocument(savedModelRegistryPath);
     vscode.window.showTextDocument(doc);
-  } else {
-    vscode.window
-      .showErrorMessage(
-        `Error opening model registry file ${savedModelRegistryPath}`,
-        ...["Create New", "Use Existing"]
-      )
-      .then((selection) => {
-        if (selection === "Create") {
-          createCustomModelRegistry(context, aiconfigEditorManager);
-        } else if (selection === "Use Existing") {
-          registerCustomModelRegistry(aiconfigEditorManager);
-        }
-      });
+  } catch {
+    const selection = await vscode.window.showErrorMessage(
+      `Error opening model registry file ${savedModelRegistryPath}`,
+      ...["Create New", "Use Existing"]
+    );
+    if (selection === "Create New") {
+      await createCustomModelRegistry(context, aiconfigEditorManager);
+    } else if (selection === "Use Existing") {
+      await registerCustomModelRegistry(aiconfigEditorManager);
+    }
   }
 }
 
@@ -492,6 +489,16 @@ async function registerCustomModelRegistry(
       return null;
     },
   });
+
+  if (!modelRegistryPath) {
+    return;
+  }
+
+  await handleCustomModelRegistryUpdate(
+    config,
+    aiconfigEditorManager,
+    modelRegistryPath
+  );
 }
 
 async function handleCustomModelRegistryUpdate(

@@ -177,8 +177,7 @@ export async function updateModelRegistryPath(
 
 export function isValidFilePath(filePath: string): boolean {
   try {
-    fs.accessSync(filePath);
-    return true;
+    return fs.statSync(filePath).isFile();
   } catch (error) {
     return false;
   }
