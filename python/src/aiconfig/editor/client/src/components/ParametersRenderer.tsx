@@ -10,7 +10,14 @@ import {
 } from "@mantine/core";
 import { IconTrash, IconPlus } from "@tabler/icons-react";
 import { debounce, uniqueId } from "lodash";
-import { memo, useCallback, useContext, useMemo, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { JSONValue, JSONObject } from "aiconfig";
 import AIConfigContext from "../contexts/AIConfigContext";
 
@@ -46,12 +53,20 @@ const ParameterInput = memo(function ParameterInput(props: {
     useState<string>(parameterName);
 
   const parameterValue = initialItemValue?.parameterValue;
-
-  const [parameterValueString, setParameterValueString] = useState(
+  const serializedParameterValue =
     typeof parameterValue === "string"
       ? parameterValue
-      : JSON.stringify(parameterValue)
+      : JSON.stringify(parameterValue) ?? "";
+
+  const [parameterValueString, setParameterValueString] = useState(
+    serializedParameterValue
   );
+
+  useEffect(() => {
+    setParameterName(initialItemValue?.parameterName ?? "");
+    setLastParameterName(initialItemValue?.parameterName ?? "");
+    setParameterValueString(serializedParameterValue);
+  }, [initialItemValue?.parameterName, serializedParameterValue]);
 
   const debouncedCellParameterUpdate = useMemo(
     () =>
@@ -168,6 +183,28 @@ export default memo(function ParametersRenderer(props: {
           },
         ]
   );
+  const initialValueSignature = JSON.stringify(initialValue ?? {});
+
+  useEffect(() => {
+    const normalizedInitialValue = JSON.parse(
+      initialValueSignature
+    ) as JSONObject;
+    setParameters(
+      Object.keys(normalizedInitialValue).length > 0
+        ? Object.keys(normalizedInitialValue).map((parameterName) => ({
+            key: parameterName,
+            parameterName,
+            parameterValue: normalizedInitialValue[parameterName],
+          }))
+        : [
+            {
+              key: uniqueId(),
+              parameterName: "",
+              parameterValue: "",
+            },
+          ]
+    );
+  }, [initialValueSignature]);
 
   const removeParameter = useCallback(
     async (key: string, _parameterName?: string) => {
