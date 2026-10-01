@@ -1,5 +1,9 @@
+from types import SimpleNamespace
+
 import pytest
+
 from aiconfig.Config import AIConfigRuntime
+from aiconfig.default_parsers.palm import PaLMChatParser
 
 from aiconfig.schema import (
     ConfigMetadata,
@@ -95,3 +99,14 @@ def test_get_model_settings(ai_config_runtime: AIConfigRuntime):
             metadata=PromptMetadata(model="doesn't exist"),
         )
         mock_model_parser.get_model_settings(prompt, aiconfig)
+
+
+def test_palm_chat_parser_reads_legacy_dictionary_output():
+    output = SimpleNamespace(
+        output_type="execute_result", data={"content": "legacy response"}
+    )
+
+    assert (
+        PaLMChatParser().get_output_text(None, None, output)
+        == "legacy response"
+    )
