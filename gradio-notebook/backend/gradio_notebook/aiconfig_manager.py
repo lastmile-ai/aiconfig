@@ -262,7 +262,13 @@ class AIConfigManager:
         old_update_time, session_id = heapq.heappop(
             self.session_id_lru_min_heap
         )
-        actual_update_time = self.session_data_map[session_id].update_time
+        session_data = self.session_data_map.get(session_id)
+        if session_data is None:
+            # The session may have been explicitly removed while its stale LRU
+            # entry remained in the heap.
+            return True
+
+        actual_update_time = session_data.update_time
         if (
             old_update_time < actual_update_time
             and actual_update_time > threshold_cutoff_time
