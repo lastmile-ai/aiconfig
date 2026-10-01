@@ -371,7 +371,7 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
     );
 
     // if no options are passed in, don't stream because streaming is dependent on a callback handler
-    const stream = options ? (options.stream ? options.stream : true) : false;
+    const stream = options?.stream ?? false;
     const streamCallback = options?.callbacks?.streamCallback;
 
     let finalizedPromptOptions = promptOptions;
