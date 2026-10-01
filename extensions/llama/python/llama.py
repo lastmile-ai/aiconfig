@@ -48,7 +48,7 @@ class LlamaModelParser(ParameterizedModelParser):
             if remember_chat_context
             else resolved
         )
-        return {"model_input": model_input}
+        return {"model_input": model_input, "question": resolved}
 
     def id(self) -> str:
         return "LLaMA"
@@ -71,13 +71,13 @@ class LlamaModelParser(ParameterizedModelParser):
         model_input = resolved["model_input"]
         result = await self._run_inference_helper(model_input, options)
 
-        self.qa.append((model_input, result.data[0]))
+        self.qa.append((resolved["question"], result.data))
 
         return [result]
 
     async def _run_inference_helper(
         self, model_input, options
-    ) -> List[Output]:
+    ) -> Output:
         llm = Llama(self.model_path)
         acc = ""
         stream = options.stream if options else True
