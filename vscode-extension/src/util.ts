@@ -357,16 +357,15 @@ export async function setupEnvironmentVariables(
       await vscode.workspace.fs.readFile(envTemplatePath)
     ).toString();
 
-    // TODO: Check if we already appended the template text to existing .env
-    // file before. If we did, don't do it again
-    fs.appendFile(envPath, "\n\n" + helperText, function (err) {
-      if (err) {
-        throw err;
-      }
+    const existingText = await fs.promises.readFile(envPath, "utf8");
+    const templateMarker =
+      "# This is your .env file to specify keys from model providers.";
+    if (!existingText.includes(templateMarker)) {
+      await fs.promises.appendFile(envPath, "\n\n" + helperText);
       console.log(
         `Added .env template text from ${envTemplatePath.fsPath} to ${envPath}`
       );
-    });
+    }
   } else {
     // Create the .env file from the sample
     try {
