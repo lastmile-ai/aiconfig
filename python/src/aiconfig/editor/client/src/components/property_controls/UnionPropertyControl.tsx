@@ -5,13 +5,36 @@ import {
 } from "../SettingsPropertyRenderer";
 import { Flex, SegmentedControl } from "@mantine/core";
 import { JSONObject, JSONValue } from "aiconfig";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 // TODO: Can we type prompt schema / all supported properties exhaustively?
 export type UnionProperty = {
   type: "union";
   types: JSONObject[];
 };
+
+function valueMatchesSchemaType(value: JSONValue, schema: JSONObject) {
+  switch (schema.type) {
+    case "string":
+    case "text":
+      return typeof value === "string";
+    case "integer":
+      return typeof value === "number" && Number.isInteger(value);
+    case "number":
+      return typeof value === "number";
+    case "boolean":
+      return typeof value === "boolean";
+    case "array":
+      return Array.isArray(value);
+    case "object":
+    case "map":
+      return value !== null && typeof value === "object" && !Array.isArray(value);
+    case "null":
+      return value === null;
+    default:
+      return false;
+  }
+}
 
 type Props = {
   disabled?: boolean;
@@ -34,20 +57,54 @@ export default memo(function UnionPropertyControl(props: Props) {
 
   const segmentedTabs = useMemo(
     () =>
-      property.types.map((_prop, i) => ({
-        label: "",
+      property.types.map((schema, i) => ({
+        label:
+          Array.isArray(schema.enum) && schema.enum.length > 0
+            ? schema.enum.join(" / ")
+            : (schema.type as string) ?? `Option ${i + 1}`,
         value: i.toString(),
       })),
     [property.types]
   );
 
-  const [controlledData, setControlledData] = useState(new Map());
-  const [activeTab, setActiveTab] = useState("0");
+  const matchingIndex =
+    renderPropertyProps.initialValue === undefined
+      ? -1
+      : property.types.findIndex((schema) =>
+          valueMatchesSchemaType(renderPropertyProps.initialValue!, schema)
+        );
+  const initialTab = (matchingIndex < 0 ? 0 : matchingIndex).toString();
+  const [controlledData, setControlledData] = useState(() => {
+    const values = new Map<string, JSONValue>();
+    if (renderPropertyProps.initialValue !== undefined) {
+      values.set(initialTab, renderPropertyProps.initialValue);
+    }
+    return values;
+  });
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    if (renderPropertyProps.initialValue === undefined) {
+      return;
+    }
+    const index = property.types.findIndex((schema) =>
+      valueMatchesSchemaType(renderPropertyProps.initialValue!, schema)
+    );
+    if (index < 0) {
+      return;
+    }
+    const tab = index.toString();
+    setActiveTab(tab);
+    setControlledData((prev) =>
+      new Map(prev).set(tab, renderPropertyProps.initialValue!)
+    );
+  }, [renderPropertyProps.initialValue, property.types]);
 
   const selectTab = useCallback(
     (tab: string) => {
-      console.log("set value: ", controlledData.get(tab));
-      setValue(controlledData.get(tab));
+      if (controlledData.has(tab)) {
+        setValue(controlledData.get(tab)!);
+      }
       setActiveTab(tab);
     },
     [controlledData, setValue]
@@ -57,7 +114,7 @@ export default memo(function UnionPropertyControl(props: Props) {
     (value: StateSetFromPrevFn | JSONValue) => {
       const newValue =
         typeof value === "function" ? value(controlledData) : value;
-      setControlledData((prev) => prev.set(activeTab, newValue));
+      setControlledData((prev) => new Map(prev).set(activeTab, newValue));
       setValue(newValue);
     },
     [activeTab, controlledData, setValue]
@@ -71,10 +128,11 @@ export default memo(function UnionPropertyControl(props: Props) {
         onChange={selectTab}
         disabled={disabled}
       />
-      <div style={{ marginLeft: "1em" }}>
+      <div key={activeTab} style={{ marginLeft: "1em" }}>
         {renderProperty({
           ...renderPropertyProps,
           property: property.types[parseInt(activeTab)],
+          initialValue: controlledData.get(activeTab),
           setValue: setPropertyValue,
           propertyName: "",
         })}
