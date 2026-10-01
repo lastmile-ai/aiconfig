@@ -4,6 +4,9 @@ from io import BytesIO
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from aiconfig.callback import CallbackEvent
+from aiconfig_extension_hugging_face.local_inference.attachment_utils import (
+    require_attachments,
+)
 from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
 from PIL import Image as img_module
 from PIL.Image import Image as ImageType
@@ -281,17 +284,11 @@ def validate_and_retrieve_images_from_attachments(
     - operation fails for any reason
     """
 
-    if (
-        not hasattr(prompt.input, "attachments")
-        or len(prompt.input.attachments) == 0
-    ):
-        raise ValueError(
-            f"No attachments found in input for prompt '{prompt.name}'. Please add an image attachment to the prompt input."
-        )
+    attachments = require_attachments(prompt.input, prompt.name, "an image")
 
     images: list[Union[str, ImageType]] = []
 
-    for i, attachment in enumerate(prompt.input.attachments):
+    for i, attachment in enumerate(attachments):
         validate_attachment_type_is_image(prompt.name, attachment)
 
         if not isinstance(attachment.data, AttachmentDataWithStringValue):

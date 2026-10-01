@@ -9,6 +9,9 @@ from typing import TYPE_CHECKING, Any, BinaryIO, Dict, List, Optional, Union
 from huggingface_hub import InferenceClient
 
 from aiconfig import CallbackEvent
+from aiconfig_extension_hugging_face.local_inference.attachment_utils import (
+    require_attachments,
+)
 from aiconfig.model_parser import InferenceOptions, ModelParser
 from aiconfig.schema import (
     Attachment,
@@ -354,15 +357,8 @@ def validate_and_retrieve_image_from_attachments(
     - operation fails for any reason
     """
 
-    if (
-        not hasattr(prompt.input, "attachments")
-        or len(prompt.input.attachments) == 0
-    ):
-        raise ValueError(
-            f"No attachments found in input for prompt '{prompt.name}'. Please add an image attachment to the prompt input."
-        )
-
-    attachment = prompt.input.attachments[0]
+    attachments = require_attachments(prompt.input, prompt.name, "an image")
+    attachment = attachments[0]
     validate_attachment_type_is_image(prompt.name, attachment)
 
     if not isinstance(attachment.data, AttachmentDataWithStringValue):
