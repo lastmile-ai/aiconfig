@@ -42,7 +42,7 @@ def refine_completion_params(model_settings: dict[Any, Any]) -> dict[str, Any]:
         "return_full_text",
         "seed",
         "stop_sequences",
-        "stream" "temperature",
+        "temperature",
         "top_k",
         "top_p",
         "truncate",
