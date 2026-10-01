@@ -118,35 +118,42 @@ class OpenAIVisionParser(DefaultOpenAIParser):
                 input = {}
                 # Message can contain text and multiple images
                 # See https://platform.openai.com/docs/guides/vision/multiple-image-inputs
-                for val in content:
-                    if val["type"] == "text":
-                        input["data"] = val["text"]
-                    if val["type"] == "image_url":
-                        if input.get("attachments") is None:
-                            input["attachments"] = []
-                        image_url: str = val["image_url"]["url"]
-                        attachment_kind = (
-                            "base64"
-                            if image_url.startswith("data:")
-                            else "file_uri"
-                        )
-                        attachment_data = AttachmentDataWithStringValue(
-                            kind=attachment_kind, value=image_url
-                        )
-
-                        mime_type = "image/*"
-                        if attachment_kind == "base64":
-                            type_match = re.search(
-                                IMAGE_FORMAT_PATTERN, image_url
+                if isinstance(content, str):
+                    # Chat Completions also accepts plain text content for a
+                    # user message, including on vision-capable models.
+                    input["data"] = content
+                else:
+                    for val in content:
+                        if val["type"] == "text":
+                            input["data"] = (
+                                input.get("data", "") + val["text"]
                             )
-                            if type_match:
-                                mime_type = f"image/{type_match.group(1)}"
-
-                        input["attachments"].append(
-                            Attachment(
-                                data=attachment_data, mime_type=mime_type
+                        if val["type"] == "image_url":
+                            if input.get("attachments") is None:
+                                input["attachments"] = []
+                            image_url: str = val["image_url"]["url"]
+                            attachment_kind = (
+                                "base64"
+                                if image_url.startswith("data:")
+                                else "file_uri"
                             )
-                        )
+                            attachment_data = AttachmentDataWithStringValue(
+                                kind=attachment_kind, value=image_url
+                            )
+
+                            mime_type = "image/*"
+                            if attachment_kind == "base64":
+                                type_match = re.search(
+                                    IMAGE_FORMAT_PATTERN, image_url
+                                )
+                                if type_match:
+                                    mime_type = f"image/{type_match.group(1)}"
+
+                            input["attachments"].append(
+                                Attachment(
+                                    data=attachment_data, mime_type=mime_type
+                                )
+                            )
 
                 # openai sdk currently only supports images with user messages
                 assistant_output = []
