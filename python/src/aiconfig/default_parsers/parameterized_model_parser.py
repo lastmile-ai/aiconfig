@@ -108,6 +108,7 @@ class ParameterizedModelParser(ModelParser):
 
         return await execute_recursive(prompt.name)
 
+    @staticmethod
     def resolve_prompt_template(
         prompt_template: str,
         prompt: Prompt,
