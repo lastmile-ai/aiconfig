@@ -321,6 +321,9 @@ describe("HuggingFaceTextGeneration ModelParser", () => {
       streaming: true,
       callbacks: { streamCallback },
     });
+    expect(aiConfig.getOutputText("promptWithParams")).toEqual(
+      "Test text generation stream"
+    );
     expect(mockTextGenerationStream).toHaveBeenCalledWith({
       model: "mistralai/Mistral-7B-v0.1",
       inputs: "What are 5 interesting things to do in London?",

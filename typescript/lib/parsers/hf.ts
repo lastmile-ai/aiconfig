@@ -290,9 +290,7 @@ async function constructStreamOutput(
 
     output = {
       output_type: "execute_result",
-      // TODO: Investigate if we should use the accumulated message instead
-      // of newText: https://github.com/lastmile-ai/aiconfig/issues/620
-      data: newText,
+      data: accumulatedMessage,
       execution_count: index,
       metadata,
     } as ExecuteResult;
