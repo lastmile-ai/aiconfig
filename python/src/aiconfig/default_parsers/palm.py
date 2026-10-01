@@ -1,5 +1,5 @@
 import json
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import google.generativeai as palm
 from aiconfig.callback import CallbackEvent
@@ -8,8 +8,6 @@ from aiconfig.default_parsers.parameterized_model_parser import (
 )
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.util.params import resolve_parameters, resolve_prompt
-from google.generativeai.text import Completion
-from google.generativeai.types.discuss_types import MessageDict
 
 from aiconfig.schema import (
     ExecuteResult,
@@ -165,8 +163,7 @@ class PaLMTextParser(ParameterizedModelParser):
 
         # TODO: check api key here
         completion_data = await self.deserialize(prompt, aiconfig, parameters)
-        # Return Type is of type Completion from Google Library
-        completion: Completion = palm.generate_text(**completion_data)
+        completion: Any = palm.generate_text(**completion_data)
 
         outputs = []
         # completion.candidates has all outputs. Candidates is an attribute of completion. Candidates is a dict. Taken from Google API impl
@@ -438,9 +435,8 @@ class PaLMChatParser(ParameterizedModelParser):
 
             # Doing this to be backwards-compatible with old output format
             # where we used to save the MessageDict in output.data
-            if isinstance(output_data, MessageDict):
-                if output_data.get("content"):
-                    return output_data("content")
+            if isinstance(output_data, dict) and output_data.get("content"):
+                return output_data["content"]
         return ""
 
 

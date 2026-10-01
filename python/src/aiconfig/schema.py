@@ -200,7 +200,7 @@ class Prompt(BaseModel):
         Add the output to the prompt's output list
         """
         if self.outputs is None:
-            self.outputs = [output]
+            self.outputs = []
         self.outputs.append(output)
 
     def get_raw_prompt_from_config(self) -> str:
@@ -979,6 +979,8 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         if overwrite:
             prompt.outputs = [output]
         else:
+            if prompt.outputs is None:
+                prompt.outputs = []
             prompt.outputs.append(output)
 
     def add_outputs(
@@ -1004,6 +1006,8 @@ AIConfig-level settings. If this is a mistake, please rerun the \
         if overwrite:
             prompt.outputs = outputs
         else:
+            if prompt.outputs is None:
+                prompt.outputs = []
             prompt.outputs.extend(outputs)
 
     def delete_output(self, prompt_name: str):

@@ -1,4 +1,10 @@
-from aiconfig.schema import ModelMetadata, Prompt, PromptInput, PromptMetadata
+from aiconfig.schema import (
+    ExecuteResult,
+    ModelMetadata,
+    Prompt,
+    PromptInput,
+    PromptMetadata,
+)
 
 
 def test_get_raw_prompt_from_prompt_object_string_input():
@@ -26,3 +32,14 @@ def test_get_raw_prompt_from_prompt_object_prompt_input():
         ),
     )
     assert prompt.get_raw_prompt_from_config() == "This is a basic prompt"
+
+
+def test_add_output_initializes_none_outputs_without_duplication():
+    prompt = Prompt(name="test", input="hello", outputs=None)
+    output = ExecuteResult(
+        output_type="execute_result", data="response", metadata={}
+    )
+
+    prompt.add_output(output)
+
+    assert prompt.outputs == [output]
