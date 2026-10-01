@@ -1,6 +1,5 @@
 import copy
 import json
-import threading
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from aiconfig.default_parsers.parameterized_model_parser import (
@@ -8,7 +7,13 @@ from aiconfig.default_parsers.parameterized_model_parser import (
 )
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.util.params import resolve_prompt
-from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
+from aiconfig_extension_hugging_face.local_inference.util import (
+    get_hf_model,
+)
+from aiconfig_extension_hugging_face.local_inference.streaming import (
+    finish_streaming_thread,
+    run_inference_with_streamer,
+)
 from transformers import (
     AutoTokenizer,
     Pipeline,
@@ -295,9 +300,9 @@ class HuggingFaceTextTranslationTransformer(ParameterizedModelParser):
                 )
 
             # For streaming, cannot call `translator` directly otherwise response will be blocking
-            thread = threading.Thread(target=_translate)
-            thread.start()
+            thread, errors = run_inference_with_streamer(_translate, streamer)
             output = construct_stream_output(streamer, options)
+            finish_streaming_thread(thread, errors)
             if output is not None:
                 outputs.append(output)
 
