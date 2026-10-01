@@ -7,7 +7,7 @@ export const HuggingFaceImage2TextTransformerPromptSchema: PromptSchema = {
   // refine_completion_params implementation.
   input: {
     type: "object",
-    required: ["data"],
+    required: ["attachments"],
     properties: {
       attachments: {
         type: "array",
