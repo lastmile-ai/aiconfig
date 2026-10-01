@@ -70,7 +70,7 @@ export const HuggingFaceTextGenerationTransformerPromptSchema: PromptSchema = {
         type: "integer",
         description: `Number of groups to divide num_beams into in order to ensure diversity among different groups of beams.`,
       },
-      penality_alpha: {
+      penalty_alpha: {
         type: "number",
         description: `The values balance the model confidence and the degeneration penalty in contrastive search decoding.`,
       },
@@ -111,7 +111,7 @@ export const HuggingFaceTextGenerationTransformerPromptSchema: PromptSchema = {
         next token probability, scaled by sqrt(eta_cutoff). In the paper, suggested values range from 3e-4 to 2e-3, depending 
         on the size of the model. See Truncation Sampling as Language Model Desmoothing for more details.`,
       },
-      diveristy_penalty: {
+      diversity_penalty: {
         type: "number",
         description: `This value is subtracted from a beam’s score if it generates a token same as any beam from other group at a 
         particular time. Note that diversity_penalty is only effective if group beam search is enabled.`,
@@ -224,7 +224,7 @@ export const HuggingFaceTextGenerationTransformerPromptSchema: PromptSchema = {
         description: `A list of tokens that will be suppressed at the beginning of the generation. The SupressBeginTokens logit 
         processor will set their log probs to -inf so that they are not sampled.`,
       },
-      forced_decover_ids: {
+      forced_decoder_ids: {
         type: "array",
         items: {
           type: "array",
