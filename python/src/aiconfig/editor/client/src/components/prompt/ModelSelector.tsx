@@ -1,5 +1,5 @@
 import { Autocomplete, AutocompleteItem, Button } from "@mantine/core";
-import { memo, useContext, useState } from "react";
+import { memo, useContext, useEffect, useState } from "react";
 import { getPromptModelName } from "../../utils/promptUtils";
 import { Prompt } from "aiconfig";
 import useLoadModels from "../../hooks/useLoadModels";
@@ -21,13 +21,19 @@ export default memo(function ModelSelector({
 }: Props) {
   const { mode } = useContext(AIConfigContext);
   const { readOnly } = useContext(AIConfigContext);
+  const promptModelName = getPromptModelName(prompt, defaultConfigModelName);
   const [selectedModel, setSelectedModel] = useState<string | undefined>(
-    getPromptModelName(prompt, defaultConfigModelName)
+    promptModelName
   );
   const [showAll, setShowAll] = useState(true);
   const [autocompleteSearch, setAutocompleteSearch] = useState(
-    getPromptModelName(prompt, defaultConfigModelName)
+    promptModelName
   );
+
+  useEffect(() => {
+    setSelectedModel(promptModelName);
+    setAutocompleteSearch(promptModelName);
+  }, [promptModelName]);
 
   const models = useLoadModels(
     getModels,
