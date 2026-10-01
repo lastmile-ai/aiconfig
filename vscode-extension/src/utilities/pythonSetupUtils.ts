@@ -188,9 +188,10 @@ export async function installRequirements(
                 progress,
                 cancellationToken,
                 outputChannel
-              );
+              ).then(resolve, () => resolve(false));
             } else if (selection === "Change Interpreter") {
               vscode.commands.executeCommand(COMMANDS.INIT);
+              resolve(false);
             } else if (selection === "Fix Manually") {
               vscode.window
                 .showInformationMessage(
@@ -204,9 +205,11 @@ export async function installRequirements(
                     );
                   }
                 });
+              resolve(false);
+            } else {
+              resolve(false);
             }
           });
-        resolve(false);
       } else {
         resolve(true);
       }
