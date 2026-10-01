@@ -1,6 +1,7 @@
 # Standard Libraries
 import asyncio
 import logging
+import os
 import time
 from typing import (
     Any,
@@ -14,7 +15,7 @@ from typing import (
     Union,
 )
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 # Third Party Libraries
 from result import Err, Ok
@@ -29,7 +30,7 @@ class CallbackEvent:
     """
 
     def __init__(
-        self, name: str, file: str, data: Any, ts_ns: int = time.time_ns()
+        self, name: str, file: str, data: Any, ts_ns: int = None
     ):
         self.name = name
         # The name of the file that triggered the event.
@@ -37,7 +38,7 @@ class CallbackEvent:
         # Anything available at the time the event happens.
         # It is passed to the callback.
         self.data = data
-        self.ts_ns = ts_ns
+        self.ts_ns = time.time_ns() if ts_ns is None else ts_ns
 
 
 # Type Aliases
@@ -79,7 +80,7 @@ class CallbackEventModel(Record):
     name: str
     file: str
     data: Any
-    ts_ns: int = time.time_ns()
+    ts_ns: int = Field(default_factory=time.time_ns)
 
 
 class CallbackManager:
@@ -124,25 +125,22 @@ def create_logging_callback(log_file: str = None) -> Callback:
     if log_file is None:
         log_file = "callbacks.log"
 
-    def setup_logger():
-        level = logging.DEBUG
-        name = "my-logger"
-        log_file = "aiconfig.log"
-
+    logger = logging.getLogger(f"aiconfig.callback.{os.path.abspath(log_file)}")
+    logger.setLevel(logging.DEBUG)
+    absolute_log_file = os.path.abspath(log_file)
+    if not any(
+        isinstance(handler, logging.FileHandler)
+        and handler.baseFilename == absolute_log_file
+        for handler in logger.handlers
+    ):
         formatter = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         handler = logging.FileHandler(log_file)
         handler.setFormatter(formatter)
-
-        logger = logging.getLogger(name)
-        logger.setLevel(level)
         logger.addHandler(handler)
-        return logger
 
-    logger = setup_logger()
-
-    def callback_handler(event):
+    async def callback_handler(event):
         logger.info(f"Callback called. event\n: {event}")
 
     return callback_handler
