@@ -200,7 +200,7 @@ class Prompt(BaseModel):
         Add the output to the prompt's output list
         """
         if self.outputs is None:
-            self.outputs = [output]
+            self.outputs = []
         self.outputs.append(output)
 
     def get_raw_prompt_from_config(self) -> str:
