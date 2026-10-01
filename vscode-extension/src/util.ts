@@ -53,10 +53,14 @@ export const EDITOR_SERVER_ROUTE_TABLE = {
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/set_env_file_path"),
 };
 
-export async function isServerReady(serverUrl: string) {
+export async function isServerReady(
+  serverUrl: string,
+  signal?: AbortSignal
+) {
   try {
     const res = await ufetch.get(
-      EDITOR_SERVER_ROUTE_TABLE.SERVER_STATUS(serverUrl)
+      EDITOR_SERVER_ROUTE_TABLE.SERVER_STATUS(serverUrl),
+      { signal }
     );
 
     const status = res.status;
@@ -67,14 +71,29 @@ export async function isServerReady(serverUrl: string) {
   }
 }
 
-export async function waitUntilServerReady(serverUrl: string) {
-  // TODO: saqadri - set some max retry to prevent infinite loop
-  let ready = await isServerReady(serverUrl);
-  while (!ready) {
-    // sleep for 100ms
-    await setTimeout(/*delay*/ 100);
-    ready = await isServerReady(serverUrl);
+export async function waitUntilServerReady(
+  serverUrl: string,
+  timeoutMs: number = 30_000
+): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const remainingMs = deadline - Date.now();
+    const controller = new AbortController();
+    const requestTimeout = globalThis.setTimeout(
+      () => controller.abort(),
+      Math.min(1_000, remainingMs)
+    );
+    try {
+      if (await isServerReady(serverUrl, controller.signal)) {
+        return true;
+      }
+    } finally {
+      globalThis.clearTimeout(requestTimeout);
+    }
+    // Poll for up to timeoutMs, then let the caller offer recovery.
+    await setTimeout(Math.min(100, Math.max(0, deadline - Date.now())));
   }
+  return false;
 }
 
 export function updateWebviewEditorThemeMode(webview: vscode.Webview) {

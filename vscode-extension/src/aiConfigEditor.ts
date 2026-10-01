@@ -104,7 +104,26 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
 
     const setupServerState = async (server: EditorServer) => {
       // Wait for server ready
-      await waitUntilServerReady(server.url);
+      const isReady = await waitUntilServerReady(server.url);
+      if (!isReady) {
+        server.stop();
+        this.extensionOutputChannel.error(
+          this.prependMessage(
+            "The editor server did not become ready within 30 seconds.",
+            document
+          )
+        );
+        if (!isWebviewDisposed) {
+          const selection = await vscode.window.showErrorMessage(
+            "The AIConfig editor server did not start. You can retry starting it.",
+            "Retry"
+          );
+          if (selection === "Retry") {
+            await server.restart();
+          }
+        }
+        return;
+      }
 
       // Now set up the server with the latest document content
       await this.initializeServerStateWithRetry(
