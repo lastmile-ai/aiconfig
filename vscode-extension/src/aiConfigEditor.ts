@@ -295,31 +295,39 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
           console.log(`${e.document.fileName}: willSaveDocument`);
 
           // Get the latest document state from the server before saving to disk
-          e.waitUntil(
-            new Promise((resolve, _reject) => {
-              console.log(`willSaveDocument - inside promise`);
-              if (!editorServer) {
-                // TODO: saqadri - show error message
-                return [];
-              }
+          const serverUrl = editorServer?.url;
+          if (!serverUrl) {
+            e.waitUntil(Promise.resolve([]));
+            return;
+          }
 
-              getDocumentFromServer(editorServer.url, e.document).then(
-                (newDocumentText) => {
-                  console.log(
-                    `${e.document.fileName}: willSaveDocument - creating textedit`
-                  );
-                  // Treat this as internal change so that we skip handling it in onDidChangeTextDocument
-                  // The client should already match the server state, so we don't need to update the webview
-                  isInternalDocumentChange = true;
-                  resolve([
-                    vscode.TextEdit.replace(
-                      new vscode.Range(0, 0, e.document.lineCount, 0),
-                      newDocumentText
-                    ),
-                  ]);
+          e.waitUntil(
+            getDocumentFromServer(serverUrl, e.document)
+              .then((newDocumentText) => {
+                if (newDocumentText === e.document.getText()) {
+                  return [];
                 }
-              );
-            })
+
+                console.log(
+                  `${e.document.fileName}: willSaveDocument - creating textedit`
+                );
+                // Treat this as an internal change so the document event handler skips it.
+                isInternalDocumentChange = true;
+                return [
+                  vscode.TextEdit.replace(
+                    new vscode.Range(0, 0, e.document.lineCount, 0),
+                    newDocumentText
+                  ),
+                ];
+              })
+              .catch((error) => {
+                // A failed server read must not leave the save event waiting forever
+                // or prevent the current document contents from being saved.
+                this.extensionOutputChannel.error(
+                  `Failed to retrieve AIConfig before save: ${error?.message ?? JSON.stringify(error)}`
+                );
+                return [];
+              })
           );
         }
       });
