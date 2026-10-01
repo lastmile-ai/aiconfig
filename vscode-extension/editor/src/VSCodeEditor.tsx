@@ -67,7 +67,7 @@ export default function VSCodeEditor() {
   const { classes } = useStyles();
 
   const updateContent = useCallback(
-    async (text: string) => {
+    (text: string) => {
       if (text != null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let updatedConfig: any = {};
@@ -88,53 +88,57 @@ export default function VSCodeEditor() {
 
   // Register an event listener to handle messages from the extension host
   // This is how we'll receive updates to the webview's content
-  // TODO: saqadri - should this be a useCallback to memoize it?
-  window.addEventListener("message", (event) => {
-    const message = event.data; // The json data that the extension sent
-    if (!message) {
-      console.log("onMessage, MESSAGE=NULL, event=", JSON.stringify(event));
-      return;
-    }
-
-    switch (message.type) {
-      case "update": {
-        console.log("onMessage, message=", JSON.stringify(message));
-        const text = message.text;
-
-        // Update our webview's content
-        updateContent(text);
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      const message = event.data; // The json data that the extension sent
+      if (!message) {
+        console.log("onMessage, MESSAGE=NULL, event=", JSON.stringify(event));
         return;
       }
-      case "set_readonly_state": {
-        const isReadOnlyState = message.isReadOnly;
-        if (isReadOnlyState != null && isReadOnlyState !== isReadOnly) {
-          setIsReadOnly(isReadOnlyState);
-          updateWebviewState(vscode, { isReadOnly: isReadOnlyState });
+
+      switch (message.type) {
+        case "update": {
+          console.log("onMessage, message=", JSON.stringify(message));
+          const text = message.text;
+
+          // Update our webview's content
+          updateContent(text);
+          return;
         }
-        return;
-      }
-      case "set_server_url": {
-        console.log("onMessage, message=", JSON.stringify(message));
-        const url = message.url;
-        setAIConfigServerUrl(url);
-        updateWebviewState(vscode, { serverUrl: url });
+        case "set_readonly_state": {
+          const isReadOnlyState = message.isReadOnly;
+          if (isReadOnlyState != null) {
+            setIsReadOnly(isReadOnlyState);
+            updateWebviewState(vscode, { isReadOnly: isReadOnlyState });
+          }
+          return;
+        }
+        case "set_server_url": {
+          console.log("onMessage, message=", JSON.stringify(message));
+          const url = message.url;
+          setAIConfigServerUrl(url);
+          updateWebviewState(vscode, { serverUrl: url });
 
-        // TODO: saqadri - as soon as content is updated, we have to call
-        // /get endpoint so we get the latest content from the server
-        return;
+          // TODO: saqadri - as soon as content is updated, we have to call
+          // /get endpoint so we get the latest content from the server
+          return;
+        }
+        case "set_theme": {
+          const theme = message.theme;
+          setThemeMode(theme);
+          updateWebviewState(vscode, { theme });
+          return;
+        }
+        default: {
+          console.log("onMessage, UNHANDLED message=", JSON.stringify(message));
+          return;
+        }
       }
-      case "set_theme": {
-        const theme = message.theme;
-        setThemeMode(theme);
-        updateWebviewState(vscode, { theme });
-        return;
-      }
-      default: {
-        console.log("onMessage, UNHANDLED message=", JSON.stringify(message));
-        return;
-      }
-    }
-  });
+    };
+
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [updateContent, vscode]);
 
   const loadConfig = useCallback(async () => {
     const route = ROUTE_TABLE.LOAD(aiConfigServerUrl);
@@ -150,15 +154,9 @@ export default function VSCodeEditor() {
 
   useEffect(() => {
     if (aiConfigServerUrl !== "") {
-      // This is less important for the first load, but when the webview gets dehydrated and rehydrated,
-      // we'll get the aiConfigServerUrl from the webview state. This will trigger a reload of the config.
       loadConfig();
     }
   }, [aiConfigServerUrl, loadConfig]);
-
-  useEffect(() => {
-    loadConfig();
-  }, [loadConfig]);
 
   // TODO: saqadri - this should be done extension host-side
   const setupTelemetryIfAllowed = useCallback(async () => {
@@ -166,6 +164,10 @@ export default function VSCodeEditor() {
 
     // Don't enable telemetry in dev mode because hot reload will spam the logs.
     if (isDev) {
+      return;
+    }
+
+    if (aiConfigServerUrl === "") {
       return;
     }
 
