@@ -247,7 +247,9 @@ export default function aiconfigReducer(
         let modelSettings;
         const promptModel = prompt.metadata?.model;
         if (promptModel && typeof promptModel !== "string") {
-          modelSettings = promptModel.settings;
+          modelSettings = promptModel.settings
+            ? { ...promptModel.settings }
+            : undefined;
           // TODO (rossdanlm): For now just clearing the model field whenever new model name is selected
           if (modelSettings) {
             delete modelSettings.model;
