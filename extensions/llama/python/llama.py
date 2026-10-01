@@ -1,4 +1,5 @@
 import json
+from weakref import ref
 from typing import Any, List
 
 from aiconfig.Config import AIConfigRuntime
@@ -16,7 +17,23 @@ class LlamaModelParser(ParameterizedModelParser):
     def __init__(self, model_path: str) -> None:
         super().__init__()
         self.model_path = model_path
-        self.qa = []
+        self.qa_by_config = {}
+
+    def _get_config_history(self, aiconfig: AIConfigRuntime):
+        # The global model parser registry reuses this instance across configs.
+        self.qa_by_config = {
+            config_id: (config_ref, history)
+            for config_id, (config_ref, history) in self.qa_by_config.items()
+            if config_ref() is not None
+        }
+        config_id = id(aiconfig)
+        existing = self.qa_by_config.get(config_id)
+        if existing is not None and existing[0]() is aiconfig:
+            return existing[1]
+
+        history = []
+        self.qa_by_config[config_id] = (ref(aiconfig), history)
+        return history
 
     async def serialize(
         self,
@@ -44,20 +61,22 @@ class LlamaModelParser(ParameterizedModelParser):
             remember_chat_context = False
 
         model_input = (
-            f"CONTEXT:\n{self.history()}\nQUESTION:\n{resolved}"
+            f"CONTEXT:\n{self.history(aiconfig)}\nQUESTION:\n{resolved}"
             if remember_chat_context
             else resolved
         )
-        return {"model_input": model_input}
+        return {"model_input": model_input, "question": resolved}
 
     def id(self) -> str:
         return "LLaMA"
 
-    def history(self) -> str:
+    def history(self, aiconfig: AIConfigRuntime) -> str:
         def _fmt(q, a):
             return f"Q: {q}\nA: {a}"
 
-        out = "\n".join(_fmt(q, a) for q, a in self.qa)
+        out = "\n".join(
+            _fmt(q, a) for q, a in self._get_config_history(aiconfig)
+        )
         return out
 
     async def run_inference(
@@ -71,13 +90,17 @@ class LlamaModelParser(ParameterizedModelParser):
         model_input = resolved["model_input"]
         result = await self._run_inference_helper(model_input, options)
 
-        self.qa.append((model_input, result.data[0]))
+        self._get_config_history(aiconfig).append(
+            (resolved["question"], result.data)
+        )
 
-        return [result]
+        outputs = [result]
+        prompt.outputs = outputs
+        return outputs
 
     async def _run_inference_helper(
         self, model_input, options
-    ) -> List[Output]:
+    ) -> Output:
         llm = Llama(self.model_path)
         acc = ""
         stream = options.stream if options else True
