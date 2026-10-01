@@ -196,7 +196,9 @@ export class HuggingFaceTextGenerationParser extends ParameterizedModelParser<Te
     }
 
     // if no options are passed in, don't stream because streaming is dependent on a callback handler
-    const stream = options ? (options.stream ?? true) : false;
+    const stream = options
+      ? (options.stream ?? Boolean(options.callbacks?.streamCallback))
+      : false;
 
     let output: Output | undefined;
 
@@ -286,7 +288,7 @@ async function constructStreamOutput(
 
     accumulatedMessage += newText;
     const index = 0;
-    options.callbacks!.streamCallback(newText, accumulatedMessage, 0);
+    options.callbacks?.streamCallback?.(newText, accumulatedMessage, 0);
 
     output = {
       output_type: "execute_result",
