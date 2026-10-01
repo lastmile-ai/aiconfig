@@ -305,17 +305,17 @@ export class LlamaModelParser extends ParameterizedModelParser<LlamaCompletionPa
         aiConfig.getModelName(currentPrompt) === aiConfig.getModelName(prompt)
       ) {
         // Resolve the prompt with the given parameters, and add it to the messages array
-        const promptTemplate = this.getPromptTemplate(prompt, aiConfig);
+        const promptTemplate = this.getPromptTemplate(currentPrompt, aiConfig);
 
         const resolvedPrompt = this.resolvePromptTemplate(
           promptTemplate,
-          prompt,
+          currentPrompt,
           aiConfig,
           params
         );
 
         let outputText = "";
-        const output = aiConfig.getLatestOutput(prompt);
+        const output = aiConfig.getLatestOutput(currentPrompt);
         if (output != null) {
           if (output.output_type === "execute_result") {
             outputText = output.data as string;
