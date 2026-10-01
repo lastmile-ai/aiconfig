@@ -12,6 +12,11 @@ from aiconfig.default_parsers.parameterized_model_parser import (
 from aiconfig.model_parser import InferenceOptions
 from aiconfig.util.params import resolve_prompt
 from aiconfig_extension_hugging_face.local_inference.util import get_hf_model
+from aiconfig_extension_hugging_face.local_inference.text_2_image_params import (
+    prepare_pipeline_creation_params,
+    refine_image_completion_params,
+    refine_pipeline_creation_params,
+)
 from diffusers import AutoPipelineForText2Image
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.pipelines.stable_diffusion_xl.pipeline_output import (
@@ -31,108 +36,6 @@ from aiconfig.schema import (
 # Circuluar Dependency Type Hints
 if TYPE_CHECKING:
     from aiconfig.Config import AIConfigRuntime
-
-
-# Step 1: define Helpers
-def refine_pipeline_creation_params(
-    model_settings: Dict[str, Any]
-) -> List[Dict[str, Any]]:
-    """
-    Refines the pipeline creation params for the HF text2Image generation api.
-    Defers unsupported params as completion params, where they can get processed in
-    `refine_image_completion_params()`. The supported keys were found by looking at
-    the HF text2Image API:
-    https://huggingface.co/docs/diffusers/v0.24.0/en/api/pipelines/auto_pipeline#diffusers.AutoPipelineForText2Image
-
-    Note that this is not the same as the image completion params, which are passed to
-    the pipeline later to generate the image:
-    https://huggingface.co/docs/diffusers/main/en/api/pipelines/stable_diffusion/text2img#diffusers.StableDiffusionPipeline.__call__
-    """
-
-    supported_keys = {
-        "torch_dtype",
-        "force_download",
-        "cache_dir",
-        "resume_download",
-        "proxies",
-        "output_loading_info",
-        "local_files_only",
-        "use_auth_token",
-        "revision",
-        "custom_revision",
-        "mirror",
-        "device_map",
-        "max_memory",
-        "offload_folder",
-        "offload_state_dict",
-        "low_cpu_mem_usage",
-        "use_safetensors",
-        "variant",
-    }
-
-    pipeline_creation_params: Dict[str, Any] = {}
-    completion_params: Dict[str, Any] = {}
-    for key in model_settings:
-        if key.lower() in supported_keys:
-            pipeline_creation_params[key.lower()] = model_settings[key]
-        else:
-            if key.lower() == "kwargs" and isinstance(
-                model_settings[key], Dict
-            ):
-                completion_params.update(model_settings[key])
-            else:
-                completion_params[key.lower()] = model_settings[key]
-
-    return [pipeline_creation_params, completion_params]
-
-
-def refine_image_completion_params(
-    unfiltered_completion_params: Dict[str, Any]
-) -> Dict[str, Any]:
-    """
-    Refines the image creation params for the HF text2Image generation api after a
-    pipeline has been created via `refine_pipeline_creation_params`. Removes any
-    unsupported params. The supported keys were found by looking at the HF text2Image
-    API for StableDiffusionPipeline:
-    https://huggingface.co/docs/diffusers/main/en/api/pipelines/stable_diffusion/text2img#diffusers.StableDiffusionPipeline.__call__
-
-    Note: Can't find the supported keys or API for StableDiffusionXLPipeline:
-    https://huggingface.co/docs/diffusers/main/en/using-diffusers/sdxl
-
-    Note that this is not the same as the pipeline completion params, which were passed
-    earlier to generate the pipeline:
-    https://huggingface.co/docs/diffusers/v0.24.0/en/api/pipelines/auto_pipeline#diffusers.AutoPipelineForText2Image
-    """
-
-    supported_keys = {
-        # "prompt",
-        "height",
-        "width",
-        "num_inference_steps",
-        "guidance_scale",
-        "negative_prompt",
-        "num_images_per_prompt",
-        "eta",
-        "generator",
-        "latents",
-        "prompt_embeds",
-        "negative_prompt_embeds",
-        "output_type",
-        "return_dict",
-        "callback",
-        "callback_steps",
-        "cross_attention_kwargs",
-        "guidance_rescale",
-        "clip_skip",
-        "requires_safety_checker",
-    }
-
-    completion_params: Dict[str, Any] = {}
-    for key in unfiltered_completion_params:
-        if key.lower() in supported_keys:
-            completion_params[key.lower()] = unfiltered_completion_params[key]
-
-    return completion_params
 
 
 class ImageData:
@@ -304,11 +207,7 @@ class HuggingFaceText2ImageDiffusor(ParameterizedModelParser):
             InferenceResponse: The response from the model.
         """
         model_settings = self.get_model_settings(prompt, aiconfig)
-        [pipeline_creation_data, _] = refine_pipeline_creation_params(
-            model_settings
-        )
-        if not pipeline_creation_data.get("requires_safety_checker", True):
-            pipeline_creation_data["safety_checker"] = None
+        pipeline_creation_data = prepare_pipeline_creation_params(model_settings)
 
         pipeline_building_disclaimer_message = """
 Building the pipeline... This can take a long time if you haven't created one before 
