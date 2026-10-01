@@ -254,29 +254,48 @@ function AIConfigEditorBase({
     if (!updatePromptCallback) {
       return;
     }
-    return debounce(
-      async (
-        promptName: string,
-        newPrompt: Prompt,
-        callbacks: {
-          onSuccess?: (aiconfigRes: AIConfig) => void;
-          onError?: (err: unknown) => void;
-        }
-      ) => {
-        try {
-          const serverConfigRes = await updatePromptCallback(
-            promptName,
-            newPrompt
-          );
-          if (serverConfigRes?.aiconfig) {
-            callbacks?.onSuccess?.(serverConfigRes.aiconfig);
-          }
-        } catch (err: unknown) {
-          callbacks?.onError?.(err);
-        }
-      },
-      DEBOUNCE_MS
-    );
+    type UpdateCallbacks = {
+      onSuccess?: (aiconfigRes: AIConfig) => void;
+      onError?: (err: unknown) => void;
+    };
+    type DebouncedUpdate = (
+      promptName: string,
+      newPrompt: Prompt,
+      callbacks: UpdateCallbacks
+    ) => void;
+
+    const updatesByPrompt = new Map<string, DebouncedUpdate>();
+    return (
+      promptName: string,
+      newPrompt: Prompt,
+      updateCallbacks: UpdateCallbacks
+    ) => {
+      let debouncedUpdate = updatesByPrompt.get(promptName);
+      if (!debouncedUpdate) {
+        debouncedUpdate = debounce(
+          async (
+            currentPromptName: string,
+            currentPrompt: Prompt,
+            currentCallbacks: UpdateCallbacks
+          ) => {
+            try {
+              const serverConfigRes = await updatePromptCallback(
+                currentPromptName,
+                currentPrompt
+              );
+              if (serverConfigRes?.aiconfig) {
+                currentCallbacks.onSuccess?.(serverConfigRes.aiconfig);
+              }
+            } catch (err: unknown) {
+              currentCallbacks.onError?.(err);
+            }
+          },
+          DEBOUNCE_MS
+        );
+        updatesByPrompt.set(promptName, debouncedUpdate);
+      }
+      return debouncedUpdate(promptName, newPrompt, updateCallbacks);
+    };
   }, [updatePromptCallback]);
 
   const onChangePromptInput = useCallback(
