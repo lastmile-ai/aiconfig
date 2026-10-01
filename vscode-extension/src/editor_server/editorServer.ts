@@ -117,6 +117,16 @@ export class EditorServer {
 
       startServer.on("close", (code) => {
         this._onClose.fire(code);
+        // A closed child process is no longer a running server. Guard by
+        // process identity because restart() may already have installed a
+        // replacement while the previous process is finishing its close event.
+        if (this.serverProc === startServer) {
+          this.serverProc = null;
+          this.pid = null;
+          this.port = null;
+          this.url = null;
+          this.updateServerState(EditorServerState.Stopped);
+        }
       });
 
       startServer.on("error", (err) => {
