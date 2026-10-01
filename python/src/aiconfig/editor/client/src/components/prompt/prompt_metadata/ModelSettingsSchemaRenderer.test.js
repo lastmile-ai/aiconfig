@@ -1,6 +1,7 @@
 import React from "react";
 import { act } from "react-dom/test-utils";
 import { createRoot } from "react-dom/client";
+import { MantineProvider } from "@mantine/core";
 import ModelSettingsSchemaRenderer from "./PromptMetadataSchemaRenderer";
 import { DEBOUNCE_MS } from "../../../utils/constants";
 
@@ -22,17 +23,19 @@ describe("ModelSettingsSchemaRenderer", () => {
 
     act(() => {
       root.render(
-        <ModelSettingsSchemaRenderer
-          schema={{
-            type: "object",
-            properties: {
-              left: { type: "string" },
-              right: { type: "string" },
-            },
-          }}
-          metadata={initialMetadata}
-          onUpdatePromptMetadata={onUpdatePromptMetadata}
-        />
+        <MantineProvider>
+          <ModelSettingsSchemaRenderer
+            schema={{
+              type: "object",
+              properties: {
+                left: { type: "string" },
+                right: { type: "string" },
+              },
+            }}
+            metadata={initialMetadata}
+            onUpdatePromptMetadata={onUpdatePromptMetadata}
+          />
+        </MantineProvider>
       );
     });
 
