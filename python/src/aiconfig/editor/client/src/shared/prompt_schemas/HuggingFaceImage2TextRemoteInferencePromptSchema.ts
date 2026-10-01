@@ -5,7 +5,7 @@ export const HuggingFaceImage2TextRemoteInferencePromptSchema: PromptSchema = {
   // The settings below are supported settings specified in the HuggingFaceImage2TextRemoteInference refine_completion_params implementation.
   input: {
     type: "object",
-    required: ["data"],
+    required: ["attachments"],
     properties: {
       attachments: {
         type: "array",
