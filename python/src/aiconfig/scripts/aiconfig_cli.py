@@ -136,8 +136,32 @@ def _start_editor_servers_with_configs(
 
 def _sigint(procs: list[subprocess.Popen[bytes]]) -> Result[str, str]:
     LOGGER.info("sigint")
+    errors: list[str] = []
     for p in procs:
-        p.send_signal(signal.SIGINT)
+        if p.poll() is not None:
+            continue
+        try:
+            try:
+                p.send_signal(signal.SIGINT)
+            except (OSError, ValueError):
+                # SIGINT delivery is not supported for every child process
+                # configuration (notably on Windows). Fall back to terminate.
+                p.terminate()
+
+            try:
+                p.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                p.terminate()
+                try:
+                    p.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    p.kill()
+                    p.wait()
+        except Exception as e:
+            errors.append(f"pid {p.pid}: {e}")
+
+    if errors:
+        return Err("Could not stop all frontend processes: " + "; ".join(errors))
     return Ok("Sent SIGINT to frontend servers.")
 
 
@@ -211,6 +235,12 @@ def _run_editor_servers(
         case Ok(_):
             pass
         case Err(e):
+            cleanup_res = frontend_procs.and_then(_sigint)
+            if cleanup_res.is_err():
+                LOGGER.error(
+                    "Frontend cleanup failed after backend error: %s",
+                    cleanup_res.unwrap_err(),
+                )
             return Err(e)
 
     results.append(backend_res)
@@ -282,12 +312,24 @@ def _run_frontend_server_background() -> (
             stdin=subprocess.PIPE,
         )
     except Exception as e:
+        cleanup_res = _sigint([p1]) if p1 is not None else Ok("")
+        if cleanup_res.is_err():
+            LOGGER.error(
+                "Frontend cleanup failed after startup error: %s",
+                cleanup_res.unwrap_err(),
+            )
         return core_utils.ErrWithTraceback(e)
 
     try:
         assert p2.stdin is not None
         p2.stdin.write(b"n\n")
     except Exception as e:
+        cleanup_res = _sigint([p for p in (p1, p2) if p is not None])
+        if cleanup_res.is_err():
+            LOGGER.error(
+                "Frontend cleanup failed after startup error: %s",
+                cleanup_res.unwrap_err(),
+            )
         return core_utils.ErrWithTraceback(e)
 
     return Ok([p1, p2])
