@@ -3,7 +3,7 @@ import SettingsPropertyRenderer, {
 } from "../../SettingsPropertyRenderer";
 import { GenericPropertiesSchema } from "../../../utils/promptUtils";
 import { JSONObject, JSONValue } from "aiconfig";
-import { memo, useMemo } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { debounce } from "lodash";
 import { DEBOUNCE_MS } from "../../../utils/constants";
 
@@ -13,11 +13,25 @@ type Props = {
   onUpdatePromptMetadata: (metadata: Record<string, unknown>) => void;
 };
 
+export function applyMetadataUpdate(
+  currentMetadata: JSONObject | undefined,
+  update: ((previous: JSONValue) => void) | JSONValue
+): JSONObject {
+  return (
+    typeof update === "function" ? update(currentMetadata ?? {}) : update
+  ) as JSONObject;
+}
+
 export default memo(function ModelSettingsSchemaRenderer({
   schema,
   metadata,
   onUpdatePromptMetadata,
 }: Props) {
+  const latestMetadata = useRef(metadata);
+  useEffect(() => {
+    latestMetadata.current = metadata;
+  }, [metadata]);
+
   const debouncedConfigUpdate = useMemo(
     () =>
       debounce(
@@ -30,8 +44,8 @@ export default memo(function ModelSettingsSchemaRenderer({
   const setValue: SetStateFn = (
     newValue: ((prev: JSONValue) => void) | JSONValue
   ) => {
-    const newMetadata =
-      typeof newValue === "function" ? newValue(metadata) : newValue;
+    const newMetadata = applyMetadataUpdate(latestMetadata.current, newValue);
+    latestMetadata.current = newMetadata;
     debouncedConfigUpdate(newMetadata);
   };
 
