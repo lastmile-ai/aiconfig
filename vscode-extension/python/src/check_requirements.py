@@ -1,8 +1,18 @@
 import argparse
+import operator
 import pkg_resources
 from packaging import version
 import re
 import sys
+
+VERSION_COMPARATORS = {
+    "==": operator.eq,
+    "!=": operator.ne,
+    "<=": operator.le,
+    ">=": operator.ge,
+    "<": operator.lt,
+    ">": operator.gt,
+}
 
 
 # Read requirements.txt and construct the required packages dictionary as package_name: version
@@ -55,9 +65,13 @@ def check_packages(packages):
             if ver_spec and ver_spec[0]:
                 expected_version = version.parse(ver_spec[0])
                 spec = ver_spec[1]
-                test = f"'{installed_version}' {spec} '{expected_version}'"
-                print(f"Test: {test}, eval(test)= {eval(test)}")
-                if not eval(test):
+                comparison = VERSION_COMPARATORS[spec](
+                    installed_version, expected_version
+                )
+                print(
+                    f"Test: {installed_version} {spec} {expected_version}, result={comparison}"
+                )
+                if not comparison:
                     print(
                         f"{package} has version {installed_version}, but expected {spec}{expected_version}"
                     )
