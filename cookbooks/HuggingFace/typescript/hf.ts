@@ -145,8 +145,9 @@ export class HuggingFaceTextGenerationModelParser extends aiconfig.Parameterized
       this.hfClient = createHuggingFaceClient();
     }
 
-    // if no options are passed in, don't stream because streaming is dependent on a callback handler
-    const stream = options ? (options.stream ? options.stream : true) : false;
+    // Stream by default only when there is a callback to receive the deltas.
+    const stream =
+      options?.stream ?? Boolean(options?.callbacks?.streamCallback);
 
     if (stream) {
       const response = await this.hfClient.textGenerationStream(
@@ -154,7 +155,7 @@ export class HuggingFaceTextGenerationModelParser extends aiconfig.Parameterized
       );
       const output = await ConstructStreamOutput(
         response,
-        options as InferenceOptions
+        options
       );
       return output;
     } else {
@@ -193,39 +194,37 @@ export class HuggingFaceTextGenerationModelParser extends aiconfig.Parameterized
  */
 async function ConstructStreamOutput(
   response: AsyncGenerator<TextGenerationStreamOutput>,
-  options: InferenceOptions
+  options?: InferenceOptions
 ): Promise<Output> {
   let accumulatedMessage = "";
-  let output = {} as ExecuteResult;
+  let metadata: TextGenerationStreamOutput | undefined;
 
   for await (const iteration of response) {
     const data = iteration.token.text;
-    const metadata = iteration;
+    metadata = iteration;
 
     accumulatedMessage += data;
     const delta = data;
-    const index = 0;
-    options.callbacks!.streamCallback(delta, accumulatedMessage, 0);
-
-    output = {
-      output_type: "execute_result",
-      data: delta,
-      execution_count: index,
-      metadata: metadata,
-    } as ExecuteResult;
+    options?.callbacks?.streamCallback?.(delta, accumulatedMessage, 0);
   }
-  return output;
+
+  return {
+    output_type: "execute_result",
+    data: accumulatedMessage,
+    execution_count: 0,
+    metadata: metadata ?? {},
+  } as ExecuteResult;
 }
 
 function constructOutput(response: TextGenerationOutput): Output {
   const metadata = {};
-  const data = response;
+  const data = response.generated_text;
 
   const output = {
     output_type: "execute_result",
     data: data,
     execution_count: 0,
-    metadata: metadata,
+    metadata: { raw_response: response },
   } as ExecuteResult;
 
   return output;

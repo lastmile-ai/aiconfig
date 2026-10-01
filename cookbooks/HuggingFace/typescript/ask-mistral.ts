@@ -35,7 +35,7 @@ async function main() {
   };
 
   const inferenceOptions: InferenceOptions = { callbacks };
-  await config.run("prompt1", inferenceOptions);
+  await config.run("prompt1", {}, inferenceOptions);
 }
 
 main();
