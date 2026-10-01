@@ -151,6 +151,9 @@ Props) {
         )}
         <Dropzone
           multiple={true}
+          maxSize={
+            maxFileSize != null ? maxFileSize * 1024 * 1024 : undefined
+          }
           onDrop={(files: File[]) => {
             setUploadState("idle");
             setFileList(files);
@@ -167,7 +170,7 @@ Props) {
           accept={schema.items.mime_types}
           disabled={readOnly}
         >
-          {fileList.length > 0 ? (
+          {uploadState === "uploading" && fileList.length > 0 ? (
             `${fileList.length} File(s) Uploading...`
           ) : (
             <div>
@@ -175,7 +178,7 @@ Props) {
               <Text fz="sm" c="dimmed">
                 Supported files: {getSupportedFileTypes(schema)}
               </Text>
-              {maxFileSize && (
+              {maxFileSize != null && (
                 <Text fz="sm" c="dimmed">
                   Max file size: {maxFileSize}MB
                 </Text>
