@@ -279,16 +279,16 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "yarn run compile",
+    "vscode:prepublish": "yarn run compile && yarn --cwd editor install --frozen-lockfile && yarn --cwd editor build:vscode",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
     "lint": "eslint src --ext ts",
     "test": "vscode-test",
-    "install:all": "yarn install && cd webview-ui && yarn install",
-    "start:webview": "cd webview-ui && yarn start",
-    "build:webview": "cd webview-ui && yarn build",
-    "test:webview": "cd webview-ui && yarn test"
+    "install:all": "yarn install && yarn --cwd editor install",
+    "start:webview": "yarn --cwd editor start",
+    "build:webview": "yarn --cwd editor build:vscode",
+    "test:webview": "yarn --cwd editor test"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
