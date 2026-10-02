@@ -508,6 +508,14 @@ class EventHandler:
                 }
             }
             yield json.dumps(error_info)
+        finally:
+            # Streaming can exit early on a worker exception or when the
+            # client closes the response. Do not retain a stale cancellation
+            # event for either path.
+            if "cancellation_token_id" in locals():
+                self.config_manager.thread_events.pop(
+                    cancellation_token_id, None
+                )
 
     def set_config_description_impl(
         self, event: SetConfigDescriptionEventData
