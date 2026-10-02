@@ -336,20 +336,18 @@ def construct_outputs(response: list[Any]) -> list[Output]:
 
     for i, result in enumerate(response):
         # response is expected to be a dict containing the text output and timestamps if specified. Could not find docs for this.
-        result: dict[str, Any]
-        text_output = (
-            result.get("text")
-            if "text" in result and isinstance(result, dict)
-            else result
-        )
+        if isinstance(result, dict):
+            text_output = result.get("text", result)
+            metadata = {"result": result} if result.get("chunks", False) else {}
+        else:
+            text_output = result
+            metadata = {}
         output = ExecuteResult(
             **{
                 "output_type": "execute_result",
                 "data": text_output,
                 "execution_count": i,
-                "metadata": (
-                    {"result": result} if result.get("chunks", False) else {}
-                ),  # may contain timestamps and chunks, for now pass result
+                "metadata": metadata,  # preserve chunk timestamps when available
             }
         )
         outputs.append(output)
