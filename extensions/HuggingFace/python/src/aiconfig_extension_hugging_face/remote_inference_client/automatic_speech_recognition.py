@@ -152,7 +152,7 @@ class HuggingFaceAutomaticSpeechRecognitionRemoteInference(ModelParser):
         mime_type = "audio"
 
         if isinstance(audio, Path):
-            data["audio"] = str(audio.as_uri())
+            data["audio"] = str(audio.resolve().as_uri())
             # Assume the audio is saved with extension matching mimetype
             file_extension = audio.suffix.lower()[1:]
             mime_type = f"audio/{file_extension}"

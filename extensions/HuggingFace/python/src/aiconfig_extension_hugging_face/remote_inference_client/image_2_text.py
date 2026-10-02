@@ -150,7 +150,7 @@ class HuggingFaceImage2TextRemoteInference(ModelParser):
         mime_type = "image"
 
         if isinstance(image, Path):
-            data["image"] = str(image.as_uri())
+            data["image"] = str(image.resolve().as_uri())
             # Assume the image is saved with extension matching mimetype
             file_extension = image.suffix.lower()[1:]
             mime_type = f"image/{file_extension}"
