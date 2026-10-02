@@ -55,6 +55,7 @@ export default memo(function ModelSelector({
             variant="subtle"
             className="ghost"
             mr={10}
+            disabled={readOnly}
             onClick={() => {
               onSelectModel(undefined);
               setShowAll(true);
