@@ -108,9 +108,11 @@ export default function SettingsPropertyRenderer({
             setAndPropagateValue(Array.from(itemValues.current.values()));
           }}
         />
-        <ActionIcon onClick={() => removeItemFromList(key)}>
-          <IconTrash size={16} />
-        </ActionIcon>
+        {!readOnly && (
+          <ActionIcon onClick={() => removeItemFromList(key)}>
+            <IconTrash size={16} />
+          </ActionIcon>
+        )}
       </Group>
     ))
   );
@@ -140,12 +142,14 @@ export default function SettingsPropertyRenderer({
             setAndPropagateValue(Array.from(itemValues.current.values()));
           }}
         />
-        <ActionIcon onClick={() => removeItemFromList(key)}>
-          <IconTrash size={16} />
-        </ActionIcon>
+        {!readOnly && (
+          <ActionIcon onClick={() => removeItemFromList(key)}>
+            <IconTrash size={16} />
+          </ActionIcon>
+        )}
       </Group>,
     ]);
-  }, [property.items, removeItemFromList, setAndPropagateValue]);
+  }, [property.items, readOnly, removeItemFromList, setAndPropagateValue]);
 
   switch (propertyType) {
     case "string": {
@@ -352,9 +356,11 @@ export default function SettingsPropertyRenderer({
                 </ActionIcon>
               </Tooltip>
             ) : null}
-            <ActionIcon onClick={() => addItemToList()}>
-              <IconPlus size={16} />
-            </ActionIcon>
+            {!readOnly && (
+              <ActionIcon onClick={() => addItemToList()}>
+                <IconPlus size={16} />
+              </ActionIcon>
+            )}
           </Group>
           <Stack>{itemControls}</Stack>
         </>
