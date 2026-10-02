@@ -13,12 +13,14 @@ type Props = {
 
 function EditableAttachmentRenderer({
   schema,
+  maxFiles,
   attachment,
   onUpdateAttachment,
   onAddAttachments,
   onRemoveAttachment,
 }: {
   schema: PromptInputObjectAttachmentsSchema;
+  maxFiles?: number;
   attachment?: InputAttachment;
   onUpdateAttachment: (attachment: InputAttachment) => void;
   onAddAttachments: (value: InputAttachment[]) => void;
@@ -41,6 +43,7 @@ function EditableAttachmentRenderer({
       ) :  (
         <AttachmentUploader
           schema={schema}
+          maxFiles={maxFiles}
           onUploadAttachments={(attachments: InputAttachment[]) => {
             onAddAttachments(attachments);
             setShowUploader(false);
@@ -103,6 +106,11 @@ export default memo(function PromptInputAttachmentsSchemaRenderer({
           key={`${JSON.stringify(attachment.data)}-${i}`}
           attachment={attachment}
           schema={schema}
+          maxFiles={
+            schema.max_items == null
+              ? undefined
+              : Math.max(1, schema.max_items - numAttachments + 1)
+          }
           onUpdateAttachment={(attachment) => onUpdateAttachment(attachment, i)}
           onAddAttachments={(addedAttachments) =>
             onAddAttachments(addedAttachments, i)
@@ -120,6 +128,11 @@ export default memo(function PromptInputAttachmentsSchemaRenderer({
           // So that this 'new' attachment input is mounted with fresh state
           key={numAttachments}
           schema={schema}
+          maxFiles={
+            schema.max_items == null
+              ? undefined
+              : schema.max_items - numAttachments
+          }
           onUpdateAttachment={(attachment) =>
             onUpdateAttachment(attachment, numAttachments + 1)
           }
