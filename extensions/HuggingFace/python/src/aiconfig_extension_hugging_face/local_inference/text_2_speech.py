@@ -235,7 +235,7 @@ class HuggingFaceText2SpeechTransformer(ParameterizedModelParser):
         key = model_name if model_name is not None else "__default__"
         if key not in self.synthesizers:
             self.synthesizers[key] = pipeline(
-                "text-to-speech", model=model_name
+                "text-to-speech", model=model_name, **pipeline_creation_data
             )
         synthesizer = self.synthesizers[key]
 
