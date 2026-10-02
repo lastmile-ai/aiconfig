@@ -110,7 +110,7 @@ async def search(name: str):
 
 
 async def get(id: str):
-    return [item for item in db if item["id"] == id][0] or None
+    return next((item for item in db if item["id"] == id), None)
 
 
 async def callFunction(function_call):
