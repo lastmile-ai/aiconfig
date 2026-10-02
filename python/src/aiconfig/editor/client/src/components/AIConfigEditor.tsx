@@ -945,9 +945,10 @@ function AIConfigEditorBase({
             }
           },
           (event) => {
-            console.log(
-              `Error running prompt ${promptName}: ${JSON.stringify(event)}`
-            );
+            console.error("Prompt run failed", {
+              promptName,
+              code: event.data.code,
+            });
             if (event.type === "error") {
               if (event.data.code === 499) {
                 // This is a cancellation
