@@ -12,6 +12,7 @@ import AIConfigContext from "../../../../contexts/AIConfigContext";
 
 type Props = {
   schema: PromptInputObjectAttachmentsSchema;
+  maxFiles?: number;
   onUploadAttachments: (attachments: InputAttachment[]) => void;
   onCancel?: () => void;
 };
@@ -79,6 +80,7 @@ function getSupportedFileTypes(schema: PromptInputObjectAttachmentsSchema) {
 
 export default memo(function AttachmentUploader({
   schema,
+  maxFiles,
   onUploadAttachments,
   onCancel,
 }: // TODO: Handle max files, taking into account existing attachments
@@ -150,7 +152,8 @@ Props) {
           </ActionIcon>
         )}
         <Dropzone
-          multiple={true}
+          multiple={maxFiles == null || maxFiles > 1}
+          maxFiles={maxFiles}
           onDrop={(files: File[]) => {
             setUploadState("idle");
             setFileList(files);
