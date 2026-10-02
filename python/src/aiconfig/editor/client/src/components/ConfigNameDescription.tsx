@@ -103,7 +103,7 @@ export default memo(function ConfigNameDescription({
       ml={readOnly ? "auto" : PROMPT_CELL_LEFT_MARGIN_PX}
       mr="0.5em"
     >
-      {isEditing ? (
+      {isEditing && !readOnly ? (
         <>
           <TextInput
             classNames={{ input: classes.nameInput }}

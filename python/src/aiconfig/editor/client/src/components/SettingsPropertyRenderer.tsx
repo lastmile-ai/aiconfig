@@ -53,6 +53,25 @@ export function PropertyLabel(props: {
   );
 }
 
+function RemoveItemButton({
+  itemKey,
+  onRemove,
+}: {
+  itemKey: string;
+  onRemove: (key: string) => void;
+}) {
+  const { readOnly } = useContext(AIConfigContext);
+  if (readOnly) {
+    return null;
+  }
+
+  return (
+    <ActionIcon onClick={() => onRemove(itemKey)}>
+      <IconTrash size={16} />
+    </ActionIcon>
+  );
+}
+
 export default function SettingsPropertyRenderer({
   propertyName,
   property,
@@ -108,9 +127,7 @@ export default function SettingsPropertyRenderer({
             setAndPropagateValue(Array.from(itemValues.current.values()));
           }}
         />
-        <ActionIcon onClick={() => removeItemFromList(key)}>
-          <IconTrash size={16} />
-        </ActionIcon>
+        <RemoveItemButton itemKey={key} onRemove={removeItemFromList} />
       </Group>
     ))
   );
@@ -140,9 +157,7 @@ export default function SettingsPropertyRenderer({
             setAndPropagateValue(Array.from(itemValues.current.values()));
           }}
         />
-        <ActionIcon onClick={() => removeItemFromList(key)}>
-          <IconTrash size={16} />
-        </ActionIcon>
+        <RemoveItemButton itemKey={key} onRemove={removeItemFromList} />
       </Group>,
     ]);
   }, [property.items, removeItemFromList, setAndPropagateValue]);
@@ -352,9 +367,11 @@ export default function SettingsPropertyRenderer({
                 </ActionIcon>
               </Tooltip>
             ) : null}
-            <ActionIcon onClick={() => addItemToList()}>
-              <IconPlus size={16} />
-            </ActionIcon>
+            {!readOnly && (
+              <ActionIcon onClick={() => addItemToList()}>
+                <IconPlus size={16} />
+              </ActionIcon>
+            )}
           </Group>
           <Stack>{itemControls}</Stack>
         </>
