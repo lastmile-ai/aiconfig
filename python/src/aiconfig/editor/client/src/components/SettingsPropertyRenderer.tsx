@@ -53,6 +53,25 @@ export function PropertyLabel(props: {
   );
 }
 
+function RemoveItemButton({
+  itemKey,
+  onRemove,
+}: {
+  itemKey: string;
+  onRemove: (key: string) => void;
+}) {
+  const { readOnly } = useContext(AIConfigContext);
+  if (readOnly) {
+    return null;
+  }
+
+  return (
+    <ActionIcon onClick={() => onRemove(itemKey)}>
+      <IconTrash size={16} />
+    </ActionIcon>
+  );
+}
+
 export default function SettingsPropertyRenderer({
   propertyName,
   property,
@@ -108,11 +127,7 @@ export default function SettingsPropertyRenderer({
             setAndPropagateValue(Array.from(itemValues.current.values()));
           }}
         />
-        {!readOnly && (
-          <ActionIcon onClick={() => removeItemFromList(key)}>
-            <IconTrash size={16} />
-          </ActionIcon>
-        )}
+        <RemoveItemButton itemKey={key} onRemove={removeItemFromList} />
       </Group>
     ))
   );
@@ -142,14 +157,10 @@ export default function SettingsPropertyRenderer({
             setAndPropagateValue(Array.from(itemValues.current.values()));
           }}
         />
-        {!readOnly && (
-          <ActionIcon onClick={() => removeItemFromList(key)}>
-            <IconTrash size={16} />
-          </ActionIcon>
-        )}
+        <RemoveItemButton itemKey={key} onRemove={removeItemFromList} />
       </Group>,
     ]);
-  }, [property.items, readOnly, removeItemFromList, setAndPropagateValue]);
+  }, [property.items, removeItemFromList, setAndPropagateValue]);
 
   switch (propertyType) {
     case "string": {
