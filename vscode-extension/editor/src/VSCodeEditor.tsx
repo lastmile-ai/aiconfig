@@ -92,11 +92,13 @@ export default function VSCodeEditor() {
   window.addEventListener("message", (event) => {
     const message = event.data; // The json data that the extension sent
     if (!message) {
+      console.log("onMessage, MESSAGE=NULL, event=", JSON.stringify(event));
       return;
     }
 
     switch (message.type) {
       case "update": {
+        console.log("onMessage, message=", JSON.stringify(message));
         const text = message.text;
 
         // Update our webview's content
@@ -112,6 +114,7 @@ export default function VSCodeEditor() {
         return;
       }
       case "set_server_url": {
+        console.log("onMessage, message=", JSON.stringify(message));
         const url = message.url;
         setAIConfigServerUrl(url);
         updateWebviewState(vscode, { serverUrl: url });
@@ -127,7 +130,7 @@ export default function VSCodeEditor() {
         return;
       }
       default: {
-        console.warn("Unhandled webview message type:", message.type);
+        console.log("onMessage, UNHANDLED message=", JSON.stringify(message));
         return;
       }
     }

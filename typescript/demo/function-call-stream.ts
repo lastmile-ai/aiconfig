@@ -358,7 +358,7 @@ async function search(name: string) {
 }
 
 async function get(id: string) {
-  return db.find((item) => item.id === id)!;
+  return db.find((item) => item.id === id) ?? null;
 }
 
 // Uncomment this to use OpenAI directly (without AIConfig)
