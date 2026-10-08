@@ -53,10 +53,14 @@ export const EDITOR_SERVER_ROUTE_TABLE = {
     urlJoin(hostUrl, EDITOR_SERVER_API_ENDPOINT, "/set_env_file_path"),
 };
 
-export async function isServerReady(serverUrl: string) {
+export async function isServerReady(
+  serverUrl: string,
+  signal?: AbortSignal
+) {
   try {
     const res = await ufetch.get(
-      EDITOR_SERVER_ROUTE_TABLE.SERVER_STATUS(serverUrl)
+      EDITOR_SERVER_ROUTE_TABLE.SERVER_STATUS(serverUrl),
+      { signal }
     );
 
     const status = res.status;
@@ -67,14 +71,27 @@ export async function isServerReady(serverUrl: string) {
   }
 }
 
-export async function waitUntilServerReady(serverUrl: string) {
-  // TODO: saqadri - set some max retry to prevent infinite loop
-  let ready = await isServerReady(serverUrl);
-  while (!ready) {
-    // sleep for 100ms
-    await setTimeout(/*delay*/ 100);
-    ready = await isServerReady(serverUrl);
+export async function waitUntilServerReady(
+  serverUrl: string,
+  signal?: AbortSignal
+): Promise<boolean> {
+  while (!signal?.aborted) {
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    signal?.addEventListener("abort", abort, { once: true });
+    const requestTimeout = globalThis.setTimeout(abort, 1_000);
+    try {
+      if (await isServerReady(serverUrl, controller.signal)) {
+        return !signal?.aborted;
+      }
+    } finally {
+      globalThis.clearTimeout(requestTimeout);
+      signal?.removeEventListener("abort", abort);
+    }
+    if (signal?.aborted) return false;
+    await setTimeout(100);
   }
+  return false;
 }
 
 export function updateWebviewEditorThemeMode(webview: vscode.Webview) {
