@@ -73,25 +73,23 @@ export async function isServerReady(
 
 export async function waitUntilServerReady(
   serverUrl: string,
-  timeoutMs: number = 30_000
+  signal?: AbortSignal
 ): Promise<boolean> {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    const remainingMs = deadline - Date.now();
+  while (!signal?.aborted) {
     const controller = new AbortController();
-    const requestTimeout = globalThis.setTimeout(
-      () => controller.abort(),
-      Math.min(1_000, remainingMs)
-    );
+    const abort = () => controller.abort();
+    signal?.addEventListener("abort", abort, { once: true });
+    const requestTimeout = globalThis.setTimeout(abort, 1_000);
     try {
       if (await isServerReady(serverUrl, controller.signal)) {
-        return true;
+        return !signal?.aborted;
       }
     } finally {
       globalThis.clearTimeout(requestTimeout);
+      signal?.removeEventListener("abort", abort);
     }
-    // Poll for up to timeoutMs, then let the caller offer recovery.
-    await setTimeout(Math.min(100, Math.max(0, deadline - Date.now())));
+    if (signal?.aborted) return false;
+    await setTimeout(100);
   }
   return false;
 }

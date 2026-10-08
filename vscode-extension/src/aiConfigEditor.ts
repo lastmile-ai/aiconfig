@@ -103,13 +103,26 @@ export class AIConfigEditorProvider implements vscode.CustomTextEditorProvider {
     updateWebview();
 
     const setupServerState = async (server: EditorServer) => {
-      // Wait for server ready
-      const isReady = await waitUntilServerReady(server.url);
+      // Stop polling this process when it exits; a slow live process can still become ready.
+      const process = server.serverProc;
+      if (!process || process.exitCode !== null || process.signalCode !== null) return;
+      const controller = new AbortController();
+      const abort = () => controller.abort();
+      process.once("close", abort);
+      process.once("error", abort);
+      let isReady: boolean;
+      try {
+        isReady = await waitUntilServerReady(server.url, controller.signal);
+      } finally {
+        process.removeListener("close", abort);
+        process.removeListener("error", abort);
+      }
+      if (isWebviewDisposed || server.serverProc !== process) return;
       if (!isReady) {
         server.stop();
         this.extensionOutputChannel.error(
           this.prependMessage(
-            "The editor server did not become ready within 30 seconds.",
+            "The editor server exited before becoming ready.",
             document
           )
         );
