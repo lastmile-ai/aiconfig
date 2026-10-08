@@ -368,6 +368,14 @@ class EventHandler:
                         )
                     except Exception as e:
                         output_text_queue.put(e)
+                    finally:
+                        # Keep active runs cancellable after the response closes.
+                        if self.config_manager.thread_events.get(
+                            cancellation_token_id
+                        ) is cancellation_event:
+                            self.config_manager.thread_events.pop(
+                                cancellation_token_id, None
+                            )
                     output_text_queue.put(STOP_STREAMING_SIGNAL)  # type: ignore
 
                 def create_error_payload(message: str, code: int):
@@ -486,9 +494,6 @@ class EventHandler:
                     yield from handle_cancellation()
                     return
 
-                self.config_manager.thread_events.pop(
-                    cancellation_token_id, None
-                )
                 aiconfig_json = self.config_manager.get_config_json(session_id)
                 yield json.dumps({"aiconfig_chunk": aiconfig_json})
                 yield json.dumps({"stop_streaming": True})
