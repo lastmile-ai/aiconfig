@@ -13,7 +13,10 @@ export type UnionProperty = {
   types: JSONObject[];
 };
 
-function valueMatchesSchemaType(value: JSONValue, schema: JSONObject) {
+function valueMatchesSchemaType(value: JSONValue, schema: JSONObject): boolean {
+  if (Array.isArray(schema.enum) && !schema.enum.includes(value)) {
+    return false;
+  }
   switch (schema.type) {
     case "string":
     case "text":
@@ -25,7 +28,13 @@ function valueMatchesSchemaType(value: JSONValue, schema: JSONObject) {
     case "boolean":
       return typeof value === "boolean";
     case "array":
-      return Array.isArray(value);
+      return (
+        Array.isArray(value) &&
+        (!schema.items ||
+          value.every((item) =>
+            valueMatchesSchemaType(item, schema.items as JSONObject)
+          ))
+      );
     case "object":
     case "map":
       return value !== null && typeof value === "object" && !Array.isArray(value);
