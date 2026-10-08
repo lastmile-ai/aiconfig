@@ -9,24 +9,6 @@ from glob import glob
 import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-TEXT_FILE_EXTENSIONS = {
-    ".csv",
-    ".htm",
-    ".html",
-    ".json",
-    ".log",
-    ".md",
-    ".markdown",
-    ".rst",
-    ".text",
-    ".tsv",
-    ".txt",
-    ".xml",
-    ".yaml",
-    ".yml",
-}
-
-
 def chunk_markdown(text, chunk_size=1000):
     chunks = []
     for i in range(0, len(text), chunk_size):
@@ -42,7 +24,6 @@ async def run_ingest(directory, collection_name):
         filename
         for filename in glob(f"{directory}/**/*", recursive=True)
         if os.path.isfile(filename)
-        and os.path.splitext(filename)[1].lower() in TEXT_FILE_EXTENSIONS
     )
     for i, filename in enumerate(filenames):
         print("Ingesting:", i, filename)
