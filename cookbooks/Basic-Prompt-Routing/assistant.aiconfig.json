@@ -11,7 +11,7 @@
       "gpt-4": {
         "top_k": 40,
         "top_p": 1,
-        "model": "gpt-4",
+        "model": "gpt-5.6-sol",
         "temperature": 0.0
       }
     }
@@ -38,7 +38,7 @@
           "metadata": {
             "id": "chatcmpl-9RNj7MJELOVGtpybTkIjtgGfDx1Us",
             "created": 1716313089,
-            "model": "gpt-4-0613",
+            "model": "gpt-5.6-sol-0613",
             "object": "chat.completion.chunk",
             "raw_response": {
               "content": "Math",
@@ -69,7 +69,7 @@
           "metadata": {
             "id": "chatcmpl-9RNjD74ywjmah4aAjUOSkculIVPfm",
             "created": 1716313095,
-            "model": "gpt-4-0613",
+            "model": "gpt-5.6-sol-0613",
             "object": "chat.completion.chunk",
             "raw_response": {
               "content": "Hi! I'm your Math Professor.\n\nTo prove that 1+1=2, we can use the Peano's axioms, which are a set of axioms for the natural numbers. \n\nAxiom 1: 1 is a number.\nAxiom 2: Every natural number has a successor, which is also a natural number.\nAxiom 3: There is no natural number whose successor is 1.\nAxiom 4: Distinct natural numbers have distinct successors: i.e., if n \u2260 m, then n+1 \u2260 m+1.\nAxiom 5: If a property belongs to 1, and if it belongs to n+1 whenever it belongs to n, then it belongs to every natural number.\n\nNow, let's define addition in terms of these axioms. \n\nDefinition: Let a and b be natural numbers. Then a+1 is the successor of a, and a+b is the successor of a+(b-1).\n\nUsing this definition, we can prove that 1+1=2.\n\nProof: By definition, 1+1 is the successor of 1+0. But 1+0 is just 1 (since adding 0 to any number doesn't change its value). So 1+1 is the successor of 1. But the successor of 1 is 2 (by Axiom 2). Therefore, 1+1=2.",

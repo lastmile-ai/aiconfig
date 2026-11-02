@@ -103,7 +103,7 @@ async function functionCallingWithoutAIConfig() {
 
   while (true) {
     const stream = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-5.6-terra",
       messages,
       functions: functions,
       stream: true,
@@ -267,7 +267,7 @@ async function functionCallingWithAIConfig() {
 }
 
 async function createAIConfig() {
-  const model = "gpt-3.5-turbo";
+  const model = "gpt-5.6-terra";
   const data = {
     model,
     messages: [

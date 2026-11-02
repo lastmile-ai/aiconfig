@@ -4,11 +4,11 @@
   "metadata": {
     "models": {
       "gpt-4": {
-        "model": "gpt-4",
+        "model": "gpt-5.6-sol",
         "stream": false
       }
     },
-    "default_model": "gpt-4",
+    "default_model": "gpt-5.6-sol",
     "parameters": {}
   },
   "prompts": [

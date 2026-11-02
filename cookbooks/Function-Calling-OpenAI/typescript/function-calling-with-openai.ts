@@ -65,7 +65,7 @@ async function main() {
     "Use OpenAI function calling to help recommend books"
   );
 
-  const model = "gpt-3.5-turbo";
+  const model = "gpt-5.6-terra";
   const data = {
     model: model,
     messages: [

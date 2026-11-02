@@ -20,7 +20,7 @@ async function openAIWithoutAIConfig() {
 
   // Non-streaming:
   const completion = await openai.chat.completions.create({
-    model: "gpt-4",
+    model: "gpt-5.6-sol",
     messages: [{ role: "user", content: "Say this is a test" }],
   });
 
@@ -29,7 +29,7 @@ async function openAIWithoutAIConfig() {
 
   // Streaming:
   const stream = await openai.chat.completions.create({
-    model: "gpt-4",
+    model: "gpt-5.6-sol",
     messages: [{ role: "user", content: "Say this is a test" }],
     stream: true,
   });
@@ -95,7 +95,7 @@ async function openAIWithAIConfig() {
 }
 
 async function createAIConfig() {
-  const model = "gpt-4-0613";
+  const model = "gpt-5.6-sol";
   const data = {
     model,
     messages: [

@@ -4,7 +4,7 @@
   "metadata": {
     "models": {
       "gpt-4": {
-        "model": "gpt-4",
+        "model": "gpt-5.6-sol",
         "top_p": 1,
         "temperature": 0,
         "presence_penalty": 0,

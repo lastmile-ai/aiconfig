@@ -14,7 +14,7 @@
         "model": {
           "name": "gpt-4",
           "settings": {
-            "model": "gpt-4",
+            "model": "gpt-5.6-sol",
             "system_prompt": "\n                    You are a very good middle school teacher.\n\n                    Output: You are to identify which course in the curriculum the student question will be covered\n                    and concisely respond with where in the curriculum the question will be answered.\n                    If the question is not covered in the curriculum, you are to answer with 'Unfortunately, we don't cover that in our curriculum'\n                "
           }
         },

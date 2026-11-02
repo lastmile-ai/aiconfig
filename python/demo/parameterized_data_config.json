@@ -6,13 +6,13 @@
         "parameters": {},
         "models": {
             "gpt-3.5-turbo": {
-                "model": "gpt-3.5-turbo",
+                "model": "gpt-5.6-terra",
                 "top_p": 1,
                 "max_tokens": 3000,
                 "temperature": 1
             },
             "gpt-4": {
-                "model": "gpt-4",
+                "model": "gpt-5.6-sol",
                 "top_p": 1,
                 "max_tokens": 3000,
                 "temperature": 1,
@@ -37,7 +37,7 @@
                 "model": {
                     "name": "gpt-4",
                     "settings": {
-                        "model": "gpt-4",
+                        "model": "gpt-5.6-sol",
                         "top_p": 1,
                         "max_tokens": 3000,
                         "temperature": 1
