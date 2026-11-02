@@ -7,7 +7,7 @@ name: ""
 prompts:
   - input: ""
     metadata:
-      model: gpt-3.5-turbo
+      model: gpt-5.6-terra
       parameters: {}
     name: prompt_1
     outputs: []

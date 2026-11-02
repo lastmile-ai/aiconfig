@@ -14,7 +14,7 @@
         "model": {
           "name": "gpt-4-0613",
           "settings": {
-            "model": "gpt-4-0613"
+            "model": "gpt-5.6-sol-0613"
           }
         },
         "parameters": {},

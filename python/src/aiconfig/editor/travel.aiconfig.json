@@ -5,17 +5,17 @@
     "parameters": {},
     "models": {
       "gpt-3.5-turbo": {
-        "model": "gpt-3.5-turbo",
+        "model": "gpt-5.6-terra",
         "top_p": 1,
         "temperature": 1
       },
       "gpt-4": {
-        "model": "gpt-4",
+        "model": "gpt-5.6-sol",
         "max_tokens": 3000,
         "system_prompt": "You are an expert travel coordinator with exquisite taste."
       }
     },
-    "default_model": "gpt-3.5-turbo"
+    "default_model": "gpt-5.6-terra"
   },
   "description": "Intrepid explorer with ChatGPT and AIConfig",
   "prompts": [
@@ -44,7 +44,7 @@
       "name": "gen_itinerary",
       "input": "Generate an itinerary ordered by {{order_by}} for these activities: {{get_activities.output}}.",
       "metadata": {
-        "model": "gpt-4",
+        "model": "gpt-5.6-sol",
         "parameters": {
           "order_by": "geographic location"
         }
